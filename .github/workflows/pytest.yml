@@ -1,5 +1,8 @@
 name: pytest
-on: [pull_request, push, workflow_dispatch]
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 concurrency:
   group: pytest-${{ github.ref }}
   cancel-in-progress: true

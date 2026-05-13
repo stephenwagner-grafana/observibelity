@@ -95,6 +95,33 @@ pod crash loops, missing telemetry, and how to capture a support bundle.
 
 Phase 0 in progress.
 
+## Re-enabling CI
+
+CI is currently gated to reduce noise during early-phase development. To enable
+full CI:
+
+1. **Configure required secrets** for workflows that need them (Grafana Cloud
+   creds, Anthropic API key, GHCR token, etc.):
+
+   ```bash
+   ./tools/setup-gh-secrets.sh
+   ```
+
+2. **Re-enable the gated workflows** once secrets are in place:
+
+   ```bash
+   gh workflow enable e2e-smoke.yml
+   gh workflow enable integration.yml
+   gh workflow enable sync.yml
+   gh workflow enable wiki-sync.yml
+   gh workflow enable release.yml
+   ```
+
+Currently active workflows (`lint`, `pytest`, `bats`, `helm-test`,
+`build-images`) only run on PRs to `main` plus manual dispatch — not on every
+push to feature branches. Dependabot is throttled to monthly with a 1-PR cap
+per ecosystem.
+
 ## Where to find more
 
 - **[Wiki](https://github.com/stephenwagner-grafana/observibelity/wiki)** — deployment scenarios, topology, FAQ, phase status. Auto-synced from `docs/` on every push to `main`.
