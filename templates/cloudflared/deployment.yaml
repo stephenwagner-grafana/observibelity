@@ -1,4 +1,4 @@
-{{- if .Values.cloudflareTunnel.enabled }}
+{{- if and .Values.cloudflareTunnel .Values.cloudflareTunnel.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -1,4 +1,4 @@
-{{- if .Values.cloudflareTunnel.enabled }}
+{{- if and .Values.cloudflareTunnel .Values.cloudflareTunnel.enabled }}
 {{- if not .Values.cloudflareTunnel.tunnelId }}
 {{ fail "cloudflareTunnel.enabled=true requires cloudflareTunnel.tunnelId (the UUID returned by `cloudflared tunnel create`)" }}
 {{- end }}
