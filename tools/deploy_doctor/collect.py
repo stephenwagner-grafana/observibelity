@@ -28,7 +28,11 @@ POD_LOG_TAIL_LINES = 200
 # output and Kubernetes Secret manifest `data:` blocks.
 _SECRET_KEY_PATTERN = re.compile(
     r"(?i)(api[_-]?key|token|password|passwd|secret|access[_-]?key|"
-    r"private[_-]?key|client[_-]?secret|auth)"
+    r"private[_-]?key|client[_-]?secret|auth|"
+    # any field ending in _key or -key (anthropic_key, openai-key, etc.)
+    r"[_-]key$|^key$|"
+    # specific provider keys we expect to see in .observibelity-state
+    r"anthropic|openai|grafana|ghp_|github_pat)"
 )
 _KV_LINE = re.compile(
     r"^(\s*[\"']?(?P<key>[A-Za-z0-9_.-]+)[\"']?\s*[:=]\s*)(?P<val>.+?)\s*$"
@@ -36,8 +40,55 @@ _KV_LINE = re.compile(
 _YAML_DATA_LINE = re.compile(
     r"^(?P<indent>\s+)(?P<key>[A-Za-z0-9_.-]+):\s*(?P<val>\S.*)$"
 )
+# Inline JSON / YAML flow-style: catches `"anthropic_key": "value"` inside a
+# single-line JSON object, where the line-anchored matchers above miss.
+_INLINE_JSON_KV = re.compile(
+    r'"(?P<key>[A-Za-z0-9_.-]+)"\s*:\s*"(?P<val>[^"\\]*(?:\\.[^"\\]*)*)"'
+)
 
 _REDACTED = "***REDACTED***"
+
+
+# ---------------------------------------------------------------------------
+# Module-level redaction helper.
+#
+# Tests (and downstream tooling) sometimes want to redact a chunk of text
+# without instantiating a full Collector. We expose the same algorithm here
+# as a free function; Collector._redact() delegates to it.
+# ---------------------------------------------------------------------------
+def _redact(text: str) -> str:
+    """Redact secret-bearing lines in arbitrary text.
+
+    Recognises:
+      * env / `key=value` style (e.g. `FOO=bar`, `FOO: bar`)
+      * YAML-indented `data:` block style (Secret manifests)
+      * Inline JSON `"key": "value"` pairs (state file dumps, kubectl -o json)
+
+    Replaces the value with ``***REDACTED***`` when the key matches one of
+    the secret-bearing patterns (api_key, token, password, …).
+    """
+    def _inline_repl(m: re.Match[str]) -> str:
+        if _SECRET_KEY_PATTERN.search(m.group("key")):
+            return f'"{m.group("key")}": "{_REDACTED}"'
+        return m.group(0)
+
+    out_lines: list[str] = []
+    for line in text.splitlines():
+        # Env / key=value style first.
+        m = _KV_LINE.match(line)
+        if m and _SECRET_KEY_PATTERN.search(m.group("key")):
+            prefix = line[: m.start("val")]
+            out_lines.append(f"{prefix}{_REDACTED}")
+            continue
+        # YAML-indented `data:` block style (Secret manifests).
+        m = _YAML_DATA_LINE.match(line)
+        if m and _SECRET_KEY_PATTERN.search(m.group("key")):
+            out_lines.append(f"{m.group('indent')}{m.group('key')}: {_REDACTED}")
+            continue
+        # Inline JSON: catches `{"foo_token": "abc"}` etc. We apply this
+        # last so it doesn't double-redact a line already caught above.
+        out_lines.append(_INLINE_JSON_KV.sub(_inline_repl, line))
+    return "\n".join(out_lines)
 
 
 # ---------------------------------------------------------------------------
@@ -104,25 +155,14 @@ class Collector:
     # Redaction
     # ------------------------------------------------------------------
     def _redact(self, text: str) -> str:
-        """Redact secret-bearing lines. Used by every collector output."""
+        """Redact secret-bearing lines. Used by every collector output.
+
+        Delegates to the module-level :func:`_redact` so the algorithm is
+        callable without a Collector instance (used by tests + tooling).
+        """
         if not self.redact_secrets:
             return text
-
-        out_lines: list[str] = []
-        for line in text.splitlines():
-            # Try env/key=value style first (handles `FOO=bar`, `FOO: bar`).
-            m = _KV_LINE.match(line)
-            if m and _SECRET_KEY_PATTERN.search(m.group("key")):
-                prefix = line[: m.start("val")]
-                out_lines.append(f"{prefix}{_REDACTED}")
-                continue
-            # YAML-indented `data:` block style (Secret manifests).
-            m = _YAML_DATA_LINE.match(line)
-            if m and _SECRET_KEY_PATTERN.search(m.group("key")):
-                out_lines.append(f"{m.group('indent')}{m.group('key')}: {_REDACTED}")
-                continue
-            out_lines.append(line)
-        return "\n".join(out_lines)
+        return _redact(text)
 
     # ------------------------------------------------------------------
     # Individual collectors. Each returns a string (or dict) suitable for

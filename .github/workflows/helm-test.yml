@@ -19,12 +19,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
-        with: { version: v3.13.3 }
+        with:
+          version: v3.13.3
       - name: Render template
-        run: helm template . --release-name obs --namespace observibelity > /tmp/rendered.yaml
+        run: helm template obs . --namespace observibelity > /tmp/rendered.yaml
       - name: Diff against snapshot
+        # Strip only the documentation preamble (lines before the first `---`
+        # YAML document separator). The rendered output never has a preamble,
+        # but helm's `# Source: ...` lines and inline template comments are
+        # real content and must survive the comparison.
         run: |
-          if ! diff -u tests/snapshots/default.golden.yaml /tmp/rendered.yaml; then
-            echo "::error::Snapshot diff. To accept changes: cp /tmp/rendered.yaml tests/snapshots/default.golden.yaml"
+          strip_preamble() {
+            awk 'flag || /^---$/ {flag=1; print}' "$1"
+          }
+          strip_preamble tests/snapshots/default.golden.yaml > /tmp/golden.body
+          strip_preamble /tmp/rendered.yaml > /tmp/rendered.body
+          if ! diff -u /tmp/golden.body /tmp/rendered.body; then
+            echo "::error::Snapshot diff (preamble ignored). Regenerate: make snapshot"
             exit 1
           fi

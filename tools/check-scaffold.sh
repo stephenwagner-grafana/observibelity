@@ -161,15 +161,18 @@ done
 # ── 6. Helm template snapshot freshness ─────────────────────────────────────
 log "6. Helm template snapshot"
 if command -v helm >/dev/null 2>&1; then
-  if helm template "$REPO_ROOT" --release-name obs --namespace observibelity > /tmp/scaffold-check-rendered.yaml 2>/dev/null; then
-    if diff -q "$REPO_ROOT/tests/snapshots/default.golden.yaml" /tmp/scaffold-check-rendered.yaml >/dev/null 2>&1; then
+  if helm template obs "$REPO_ROOT" --namespace observibelity > /tmp/scaffold-check-rendered.yaml 2>/dev/null; then
+    # Strip the snapshot's documentation preamble (lines before first `---`).
+    awk 'flag || /^---$/ {flag=1; print}' "$REPO_ROOT/tests/snapshots/default.golden.yaml" > /tmp/scaffold-golden.body
+    awk 'flag || /^---$/ {flag=1; print}' /tmp/scaffold-check-rendered.yaml > /tmp/scaffold-rendered.body
+    if diff -q /tmp/scaffold-golden.body /tmp/scaffold-rendered.body >/dev/null 2>&1; then
       ok "  snapshot matches helm template output"
     else
       err "  snapshot drift — run 'make snapshot' to regenerate"
       FAILURES+=("snapshot drift")
       FAIL=$((FAIL + 1))
     fi
-    rm -f /tmp/scaffold-check-rendered.yaml
+    rm -f /tmp/scaffold-check-rendered.yaml /tmp/scaffold-golden.body /tmp/scaffold-rendered.body
   else
     warn "  helm template failed; skipping"
   fi

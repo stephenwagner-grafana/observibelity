@@ -54,7 +54,8 @@ doctor:  ## Collect diagnostics tarball via deploy-doctor.
 	./tools/deploy-doctor.sh --collect-only
 
 snapshot:  ## Regenerate tests/snapshots/default.golden.yaml.
-	helm template . --release-name obs --namespace $(NAMESPACE) > tests/snapshots/default.golden.yaml
+	@# helm 3.13 changed positional/release-name syntax — use `helm template <RELEASE> <CHART>`.
+	helm template obs . --namespace $(NAMESPACE) > tests/snapshots/default.golden.yaml
 	@echo "Snapshot regenerated."
 
 watch:  ## Skaffold dev mode (Loop 2 inner loop for app code).
