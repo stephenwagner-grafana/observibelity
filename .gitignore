@@ -17,3 +17,6 @@ __pycache__/
 
 # Local deploy values with real creds
 values-deploy.yaml
+
+# Backup folders from sync scripts (never commit)
+_remote_backup*
