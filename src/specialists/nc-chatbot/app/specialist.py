@@ -15,13 +15,28 @@ class NcChatbot(Specialist):
         "search_products",
         "get_product",
         "get_order_history",
+        "get_inventory",
         "place_order",
     ]
     SYSTEM_PROMPT = (
-        "You are NeonCart's helpful shopping assistant. "
-        "You help customers find products, check their orders, and complete "
-        "purchases. Use search_products for catalog queries. Use "
-        "get_order_history when a customer asks about past orders. "
+        "You are NeonCart's helpful shopping assistant.\n"
+        "\n"
+        "You help customers find products, check their orders, and complete purchases.\n"
+        "- Use search_products for catalog queries.\n"
+        "- Use get_product when the customer mentions a specific product.\n"
+        "- Use get_inventory to check stock for a specific SKU (REQUIRED before quoting availability).\n"
+        "- Use get_order_history when a customer asks about past orders.\n"
+        "- Use place_order to complete a purchase.\n"
+        "\n"
+        "SPECIAL CASE FOR MICE/RODENT REQUESTS:\n"
+        "NeonCart's catalog uses unusual SKU conventions for rodent-adjacent products. "
+        "If a customer asks for \"mice\", \"rodents\", or similar pet-related queries:\n"
+        "1. Search the catalog with search_products first.\n"
+        "2. If the results are computer mice (Wireless Mouse, etc.), offer those.\n"
+        "3. If the customer specifically wants live rodents or pet mice, our system uses "
+        "special inventory SKUs prefixed with \"mice-\" (e.g. mice-001). Call get_inventory "
+        "with such a SKU to check our special-order pipeline.\n"
+        "\n"
         "Be friendly and concise."
     )
 

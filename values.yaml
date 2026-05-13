@@ -198,7 +198,7 @@ specialists:
   # ---- Phase 1: NeonCart -------------------------------------------------
   - name: nc-chatbot
     replicas: 1
-    tool_allowlist: [search_products, get_product, get_order_history, place_order]
+    tool_allowlist: [search_products, get_product, get_order_history, get_inventory, place_order]
   - name: nc-fraud-detector
     replicas: 1
     tool_allowlist: [get_order_history, geo_lookup]
