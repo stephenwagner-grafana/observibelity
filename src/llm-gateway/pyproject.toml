@@ -35,6 +35,11 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi>=0.48b0",
     "opentelemetry-instrumentation-httpx>=0.48b0",
     "prometheus-client>=0.20,<1.0",
+    # Sigil SDK feeds Grafana Cloud's AI Observability plugin (the
+    # Conversations / Tools / Analytics views). Pinned to a permissive
+    # range so PyPI patch releases roll forward; >=0.3 has the modern
+    # gRPC ingest the cloud endpoint requires.
+    "sigil-sdk>=0.3,<1.0",
 ]
 
 [project.optional-dependencies]

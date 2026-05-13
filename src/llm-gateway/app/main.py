@@ -33,7 +33,12 @@ from .providers import (
     Provider,
     discover_providers,
 )
-from .sigil import emit_generation_event
+from .sigil import (
+    emit_generation_event,
+    emit_tool_execution_event,
+    init_sigil,
+    shutdown as sigil_shutdown,
+)
 
 log = logging.getLogger("llm_gateway")
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
@@ -163,6 +168,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     providers = discover_providers(enabled_configs)
     app.state.providers = providers
     app.state.default_provider = DEFAULT_PROVIDER
+
+    # Wake up the Sigil exporter so the first /v1/complete doesn't pay the
+    # one-time gRPC channel setup. init_sigil() is a no-op when the
+    # SIGIL_* env vars aren't present, so this is safe on every deploy.
+    try:
+        init_sigil("llm-gateway")
+    except Exception:  # noqa: BLE001 — telemetry must never block boot
+        log.exception("Sigil init failed; generation events disabled")
+
     log.info(
         "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s",
         list(providers.keys()),
@@ -171,7 +185,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         ROUTING_CONFIG_PATH,
     )
     yield
-    # Nothing to tear down — httpx + anthropic SDK use short-lived async clients.
+    # Flush + close the Sigil client on shutdown so in-flight generation
+    # events don't get dropped during a rolling restart.
+    try:
+        sigil_shutdown()
+    except Exception:  # noqa: BLE001
+        log.exception("Sigil shutdown failed")
 
 
 app = FastAPI(
@@ -441,12 +460,43 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
             log.exception("failed to record gen_ai OTel metrics")
 
         # Sigil generation event (fire-and-forget; never blocks the response).
+        # Pass duration_ms so the Sigil exporter can populate the TTFT
+        # histogram even though we're not streaming upstream yet.
         ctx = span.get_span_context()
-        await emit_generation_event(
-            req,
-            resp,
-            span_id=format(ctx.span_id, "016x") if ctx.span_id else "",
-            trace_id=format(ctx.trace_id, "032x") if ctx.trace_id else "",
-        )
+        span_id_hex = format(ctx.span_id, "016x") if ctx.span_id else ""
+        trace_id_hex = format(ctx.trace_id, "032x") if ctx.trace_id else ""
+        try:
+            await emit_generation_event(
+                req,
+                resp,
+                span_id=span_id_hex,
+                trace_id=trace_id_hex,
+                duration_ms=duration_seconds * 1000.0,
+            )
+        except Exception:  # noqa: BLE001
+            log.exception("Sigil generation emit failed")
+
+        # Tool-execution events — one per tool_use block. Lets the AI plugin's
+        # Tools tab segment by name + show arguments without us having to
+        # instrument every individual specialist. Specialists can still emit
+        # their own richer tool spans later; the gateway-side emit is the
+        # always-on baseline that keeps the panel populated.
+        if resp.tool_calls:
+            conversation_id = req.ai_o11y.get("persona_id") or ""
+            for tc in resp.tool_calls:
+                try:
+                    await emit_tool_execution_event(
+                        specialist=req.specialist,
+                        tool_name=tc.get("name", "unknown"),
+                        tool_call_id=tc.get("id", ""),
+                        arguments=tc.get("input") or tc.get("arguments") or {},
+                        request_model=resp.model,
+                        provider=provider_name,
+                        conversation_id=conversation_id,
+                        usecase=req.ai_o11y.get("usecase", ""),
+                        persona_id=req.ai_o11y.get("persona_id", ""),
+                    )
+                except Exception:  # noqa: BLE001
+                    log.exception("Sigil tool emit failed: tool=%s", tc.get("name"))
 
         return resp
