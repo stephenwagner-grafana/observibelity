@@ -32,7 +32,7 @@
       },
       "id": 2,
       "options": {
-        "content": "<div style=\"padding:10px 18px 18px 18px; display:flex; gap:10px; flex-wrap:wrap;\">\n  <a href=\"/plugins/grafana-sigil-app/page/ai-observability\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#3d71d9; color:#fff; text-decoration:none; font-size:14px; font-weight:600; border-radius:4px; border:1px solid #3d71d9;\">\n    Open AI Observability  →\n  </a>\n  <a href=\"/d/ai-obs-app-neoncart\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    NeonCart dashboard\n  </a>\n  <a href=\"/d/ai-obs-app-supportbot\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    Support Bot dashboard\n  </a>\n  <a href=\"/d/neoncart-ai-rca-conv\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    AI RCA — single conversation\n  </a>\n</div>",
+        "content": "<div style=\"padding:10px 18px 18px 18px; display:flex; gap:10px; flex-wrap:wrap;\">\n  <a href=\"/plugins/grafana-sigil-app/page/ai-observability\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#3d71d9; color:#fff; text-decoration:none; font-size:14px; font-weight:600; border-radius:4px; border:1px solid #3d71d9;\">\n    Open AI Observability  \u2192\n  </a>\n  <a href=\"/d/ai-obs-app-neoncart\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    NeonCart dashboard\n  </a>\n  <a href=\"/d/ai-obs-app-supportbot\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    Support Bot dashboard\n  </a>\n  <a href=\"/d/neoncart-ai-rca-conv\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    AI RCA \u2014 single conversation\n  </a>\n</div>",
         "mode": "html"
       },
       "title": "",
@@ -48,7 +48,7 @@
       },
       "id": 3,
       "options": {
-        "content": "<div style=\"padding:14px 18px; line-height:1.55;\">\n  <div style=\"font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#a3a3a3; margin-bottom:8px;\">DEMO FLOW</div>\n  <div style=\"display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; font-size:13px;\">\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">1.</span> Start in <a href=\"/plugins/grafana-sigil-app/page/ai-observability\" style=\"color:#e5e7eb; text-decoration:underline;\">AI Observability</a></div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">2.</span> Type <code style=\"background:#1f1f1f; padding:1px 6px; border-radius:3px; color:#fbbf24;\">show me mice</code> in NeonCart chat</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">3.</span> Pivot to trace → DB error</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">4.</span> Open Gift Finder → bad recs</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">5.</span> Switch to Support Bot governance</div>\n  </div>\n</div>",
+        "content": "<div style=\"padding:14px 18px; line-height:1.55;\">\n  <div style=\"font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#a3a3a3; margin-bottom:8px;\">DEMO FLOW</div>\n  <div style=\"display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; font-size:13px;\">\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">1.</span> Start in <a href=\"/plugins/grafana-sigil-app/page/ai-observability\" style=\"color:#e5e7eb; text-decoration:underline;\">AI Observability</a></div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">2.</span> Type <code style=\"background:#1f1f1f; padding:1px 6px; border-radius:3px; color:#fbbf24;\">show me mice</code> in NeonCart chat</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">3.</span> Pivot to trace \u2192 DB error</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">4.</span> Open Gift Finder \u2192 bad recs</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">5.</span> Switch to Support Bot governance</div>\n  </div>\n</div>",
         "mode": "html"
       },
       "title": "",
@@ -91,12 +91,12 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "expr": "sum(count_over_time({namespace=\"neoncart\"} |= \"chat done:\" [1h]))",
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"neoncart\"} |~ \"POST /chat HTTP\" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "NeonCart — chats / hr",
+      "title": "NeonCart \u2014 chats / hr",
       "type": "stat"
     },
     {
@@ -148,15 +148,15 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "grafanacloud-logs"
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
           },
-          "expr": "quantile_over_time(0.95, {namespace=\"neoncart\"} |= \"chat done:\" | pattern `<_> dt_ms=<dt_ms>` | unwrap dt_ms [1h])",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\"}[1h]))) * 1000",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "NeonCart — P95 chat ms",
+      "title": "NeonCart \u2014 P95 chat ms",
       "type": "stat"
     },
     {
@@ -195,12 +195,12 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "expr": "sum(count_over_time({namespace=\"supportbot\", container=\"svc\"} |= \"ask role=\" [1h]))",
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"supportbot\"} |~ \"POST /chat HTTP\" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "Support Bot — asks / hr",
+      "title": "Support Bot \u2014 asks / hr",
       "type": "stat"
     },
     {
@@ -255,12 +255,12 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "expr": "sum(count_over_time({namespace=\"supportbot\", container=\"svc\"} |= \"ask role=\" |~ \"(pii=True|inj=True|denied=True)\" [1h]))",
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"supportbot\"} |~ \"POST /chat HTTP/1.1\\\" 5\" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "Support Bot — incidents (1h)",
+      "title": "Support Bot \u2014 incidents (1h)",
       "type": "stat"
     },
     {
@@ -272,7 +272,7 @@
       },
       "id": 40,
       "options": {
-        "content": "<div style=\"padding:14px 18px 6px 18px;\">\n  <div style=\"font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#a3a3a3;\">LENS DASHBOARDS — ONE CAPABILITY ACROSS BOTH APPS</div>\n</div>",
+        "content": "<div style=\"padding:14px 18px 6px 18px;\">\n  <div style=\"font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#a3a3a3;\">LENS DASHBOARDS \u2014 ONE CAPABILITY ACROSS BOTH APPS</div>\n</div>",
         "mode": "html"
       },
       "title": "",
@@ -288,7 +288,7 @@
       },
       "id": 41,
       "options": {
-        "content": "<div style=\"display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; padding:6px 18px 18px 18px;\">\n  <a href=\"/d/ai-obs-traces\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">TRACES</div><div style=\"font-size:13px; margin-top:2px;\">Multi-step trace tree</div></a>\n  <a href=\"/d/ai-obs-subagent\" style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">SUB-AGENTS</div><div style=\"font-size:13px; margin-top:2px;\">Parent → child visualizer</div></a>\n  <a href=\"/d/ai-obs-tools\"    style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">TOOLS</div><div style=\"font-size:13px; margin-top:2px;\">Tool execution</div></a>\n  <a href=\"/d/ai-obs-prompts\"  style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">PROMPTS</div><div style=\"font-size:13px; margin-top:2px;\">Prompt &amp; agent insights</div></a>\n  <a href=\"/d/ai-obs-conv\"     style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">CONVERSATION</div><div style=\"font-size:13px; margin-top:2px;\">Quality &amp; CSAT</div></a>\n  <a href=\"/d/ai-obs-rag\"      style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">RAG</div><div style=\"font-size:13px; margin-top:2px;\">Retrieval quality</div></a>\n  <a href=\"/d/ai-obs-ground\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">GROUNDEDNESS</div><div style=\"font-size:13px; margin-top:2px;\">Hallucination &amp; faithfulness</div></a>\n  <a href=\"/d/ai-obs-evals\"    style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">EVALS</div><div style=\"font-size:13px; margin-top:2px;\">Online evaluators</div></a>\n  <a href=\"/d/ai-obs-pii\"      style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">PII &amp; SAFETY</div><div style=\"font-size:13px; margin-top:2px;\">Guardrails</div></a>\n  <a href=\"/d/ai-obs-errors\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">ERRORS</div><div style=\"font-size:13px; margin-top:2px;\">Errors &amp; stop reasons</div></a>\n  <a href=\"/d/ai-obs-latency\"  style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">LATENCY</div><div style=\"font-size:13px; margin-top:2px;\">Latency &amp; TTFT</div></a>\n  <a href=\"/d/ai-obs-cost\"     style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">COST</div><div style=\"font-size:13px; margin-top:2px;\">Tokens &amp; spend</div></a>\n</div>",
+        "content": "<div style=\"display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; padding:6px 18px 18px 18px;\">\n  <a href=\"/d/ai-obs-traces\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">TRACES</div><div style=\"font-size:13px; margin-top:2px;\">Multi-step trace tree</div></a>\n  <a href=\"/d/ai-obs-subagent\" style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">SUB-AGENTS</div><div style=\"font-size:13px; margin-top:2px;\">Parent \u2192 child visualizer</div></a>\n  <a href=\"/d/ai-obs-tools\"    style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">TOOLS</div><div style=\"font-size:13px; margin-top:2px;\">Tool execution</div></a>\n  <a href=\"/d/ai-obs-prompts\"  style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">PROMPTS</div><div style=\"font-size:13px; margin-top:2px;\">Prompt &amp; agent insights</div></a>\n  <a href=\"/d/ai-obs-conv\"     style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">CONVERSATION</div><div style=\"font-size:13px; margin-top:2px;\">Quality &amp; CSAT</div></a>\n  <a href=\"/d/ai-obs-rag\"      style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">RAG</div><div style=\"font-size:13px; margin-top:2px;\">Retrieval quality</div></a>\n  <a href=\"/d/ai-obs-ground\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">GROUNDEDNESS</div><div style=\"font-size:13px; margin-top:2px;\">Hallucination &amp; faithfulness</div></a>\n  <a href=\"/d/ai-obs-evals\"    style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">EVALS</div><div style=\"font-size:13px; margin-top:2px;\">Online evaluators</div></a>\n  <a href=\"/d/ai-obs-pii\"      style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">PII &amp; SAFETY</div><div style=\"font-size:13px; margin-top:2px;\">Guardrails</div></a>\n  <a href=\"/d/ai-obs-errors\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">ERRORS</div><div style=\"font-size:13px; margin-top:2px;\">Errors &amp; stop reasons</div></a>\n  <a href=\"/d/ai-obs-latency\"  style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">LATENCY</div><div style=\"font-size:13px; margin-top:2px;\">Latency &amp; TTFT</div></a>\n  <a href=\"/d/ai-obs-cost\"     style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">COST</div><div style=\"font-size:13px; margin-top:2px;\">Tokens &amp; spend</div></a>\n</div>",
         "mode": "html"
       },
       "title": "",
@@ -313,6 +313,6 @@
     "to": "now"
   },
   "timezone": "browser",
-  "title": "AI Observability — Apps",
+  "title": "AI Observability \u2014 Apps",
   "uid": "ai-obs-app-landing"
 }

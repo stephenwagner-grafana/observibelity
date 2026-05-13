@@ -24,7 +24,7 @@
         "name": "Hallucination events",
         "tagKeys": "category,sku",
         "target": {
-          "expr": "{namespace=\"neoncart\"} |~ \"evaluator fail hallucination\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"evaluator fail hallucination\"",
           "queryType": "range",
           "refId": "Annotations"
         },
