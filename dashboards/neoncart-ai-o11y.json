@@ -23,7 +23,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Total /chat invocations across all categories — drives request-volume signal in RCA.",
+      "description": "Total /chat invocations across all categories \u2014 drives request-volume signal in RCA.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -59,8 +59,12 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(support_copilot_chat_duration_seconds_count[$__range]))",
-          "refId": "A"
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "Chat requests (last $__range)",
@@ -107,8 +111,12 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(support_copilot_chat_errors_total{category=~\"$category\"}[$__range]))",
-          "refId": "A"
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\",status_code=\"STATUS_CODE_ERROR\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "Surfaced failures",
@@ -163,8 +171,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(support_copilot_tool_errors_total{tool=~\"$tool\",category=~\"$category\"}[5m])) / sum(rate(support_copilot_tool_duration_seconds_count{tool=~\"$tool\"}[5m]))",
-          "refId": "A"
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"$tool\"}[5m])), 0.001)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "Tool error rate",
@@ -218,8 +230,12 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(support_copilot_chat_duration_seconds_bucket[5m])))",
-          "refId": "A"
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "p95 e2e chat latency",
@@ -230,7 +246,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Tool-level p95. Spike to ≥1.5s on mice queries is the RCA signal.",
+      "description": "Tool-level p95. Spike to \u22651.5s on mice queries is the RCA signal.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -274,8 +290,12 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(support_copilot_tool_duration_seconds_bucket{tool=\"search_products\"}[5m])))",
-          "refId": "A"
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"search_products\"}[5m])))",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "p95 search_products latency",
@@ -325,11 +345,15 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(support_copilot_tool_errors_total{error_type=\"DatabaseError\",category=~\"$category\"}[5m]))",
-          "refId": "A"
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"get_inventory\",status_code=\"STATUS_CODE_ERROR\"}[5m]))",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
-      "title": "DatabaseError errors (5m)",
+      "title": "mice-rca DB errors (5m)",
       "type": "stat"
     },
     {
@@ -349,7 +373,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "histogram_quantile(0.95) of support_copilot_tool_duration_seconds, grouped by tool. The mice failure shows as a step up to ≥1.5s on the search_products series.",
+      "description": "histogram_quantile(0.95) of traces_spanmetrics_latency_bucket, grouped by tool. The mice failure shows as a step up to \u22651.5s on the search_products series.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -376,9 +400,13 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le, tool) (rate(support_copilot_tool_duration_seconds_bucket{tool=~\"$tool\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, service) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=~\"$tool\"}[5m])))",
           "legendFormat": "{{tool}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "p95 latency by tool.name",
@@ -414,17 +442,25 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le, outcome) (rate(support_copilot_chat_duration_seconds_bucket[5m])))",
-          "legendFormat": "p95 — {{outcome}}",
-          "refId": "A"
+          "expr": "histogram_quantile(0.95, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
+          "legendFormat": "p95 \u2014 {{outcome}}",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         },
         {
-          "expr": "histogram_quantile(0.50, sum by (le, outcome) (rate(support_copilot_chat_duration_seconds_bucket[5m])))",
-          "legendFormat": "p50 — {{outcome}}",
-          "refId": "B"
+          "expr": "histogram_quantile(0.50, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
+          "legendFormat": "p50 \u2014 {{outcome}}",
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
-      "title": "p95 e2e chat latency",
+      "title": "p95 + p50 chat latency by status_code",
       "type": "timeseries"
     },
     {
@@ -470,12 +506,16 @@
       },
       "targets": [
         {
-          "expr": "sum by (tool) (rate(support_copilot_tool_errors_total{tool=~\"$tool\",category=~\"$category\"}[5m])) / sum by (tool) (rate(support_copilot_tool_duration_seconds_count{tool=~\"$tool\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"$tool\"}[5m])), 0.001)",
           "legendFormat": "{{tool}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
-      "title": "Error rate by tool.name",
+      "title": "Error rate by tool.service",
       "type": "timeseries"
     },
     {
@@ -508,12 +548,16 @@
       },
       "targets": [
         {
-          "expr": "sum by (category) (increase(support_copilot_tool_errors_total{category=~\"$category\"}[1m]))",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_usecase!=\"\"}[1m]))",
           "legendFormat": "{{category}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
-      "title": "Error count by category",
+      "title": "Token rate by use case",
       "type": "timeseries"
     },
     {
@@ -545,9 +589,13 @@
       },
       "targets": [
         {
-          "expr": "sum by (tool) (rate(support_copilot_tool_duration_seconds_count{tool=~\"$tool\"}[1m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"$tool\",span_kind=\"SPAN_KIND_SERVER\"}[1m]))",
           "legendFormat": "{{tool}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
       "title": "Tool requests per second",
@@ -585,12 +633,16 @@
       },
       "targets": [
         {
-          "expr": "sum by (error_type) (increase(support_copilot_tool_errors_total{tool=~\"$tool\",category=~\"$category\"}[1m]))",
+          "expr": "sum by (span_name) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[1m]))",
           "legendFormat": "{{error_type}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom}"
+          }
         }
       ],
-      "title": "Errors by error.type",
+      "title": "Errors by span_name",
       "type": "timeseries"
     },
     {
@@ -602,7 +654,7 @@
         "y": 31
       },
       "id": 400,
-      "title": "Traces — failing requests (Tempo)",
+      "title": "Traces \u2014 failing requests (Tempo)",
       "type": "row"
     },
     {
@@ -610,7 +662,7 @@
         "type": "tempo",
         "uid": "${tempo}"
       },
-      "description": "TraceQL: spans named tool.search_products with error.type=DatabaseError. Click the trace ID to drop into the full waterfall (chat.request → agent.turn → tool.search_products → http.search-service → db.postgres.query).",
+      "description": "TraceQL: spans named tool.search_products with error.type=DatabaseError. Click the trace ID to drop into the full waterfall (chat.request \u2192 agent.turn \u2192 tool.search_products \u2192 http.search-service \u2192 db.postgres.query).",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -624,13 +676,18 @@
       "targets": [
         {
           "limit": 20,
-          "query": "{ resource.service.name=\"support-copilot\" && name=\"tool.search_products\" && span.error.type=\"DatabaseError\" }",
+          "query": "{ resource.service.name=\"get_inventory\" && status=error }",
           "queryType": "traceql",
           "refId": "A",
-          "tableType": "traces"
+          "tableType": "traces",
+          "expr": "{ resource.service.name=\"get_inventory\" && status=error }",
+          "datasource": {
+            "type": "tempo",
+            "uid": "${tempo}"
+          }
         }
       ],
-      "title": "Latest failing traces — DatabaseError",
+      "title": "Latest failing traces \u2014 get_inventory (mice-rca)",
       "type": "table"
     },
     {
@@ -652,13 +709,18 @@
       "targets": [
         {
           "limit": 20,
-          "query": "{ resource.service.name=\"support-copilot\" && span.category=\"$category\" && status=error }",
+          "query": "{ resource.service.name=\"neoncart\" && status=error }",
           "queryType": "traceql",
           "refId": "A",
-          "tableType": "traces"
+          "tableType": "traces",
+          "expr": "{ resource.service.name=\"neoncart\" && status=error }",
+          "datasource": {
+            "type": "tempo",
+            "uid": "${tempo}"
+          }
         }
       ],
-      "title": "Latest failing traces — category=$category",
+      "title": "Latest failing traces \u2014 NeonCart errors",
       "type": "table"
     },
     {
@@ -678,7 +740,7 @@
         "type": "loki",
         "uid": "${loki}"
       },
-      "description": "Logs include trace_id and span_id — use 'Inspect → Trace' to jump to the corresponding Tempo trace.",
+      "description": "Logs include trace_id and span_id \u2014 use 'Inspect \u2192 Trace' to jump to the corresponding Tempo trace.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -703,7 +765,7 @@
           "refId": "A"
         }
       ],
-      "title": "support-copilot warnings & errors",
+      "title": "llm-gateway warnings & errors",
       "type": "logs"
     }
   ],
@@ -754,12 +816,13 @@
           "uid": "${prom}"
         },
         "includeAll": true,
-        "label": "Category",
+        "label": "Use case",
         "multi": false,
-        "name": "category",
-        "query": "label_values(support_copilot_tool_errors_total, category)",
+        "name": "usecase",
+        "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_usecase!=\"\"}, ai_o11y_usecase)",
         "refresh": 1,
-        "type": "query"
+        "type": "query",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_usecase!=\"\"}, ai_o11y_usecase)"
       },
       {
         "current": {
@@ -774,9 +837,10 @@
         "label": "Tool",
         "multi": true,
         "name": "tool",
-        "query": "label_values(support_copilot_tool_duration_seconds_bucket, tool)",
+        "query": "label_values(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
         "refresh": 1,
-        "type": "query"
+        "type": "query",
+        "definition": "label_values(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)"
       }
     ]
   },
@@ -784,6 +848,7 @@
     "from": "now-30m",
     "to": "now"
   },
-  "title": "NeonCart — AI Observability RCA",
-  "uid": "neoncart-ai-o11y"
+  "title": "NeonCart \u2014 AI Observability RCA (ObserVIBElity)",
+  "uid": "neoncart-ai-o11y",
+  "description": "NeonCart RCA dashboard. Tool errors, chat latency, mice-rca SQL surface, failing traces. Rewritten to use traces_spanmetrics_* + gen_ai_* (ObserVIBElity convention)."
 }
