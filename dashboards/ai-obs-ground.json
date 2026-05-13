@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -11,7 +14,10 @@
         "type": "dashboard"
       },
       {
-        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
         "enable": true,
         "hide": false,
         "iconColor": "purple",
@@ -22,109 +28,192 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "halluc — {{ category }}"
+        "textFormat": "halluc \u2014 {{ category }}"
       }
     ]
   },
-  "description": "Groundedness / hallucination detection — bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
+  "description": "Groundedness / hallucination detection \u2014 bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
-     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "phase-2"
+      ],
+      "title": "AI Observability dashboards",
+      "type": "dashboards"
+    }
   ],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "panels": [],
       "title": "Headline",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Total hallucination fails in the last hour.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 3},
-              {"color": "red", "value": 10}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
       "id": 2,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[1h]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [1h]))",
+          "queryType": "instant",
+          "legendFormat": "hallucination signals"
         }
       ],
       "title": "Hallucination fails (1h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Hallucination fail rate vs. trailing 4h baseline. > 2x triggers the rate-regression alert.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1.5},
-              {"color": "red", "value": 2}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1.5
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
       "id": 3,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[15m])) / clamp_min(sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[4h])), 0.0001)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m])) / (sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h])) + 0.0001)",
+          "queryType": "range",
+          "legendFormat": "ratio"
         }
       ],
       "title": "Regression vs 4h baseline (ratio)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
       "description": "Hallucination rate-regression alert state.",
-      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
       "id": 4,
       "options": {
         "alertInstanceLabelFilter": "",
@@ -134,13 +223,22 @@
         "groupMode": "default",
         "maxItems": 10,
         "sortOrder": 3,
-        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": true, "pending": true},
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": false,
+          "normal": true,
+          "pending": true
+        },
         "viewMode": "list"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
           "queryType": "alerts",
           "refId": "A"
         }
@@ -150,18 +248,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "id": 5,
       "panels": [],
       "title": "Rate + baseline comparison",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Hallucination eval failures by category (product, price, policy).",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 15,
@@ -174,29 +282,53 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 14, "x": 0, "y": 7},
+      "gridPos": {
+        "h": 9,
+        "w": 14,
+        "x": 0,
+        "y": 7
+      },
       "id": 6,
       "options": {
-        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (category) (rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[5m]))",
-          "legendFormat": "{{category}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_specialist}}"
         }
       ],
       "title": "Hallucination eval failures by category (5m)",
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Current 15-minute hallucination rate vs trailing 4-hour baseline.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 20,
@@ -209,33 +341,75 @@
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "baseline (4h)"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+            "matcher": {
+              "id": "byName",
+              "options": "baseline (4h)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
           },
           {
-            "matcher": {"id": "byName", "options": "current (15m)"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            "matcher": {
+              "id": "byName",
+              "options": "current (15m)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
           }
         ]
       },
-      "gridPos": {"h": 9, "w": 10, "x": 14, "y": 7},
+      "gridPos": {
+        "h": 9,
+        "w": 10,
+        "x": 14,
+        "y": 7
+      },
       "id": 7,
       "options": {
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[15m]))",
-          "legendFormat": "current (15m)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m]))",
+          "queryType": "range",
+          "legendFormat": "current 15m"
         },
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[4h]))",
-          "legendFormat": "baseline (4h)",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h]))",
+          "queryType": "range",
+          "legendFormat": "baseline 4h"
         }
       ],
       "title": "Current 15m vs baseline 4h",
@@ -243,119 +417,245 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "id": 8,
       "panels": [],
       "title": "Per-category drill-down",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Top hallucinated topics — categories with most evaluator fails.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Top hallucinated topics \u2014 categories with most evaluator fails.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 17},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
       "id": 9,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (category) (increase(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[1h])))",
-          "legendFormat": "{{category}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])))",
+          "queryType": "instant",
+          "legendFormat": "{{ai_o11y_specialist}}"
         }
       ],
       "title": "Top hallucinated categories (1h)",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Per-category table — fail count + recent rate.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Per-category table \u2014 fail count + recent rate.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "category"},
-            "properties": [{"id": "displayName", "value": "Category"}, {"id": "custom.width", "value": 220}]
-          },
-          {
-            "matcher": {"id": "byName", "options": "Value #A"},
+            "matcher": {
+              "id": "byName",
+              "options": "category"
+            },
             "properties": [
-              {"id": "displayName", "value": "Fails (1h)"},
-              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+              {
+                "id": "displayName",
+                "value": "Category"
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              }
             ]
           },
           {
-            "matcher": {"id": "byName", "options": "Value #B"},
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
             "properties": [
-              {"id": "displayName", "value": "Pass-rate"},
-              {"id": "unit", "value": "percentunit"}
+              {
+                "id": "displayName",
+                "value": "Fails (1h)"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pass-rate"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
             ]
           }
         ]
       },
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 17},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
       "id": 10,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "Fails (1h)"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Fails (1h)"
+          }
+        ]
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (category) (increase(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[1h]))",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h]))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_specialist}} fails"
         },
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (category) (rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"pass\"}[1h])) / clamp_min(sum by (category) (rate(sigil_eval_result_total{evaluator=\"hallucination\"}[1h])), 0.001)",
-          "format": "table",
-          "instant": true,
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} !~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_specialist}} pass rate"
         }
       ],
-      "title": "Per-category — fails + pass-rate (1h)",
+      "title": "Per-category \u2014 fails + pass-rate (1h)",
       "transformations": [
-        {"id": "joinByField", "options": {"byField": "category", "mode": "outer"}}
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "category",
+            "mode": "outer"
+          }
+        }
       ],
       "type": "table"
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 26},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
       "id": 11,
       "panels": [],
-      "title": "Loki — hallucination events",
+      "title": "Loki \u2014 hallucination events",
       "type": "row"
     },
     {
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Live hallucination evaluator fail events.",
-      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 27},
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
       "id": 12,
       "options": {
         "dedupStrategy": "none",
@@ -369,9 +669,13 @@
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-          "expr": "{namespace=\"neoncart\"} |~ \"hallucination\" | logfmt",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_persona_id!=\"\"",
+          "queryType": "range"
         }
       ],
       "title": "Hallucination evaluator events (Loki)",
@@ -380,44 +684,114 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["ai-observability", "phase-2", "groundedness", "hallucination"],
+  "tags": [
+    "ai-observability",
+    "phase-2",
+    "groundedness",
+    "hallucination"
+  ],
   "templating": {
     "list": [
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
-        "name": "datasource_prom", "options": [], "query": "prometheus",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
-        "name": "datasource_loki", "options": [], "query": "loki",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
-        "name": "datasource_tempo", "options": [], "query": "tempo",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "All", "value": "$__all"},
-        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
         "definition": "label_values(sigil_eval_result_total{evaluator=\"hallucination\"}, category)",
-        "hide": 0, "includeAll": true, "label": "Category", "multi": true,
-        "name": "category", "options": [],
-        "query": {"query": "label_values(sigil_eval_result_total{evaluator=\"hallucination\"}, category)",
-                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
-        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+        "hide": 0,
+        "includeAll": true,
+        "label": "Category",
+        "multi": true,
+        "name": "category",
+        "options": [],
+        "query": {
+          "query": "label_values(sigil_eval_result_total{evaluator=\"hallucination\"}, category)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
-  "time": {"from": "now-1h", "to": "now"},
-  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
   "timezone": "",
-  "title": "AI o11y — Groundedness (Hallucinations)",
+  "title": "AI o11y \u2014 Groundedness (Hallucinations)",
   "uid": "ai-obs-ground",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

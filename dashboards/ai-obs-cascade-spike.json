@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -11,7 +14,10 @@
         "type": "dashboard"
       },
       {
-        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
         "enable": true,
         "hide": false,
         "iconColor": "red",
@@ -22,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cascade started — {{ conv_id }}"
+        "textFormat": "cascade started \u2014 {{ conv_id }}"
       }
     ]
   },
@@ -32,137 +38,254 @@
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
-     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "phase-2"
+      ],
+      "title": "AI Observability dashboards",
+      "type": "dashboards"
+    }
   ],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "panels": [],
       "title": "Cascade indicators",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "USD spent on email cascades in the last hour. Each cascade is ~$2.80.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 5}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
           },
           "unit": "currencyUSD"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
       "id": 2,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(gen_ai_usage_cost_total_usd{ai_o11y_usecase=\"email-cascade\"}[1h]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "USD"
         }
       ],
       "title": "$ spent on cascades (1h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Number of email-cascade runs in the last hour.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 5}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(supportbot_email_cascade_run_total[1h]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\" [1h]))",
+          "queryType": "range",
+          "legendFormat": "runs"
         }
       ],
       "title": "Cascade runs (1h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Total tokens consumed by the email-cascade use case (1h). Each run is ~450k.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 100000},
-              {"color": "red", "value": 500000}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 100000
+              },
+              {
+                "color": "red",
+                "value": 500000
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
       "id": 4,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(gen_ai_usage_input_tokens_total{ai_o11y_usecase=\"email-cascade\"}[1h])) + sum(increase(gen_ai_usage_output_tokens_total{ai_o11y_usecase=\"email-cascade\"}[1h]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "tokens"
         }
       ],
       "title": "Cascade tokens (1h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
-      "description": "Alert state — conv_runaway, the cascade alarm.",
-      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 1},
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
+      "description": "Alert state \u2014 conv_runaway, the cascade alarm.",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
       "id": 5,
       "options": {
         "alertInstanceLabelFilter": "",
@@ -172,13 +295,22 @@
         "groupMode": "default",
         "maxItems": 10,
         "sortOrder": 3,
-        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": true, "pending": true},
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": false,
+          "normal": true,
+          "pending": true
+        },
         "viewMode": "list"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
           "queryType": "alerts",
           "refId": "A"
         }
@@ -188,18 +320,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "id": 6,
       "panels": [],
       "title": "Per-session cascade pattern",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Emails sent per session over time. A cascade looks like one session emitting many email_sent events in quick succession.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
@@ -212,34 +354,72 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 7},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
       "id": 7,
       "options": {
-        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (conv_id) (rate(supportbot_email_sent_total[5m])))",
-          "legendFormat": "{{conv_id}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Emails sent per session (5m, top 10)",
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Distribution of emails-per-session across all sessions. A heavy right tail = runaway cascades.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}, "scaleDistribution": {"type": "linear"}}
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 7},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
       "id": 8,
       "options": {
         "calculate": false,
@@ -253,76 +433,161 @@
           "scheme": "Oranges",
           "steps": 64
         },
-        "exemplars": {"color": "rgba(255,0,255,0.7)"},
-        "filterValues": {"le": 1e-9},
-        "legend": {"show": true},
-        "rowsFrame": {"layout": "auto"},
-        "tooltip": {"show": true, "yHistogram": false},
-        "yAxis": {"axisPlacement": "left", "reverse": false}
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false
+        }
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (le) (rate(supportbot_emails_per_session_bucket[5m]))",
-          "format": "heatmap",
-          "legendFormat": "{{le}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m]))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
-      "title": "Emails per session — distribution heatmap",
+      "title": "Emails per session \u2014 distribution heatmap",
       "type": "heatmap"
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "id": 9,
       "panels": [],
       "title": "Top runaway sessions",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Sessions with more than 50 emails in the last 10 minutes — drill-down for incident investigation.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Sessions with more than 50 emails in the last 10 minutes \u2014 drill-down for incident investigation.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "green", "value": null}, {"color": "red", "value": 50}]
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
           },
           "unit": "short"
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "conv_id"},
-            "properties": [{"id": "displayName", "value": "Conversation"}, {"id": "custom.width", "value": 320}]
+            "matcher": {
+              "id": "byName",
+              "options": "conv_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Conversation"
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
           },
           {
-            "matcher": {"id": "byName", "options": "Value"},
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
             "properties": [
-              {"id": "displayName", "value": "Emails in 10m"},
-              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+              {
+                "id": "displayName",
+                "value": "Emails in 10m"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
             ]
           }
         ]
       },
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 17},
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
       "id": 10,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "Emails in 10m"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Emails in 10m"
+          }
+        ]
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(20, sum by (conv_id) (increase(supportbot_email_sent_total[10m])) > 50)",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [10m])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Sessions with > 50 emails in last 10m",
@@ -330,16 +595,29 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 27},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
       "id": 11,
       "panels": [],
-      "title": "Loki — cascade events",
+      "title": "Loki \u2014 cascade events",
       "type": "row"
     },
     {
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Live tail of [email-cascade] tool/probe events.",
-      "gridPos": {"h": 11, "w": 14, "x": 0, "y": 28},
+      "gridPos": {
+        "h": 11,
+        "w": 14,
+        "x": 0,
+        "y": 28
+      },
       "id": 12,
       "options": {
         "dedupStrategy": "none",
@@ -353,18 +631,30 @@
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"\\\\[email-cascade\\\\]\"",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\"",
+          "queryType": "range"
         }
       ],
       "title": "Email cascade tool/probe events (Loki)",
       "type": "logs"
     },
     {
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-      "description": "Summarizer burst — 2000 llm/summarize idx=N/2000 lines per cascade run.",
-      "gridPos": {"h": 11, "w": 10, "x": 14, "y": 28},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Summarizer burst \u2014 2000 llm/summarize idx=N/2000 lines per cascade run.",
+      "gridPos": {
+        "h": 11,
+        "w": 10,
+        "x": 14,
+        "y": 28
+      },
       "id": 13,
       "options": {
         "dedupStrategy": "none",
@@ -378,9 +668,13 @@
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"\\\\[email-cascade\\\\] llm/summarize\"",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-ticket-helper\"",
+          "queryType": "range"
         }
       ],
       "title": "Summarizer burst (Loki)",
@@ -389,41 +683,109 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["ai-observability", "phase-2", "cost", "cascade"],
+  "tags": [
+    "ai-observability",
+    "phase-2",
+    "cost",
+    "cascade"
+  ],
   "templating": {
     "list": [
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
-        "name": "datasource_prom", "options": [], "query": "prometheus",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
-        "name": "datasource_loki", "options": [], "query": "loki",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
-        "name": "datasource_tempo", "options": [], "query": "tempo",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "email-cascade", "value": "email-cascade"},
-        "hide": 0, "includeAll": false, "label": "Use case", "multi": false,
+        "current": {
+          "selected": false,
+          "text": "email-cascade",
+          "value": "email-cascade"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Use case",
+        "multi": false,
         "name": "use_case",
-        "options": [{"selected": true, "text": "email-cascade", "value": "email-cascade"}],
-        "query": "email-cascade", "skipUrlSync": false, "type": "custom"
+        "options": [
+          {
+            "selected": true,
+            "text": "email-cascade",
+            "value": "email-cascade"
+          }
+        ],
+        "query": "email-cascade",
+        "skipUrlSync": false,
+        "type": "custom"
       }
     ]
   },
-  "time": {"from": "now-1h", "to": "now"},
-  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
   "timezone": "",
-  "title": "AI o11y — Email Cascade",
+  "title": "AI o11y \u2014 Email Cascade",
   "uid": "ai-obs-cascade-spike",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

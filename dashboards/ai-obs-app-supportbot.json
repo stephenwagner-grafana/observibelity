@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -11,7 +14,10 @@
         "type": "dashboard"
       },
       {
-        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
         "enable": true,
         "hide": false,
         "iconColor": "orange",
@@ -22,169 +28,311 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} — {{ container }}"
+        "textFormat": "{{ pod }} \u2014 {{ container }}"
       }
     ]
   },
-  "description": "SupportBot app overview — request rate, error rate, latency, specialist mix, refusal/escalation, top spenders, prompt-injection burst, token-spike ratio.",
+  "description": "SupportBot app overview \u2014 request rate, error rate, latency, specialist mix, refusal/escalation, top spenders, prompt-injection burst, token-spike ratio.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
-     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "phase-2"
+      ],
+      "title": "AI Observability dashboards",
+      "type": "dashboards"
+    }
   ],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "panels": [],
       "title": "Health overview",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Total HTTP request rate to SupportBot.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "reqps"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
       "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(http_requests_total{service=\"supportbot\"}[5m]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\"}[5m]))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "req/s"
         }
       ],
       "title": "Requests / s (5m)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Fraction of 5xx responses.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 0.01},
-              {"color": "red", "value": 0.05}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
             ]
           },
           "unit": "percentunit"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
       "id": 3,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(http_requests_total{service=\"supportbot\",status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total{service=\"supportbot\"}[5m])), 0.001)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or on() vector(0)) / (sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])) + 0.001)",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "err rate"
         }
       ],
       "title": "Error rate (5m)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "p95 latency.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 3}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
             ]
           },
           "unit": "s"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
       "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{service=\"supportbot\"}[5m])))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "p95"
         }
       ],
       "title": "p95 latency (5m)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "p99 latency.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 2},
-              {"color": "red", "value": 5}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
           },
           "unit": "s"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
       "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{service=\"supportbot\"}[5m])))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "p99"
         }
       ],
       "title": "p99 latency (5m)",
@@ -192,18 +340,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
       "id": 6,
       "panels": [],
       "title": "Specialist mix",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Requests by specialist over time.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
@@ -216,18 +374,39 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 6},
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "id": 7,
       "options": {
-        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (ai_o11y_specialist) (rate(specialist_request_total{service=\"supportbot\",ai_o11y_specialist=~\"$specialist\"}[5m]))",
-          "legendFormat": "{{ai_o11y_specialist}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_specialist=~\"$specialist\",gen_ai_token_type=\"input\"}[5m]))",
+          "format": "time_series",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{ai_o11y_specialist}}"
         }
       ],
       "title": "Requests by specialist (5m)",
@@ -235,24 +414,43 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 15},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
       "id": 8,
       "panels": [],
       "title": "Refusal + escalation (bad-question-askers)",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Refusal rate per employee. Insider-threat early warning.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 0.2},
-              {"color": "red", "value": 0.4}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.2
+              },
+              {
+                "color": "red",
+                "value": 0.4
+              }
             ]
           },
           "max": 1,
@@ -261,41 +459,70 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 16},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
       "id": 9,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (employee) (rate(supportbot_response_classification_total{verdict=~\"refuse|decline\",employee!=\"\"}[15m])) / clamp_min(sum by (employee) (rate(supportbot_response_total{employee!=\"\"}[15m])), 0.001))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I cannot|I.m sorry|I.m unable|outside my scope|appreciate.*but|not designed to|I.m not equipped)\" | json | ai_o11y_specialist=~\"sb-.*\" [1h])) / (sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" [1h])) + 1))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Refusal rate by employee (top 10, 15m)",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Escalation rate per employee.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 0.1},
-              {"color": "red", "value": 0.3}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 0.3
+              }
             ]
           },
           "max": 1,
@@ -304,24 +531,39 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 16},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
       "id": 10,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (employee) (rate(supportbot_response_classification_total{verdict=\"escalate\",employee!=\"\"}[15m])) / clamp_min(sum by (employee) (rate(supportbot_response_total{employee!=\"\"}[15m])), 0.001))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [1h])) / (sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" [1h])) + 1))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Escalation rate by employee (top 10, 15m)",
@@ -329,133 +571,258 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 25},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
       "id": 11,
       "panels": [],
       "title": "Outlier users (Tim + Eric)",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Top 10 employees by total tokens consumed in the last hour.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "employee"},
-            "properties": [{"id": "displayName", "value": "Employee"}, {"id": "custom.width", "value": 280}]
+            "matcher": {
+              "id": "byName",
+              "options": "employee"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Employee"
+              },
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
           },
           {
-            "matcher": {"id": "byName", "options": "Value"},
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
             "properties": [
-              {"id": "displayName", "value": "Tokens / hr"},
-              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+              {
+                "id": "displayName",
+                "value": "Tokens / hr"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              }
             ]
           }
         ]
       },
-      "gridPos": {"h": 9, "w": 8, "x": 0, "y": 26},
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 26
+      },
       "id": 12,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "Tokens / hr"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Tokens / hr"
+          }
+        ]
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (employee) (increase(supportbot_tokens_total{employee!=\"\"}[1h])))",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_input_tokens [1h])) + sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_output_tokens [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Top spenders by tokens (1h)",
       "type": "table"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Tokens-per-word ratio per employee — high values mean verbose padding.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Tokens-per-word ratio per employee \u2014 high values mean verbose padding.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 5},
-              {"color": "red", "value": 8}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 8
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 8, "x": 8, "y": 26},
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 26
+      },
       "id": 13,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (employee) (rate(supportbot_input_tokens_total{employee!=\"\"}[1h])) / clamp_min(sum by (employee) (rate(supportbot_input_words_total{employee!=\"\"}[1h])), 1))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_input_tokens [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Tokens-per-word by employee (1h)",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Dangerous events attributed to each employee.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 5},
-              {"color": "red", "value": 15}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 26},
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 26
+      },
       "id": 14,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (employee) (increase(supportbot_dangerous_event_total{employee!=\"\"}[1h])))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Dangerous events by user (1h)",
@@ -463,18 +830,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 35},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
       "id": 15,
       "panels": [],
       "title": "Token spikes + prompt injection burst",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "spike_ratio = 1-minute token rate / 1-hour token rate. > 3x is alert-worthy.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 20,
@@ -486,99 +863,184 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1.5},
-              {"color": "red", "value": 3}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1.5
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 36},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
       "id": 16,
       "options": {
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(supportbot_tokens_total[1m])) / clamp_min(sum(rate(supportbot_tokens_total[1h])), 0.001)",
-          "legendFormat": "spike_ratio",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1m])) / (sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])) + 0.001)",
+          "format": "time_series",
+          "range": true,
+          "instant": false,
+          "legendFormat": "spike"
         }
       ],
       "title": "spike_ratio = rate(1m) / rate(1h)",
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Prompt-injection events in the last 5 minutes. >= 2 fires the prompt_injection_burst alert.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 2}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 12, "x": 12, "y": 36},
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
       "id": 17,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(supportbot_prompt_injection_events_total[5m]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" [5m]))",
+          "queryType": "range",
+          "legendFormat": "injection bursts"
         }
       ],
       "title": "prompt_injection_burst counter (5m)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Prompt-injection events by attributed employee.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 40},
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
       "id": 18,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 12,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(8, sum by (employee) (increase(supportbot_prompt_injection_events_total{employee!=\"\"}[1h])))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(8, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" | json [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Prompt injection events by employee (1h)",
@@ -586,16 +1048,29 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 45},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
       "id": 19,
       "panels": [],
       "title": "Live event stream",
       "type": "row"
     },
     {
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-      "description": "Live SupportBot event stream — dangerous events, refusals, escalations.",
-      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 46},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Live SupportBot event stream \u2014 dangerous events, refusals, escalations.",
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
       "id": 20,
       "options": {
         "dedupStrategy": "none",
@@ -609,9 +1084,13 @@
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"(dangerous_event|refusal|escalation|prompt_injection)\"",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\"",
+          "queryType": "range"
         }
       ],
       "title": "SupportBot event stream (Loki)",
@@ -620,64 +1099,168 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["ai-observability", "phase-2", "supportbot", "ai-o11y"],
+  "tags": [
+    "ai-observability",
+    "phase-2",
+    "supportbot",
+    "ai-o11y"
+  ],
   "templating": {
     "list": [
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
-        "name": "datasource_prom", "options": [], "query": "prometheus",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
-        "name": "datasource_loki", "options": [], "query": "loki",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
-        "name": "datasource_tempo", "options": [], "query": "tempo",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "All", "value": "$__all"},
-        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
         "definition": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_usecase)",
-        "hide": 0, "includeAll": true, "label": "Use case", "multi": true,
-        "name": "use_case", "options": [],
-        "query": {"query": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_usecase)",
-                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
-        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+        "hide": 0,
+        "includeAll": true,
+        "label": "Use case",
+        "multi": true,
+        "name": "use_case",
+        "options": [],
+        "query": {
+          "query": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_usecase)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       },
       {
-        "current": {"selected": false, "text": "All", "value": "$__all"},
-        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-        "definition": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_specialist)",
-        "hide": 0, "includeAll": true, "label": "Specialist", "multi": true,
-        "name": "specialist", "options": [],
-        "query": {"query": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_specialist)",
-                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
-        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_specialist)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Specialist",
+        "multi": true,
+        "name": "specialist",
+        "options": [],
+        "query": {
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_specialist)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       },
       {
-        "current": {"selected": false, "text": "All", "value": "$__all"},
-        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
         "definition": "label_values(supportbot_tokens_total, employee)",
-        "hide": 0, "includeAll": true, "label": "Employee", "multi": true,
-        "name": "employee_id", "options": [],
-        "query": {"query": "label_values(supportbot_tokens_total, employee)",
-                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
-        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+        "hide": 0,
+        "includeAll": true,
+        "label": "Employee",
+        "multi": true,
+        "name": "employee_id",
+        "options": [],
+        "query": {
+          "query": "label_values(supportbot_tokens_total, employee)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
-  "time": {"from": "now-1h", "to": "now"},
-  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
   "timezone": "",
-  "title": "AI o11y — SupportBot",
+  "title": "AI o11y \u2014 SupportBot",
   "uid": "ai-obs-app-supportbot",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
