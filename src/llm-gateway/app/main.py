@@ -12,12 +12,15 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse, Response
-from opentelemetry import trace
+from opentelemetry import metrics, trace
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -230,6 +233,74 @@ def _init_otel(fastapi_app: FastAPI) -> None:
 
 _init_otel(app)
 
+
+# ---- OTel metrics bootstrap -----------------------------------------------
+# Span attrs alone don't populate Mimir-backed dashboards — we also need to
+# push native OTel metrics through the collector. Native gen_ai.* metrics
+# (token usage, op duration, cost) are the source of truth for the
+# ai-obs-cost panels in Grafana.
+def _init_otel_metrics() -> None:
+    """Stand up a MeterProvider + OTLP/HTTP metric exporter.
+
+    Best-effort: failures downgrade to a warning so a collector outage at
+    boot never takes the gateway down. Idempotent — only installs a new
+    provider if the global is still the SDK default no-op.
+    """
+    service_name = os.environ.get("OTEL_SERVICE_NAME", "llm-gateway")
+    namespace = os.environ.get("OBSERVIBELITY_NAMESPACE", "observibelity")
+    try:
+        if isinstance(metrics.get_meter_provider(), MeterProvider):
+            return
+        endpoint = os.environ.get(
+            "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+        ).rstrip("/")
+        from opentelemetry.exporter.otlp.proto.http.metric_exporter import (
+            OTLPMetricExporter,
+        )
+
+        reader = PeriodicExportingMetricReader(
+            OTLPMetricExporter(endpoint=f"{endpoint}/v1/metrics"),
+            export_interval_millis=10000,
+        )
+        provider = MeterProvider(
+            metric_readers=[reader],
+            resource=Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.namespace": namespace,
+                }
+            ),
+        )
+        metrics.set_meter_provider(provider)
+        log.info("OTel metrics SDK initialized for %s", service_name)
+    except Exception as exc:  # noqa: BLE001 — never crash on telemetry
+        log.warning("OTel metrics init failed (%s) — gen_ai metrics will be no-op", exc)
+
+
+_init_otel_metrics()
+
+_meter = metrics.get_meter("llm_gateway")
+
+# Native OTel GenAI semantic-convention instruments. Names follow the
+# semconv (https://opentelemetry.io/docs/specs/semconv/gen-ai/) so Grafana
+# can rely on stable PromQL series like `gen_ai_client_token_usage_total`.
+GEN_AI_TOKEN_USAGE = _meter.create_counter(
+    name="gen_ai.client.token.usage",
+    description="Tokens consumed by GenAI requests.",
+    unit="{token}",
+)
+GEN_AI_OPERATION_DURATION = _meter.create_histogram(
+    name="gen_ai.client.operation.duration",
+    description="Wall-clock duration of a GenAI client operation.",
+    unit="s",
+)
+GEN_AI_COST_USD = _meter.create_counter(
+    name="gen_ai.client.cost.total",
+    description="Cumulative cost in USD of GenAI client operations.",
+    unit="USD",
+)
+
+
 tracer = trace.get_tracer("llm_gateway")
 
 
@@ -293,6 +364,7 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
             "traffic_origin", req.ai_o11y.get("traffic_origin", "continuous")
         )
 
+        start_time = time.monotonic()
         with REQ_LATENCY.labels(
             provider=provider_name,
             model=req.model_override or getattr(provider, "model", "unknown"),
@@ -305,6 +377,7 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 span.set_attribute("error", True)
                 log.exception("provider %s failed", provider_name)
                 raise HTTPException(status_code=502, detail=f"{provider_name}: {exc}")
+        duration_seconds = time.monotonic() - start_time
 
         # Compute cost and stitch it back onto the response payload.
         cost = compute_cost(
@@ -332,6 +405,35 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         )
         REQ_COUNT.labels(**labels_full, finish_reason=resp.finish_reason).inc()
         COST_TOTAL.labels(**labels_full).inc(cost["total_usd"])
+
+        # Native OTel GenAI metrics — flow through the collector into Mimir
+        # so the ai-obs-cost dashboards can query gen_ai_client_* series.
+        gen_ai_attrs = {
+            "gen_ai.system": provider_name,
+            "gen_ai.request.model": resp.model,
+            "ai_o11y.usecase": req.ai_o11y.get("usecase", "") or "",
+            "ai_o11y.specialist": req.specialist,
+        }
+        try:
+            input_tokens = int(resp.usage.get("input_tokens", 0) or 0)
+            output_tokens = int(resp.usage.get("output_tokens", 0) or 0)
+            GEN_AI_TOKEN_USAGE.add(
+                input_tokens, {**gen_ai_attrs, "gen_ai.token.type": "input"}
+            )
+            GEN_AI_TOKEN_USAGE.add(
+                output_tokens, {**gen_ai_attrs, "gen_ai.token.type": "output"}
+            )
+            GEN_AI_OPERATION_DURATION.record(duration_seconds, gen_ai_attrs)
+            GEN_AI_COST_USD.add(
+                float(cost["input_usd"]),
+                {**gen_ai_attrs, "gen_ai.cost.type": "input"},
+            )
+            GEN_AI_COST_USD.add(
+                float(cost["output_usd"]),
+                {**gen_ai_attrs, "gen_ai.cost.type": "output"},
+            )
+        except Exception:  # noqa: BLE001 — telemetry must never break the request.
+            log.exception("failed to record gen_ai OTel metrics")
 
         # Sigil generation event (fire-and-forget; never blocks the response).
         ctx = span.get_span_context()
