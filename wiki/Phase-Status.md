@@ -120,8 +120,13 @@ sync, automated image builds. Image inventory expanded from 13 to 24
 
 ## Phase 3 — Polish (future)
 
-- [ ] `OllamaProvider` wired; lockstep model rotation
-- [ ] All 6 `.claude/skills/` complete
+Deferred items remaining after Phase 2 ship:
+
+- [ ] `OllamaProvider` wired; lockstep model rotation across providers
+- [ ] In-cluster LGTM option (Loki + Grafana + Tempo + Mimir on the user's cluster, optional alternative to Grafana Cloud)
+- [ ] Full vibe-edit Claude Code skill suite (all 6 `.claude/skills/` complete)
+- [ ] Dashboard panel queries rewritten to use `traces_spanmetrics_*` (today many panels query `http_requests_total` which isn't emitted; see `docs/audits/LIVE_VALIDATION.md`)
+- [ ] Native OTel `gen_ai_client_*` metrics from llm-gateway (currently only logs + trace attrs)
 
 ## Update mechanism
 
