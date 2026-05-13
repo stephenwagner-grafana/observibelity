@@ -33,9 +33,25 @@
       aria-busy="false"
     >
       <div class="chat-msg chat-msg--bot">
-        Hi! I can help you find products. Try
-        <em>"show me mice"</em>.
+        Hi! I can help you find products. Pick a suggestion below or ask
+        me anything.
       </div>
+    </div>
+
+    <div
+      id="nc-chat-suggestions"
+      class="nc-chat__suggestions"
+      aria-label="Suggested questions"
+    >
+      <button type="button" class="nc-chat__chip" data-suggestion="show me keyboards">
+        show me keyboards
+      </button>
+      <button type="button" class="nc-chat__chip" data-suggestion="what's on sale?">
+        what's on sale?
+      </button>
+      <button type="button" class="nc-chat__chip" data-suggestion="recommend something for my desk">
+        recommend something for my desk
+      </button>
     </div>
 
     <form
@@ -46,8 +62,35 @@
       hx-swap="beforeend"
       hx-ext="json-enc"
       hx-indicator="#nc-chat-spinner"
-      hx-on::after-request="this.reset()"
     >
+      <input
+        type="hidden"
+        name="persona_id"
+        id="nc-chat-persona"
+        value="{{ current_persona }}"
+      />
+      <input
+        type="hidden"
+        name="email"
+        id="nc-chat-email"
+        value="{{ current_persona_email or '' }}"
+      />
+      <input
+        type="hidden"
+        name="session_id"
+        id="nc-chat-session"
+        value=""
+      />
+      <input
+        type="hidden"
+        name="provider_override"
+        value="anthropic"
+      />
+      <input
+        type="hidden"
+        name="traffic_origin"
+        value="interactive"
+      />
       <input
         type="text"
         name="message"

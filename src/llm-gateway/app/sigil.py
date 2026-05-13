@@ -81,15 +81,43 @@ def _should_emit_cost(provider: str | None) -> bool:
 def _derive_session_id(req: CompleteRequest) -> str:
     """Per-conversation session id for Sigil's Conversations view.
 
-    Phase-2 implementation: derive from ``persona_id + UTC date+hour`` so
-    every chat turn from one loadgen persona within an hour groups under a
-    single conversation. Phase-3 plan: thread a real ``X-Session-Id`` header
-    through neoncart/supportbot → specialist → gateway so multi-turn UX
-    sessions correlate exactly.
+    Explicit ``ai_o11y.session_id`` (threaded from neoncart's chat widget on
+    every page load) wins so each interactive visit is one conversation in
+    the Conversations view. Falls back to ``persona_id + UTC date+hour`` for
+    loadgen + curl callers that don't provide their own id.
     """
+    explicit = (req.ai_o11y.get("session_id") if req.ai_o11y else None) or ""
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit.strip()[:64]
     pid = (req.ai_o11y.get("persona_id") if req.ai_o11y else None) or "u-anon"
     bucket = datetime.now(timezone.utc).strftime("%Y%m%d%H")
     return hashlib.sha256(f"{pid}:{bucket}".encode("utf-8")).hexdigest()[:16]
+
+
+def _conversation_title(req: CompleteRequest) -> str:
+    """Pick a human-readable title for Sigil's Conversations view.
+
+    Uses the first user-role message — works for both the first turn (just
+    the user's question) and follow-up turns (still the original question,
+    since the conversation_id stays the same across turns). Falls back to
+    ``specialist / usecase`` when no user message is parseable.
+    """
+    for msg in req.messages or []:
+        if msg.get("role") != "user":
+            continue
+        content = msg.get("content")
+        if isinstance(content, str):
+            text = content.strip()
+            if text:
+                return text[:120]
+        elif isinstance(content, list):
+            # Anthropic-style content blocks: [{type:"text", text:"..."}].
+            for block in content:
+                if isinstance(block, dict) and block.get("type") == "text":
+                    text = (block.get("text") or "").strip()
+                    if text:
+                        return text[:120]
+    return f"{req.specialist} / {req.ai_o11y.get('usecase') or 'adhoc'}"
 
 
 def _active_trace_context() -> tuple[str, str]:
@@ -382,6 +410,12 @@ async def emit_generation_event(
         # --- user attribution (canonical aliases for the persona) ---
         "user.id": persona_id,
         "enduser.id": persona_id,
+        # Email is opt-in from the caller — NeonCart looks it up at render
+        # time and threads it through ai_o11y.email so Sigil's Conversations
+        # view can show the real shopper, not just the persona slug.
+        **({"user.email": req.ai_o11y["email"]}
+           if isinstance(req.ai_o11y.get("email"), str) and req.ai_o11y["email"]
+           else {}),
         # --- our demo-level fields, kept for the existing Loki dashboards ---
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
         "ai_o11y.persona_id": persona_id,
@@ -411,9 +445,7 @@ async def emit_generation_event(
     # This is what groups multi-turn chats from the same persona into a
     # single conversation row in the plugin's Conversations page.
     conversation_id = session_id
-    conversation_title = (
-        f"{req.specialist} / {req.ai_o11y.get('usecase') or 'adhoc'}"
-    )
+    conversation_title = _conversation_title(req)
 
     try:
         from sigil_sdk import GenerationStart, ModelRef  # type: ignore
@@ -453,6 +485,9 @@ async def emit_generation_event(
         tags["user.id"] = persona_id
         tags["enduser.id"] = persona_id
         tags["ai_o11y.persona_id"] = persona_id
+    email_tag = req.ai_o11y.get("email") if req.ai_o11y else None
+    if isinstance(email_tag, str) and email_tag.strip():
+        tags["user.email"] = email_tag.strip()
     if trace_id:
         tags["trace_id"] = trace_id
     if span_id:

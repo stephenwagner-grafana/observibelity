@@ -80,16 +80,30 @@ class Specialist(ABC):
         max_tokens: int = 1500,
     ) -> dict:
         """Helper for subclasses: call llm-gateway with the specialist's tool allowlist."""
+        # Inbound context bag carries things the app already resolved
+        # (e.g. NeonCart looks up persona email + traffic_origin per session)
+        # so the gateway can stamp them onto every Sigil event without
+        # re-querying Postgres on the hot path.
+        ctx = req.context or {}
+        traffic_origin = (
+            ctx.get("traffic_origin")
+            or ("continuous" if req.usecase else "interactive")
+        )
+        ai_o11y_meta: dict[str, Any] = {
+            "usecase": req.usecase,
+            "persona_id": req.persona_id,
+            "traffic_origin": traffic_origin,
+        }
+        if req.session_id:
+            ai_o11y_meta["session_id"] = req.session_id
+        if ctx.get("email"):
+            ai_o11y_meta["email"] = ctx["email"]
         payload: dict[str, Any] = {
             "specialist": self.NAME,
             "messages": messages,
             "tools": self._build_tool_specs(),
             "max_tokens": max_tokens,
-            "ai_o11y": {
-                "usecase": req.usecase,
-                "persona_id": req.persona_id,
-                "traffic_origin": "continuous" if req.usecase else "interactive",
-            },
+            "ai_o11y": ai_o11y_meta,
         }
         if self.DEFAULT_MODEL:
             payload["model_override"] = self.DEFAULT_MODEL

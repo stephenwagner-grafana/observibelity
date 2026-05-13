@@ -44,11 +44,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import db
-from app.models import CatalogItem, Category
+from app.models import CatalogItem, Category, Persona
 from app.personas import (
     GUEST_PERSONA_ID,
     get_persona_id,
     list_personas,
+    pick_random_persona_id,
     set_persona_span_attr,
 )
 
@@ -142,10 +143,14 @@ async def _render_with_personas(
     template_name: str,
     request: Request,
     session: AsyncSession,
-    persona_id: str,
+    persona_id: str | None,
     extra: dict[str, Any],
 ) -> HTMLResponse:
     """Helper: render a template with ``personas`` + ``current_persona`` injected.
+
+    If ``persona_id`` is None (no header/cookie), picks a random non-guest
+    persona on each page load — replaces the old "Guest (no persona)" default
+    so demos show realistic user attribution from the first paint.
 
     Catches DB failures gracefully — if Postgres is unreachable or the
     table isn't seeded yet, the picker simply shows the guest option
@@ -156,10 +161,21 @@ async def _render_with_personas(
     except Exception as exc:  # noqa: BLE001 — picker is nice-to-have
         log.warning("persona list query failed: %s", exc)
         personas = []
+    resolved = persona_id or pick_random_persona_id(personas)
+    request.state.persona_id = resolved
+    set_persona_span_attr(resolved)
+    # Find the email for the resolved persona so the chat widget can
+    # embed it as a hidden input (server -> /chat -> nc-chatbot -> Sigil).
+    email = ""
+    for p in personas:
+        if p.persona_id == resolved:
+            email = p.email or ""
+            break
     ctx: dict[str, Any] = {
         "branding": BRANDING,
         "personas": personas,
-        "current_persona": persona_id,
+        "current_persona": resolved,
+        "current_persona_email": email,
     }
     ctx.update(extra)
     return templates.TemplateResponse(request, template_name, ctx)
@@ -200,9 +216,21 @@ class ChatRequest(BaseModel):
     usecase: str | None = None
     # Per-request routing knobs forwarded to nc-chatbot -> llm-gateway. The
     # loadgen sets these to drive the 80/20 Ollama vs Claude split that
-    # populates the ai-obs-best-models dashboard.
+    # populates the ai-obs-best-models dashboard. The interactive UI pins
+    # provider_override="anthropic" so manual sessions always use Claude.
     provider_override: str | None = None
     model_override: str | None = None
+    # Conversation grouping for Sigil. The web UI generates a fresh uuid per
+    # page load so each visit is one conversation; loadgen omits this and
+    # the gateway falls back to its persona+hour bucket.
+    session_id: str | None = None
+    # Surface the persona email so Sigil's Conversations view shows the
+    # actual user instead of just the persona slug. Looked up server-side
+    # from the personas table when not provided on the wire.
+    email: str | None = None
+    # Distinguishes hand-driven sessions (interactive) from loadgen runs
+    # (continuous). Drives the Sigil traffic-origin facet.
+    traffic_origin: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -219,11 +247,10 @@ class PersonaSelectRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
-    persona_id: str = Depends(get_persona_id),
+    persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     _set_usecase_attr()
-    set_persona_span_attr(persona_id)
     result = await session.execute(select(CatalogItem).limit(8))
     items = result.scalars().all()
     return await _render_with_personas(
@@ -235,11 +262,10 @@ async def home(
 async def product_detail(
     product_id: int,
     request: Request,
-    persona_id: str = Depends(get_persona_id),
+    persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     _set_usecase_attr()
-    set_persona_span_attr(persona_id)
     item = await session.get(CatalogItem, product_id)
     if item is None:
         raise HTTPException(status_code=404, detail="product not found")
@@ -253,11 +279,10 @@ async def catalog(
     request: Request,
     page: int = Query(1, ge=1),
     per_page: int = Query(24, ge=1, le=100),
-    persona_id: str = Depends(get_persona_id),
+    persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     _set_usecase_attr()
-    set_persona_span_attr(persona_id)
     offset = (page - 1) * per_page
     items_q = select(CatalogItem).offset(offset).limit(per_page)
     cats_q = select(Category)
@@ -275,11 +300,10 @@ async def catalog(
 @app.get("/cart", response_class=HTMLResponse)
 async def cart(
     request: Request,
-    persona_id: str = Depends(get_persona_id),
+    persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     # TODO(phase1): wire actual cart state once orders schema lands.
-    set_persona_span_attr(persona_id)
     return await _render_with_personas(
         "base.html",
         request,
@@ -294,7 +318,8 @@ async def cart(
 async def chat(
     request: Request,
     payload: ChatRequest,
-    persona_id: str = Depends(get_persona_id),
+    persona_id: str | None = Depends(get_persona_id),
+    session: AsyncSession = Depends(db.get_session),
 ) -> Response:
     """Proxy to the nc-chatbot specialist.
 
@@ -313,6 +338,21 @@ async def chat(
     effective_persona = persona_id or payload.persona_id or GUEST_PERSONA_ID
     set_persona_span_attr(effective_persona)
 
+    # Resolve the email — prefer what the form sent (kept hidden on every
+    # rendered page so the lookup happens once at render time), then fall
+    # back to a DB query so curl/loadgen still get attribution.
+    email = payload.email
+    if not email and effective_persona != GUEST_PERSONA_ID:
+        try:
+            result = await session.execute(
+                select(Persona).where(Persona.persona_id == effective_persona)
+            )
+            persona = result.scalar_one_or_none()
+            if persona and persona.email:
+                email = persona.email
+        except Exception as exc:  # noqa: BLE001 — attribution is best-effort
+            log.warning("persona email lookup failed: %s", exc)
+
     client: httpx.AsyncClient = request.app.state.http
     body: dict[str, Any] = {
         "message": payload.message,
@@ -323,6 +363,17 @@ async def chat(
         body["provider_override"] = payload.provider_override
     if payload.model_override:
         body["model_override"] = payload.model_override
+    if payload.session_id:
+        body["session_id"] = payload.session_id
+    # Context bag the specialist forwards into ai_o11y so Sigil can show
+    # email + traffic_origin on the Conversations + Generations views.
+    context: dict[str, Any] = {}
+    if email:
+        context["email"] = email
+    if payload.traffic_origin:
+        context["traffic_origin"] = payload.traffic_origin
+    if context:
+        body["context"] = context
     try:
         resp = await client.post(CHATBOT_URL, json=body)
     except httpx.RequestError as exc:
@@ -347,10 +398,10 @@ async def chat(
 
     data = resp.json()
     reply = data.get("reply") or data.get("message") or ""
-    return HTMLResponse(
-        f'<div class="chat-msg chat-msg--user">{payload.message}</div>'
-        f'<div class="chat-msg chat-msg--bot">{reply}</div>'
-    )
+    # Client-side JS echoes the user message into the panel before submit, so
+    # we return only the bot reply here. This prevents the user message from
+    # disappearing if the server response is delayed, errors, or fails to swap.
+    return HTMLResponse(f'<div class="chat-msg chat-msg--bot">{reply}</div>')
 
 
 # ---- Persona API -----------------------------------------------------------

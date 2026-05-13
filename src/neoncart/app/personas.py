@@ -14,7 +14,7 @@ Resolution order for the active persona on a request:
 
   1. ``X-Persona-Id`` header (loadgen / curl / specialist-to-specialist)
   2. ``persona`` cookie (set by POST /api/persona/select from the navbar)
-  3. ``u-guest`` fallback (no persona chosen)
+  3. None (caller decides — HTML routes randomize, chat uses request body)
 
 The resolved id is exposed at ``request.state.persona_id`` AND via the
 ``get_persona_id`` dependency. Every endpoint should set
@@ -23,6 +23,7 @@ The resolved id is exposed at ``request.state.persona_id`` AND via the
 
 from __future__ import annotations
 
+import random
 from typing import Annotated
 
 from fastapi import Cookie, Request
@@ -31,24 +32,36 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Persona
 
-#: Returned when no header/cookie has been set. Spans still get a value so
-#: dashboards can distinguish "no picker chosen" from "no attribute emitted".
+#: Sentinel for "no persona chosen". Spans still get this so dashboards can
+#: distinguish "picker showed guest" from "no attribute emitted".
 GUEST_PERSONA_ID = "u-guest"
 
 
 async def get_persona_id(
     request: Request,
     persona: Annotated[str | None, Cookie()] = None,
-) -> str:
-    """Resolve the active persona_id for this request.
+) -> str | None:
+    """Resolve the active persona_id from header or cookie, or None.
 
-    Precedence: ``X-Persona-Id`` header > ``persona`` cookie > ``u-guest``.
-    Also stashes the resolved id on ``request.state`` so middleware /
-    template globals can pick it up without re-resolving the dependency.
+    Precedence: ``X-Persona-Id`` header > ``persona`` cookie > None.
+    Returning None lets HTML routes pick a random persona on first visit
+    while preserving manual dropdown selections via the cookie.
     """
-    pid = request.headers.get("X-Persona-Id") or persona or GUEST_PERSONA_ID
-    request.state.persona_id = pid
+    pid = request.headers.get("X-Persona-Id") or persona
+    if pid:
+        request.state.persona_id = pid
     return pid
+
+
+def pick_random_persona_id(personas: list[Persona]) -> str:
+    """Pick a random non-guest persona_id, or GUEST_PERSONA_ID if the list
+    is empty / only contains guest. Used by HTML routes on first visit so
+    the navbar dropdown shows a real user instead of defaulting to guest.
+    """
+    pool = [p for p in personas if p.persona_id != GUEST_PERSONA_ID]
+    if not pool:
+        return GUEST_PERSONA_ID
+    return random.choice(pool).persona_id
 
 
 async def list_personas(session: AsyncSession) -> list[Persona]:
