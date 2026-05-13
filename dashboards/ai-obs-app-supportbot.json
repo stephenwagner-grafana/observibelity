@@ -24,7 +24,7 @@
         "name": "SupportBot pod restarts",
         "tagKeys": "pod,container",
         "target": {
-          "expr": "{namespace=\"supportbot\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
+          "expr": "{namespace=\"observibelity\",container=\"supportbot\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
           "queryType": "range",
           "refId": "Annotations"
         },

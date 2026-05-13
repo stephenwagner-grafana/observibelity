@@ -24,7 +24,7 @@
         "name": "Hiring discrimination — P0",
         "tagKeys": "employee,category",
         "target": {
-          "expr": "{namespace=\"supportbot\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },

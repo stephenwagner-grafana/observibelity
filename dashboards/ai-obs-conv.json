@@ -23,7 +23,7 @@
         "iconColor": "yellow",
         "name": "Brand drift fires",
         "target": {
-          "expr": "{namespace=\"neoncart\"} |~ \"brand_drift\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"brand_drift\"",
           "queryType": "range",
           "refId": "Annotations"
         },

@@ -24,7 +24,7 @@
         "name": "NeonCart pod restarts",
         "tagKeys": "pod,container",
         "target": {
-          "expr": "{namespace=\"neoncart\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
+          "expr": "{namespace=\"observibelity\",container=\"neoncart\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -40,7 +40,7 @@
         "iconColor": "red",
         "name": "mice-rca DB schema errors",
         "target": {
-          "expr": "{namespace=\"neoncart\"} | json | ai_o11y_usecase=\"mice-rca\" |~ \"(?i)(column .* does not exist|UndefinedColumn|psycopg)\"",
+          "expr": "{namespace=\"observibelity\",container=~\"get_inventory|neoncart|nc-chatbot\"} |~ \"(?i)(column .* does not exist|UndefinedColumn|psycopg|rodent_qty)\"",
           "queryType": "range",
           "refId": "Annotations"
         },

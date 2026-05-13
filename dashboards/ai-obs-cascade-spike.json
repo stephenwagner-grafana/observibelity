@@ -24,7 +24,7 @@
         "name": "Email cascade runs",
         "tagKeys": "conv_id,employee",
         "target": {
-          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"\\\\[email-cascade\\\\] llm/summarize idx=1/2000\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"\\\\[email-cascade\\\\] llm/summarize idx=1/2000\"",
           "queryType": "range",
           "refId": "Annotations"
         },

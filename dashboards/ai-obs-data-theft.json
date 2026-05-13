@@ -24,7 +24,7 @@
         "name": "cc_paste events",
         "tagKeys": "employee,last4",
         "target": {
-          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"cc_paste\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"cc_paste\"",
           "queryType": "range",
           "refId": "Annotations"
         },

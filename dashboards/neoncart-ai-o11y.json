@@ -699,7 +699,7 @@
             "type": "loki",
             "uid": "${loki}"
           },
-          "expr": "{namespace=\"neoncart\", app=\"support-copilot\"} |~ \"(?i)warning|error|trace_id\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)warning|error|trace_id\"",
           "refId": "A"
         }
       ],
