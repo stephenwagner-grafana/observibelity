@@ -9,6 +9,7 @@ observibelity-failure-*.tar.gz
 __pycache__/
 *.pyc
 .pytest_cache/
+*.egg-info/
 .DS_Store
 *.swp
 .vscode/
@@ -20,3 +21,8 @@ values-deploy.yaml
 
 # Backup folders from sync scripts (never commit)
 _remote_backup*
+
+# Generated k6 scenario .js files (built by `make build-usecases`).
+# Only the .cm.yaml ConfigMap wrappers + baseline.js are tracked.
+registry/_generated/scenarios/*.js
+!registry/_generated/scenarios/baseline.js
