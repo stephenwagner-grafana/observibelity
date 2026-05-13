@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} \u2014 {{ container }}"
+        "textFormat": "{{ pod }} — {{ container }}"
       },
       {
         "datasource": {
@@ -129,16 +129,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\"}[5m]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "req/s"
+          "legendFormat": "req/s",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Requests / s (5m)",
@@ -199,16 +199,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\"}[5m])), 0.001)",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "err rate"
+          "legendFormat": "err rate",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Error rate (5m)",
@@ -269,16 +269,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\"}[5m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "p95"
+          "legendFormat": "p95",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "p95 latency (5m)",
@@ -339,16 +339,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\"}[5m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "p99"
+          "legendFormat": "p99",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "p99 latency (5m)",
@@ -446,7 +446,7 @@
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "Pivot here to inspect the latest mice-rca error trace end-to-end. The mice-rca use case raises an UndefinedColumn error in the pg.query tool span \u2014 this panel surfaces those traces so you can walk the span tree from the user request down to the failing SQL.",
+      "description": "Pivot here to inspect the latest mice-rca error trace end-to-end. The mice-rca use case raises an UndefinedColumn error in the pg.query tool span — this panel surfaces those traces so you can walk the span tree from the user request down to the failing SQL.",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -468,7 +468,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "Show me mice \u2014 trace pivot",
+      "title": "Show me mice — trace pivot",
       "type": "traces"
     },
     {
@@ -517,12 +517,12 @@
       "id": 11,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -531,16 +531,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Requests by specialist (5m)",
@@ -590,16 +590,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{ai_o11y_specialist=~\"nc-.*\"}[5m])))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "p95 latency by specialist (5m)",
@@ -689,16 +689,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\"}[1h])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Top specialists by request volume (1h)",
@@ -750,12 +750,12 @@
       "id": 15,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -764,16 +764,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Tool call rate by tool (5m)",
@@ -790,6 +790,8 @@
           "color": {
             "mode": "thresholds"
           },
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -807,8 +809,6 @@
               }
             ]
           },
-          "max": 1,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -838,16 +838,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Tool error rate by tool (5m)",
@@ -903,12 +903,12 @@
       "id": 18,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -917,28 +917,28 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}} input"
+          "legendFormat": "{{gen_ai_request_model}} input",
+          "range": true,
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}} output"
+          "legendFormat": "{{gen_ai_request_model}} output",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Token usage per model (5m)",
@@ -988,28 +988,28 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "total"
+          "legendFormat": "total",
+          "range": true,
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Cost over time (USD / s)",
@@ -1070,16 +1070,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[1h]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "USD"
+          "legendFormat": "USD",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Total cost (1h)",
@@ -1169,16 +1169,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\"}[1h])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Cost by specialist (top 10, 1h)",
@@ -1222,14 +1222,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\" [5m]))",
+          "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "refId": "A"
         }
       ],
       "title": "Sigil generation events (use_case=$use_case)",
@@ -1297,13 +1297,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Last 20 generation events",
@@ -1355,12 +1355,12 @@
       "id": 26,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -1369,16 +1369,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Postgres query rate (5m)",
@@ -1428,16 +1428,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.95, sum by (service, le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\", service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m])))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "p95 Postgres query duration (5m)",
@@ -1448,7 +1448,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Postgres query errors from NeonCart. The mice-rca use case will surface column-does-not-exist errors here \u2014 pivot to the matching trace to walk the span tree.",
+      "description": "Live tail of Postgres query errors from NeonCart. The mice-rca use case will surface column-does-not-exist errors here — pivot to the matching trace to walk the span tree.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -1468,13 +1468,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=~\"neoncart|postgres\"} |~ \"(?i)(error|psycopg|column.*does not exist|undefinedcolumn)\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Postgres query errors (Loki)",
@@ -1616,8 +1616,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 NeonCart",
+  "title": "AI o11y — NeonCart",
   "uid": "ai-obs-app-neoncart",
-  "version": 2,
   "weekStart": ""
 }

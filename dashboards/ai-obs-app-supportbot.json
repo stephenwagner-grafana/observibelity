@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} \u2014 {{ container }}"
+        "textFormat": "{{ pod }} — {{ container }}"
       }
     ]
   },
-  "description": "SupportBot app overview \u2014 request rate, error rate, latency, specialist mix, refusal/escalation, top spenders, prompt-injection burst, token-spike ratio.",
+  "description": "SupportBot app overview — request rate, error rate, latency, specialist mix, refusal/escalation, top spenders, prompt-injection burst, token-spike ratio.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -113,16 +113,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\"}[5m]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "req/s"
+          "legendFormat": "req/s",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Requests / s (5m)",
@@ -183,16 +183,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or on() vector(0)) / (sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])) + 0.001)",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "err rate"
+          "legendFormat": "err rate",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Error rate (5m)",
@@ -253,16 +253,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "p95"
+          "legendFormat": "p95",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "p95 latency (5m)",
@@ -323,16 +323,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "p99"
+          "legendFormat": "p99",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "p99 latency (5m)",
@@ -383,12 +383,12 @@
       "id": 7,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -397,16 +397,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_specialist=~\"$specialist\",gen_ai_token_type=\"input\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Requests by specialist (5m)",
@@ -436,6 +436,8 @@
           "color": {
             "mode": "continuous-GrYlRd"
           },
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -453,8 +455,6 @@
               }
             ]
           },
-          "max": 1,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -484,14 +484,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I cannot|I.m sorry|I.m unable|outside my scope|appreciate.*but|not designed to|I.m not equipped)\" | json | ai_o11y_specialist=~\"sb-.*\" [1h])) / (sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" [1h])) + 1))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Refusal rate by employee (top 10, 15m)",
@@ -508,6 +508,8 @@
           "color": {
             "mode": "continuous-GrYlRd"
           },
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -525,8 +527,6 @@
               }
             ]
           },
-          "max": 1,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -556,14 +556,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [1h])) / (sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" [1h])) + 1))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Escalation rate by employee (top 10, 15m)",
@@ -675,14 +675,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_input_tokens [1h])) + sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_output_tokens [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Top spenders by tokens (1h)",
@@ -693,7 +693,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Tokens-per-word ratio per employee \u2014 high values mean verbose padding.",
+      "description": "Tokens-per-word ratio per employee — high values mean verbose padding.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -745,14 +745,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_input_tokens [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Tokens-per-word by employee (1h)",
@@ -815,14 +815,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Dangerous events by user (1h)",
@@ -901,16 +901,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1m])) / (sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])) + 0.001)",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "spike"
+          "legendFormat": "spike",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "spike_ratio = rate(1m) / rate(1h)",
@@ -971,14 +971,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" [5m]))",
+          "legendFormat": "injection bursts",
           "queryType": "range",
-          "legendFormat": "injection bursts"
+          "refId": "A"
         }
       ],
       "title": "prompt_injection_burst counter (5m)",
@@ -1033,14 +1033,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(8, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" | json [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Prompt injection events by employee (1h)",
@@ -1064,7 +1064,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live SupportBot event stream \u2014 dangerous events, refusals, escalations.",
+      "description": "Live SupportBot event stream — dangerous events, refusals, escalations.",
       "gridPos": {
         "h": 11,
         "w": 24,
@@ -1084,13 +1084,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "SupportBot event stream (Loki)",
@@ -1259,8 +1259,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 SupportBot",
+  "title": "AI o11y — SupportBot",
   "uid": "ai-obs-app-supportbot",
-  "version": 2,
   "weekStart": ""
 }

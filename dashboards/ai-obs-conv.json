@@ -31,7 +31,7 @@
       }
     ]
   },
-  "description": "Conversational quality \u2014 refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
+  "description": "Conversational quality — refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -70,12 +70,14 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Refund policy compliance failure rate \u2014 fraction of refund offers that violate policy.",
+      "description": "Refund policy compliance failure rate — fraction of refund offers that violate policy.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "max": 0.1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -93,8 +95,6 @@
               }
             ]
           },
-          "max": 0.1,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -123,14 +123,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(refund|return|policy)\" | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) + 1)",
+          "legendFormat": "fail rate",
           "queryType": "range",
-          "legendFormat": "fail rate"
+          "refId": "A"
         }
       ],
       "title": "refund_policy_compliance fail rate",
@@ -168,12 +168,12 @@
       "id": 3,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -182,14 +182,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(refund|return)\" | json | ai_o11y_specialist=\"nc-chatbot\" [5m]))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Refund policy violations by reason (5m)",
@@ -250,14 +250,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)refund\" | json | ai_o11y_specialist=\"nc-chatbot\" [1h]))",
+          "legendFormat": "violations",
           "queryType": "instant",
-          "legendFormat": "violations"
+          "refId": "A"
         }
       ],
       "title": "Violations (1h)",
@@ -281,7 +281,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Customer frustration unaddressed events \u2014 bot failed to acknowledge or escalate.",
+      "description": "Customer frustration unaddressed events — bot failed to acknowledge or escalate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -319,27 +319,27 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
+          "legendFormat": "frustration events",
           "queryType": "range",
-          "legendFormat": "frustration events"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
+          "legendFormat": "addressed",
           "queryType": "range",
-          "legendFormat": "addressed"
+          "refId": "B"
         }
       ],
-      "title": "Customer frustration \u2014 addressed vs unaddressed (5m)",
+      "title": "Customer frustration — addressed vs unaddressed (5m)",
       "type": "timeseries"
     },
     {
@@ -347,12 +347,14 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Unaddressed fraction \u2014 > 10% fires the customer_frustration alert.",
+      "description": "Unaddressed fraction — > 10% fires the customer_frustration alert.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "max": 0.5,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -370,8 +372,6 @@
               }
             ]
           },
-          "max": 0.5,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -400,14 +400,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "1 - (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
+          "legendFormat": "unaddressed rate",
           "queryType": "range",
-          "legendFormat": "unaddressed rate"
+          "refId": "A"
         }
       ],
       "title": "Unaddressed frustration rate (15m)",
@@ -459,8 +459,8 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "blue"
+                  "fixedColor": "blue",
+                  "mode": "fixed"
                 }
               }
             ]
@@ -474,8 +474,8 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "green"
+                  "fixedColor": "green",
+                  "mode": "fixed"
                 }
               }
             ]
@@ -483,14 +483,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "2\u03c3 lower bound"
+              "options": "2σ lower bound"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "red"
+                  "fixedColor": "red",
+                  "mode": "fixed"
                 }
               },
               {
@@ -527,43 +527,43 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m])",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "current"
+          "legendFormat": "current",
+          "range": true,
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "baseline"
+          "legendFormat": "baseline",
+          "range": true,
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "-2\u03c3"
+          "legendFormat": "-2σ",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Brand voice drift \u2014 rolling vs baseline \u00b1 2\u03c3",
+      "title": "Brand voice drift — rolling vs baseline ± 2σ",
       "type": "timeseries"
     },
     {
@@ -621,19 +621,19 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "drift"
+          "legendFormat": "drift",
+          "range": false,
+          "refId": "A"
         }
       ],
-      "title": "Brand drift indicator (current - 2\u03c3 lower bound)",
+      "title": "Brand drift indicator (current - 2σ lower bound)",
       "type": "stat"
     },
     {
@@ -654,7 +654,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-specialist conversation quality scores \u2014 pass-rate across all conversational evaluators.",
+      "description": "Per-specialist conversation quality scores — pass-rate across all conversational evaluators.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -777,40 +777,40 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}} cost rate"
+          "legendFormat": "{{ai_o11y_specialist}} cost rate",
+          "range": true,
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket[1h])))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}} p95 latency"
+          "legendFormat": "{{ai_o11y_specialist}} p95 latency",
+          "range": true,
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}} avg output rate"
+          "legendFormat": "{{ai_o11y_specialist}} avg output rate",
+          "range": true,
+          "refId": "C"
         }
       ],
       "title": "Conversation quality by specialist (1h)",
@@ -933,8 +933,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Conversations (Refund, Frustration, Brand)",
+  "title": "AI o11y — Conversations (Refund, Frustration, Brand)",
   "uid": "ai-obs-conv",
-  "version": 2,
   "weekStart": ""
 }

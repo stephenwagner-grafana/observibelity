@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "halluc \u2014 {{ category }}"
+        "textFormat": "halluc — {{ category }}"
       }
     ]
   },
-  "description": "Groundedness / hallucination detection \u2014 bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
+  "description": "Groundedness / hallucination detection — bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -121,14 +121,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [1h]))",
+          "legendFormat": "hallucination signals",
           "queryType": "instant",
-          "legendFormat": "hallucination signals"
+          "refId": "A"
         }
       ],
       "title": "Hallucination fails (1h)",
@@ -189,14 +189,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m])) / (sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h])) + 0.0001)",
+          "legendFormat": "ratio",
           "queryType": "range",
-          "legendFormat": "ratio"
+          "refId": "A"
         }
       ],
       "title": "Regression vs 4h baseline (ratio)",
@@ -291,12 +291,12 @@
       "id": 6,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -305,14 +305,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "refId": "A"
         }
       ],
       "title": "Hallucination eval failures by category (5m)",
@@ -349,8 +349,8 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "blue"
+                  "fixedColor": "blue",
+                  "mode": "fixed"
                 }
               }
             ]
@@ -364,8 +364,8 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "red"
+                  "fixedColor": "red",
+                  "mode": "fixed"
                 }
               }
             ]
@@ -392,24 +392,24 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m]))",
+          "legendFormat": "current 15m",
           "queryType": "range",
-          "legendFormat": "current 15m"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h]))",
+          "legendFormat": "baseline 4h",
           "queryType": "range",
-          "legendFormat": "baseline 4h"
+          "refId": "B"
         }
       ],
       "title": "Current 15m vs baseline 4h",
@@ -433,7 +433,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top hallucinated topics \u2014 categories with most evaluator fails.",
+      "description": "Top hallucinated topics — categories with most evaluator fails.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -477,14 +477,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "refId": "A"
         }
       ],
       "title": "Top hallucinated categories (1h)",
@@ -495,7 +495,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-category table \u2014 fail count + recent rate.",
+      "description": "Per-category table — fail count + recent rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -599,27 +599,27 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h]))",
+          "legendFormat": "{{ai_o11y_specialist}} fails",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}} fails"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} !~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
+          "legendFormat": "{{ai_o11y_specialist}} pass rate",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}} pass rate"
+          "refId": "B"
         }
       ],
-      "title": "Per-category \u2014 fails + pass-rate (1h)",
+      "title": "Per-category — fails + pass-rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -641,7 +641,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Loki \u2014 hallucination events",
+      "title": "Loki — hallucination events",
       "type": "row"
     },
     {
@@ -669,13 +669,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_persona_id!=\"\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Hallucination evaluator events (Loki)",
@@ -790,8 +790,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Groundedness (Hallucinations)",
+  "title": "AI o11y — Groundedness (Hallucinations)",
   "uid": "ai-obs-ground",
-  "version": 2,
   "weekStart": ""
 }

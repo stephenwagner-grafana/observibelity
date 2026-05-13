@@ -21,18 +21,18 @@
         "enable": true,
         "hide": false,
         "iconColor": "red",
-        "name": "Hiring discrimination \u2014 P0",
+        "name": "Hiring discrimination — P0",
         "tagKeys": "employee,category",
         "target": {
           "expr": "{namespace=\"supportbot\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "hiring discrim \u2014 {{ employee }}"
+        "textFormat": "hiring discrim — {{ employee }}"
       }
     ]
   },
-  "description": "Compliance signals \u2014 policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
+  "description": "Compliance signals — policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -63,7 +63,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Hiring discrimination \u2014 zero-tolerance",
+      "title": "Hiring discrimination — zero-tolerance",
       "type": "row"
     },
     {
@@ -77,6 +77,8 @@
           "color": {
             "mode": "thresholds"
           },
+          "max": 5,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -90,8 +92,6 @@
               }
             ]
           },
-          "max": 5,
-          "min": 0,
           "unit": "short"
         },
         "overrides": []
@@ -120,14 +120,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|interview|applicant|race|gender|age|disability|religion|national origin|pregnan|orientation|veteran|protected class)\" [24h]))",
+          "legendFormat": "events",
           "queryType": "instant",
-          "legendFormat": "events"
+          "refId": "A"
         }
       ],
       "title": "Zero-tolerance: hiring discrimination events (30d)",
@@ -182,14 +182,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|interview|applicant|race|gender|age|disability|religion)\" | json | ai_o11y_specialist!=\"\" [24h]))",
+          "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "refId": "A"
         }
       ],
       "title": "Hiring discrim events by protected category (30d)",
@@ -263,14 +263,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h]))",
+          "legendFormat": "events",
           "queryType": "instant",
-          "legendFormat": "events"
+          "refId": "A"
         }
       ],
       "title": "policy_circumvention events (1h)",
@@ -281,7 +281,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Approval-bypass events specifically \u2014 most common circumvention pattern.",
+      "description": "Approval-bypass events specifically — most common circumvention pattern.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -331,16 +331,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"request_access\"}[1h]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "approval bypass events"
+          "legendFormat": "approval bypass events",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "approval_bypass events (1h)",
@@ -378,12 +378,12 @@
       "id": 7,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -392,14 +392,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\" [5m]))",
+          "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "refId": "A"
         }
       ],
       "title": "Policy circumvention by category (5m)",
@@ -454,14 +454,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [24h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Top employees by circumvention events (24h)",
@@ -485,7 +485,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-employee compliance score table \u2014 circumvention, hiring-discrim, total events.",
+      "description": "Per-employee compliance score table — circumvention, hiring-discrim, total events.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -611,34 +611,34 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
+          "legendFormat": "security events",
           "queryType": "range",
-          "legendFormat": "security events"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_persona_id!=\"\" [24h]))",
+          "legendFormat": "hiring risk events",
           "queryType": "range",
-          "legendFormat": "hiring risk events"
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "100 - 10 * sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
+          "legendFormat": "compliance score",
           "queryType": "range",
-          "legendFormat": "compliance score"
+          "refId": "C"
         }
       ],
       "title": "Per-employee compliance scorecard",
@@ -671,7 +671,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "All compliance-critical events stream \u2014 hiring-discrim + policy-circumvention.",
+      "description": "All compliance-critical events stream — hiring-discrim + policy-circumvention.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -691,13 +691,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Critical compliance events (Loki)",
@@ -812,8 +812,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Compliance",
+  "title": "AI o11y — Compliance",
   "uid": "ai-obs-compliance",
-  "version": 2,
   "weekStart": ""
 }

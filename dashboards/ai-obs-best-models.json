@@ -123,16 +123,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "ATC events by model (top 10, 1h)",
@@ -143,7 +143,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "ATC bargauge ranking by model \u2014 leaderboard view.",
+      "description": "ATC bargauge ranking by model — leaderboard view.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -195,16 +195,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Bargauge ranking by ATC event count",
@@ -256,12 +256,12 @@
       "id": 5,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -270,16 +270,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "ATC rate per model (5m)",
@@ -290,7 +290,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cheapest performant model \u2014 minimum cost-per-ATC over the last hour. Lower is better.",
+      "description": "Cheapest performant model — minimum cost-per-ATC over the last hour. Lower is better.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -340,16 +340,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=\"nc-chatbot\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])), 0.0001)",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Cheapest performant model (USD / ATC)",
@@ -373,7 +373,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Full leaderboard \u2014 model | total ATC | conversion rate | avg latency | cost per conversion.",
+      "description": "Full leaderboard — model | total ATC | conversion rate | avg latency | cost per conversion.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -509,52 +509,52 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h]))",
           "format": "table",
-          "range": false,
           "instant": true,
-          "legendFormat": "ATC events"
+          "legendFormat": "ATC events",
+          "range": false,
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\"}[1h])), 0.001)",
           "format": "table",
-          "range": false,
           "instant": true,
-          "legendFormat": "output/input token ratio"
+          "legendFormat": "output/input token ratio",
+          "range": false,
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.5, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket[1h])))",
           "format": "table",
-          "range": false,
           "instant": true,
-          "legendFormat": "p50 latency"
+          "legendFormat": "p50 latency",
+          "range": false,
+          "refId": "C"
         },
         {
-          "refId": "D",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=\"nc-chatbot\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])), 0.0001)",
           "format": "table",
-          "range": false,
           "instant": true,
-          "legendFormat": "$ / req"
+          "legendFormat": "$ / req",
+          "range": false,
+          "refId": "D"
         }
       ],
       "title": "Leaderboard: model | ATC | conv % | latency | $ / conv",
@@ -618,12 +618,12 @@
       "id": 10,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -632,16 +632,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Cost / s by model (5m)",
@@ -679,12 +679,12 @@
       "id": 11,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -693,20 +693,253 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "histogram_quantile(0.95, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "p95 latency per model (5m)",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Ollama vs Claude price comparison",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Top 5 most expensive models by spend per token processed (USD / token, output side). Higher = more expensive per unit of work. Claude rows dominate the top; Ollama lives near the bottom.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.000001
+              },
+              {
+                "color": "red",
+                "value": 0.00001
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gen_ai_request_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Model"
+              },
+              {
+                "id": "custom.width",
+                "value": 260
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "USD per token"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 8
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 43
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "USD per token"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total[24h])), 1))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Most expensive models per dollar of tokens (top 10, 24h)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Side-by-side: total spend over 24h by provider (anthropic = Claude, ollama = local). The dramatic gap is the ROI of the Ollama-first routing strategy.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "id": 14,
+      "options": {
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_system) (increase(gen_ai_client_cost_USD_total[24h]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{gen_ai_system}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Total spend by provider (24h) — Claude vs Ollama",
+      "type": "barchart"
     }
   ],
   "refresh": "30s",
@@ -817,8 +1050,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Best Models (ranked by ATC)",
+  "title": "AI o11y — Best Models (ranked by ATC)",
   "uid": "ai-obs-best-models",
-  "version": 2,
   "weekStart": ""
 }

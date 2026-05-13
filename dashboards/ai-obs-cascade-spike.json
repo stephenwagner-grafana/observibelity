@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cascade started \u2014 {{ conv_id }}"
+        "textFormat": "cascade started — {{ conv_id }}"
       }
     ]
   },
@@ -121,16 +121,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "USD"
+          "legendFormat": "USD",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "$ spent on cascades (1h)",
@@ -191,14 +191,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\" [1h]))",
+          "legendFormat": "runs",
           "queryType": "range",
-          "legendFormat": "runs"
+          "refId": "A"
         }
       ],
       "title": "Cascade runs (1h)",
@@ -259,16 +259,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "tokens"
+          "legendFormat": "tokens",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Cascade tokens (1h)",
@@ -279,7 +279,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Alert state \u2014 conv_runaway, the cascade alarm.",
+      "description": "Alert state — conv_runaway, the cascade alarm.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -363,12 +363,12 @@
       "id": 7,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -377,14 +377,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Emails sent per session (5m, top 10)",
@@ -457,17 +457,17 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m]))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
-      "title": "Emails per session \u2014 distribution heatmap",
+      "title": "Emails per session — distribution heatmap",
       "type": "heatmap"
     },
     {
@@ -488,7 +488,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Sessions with more than 50 emails in the last 10 minutes \u2014 drill-down for incident investigation.",
+      "description": "Sessions with more than 50 emails in the last 10 minutes — drill-down for incident investigation.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -580,14 +580,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [10m])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Sessions with > 50 emails in last 10m",
@@ -603,7 +603,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Loki \u2014 cascade events",
+      "title": "Loki — cascade events",
       "type": "row"
     },
     {
@@ -631,13 +631,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Email cascade tool/probe events (Loki)",
@@ -648,7 +648,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Summarizer burst \u2014 2000 llm/summarize idx=N/2000 lines per cascade run.",
+      "description": "Summarizer burst — 2000 llm/summarize idx=N/2000 lines per cascade run.",
       "gridPos": {
         "h": 11,
         "w": 10,
@@ -668,13 +668,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-ticket-helper\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Summarizer burst (Loki)",
@@ -784,8 +784,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Email Cascade",
+  "title": "AI o11y — Email Cascade",
   "uid": "ai-obs-cascade-spike",
-  "version": 2,
   "weekStart": ""
 }
