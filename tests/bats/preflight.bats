@@ -59,11 +59,21 @@ _shim() {
     if [ ! -f "${BATS_TEST_TMPDIR}/tools/preflight/check-binaries.sh" ]; then
         skip "preflight/check-binaries.sh not yet implemented (Phase 0 scaffold not present)"
     fi
-    # We want only system binaries (bash, jq, sed) on PATH — no kubectl/helm.
-    # Hand-pick a directory that contains the basics but not k8s tools.
-    minpath="/usr/bin:/bin"
-    # Force OBSERVIBELITY_NO_INSTALL so the script exits without prompting.
-    run env PATH="$minpath" OBSERVIBELITY_NO_INSTALL=1 \
+    # ubuntu-latest GHA runners ship kubectl + helm preinstalled in /usr/bin,
+    # so a naive `PATH=/usr/bin:/bin` doesn't actually hide them. Build a
+    # sparse PATH dir containing only the tools the script *itself* needs
+    # to run (bash + jq + coreutils), symlinked from wherever they live on
+    # the host. kubectl/helm are deliberately omitted.
+    sparse="${BATS_TEST_TMPDIR}/sparse-bin"
+    mkdir -p "$sparse"
+    for bin in bash sh jq awk sed sort head uname grep cat printf date \
+               dirname readlink echo expr id rm ls mkdir mv chmod tr \
+               find tee tail wc env; do
+        path="$(command -v "$bin" 2>/dev/null || true)"
+        [ -n "$path" ] && ln -sf "$path" "${sparse}/${bin}"
+    done
+    run env -i PATH="$sparse" OBSERVIBELITY_NO_INSTALL=1 \
+        HOME="$HOME" \
         bash "${BATS_TEST_TMPDIR}/tools/preflight/check-binaries.sh"
     [[ "$status" -ne 0 ]]
     [[ "$output" =~ kubectl ]]
