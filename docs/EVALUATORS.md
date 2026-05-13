@@ -5,6 +5,10 @@
 > Total: **3 baseline + 41 per-use-case = 44 evaluators**.
 > Mostly 30-second clicks. Almost everything is a rule or regex.
 
+> **First-time setup?** Start with [`EVALUATORS_SETUP.md`](EVALUATORS_SETUP.md)
+> — it covers auth, the YAML → push pipeline, and verification. This doc is the
+> per-evaluator catalog you reference *during* setup.
+
 ---
 
 ## What this is
