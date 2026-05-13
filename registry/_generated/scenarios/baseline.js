@@ -61,11 +61,11 @@ const CLAUDE_MODELS = [
   'claude-sonnet-4-6',
   'claude-opus-4-7',
 ];
-const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.20');
+const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.10');
 
 function pickModelRouting() {
   if (Math.random() < CLAUDE_FRACTION) {
-    // 20% — Claude, uniformly across Haiku/Sonnet/Opus.
+    // 10% — Claude, uniformly across Haiku/Sonnet/Opus.
     return {
       provider_override: 'anthropic',
       model_override: CLAUDE_MODELS[Math.floor(Math.random() * CLAUDE_MODELS.length)],
