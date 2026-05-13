@@ -940,6 +940,92 @@
       ],
       "title": "Total spend by provider (24h) — Claude vs Ollama",
       "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 15,
+      "panels": [],
+      "title": "Ollama lockstep rotation",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Per the original ObserVIBElity design, every Ollama-bound specialist in the cluster flips to the SAME model in 5-minute lockstep windows (epoch_seconds // 300 % len(pool)). The stacked timeseries below should show one model dominant per ~5-minute slice; clean transitions every 5 min mean rotation is firing across all pods.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\"}[1m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Ollama lockstep rotation timeline (1m bars, stacked by model)",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
