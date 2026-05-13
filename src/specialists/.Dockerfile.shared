@@ -28,8 +28,10 @@ RUN python -m venv /opt/venv && \
       "uvicorn[standard]>=0.30" \
       "pydantic>=2.9" \
       "httpx>=0.27" \
+      "prometheus-client>=0.20" \
       "opentelemetry-distro[otlp]>=0.48b0" \
       "opentelemetry-instrumentation-fastapi>=0.48b0" \
+      "opentelemetry-instrumentation-httpx>=0.48b0" \
       "asyncpg>=0.30"
 
 # Install the specialist_base package so derived specialists can `import specialist_base`.
