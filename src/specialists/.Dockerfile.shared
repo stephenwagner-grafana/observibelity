@@ -32,6 +32,13 @@ RUN python -m venv /opt/venv && \
       "opentelemetry-instrumentation-fastapi>=0.48b0" \
       "asyncpg>=0.30"
 
+# Install the specialist_base package so derived specialists can `import specialist_base`.
+# Build context is src/specialists/, so _base/ resolves to src/specialists/_base/.
+COPY _base/pyproject.toml /tmp/_base/pyproject.toml
+COPY _base/README.md /tmp/_base/README.md
+COPY _base/specialist_base /tmp/_base/specialist_base
+RUN pip install --no-deps /tmp/_base && rm -rf /tmp/_base
+
 # Non-root user
 RUN groupadd -r app --gid=1000 && \
     useradd -r -g app --uid=1000 --home-dir=/app --shell=/sbin/nologin app && \

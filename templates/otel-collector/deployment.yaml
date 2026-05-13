@@ -21,12 +21,20 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/otel-collector/configmap.yaml") . | sha256sum }}
     spec:
+      {{- $podSc := include "observibelity.podSecurityContext" .Values.otel.collector.securityContext }}
+      {{- if $podSc }}
       securityContext:
-        {{- toYaml .Values.otel.collector.securityContext | nindent 8 }}
+        {{- $podSc | nindent 8 }}
+      {{- end }}
       containers:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.96.0
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.otel.collector.securityContext }}
+          {{- if $ctrSc }}
+          securityContext:
+            {{- $ctrSc | nindent 12 }}
+          {{- end }}
           args:
             - --config=/etc/otel/config.yaml
           ports:
@@ -56,20 +64,32 @@ spec:
             httpGet:
               path: /
               port: health
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /
               port: health
-            initialDelaySeconds: 15
+            initialDelaySeconds: 60
             periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 6
+          startupProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
           resources:
             {{- toYaml .Values.otel.collector.resources | nindent 12 }}
           volumeMounts:
             - name: config
               mountPath: /etc/otel
               readOnly: true
+      terminationGracePeriodSeconds: 60
       volumes:
         - name: config
           configMap:

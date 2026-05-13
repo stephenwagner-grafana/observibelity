@@ -33,7 +33,15 @@ class AnthropicProvider(Provider):
         # AsyncAnthropic tolerates a missing key at construction time; the call fails
         # later if the key is genuinely absent. That keeps unit tests happy without a key.
         self.client = AsyncAnthropic(api_key=api_key) if api_key else AsyncAnthropic(api_key="missing")
-        self.model = self.config.get("model", DEFAULT_MODEL)
+        # Honor the Helm chart's env var (ANTHROPIC_DEFAULT_MODEL) as well as the
+        # legacy ANTHROPIC_MODEL so operators picking a model via values.yaml are
+        # respected. Explicit config["model"] always wins.
+        self.model = (
+            self.config.get("model")
+            or os.environ.get("ANTHROPIC_DEFAULT_MODEL")
+            or os.environ.get("ANTHROPIC_MODEL")
+            or DEFAULT_MODEL
+        )
 
     # ------------------------------------------------------------------
     # Translation helpers

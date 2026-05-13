@@ -21,22 +21,52 @@ spec:
         app.kubernetes.io/component: migrate
     spec:
       restartPolicy: OnFailure
-      {{- with .Values.podDefaults.securityContext }}
+      {{- $podSc := include "observibelity.podSecurityContext" .Values.podDefaults.securityContext }}
+      {{- if $podSc }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- $podSc | nindent 8 }}
       {{- end }}
+      initContainers:
+        # Poll Postgres until it reports ready. Helm hooks don't wait for
+        # the StatefulSet to be Ready, so on first install the migrate Job
+        # would otherwise race the DB bootstrap and burn through backoffLimit.
+        - name: wait-for-postgres
+          image: {{ .Values.postgres.image | default "postgres:16-alpine" }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "waiting for postgres at postgres:5432/observibelity..."
+              for i in $(seq 1 60); do
+                if pg_isready -h postgres -p 5432 -U postgres -d observibelity -q; then
+                  echo "postgres is ready"
+                  exit 0
+                fi
+                echo "  ($i/60) not ready yet, sleeping 2s"
+                sleep 2
+              done
+              echo "postgres did not become ready in 120s"
+              exit 1
       containers:
         - name: migrate
           image: "{{ .Values.global.imageRegistry }}/observibelity-migrate:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.podDefaults.securityContext }}
+          {{- if $ctrSc }}
+          securityContext:
+            {{- $ctrSc | nindent 12 }}
+          {{- end }}
           command: ["alembic"]
           args: ["upgrade", "head"]
           env:
+            # Alembic uses sync drivers — read the sync URL.
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: postgres-creds
-                  key: DATABASE_URL
+                  key: DATABASE_URL_SYNC
             - name: OTEL_SERVICE_NAME
               value: observibelity-migrate
             - name: OTEL_EXPORTER_OTLP_ENDPOINT

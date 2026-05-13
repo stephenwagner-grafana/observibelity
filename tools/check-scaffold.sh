@@ -145,7 +145,7 @@ log "5. Required files"
 REQUIRED=(
   Chart.yaml values.yaml install.sh uninstall.sh Makefile README.md LICENSE
   .gitignore .editorconfig CHANGELOG.md CONTRIBUTING.md SECURITY.md
-  templates/_helpers.tpl templates/namespace.yaml
+  templates/_helpers.tpl
   tests/snapshots/default.golden.yaml
 )
 for f in "${REQUIRED[@]}"; do

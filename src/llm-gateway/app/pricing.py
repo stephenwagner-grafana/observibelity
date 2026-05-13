@@ -4,8 +4,18 @@ Prices are USD-per-token (already divided down from the published $/MTok
 rates). Unknown models cost $0 so a misnamed model doesn't surprise the
 caller with a NaN — operators can spot the zero in the dashboard and add the
 row here. Keep this table in sync with `docs/PROVIDERS.md`.
+
+The chart's ConfigMap (`llm-gateway-config.pricing.json`) is mounted at
+``/etc/llm-gateway/pricing.json`` and loaded at startup via
+``load_pricing_overrides`` — that's how operators tune prices without
+shipping a new image.
 """
 from __future__ import annotations
+
+import logging
+from typing import Any
+
+log = logging.getLogger(__name__)
 
 # Anthropic published prices: Haiku $0.25/$1.25 per MTok, Sonnet $3/$15,
 # Opus $15/$75 (input/output). Local Ollama models are free.
@@ -20,6 +30,42 @@ PRICES: dict[str, dict[str, float]] = {
     "qwen2.5:7b": {"input": 0.0, "output": 0.0},
     "phi3:mini": {"input": 0.0, "output": 0.0},
 }
+
+
+def load_pricing_overrides(data: dict[str, Any] | None) -> None:
+    """Merge a chart-supplied pricing.json into the module-level PRICES table.
+
+    Accepts either the per-token shape (``{"input": 1e-6, ...}``) or the
+    per-million-USD shape used by the chart's ConfigMap
+    (``{"input_per_million_usd": 1.0, ...}``). Unknown shapes are skipped with
+    a warning so a malformed entry never breaks the gateway.
+    """
+    if not data:
+        return
+    for model, entry in data.items():
+        if not isinstance(entry, dict):
+            continue
+        if "input" in entry and "output" in entry:
+            try:
+                PRICES[model] = {
+                    "input": float(entry["input"]),
+                    "output": float(entry["output"]),
+                }
+            except (TypeError, ValueError) as exc:
+                log.warning("bad pricing override for %s: %s", model, exc)
+            continue
+        if "input_per_million_usd" in entry or "output_per_million_usd" in entry:
+            try:
+                PRICES[model] = {
+                    "input": float(entry.get("input_per_million_usd", 0.0))
+                    / 1_000_000,
+                    "output": float(entry.get("output_per_million_usd", 0.0))
+                    / 1_000_000,
+                }
+            except (TypeError, ValueError) as exc:
+                log.warning("bad pricing override for %s: %s", model, exc)
+            continue
+        log.warning("skipping pricing entry with unknown shape: %s", model)
 
 
 def compute_cost(model: str, input_tokens: int, output_tokens: int) -> dict[str, float]:

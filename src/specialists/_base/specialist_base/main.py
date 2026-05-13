@@ -5,6 +5,7 @@ exports the resulting FastAPI app. Routes mounted:
   * POST /v1/run   — main entry (delegates to ``specialist.handle``)
   * GET  /health   — liveness
   * GET  /readyz   — readiness
+  * GET  /metrics  — Prometheus scrape endpoint
 """
 from __future__ import annotations
 
@@ -12,7 +13,9 @@ import importlib
 import os
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 from opentelemetry import trace
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from .specialist import Specialist, SpecialistRequest, SpecialistResponse
 
@@ -54,6 +57,11 @@ def build_app(specialist: Specialist) -> FastAPI:
     @app.get("/readyz")
     async def readyz() -> dict:
         return {"ready": True, "specialist": specialist.NAME}
+
+    @app.get("/metrics")
+    async def metrics() -> Response:
+        """Prometheus scrape endpoint — matches the tool_base / app pattern."""
+        return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
     return app
 

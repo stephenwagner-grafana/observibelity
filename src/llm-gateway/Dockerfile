@@ -13,18 +13,19 @@ ENV PIP_NO_CACHE_DIR=1 \
 
 WORKDIR /build
 
-# Copy only what's needed for dep resolution
+# Copy app/ as llm_gateway/ so that `pip install .` produces a real
+# `llm_gateway` Python package matching the entry-point group in pyproject.toml
+# (anthropic = "llm_gateway.providers.anthropic:AnthropicProvider", etc.).
 COPY pyproject.toml ./
 COPY README.md ./
+COPY app/ ./llm_gateway/
 
-# Install deps into /opt/venv
+# Install deps + the local package into /opt/venv
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip && \
     pip install .
-
-COPY app/ ./app/
 
 # --- Runtime stage ----------------------------------------------------------
 FROM python:${PYTHON_VERSION}-slim AS runtime
@@ -47,8 +48,9 @@ RUN groupadd -r app --gid=1000 && \
     useradd -r -g app --uid=1000 --home-dir=/app --shell=/sbin/nologin app && \
     mkdir -p /app && chown -R app:app /app
 
+# The `llm_gateway` package is installed into the venv during the builder
+# stage, so we only need to copy the venv (no source COPY required at runtime).
 COPY --from=builder --chown=app:app /opt/venv /opt/venv
-COPY --from=builder --chown=app:app /build/app /app/app
 
 USER app:app
 WORKDIR /app
@@ -59,4 +61,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
     CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health',timeout=4).status==200 else 1)"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["uvicorn", "llm_gateway.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

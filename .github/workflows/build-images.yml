@@ -8,6 +8,9 @@ on:
       - main
     paths:
       - 'src/**'
+      - 'migrations/**'
+      - 'seed_data/**'
+      - 'tools/seed-loader.py'
       - '.github/workflows/build-images.yml'
   workflow_dispatch: {}
 
@@ -203,6 +206,13 @@ jobs:
             context: src/tools/create_expense
             build-args: |
               TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          # ---- Migrations + seed (Postgres post-install Helm hooks) -----
+          - name: migrate
+            context: migrations
+            dockerfile: migrations/Dockerfile
+          - name: seed
+            context: .
+            dockerfile: seed_data/Dockerfile
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -215,6 +225,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |

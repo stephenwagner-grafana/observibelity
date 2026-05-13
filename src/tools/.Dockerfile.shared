@@ -32,6 +32,13 @@ RUN python -m venv /opt/venv && \
       "opentelemetry-instrumentation-fastapi>=0.48b0" \
       "asyncpg>=0.30"
 
+# Install the tool_base package so derived tools can `import tool_base`.
+# Build context is src/tools/, so _base/ resolves to src/tools/_base/.
+COPY _base/pyproject.toml /tmp/_base/pyproject.toml
+COPY _base/README.md /tmp/_base/README.md
+COPY _base/tool_base /tmp/_base/tool_base
+RUN pip install --no-deps /tmp/_base && rm -rf /tmp/_base
+
 # Non-root user
 RUN groupadd -r app --gid=1000 && \
     useradd -r -g app --uid=1000 --home-dir=/app --shell=/sbin/nologin app && \
