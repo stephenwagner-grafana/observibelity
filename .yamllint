@@ -1,6 +1,29 @@
 extends: default
+ignore: |
+  # Helm templates contain `{{ ... }}` and other directives that aren't strict
+  # YAML — they're validated by `helm lint` and `helm template` instead.
+  templates/
+  # helm-unittest fixtures use compact `{ cpu: 100m }` flow-mappings as
+  # documented in the helm-unittest README; the braces rule mis-flags them.
+  tests/helm-unittest/
+  # The auto-generated snapshot mirrors helm template output verbatim.
+  tests/snapshots/
+  # Generated registry artifacts (round-trip from compiler).
+  registry/_generated/
 rules:
-  line-length: { max: 200 }
-  comments: { min-spaces-from-content: 1 }
-  truthy: { check-keys: false }
+  line-length:
+    max: 200
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    check-keys: false
   document-start: disable
+  # GitHub Actions workflows use `with: { version: v3.13.3 }` extensively;
+  # that's the canonical YAML shorthand, so we relax the braces rule.
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: -1
+    max-spaces-inside-empty: -1
+  # Dependabot config groups headers and indented comments freely.
+  comments-indentation: disable

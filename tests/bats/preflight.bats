@@ -55,11 +55,16 @@ _shim() {
     [[ "$status" -eq 0 ]]
 }
 
-@test "check-binaries.sh detects missing kubectl when PATH is empty" {
+@test "check-binaries.sh detects missing kubectl when PATH is sparse" {
     if [ ! -f "${BATS_TEST_TMPDIR}/tools/preflight/check-binaries.sh" ]; then
         skip "preflight/check-binaries.sh not yet implemented (Phase 0 scaffold not present)"
     fi
-    run env PATH="/nonexistent" bash "${BATS_TEST_TMPDIR}/tools/preflight/check-binaries.sh"
+    # We want only system binaries (bash, jq, sed) on PATH — no kubectl/helm.
+    # Hand-pick a directory that contains the basics but not k8s tools.
+    minpath="/usr/bin:/bin"
+    # Force OBSERVIBELITY_NO_INSTALL so the script exits without prompting.
+    run env PATH="$minpath" OBSERVIBELITY_NO_INSTALL=1 \
+        bash "${BATS_TEST_TMPDIR}/tools/preflight/check-binaries.sh"
     [[ "$status" -ne 0 ]]
     [[ "$output" =~ kubectl ]]
 }

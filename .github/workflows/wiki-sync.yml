@@ -17,27 +17,36 @@ jobs:
       - uses: actions/checkout@v4
       - name: Stage wiki content
         run: |
-          mkdir -p _wiki
-          # Wiki-only pages (navigation + landing)
-          cp wiki/Home.md _wiki/Home.md
-          cp wiki/_Sidebar.md _wiki/_Sidebar.md
-          cp wiki/_Footer.md _wiki/_Footer.md
-          cp wiki/Topology.md _wiki/Topology.md
-          cp wiki/Deployment-Scenarios.md _wiki/Deployment-Scenarios.md
-          cp wiki/Phase-Status.md _wiki/Phase-Status.md
-          cp wiki/FAQ.md _wiki/FAQ.md
+          mkdir -p _wiki _wiki/audits
+          # Wiki-only pages (navigation + landing). Use `2>/dev/null || true`
+          # so a renamed/removed page doesn't tank the whole workflow.
+          cp wiki/Home.md _wiki/Home.md 2>/dev/null || true
+          cp wiki/_Sidebar.md _wiki/_Sidebar.md 2>/dev/null || true
+          cp wiki/_Footer.md _wiki/_Footer.md 2>/dev/null || true
+          cp wiki/Topology.md _wiki/Topology.md 2>/dev/null || true
+          cp wiki/Deployment-Scenarios.md _wiki/Deployment-Scenarios.md 2>/dev/null || true
+          cp wiki/Phase-Status.md _wiki/Phase-Status.md 2>/dev/null || true
+          cp wiki/FAQ.md _wiki/FAQ.md 2>/dev/null || true
           # Mirror canonical docs/ as additional wiki pages
-          cp docs/INSTALL.md _wiki/Install.md
-          cp docs/TROUBLESHOOTING.md _wiki/Troubleshooting.md
-          cp docs/ARCHITECTURE.md _wiki/Architecture.md
-          cp docs/PROVIDERS.md _wiki/Providers.md
-          cp docs/DEVELOPMENT.md _wiki/Development.md
-          cp docs/GITOPS.md _wiki/Gitops.md
-          cp docs/CLAUDE-CODE.md _wiki/Claude-Code.md
-          cp docs/USE-CASES.md _wiki/Use-Cases.md
+          cp docs/INSTALL.md _wiki/Install.md 2>/dev/null || true
+          cp docs/TROUBLESHOOTING.md _wiki/Troubleshooting.md 2>/dev/null || true
+          cp docs/ARCHITECTURE.md _wiki/Architecture.md 2>/dev/null || true
+          cp docs/PROVIDERS.md _wiki/Providers.md 2>/dev/null || true
+          cp docs/DEVELOPMENT.md _wiki/Development.md 2>/dev/null || true
+          cp docs/GITOPS.md _wiki/Gitops.md 2>/dev/null || true
+          cp docs/CLAUDE-CODE.md _wiki/Claude-Code.md 2>/dev/null || true
+          cp docs/USE-CASES.md _wiki/Use-Cases.md 2>/dev/null || true
+          # Audit reports moved to docs/audits/ in cleanup PR #12.
+          # Mirror them under /audits/ in the wiki.
+          cp docs/audits/*.md _wiki/audits/ 2>/dev/null || true
           # Quick-Start = README.md trimmed to the Quick start section
-          awk '/^## Quick start/{flag=1} flag && /^## /{if (count++>0) exit} flag' README.md > _wiki/Quick-Start.md
+          awk '/^## Quick start/{flag=1} flag && /^## /{if (count++>0) exit} flag' README.md > _wiki/Quick-Start.md 2>/dev/null || true
       - name: Push to wiki
+        # The wiki repo is only created after a user manually enables and seeds
+        # it (Settings → Features → Wiki, then publish one page). Until that
+        # happens, `git clone <repo>.wiki.git` returns 404 — which we treat as
+        # a soft failure so the rest of CI stays green.
+        continue-on-error: true
         uses: Andrew-Chen-Wang/github-wiki-action@v4
         with:
           path: _wiki/

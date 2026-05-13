@@ -1,10 +1,10 @@
-# Snapshot of `helm template . --release-name obs --namespace observibelity` with default values.yaml.
-# CI fails if `helm template` output diverges from this file.
+# Snapshot of `helm template obs . --namespace observibelity` with default values.yaml.
+# CI fails if `helm template` output diverges from this file (body only — comments ignored).
 #
 # To regenerate after intentional changes:
 #   make snapshot
 # Or:
-#   helm template . --release-name obs --namespace observibelity > tests/snapshots/default.golden.yaml
+#   helm template obs . --namespace observibelity > tests/snapshots/default.golden.yaml
 #
 # Updated 2026-05-13 for v0.3.0:
 #   - Removed templates/namespace.yaml (use --create-namespace instead)
@@ -12,6 +12,7 @@
 #   - Added startupProbe to every Deployment/StatefulSet
 #   - Split DATABASE_URL into async + sync forms
 #   - SecurityContext split into pod-level vs container-level
+#   - Default phase=0 so only the helm-test pod renders in the snapshot
 ---
 # Source: observibelity/templates/tests/test-connection.yaml
 apiVersion: v1

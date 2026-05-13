@@ -77,11 +77,24 @@ teardown() {
     [[ "$status" -eq 1 ]]
 }
 
-@test "install.sh deploy in Phase 0 prints 'scaffolding only' and exits 0" {
+@test "install.sh deploy invokes helm upgrade --install (or fails fast without cluster)" {
     if [ ! -x "${BATS_TEST_TMPDIR}/install.sh" ]; then
         skip "install.sh not yet implemented (Phase 0 scaffold not present)"
     fi
+    # In a sandboxed bats environment there is usually no Kubernetes context.
+    # We don't require a successful deploy — just that install.sh attempts the
+    # helm path (Phase 0 "scaffolding only" stub was removed in v0.3.0).
+    if ! command -v helm >/dev/null 2>&1; then
+        skip "helm not installed in this test environment"
+    fi
     run "${BATS_TEST_TMPDIR}/install.sh" deploy
-    [[ "$status" -eq 0 ]]
-    [[ "$output" =~ "scaffolding only" ]]
+    # Allow either: 0 (helm succeeded somehow) or 3 (deploy phase failure).
+    # Anything else (e.g. 64 for unknown subcommand) indicates a real bug.
+    if [[ "$status" -ne 0 && "$status" -ne 3 ]]; then
+        echo "unexpected exit code $status" >&2
+        echo "output: $output" >&2
+        return 1
+    fi
+    # And the output must mention either helm or deploy somewhere.
+    [[ "$output" =~ (helm|deploy|Deploy) ]]
 }

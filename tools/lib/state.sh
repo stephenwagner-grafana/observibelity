@@ -1,11 +1,30 @@
 # shellcheck shell=bash
 # ObserVIBElity shared lib: JSON-backed state file via jq (phase progress, inputs, preflight).
 
-source "$(dirname "${BASH_SOURCE[0]}")/logging.sh"
+# Source sibling libs defensively — tests may copy only state.sh + logging.sh,
+# omitting colors.sh. `source ... 2>/dev/null || true` keeps us robust.
+_state_lib_dir="$(dirname "${BASH_SOURCE[0]}")"
+# shellcheck disable=SC1091
+source "$_state_lib_dir/logging.sh" 2>/dev/null || true
+# If logging.sh wasn't available, provide minimal shims so we can still die().
+if ! declare -F die >/dev/null 2>&1; then
+    die() { printf 'ERROR: %s\n' "$1" >&2; exit 1; }
+fi
 
-# Backing file. Caller must have REPO_ROOT exported unless OBSERVIBELITY_STATE_FILE
-# is set. The ${REPO_ROOT:?...} guarantees a clear error if unset.
-: "${OBSERVIBELITY_STATE_FILE:=${REPO_ROOT:?REPO_ROOT must be set by caller}/.observibelity-state}"
+# Backing layout:
+#   * If OBSERVIBELITY_STATE_DIR is set → use $DIR/state.json (directory layout).
+#   * Else if OBSERVIBELITY_STATE_FILE is set → use as-is (flat layout).
+#   * Else default to $REPO_ROOT/.observibelity-state/state.json (directory).
+#
+# Both layouts coexist for back-compat: older code that points
+# OBSERVIBELITY_STATE_FILE at a regular file still works.
+if [[ -n "${OBSERVIBELITY_STATE_DIR:-}" ]]; then
+    OBSERVIBELITY_STATE_FILE="${OBSERVIBELITY_STATE_DIR}/state.json"
+else
+    : "${OBSERVIBELITY_STATE_FILE:=${REPO_ROOT:?REPO_ROOT must be set by caller}/.observibelity-state/state.json}"
+    # Derive the dir for callers who need it (state_reset, etc).
+    OBSERVIBELITY_STATE_DIR="$(dirname "${OBSERVIBELITY_STATE_FILE}")"
+fi
 
 # _state_jq_path "a.b.c" -> ".a.b.c". Internal helper, callers shouldn't use.
 _state_jq_path() {
@@ -24,6 +43,8 @@ state_init() {
     if [[ -f "${OBSERVIBELITY_STATE_FILE}" ]]; then
         return 0
     fi
+    mkdir -p "${OBSERVIBELITY_STATE_DIR}" \
+        || die "failed to create state dir at ${OBSERVIBELITY_STATE_DIR}"
     local now
     now="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
     jq -n --arg created "${now}" \
@@ -96,5 +117,7 @@ state_reset() {
         mv "${OBSERVIBELITY_STATE_FILE}" "${OBSERVIBELITY_STATE_FILE}.${ts}.bak" \
             || die "state_reset: could not back up state file"
     fi
+    # Also remove install.sh's seed file if a previous test seeded
+    # .observibelity-state/state.json without going through state_init.
     state_init
 }
