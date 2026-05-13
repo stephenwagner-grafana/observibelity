@@ -90,6 +90,25 @@ def test_build_event_returns_canonical_payload():
     assert event["ai_o11y.specialist"] == "nc-chatbot"
     assert event["traffic_origin"] == "continuous"
     assert event["trace_id"] == "abc"
+    # Per-event agent identity — drives the Sigil plugin's Agents page.
+    # Pre-fix this was a static "observibelity-llm-gateway"; now it's the
+    # specialist so each one (nc-chatbot, sb-router, ...) gets its own row.
+    assert event["gen_ai.agent.name"] == "nc-chatbot"
+    assert event["gen_ai.agent.id"] == "nc-chatbot"
+
+
+def test_build_event_uses_specialist_as_agent_name():
+    """Agent identity must come from req.specialist, not a constant."""
+    req = CompleteRequest(
+        specialist="sb-policy-finder",
+        messages=[{"role": "user", "content": "hi"}],
+        ai_o11y={"persona_id": "u-x"},
+    )
+    resp = _make_resp()
+    event = sigil.build_event(req, resp)
+    assert event["gen_ai.agent.name"] == "sb-policy-finder"
+    assert event["gen_ai.agent.id"] == "sb-policy-finder"
+    assert event["ai_o11y.specialist"] == "sb-policy-finder"
 
 
 def test_build_event_keeps_cost_for_ollama():

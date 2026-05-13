@@ -38,7 +38,10 @@ from .providers.base import CompleteRequest, CompleteResponse
 
 log = logging.getLogger(__name__)
 
-_AGENT_NAME = "observibelity-llm-gateway"
+# Fallback agent name when a generation event is somehow emitted without a
+# specialist tag (shouldn't happen — every /v1/complete request carries one —
+# but keeps the Agents page free of empty-string buckets if it ever does).
+_AGENT_NAME_FALLBACK = "observibelity-llm-gateway"
 _SERVICE_NAME = "llm-gateway"
 _SERVICE_NAMESPACE = "observibelity"
 _DEFAULT_PROVIDER = "anthropic"
@@ -152,10 +155,10 @@ def init_sigil(service_name: str = "llm-gateway") -> None:
 
     Idempotent + best-effort: the gateway must boot even when Sigil is
     unreachable, so failures here downgrade to a logged warning. The
-    ``service_name`` arg is accepted for API symmetry with the original
-    stub but the underlying agent name is fixed (``observibelity-llm-gateway``)
-    so the plugin's Conversations page groups every gateway-emitted
-    generation under one agent.
+    ``service_name`` is the resource-level identity ("llm-gateway"); per-event
+    ``agent_name`` is set from ``req.specialist`` at emit time so the Sigil
+    Agents page groups generations by calling specialist (nc-chatbot,
+    sb-router, etc.) instead of rolling everything under the gateway.
     """
     _ = service_name  # noqa: F841 — kept for caller-side clarity
     get_client()
@@ -334,6 +337,11 @@ async def emit_generation_event(
 
     persona_id = (req.ai_o11y.get("persona_id") or "").strip()
     session_id = _derive_session_id(req)
+    # Per-event agent identity. Pre-fix this was a static
+    # "observibelity-llm-gateway" so the Sigil Agents page rolled every
+    # generation under one agent. Now each specialist (nc-chatbot,
+    # sb-router, sb-policy-finder, ...) shows up as its own row.
+    agent_name = (req.specialist or "").strip() or _AGENT_NAME_FALLBACK
 
     # Always log a stdout JSON line — preserves the Phase-1 behaviour the
     # ai-obs-app-* dashboards rely on, and gives operators a paper trail
@@ -353,6 +361,10 @@ async def emit_generation_event(
         # --- canonical gen_ai.* (OTel semconv) ---
         "gen_ai.system": resp.provider,
         "gen_ai.operation.name": "chat",
+        # Per-event agent identity. gen_ai.agent.name is what Sigil's Agents
+        # page groups on; gen_ai.agent.id is an alias some panels read.
+        "gen_ai.agent.name": agent_name,
+        "gen_ai.agent.id": agent_name,
         "gen_ai.request.model": req.model_override or resp.model,
         "gen_ai.response.model": resp.model,
         "gen_ai.request.max_tokens": int(req.max_tokens or 0),
@@ -373,7 +385,7 @@ async def emit_generation_event(
         # --- our demo-level fields, kept for the existing Loki dashboards ---
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
         "ai_o11y.persona_id": persona_id,
-        "ai_o11y.specialist": req.specialist,
+        "ai_o11y.specialist": agent_name,
         "traffic_origin": req.ai_o11y.get("traffic_origin", "continuous"),
     }
 
@@ -414,18 +426,24 @@ async def emit_generation_event(
 
     # Tags: anything that fits a small string→string map. The plugin
     # surfaces these on conversation-detail and supports filtering.
-    # Canonical keys (service.namespace, session.id, user.id, etc.) are
-    # included so the AI Observability plugin's filter dropdowns and
-    # default panels light up without per-deployment tweaking.
+    # Canonical keys (service.namespace, session.id, user.id, gen_ai.agent.*,
+    # etc.) are included so the AI Observability plugin's filter dropdowns
+    # and default panels light up without per-deployment tweaking.
     tags: dict[str, str] = {
         "agent_operation": _AGENT_OPERATION_TAG,
-        "specialist": req.specialist,
+        "specialist": agent_name,
         "traffic_origin": str(req.ai_o11y.get("traffic_origin", "continuous")),
         "service.name": _SERVICE_NAME,
         "service.namespace": _SERVICE_NAMESPACE,
         "deployment.environment": os.environ.get("DEPLOYMENT_ENVIRONMENT", "demo"),
         "session.id": session_id,
         "gen_ai.conversation.id": session_id,
+        # Mirror agent identity into tags so panels that filter by tag
+        # (rather than the top-level agent_name) also break down per
+        # specialist.
+        "gen_ai.agent.name": agent_name,
+        "gen_ai.agent.id": agent_name,
+        "ai_o11y.specialist": agent_name,
     }
     if usecase := (req.ai_o11y.get("usecase") or ""):
         tags["use_case"] = str(usecase)
@@ -443,13 +461,16 @@ async def emit_generation_event(
     # user_id == persona_id when available (the OTel canonical user.id).
     # Conversation id == derived session id, so the SDK's user filter and
     # the plugin's session-aware Conversations view agree on grouping.
+    # agent_name = req.specialist (computed above) — drives the Sigil
+    # Agents page; previously hardcoded to "observibelity-llm-gateway"
+    # which collapsed every specialist into one row.
     start = GenerationStart(
         id=gen_id,
         model=ModelRef(provider=resp.provider or _DEFAULT_PROVIDER, name=request_model),
         conversation_id=conversation_id,
         conversation_title=conversation_title[:120],
         user_id=persona_id,
-        agent_name=_AGENT_NAME,
+        agent_name=agent_name,
         agent_version=_agent_version(),
         # SYNC because the gateway proxies non-streaming Anthropic / Ollama
         # calls. Sigil still produces a generation record + token usage; the
@@ -611,6 +632,12 @@ async def emit_tool_execution_event(
             res_json = res_json[:50_000]
     except Exception:  # noqa: BLE001
         res_json = ""
+    # For tool events, the Tools tab's "Top agents" panel groups on
+    # gen_ai.agent.name — so we set it to the TOOL name (search_products,
+    # get_inventory, kb_search, ...) and stash the calling specialist as
+    # gen_ai.agent.parent so per-specialist breakdowns are still possible.
+    tool_agent_name = (tool_name or "").strip() or "unknown-tool"
+    parent_specialist = (specialist or "").strip() or _AGENT_NAME_FALLBACK
     tool_event: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "trace_id": trace_id,
@@ -621,6 +648,15 @@ async def emit_tool_execution_event(
         "gen_ai.operation.name": "tool_use",
         "gen_ai.system": provider,
         "gen_ai.request.model": request_model,
+        # Tool-level agent identity. Sigil's Tools tab "Top agents" panel
+        # reads gen_ai.agent.name — setting it to the tool name is what
+        # makes search_products / get_inventory / kb_search etc. show up
+        # as distinct entries rather than a single "llm-gateway" row.
+        "gen_ai.agent.name": tool_agent_name,
+        "gen_ai.agent.id": tool_agent_name,
+        # Parent specialist preserved for drill-down — which specialist
+        # invoked this tool. Useful for "tools per specialist" breakdowns.
+        "gen_ai.agent.parent": parent_specialist,
         "gen_ai.tool.name": tool_name,
         "gen_ai.tool.call.id": tool_call_id,
         "gen_ai.tool.arguments": arg_json,
@@ -630,7 +666,7 @@ async def emit_tool_execution_event(
         "gen_ai.conversation.id": session_id,
         "user.id": persona_id,
         "enduser.id": persona_id,
-        "ai_o11y.specialist": specialist,
+        "ai_o11y.specialist": parent_specialist,
         "ai_o11y.usecase": usecase,
         "ai_o11y.persona_id": persona_id,
     }
@@ -648,12 +684,16 @@ async def emit_tool_execution_event(
     except ImportError:
         return
 
+    # agent_name = the tool name (search_products, get_inventory, ...).
+    # The Sigil Tools tab's "Top agents" panel groups on agent_name, so
+    # setting it to the tool gives one row per tool in that panel; pre-fix
+    # everything rolled up under "observibelity-llm-gateway".
     start = ToolExecutionStart(
         tool_name=tool_name,
         tool_call_id=tool_call_id or uuid.uuid4().hex,
         tool_type="function",
         conversation_id=conversation_id or session_id or uuid.uuid4().hex,
-        agent_name=_AGENT_NAME,
+        agent_name=tool_agent_name,
         agent_version=_agent_version(),
         request_model=request_model,
         request_provider=provider,
@@ -703,6 +743,7 @@ def build_event(
     """
     persona_id = (req.ai_o11y.get("persona_id") or "").strip()
     session_id = _derive_session_id(req)
+    agent_name = (req.specialist or "").strip() or _AGENT_NAME_FALLBACK
     event: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "trace_id": trace_id,
@@ -712,6 +753,9 @@ def build_event(
         "deployment.environment": os.environ.get("DEPLOYMENT_ENVIRONMENT", "demo"),
         "gen_ai.system": resp.provider,
         "gen_ai.operation.name": "chat",
+        # Per-event agent identity — see emit_generation_event for context.
+        "gen_ai.agent.name": agent_name,
+        "gen_ai.agent.id": agent_name,
         "gen_ai.request.model": req.model_override or resp.model,
         "gen_ai.response.model": resp.model,
         "gen_ai.request.max_tokens": int(req.max_tokens or 0),
@@ -726,7 +770,7 @@ def build_event(
         "enduser.id": persona_id,
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
         "ai_o11y.persona_id": persona_id,
-        "ai_o11y.specialist": req.specialist,
+        "ai_o11y.specialist": agent_name,
         "traffic_origin": req.ai_o11y.get("traffic_origin", "continuous"),
         "messages": req.messages[-1:],
         "completion": resp.content,
