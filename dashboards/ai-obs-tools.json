@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "runaway \u2014 {{ conv_id }} / {{ tool_name }}"
+        "textFormat": "runaway — {{ conv_id }} / {{ tool_name }}"
       }
     ]
   },
-  "description": "Tool call analytics \u2014 agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
+  "description": "Tool call analytics — agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -77,6 +77,8 @@
           "color": {
             "mode": "thresholds"
           },
+          "max": 50,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -94,8 +96,6 @@
               }
             ]
           },
-          "max": 50,
-          "min": 0,
           "unit": "short"
         },
         "overrides": []
@@ -124,16 +124,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "max(sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "max"
+          "legendFormat": "max",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "tool_call_runaway gauge (max calls / conv / tool, 10m)",
@@ -196,16 +196,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Top conversations by tool-call count (10m)",
@@ -256,12 +256,12 @@
       "id": 5,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -270,16 +270,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"$tool\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Tool call rate by tool (5m)",
@@ -290,7 +290,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-conversation tool-call counter \u2014 how many tool calls a session has accumulated.",
+      "description": "Per-conversation tool-call counter — how many tool calls a session has accumulated.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -317,12 +317,12 @@
       "id": 6,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "max"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -331,16 +331,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Per-conversation tool call counter (5m, top 10)",
@@ -427,16 +427,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\", service=~\"$tool\"}[5m]))",
           "format": "heatmap",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{le}}"
+          "legendFormat": "{{le}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Tool latency distribution (5m)",
@@ -447,12 +447,14 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tool error rate by tool \u2014 fraction of tool invocations with status=error.",
+      "description": "Tool error rate by tool — fraction of tool invocations with status=error.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "continuous-GrYlRd"
           },
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -470,8 +472,6 @@
               }
             ]
           },
-          "max": 1,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -501,16 +501,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) or on(service) sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m]) * 0)) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Tool error rate by tool (5m)",
@@ -534,7 +534,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Sessions with most tool calls in last 10m \u2014 investigation list.",
+      "description": "Sessions with most tool calls in last 10m — investigation list.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -642,16 +642,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "topk(20, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{service}}"
+          "legendFormat": "{{service}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Top sessions with most tool calls (10m)",
@@ -667,7 +667,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Loki \u2014 tool errors",
+      "title": "Loki — tool errors",
       "type": "row"
     },
     {
@@ -695,13 +695,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=~\"tool|neoncart|supportbot\"} |~ \"(?i)(error|exception|fail|retry|timeout|traceback)\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Tool errors stream (Loki)",
@@ -816,8 +816,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Tools (Runaway loops)",
+  "title": "AI o11y — Tools (Runaway loops)",
   "uid": "ai-obs-tools",
-  "version": 2,
   "weekStart": ""
 }

@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ event }} \u2014 {{ employee }}"
+        "textFormat": "{{ event }} — {{ employee }}"
       }
     ]
   },
@@ -102,12 +102,12 @@
       "id": 2,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -116,34 +116,34 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [5m]))",
+          "legendFormat": "ssn",
           "queryType": "range",
-          "legendFormat": "ssn"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number|payment card)\" [5m]))",
+          "legendFormat": "credit-card",
           "queryType": "range",
-          "legendFormat": "credit-card"
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key|bearer )\" [5m]))",
+          "legendFormat": "secret",
           "queryType": "range",
-          "legendFormat": "secret"
+          "refId": "C"
         }
       ],
       "title": "PII detected events by type (5m)",
@@ -154,12 +154,14 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Redactor mask rate \u2014 fraction of detected PII values that were masked to last-4.",
+      "description": "Redactor mask rate — fraction of detected PII values that were masked to last-4.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -177,8 +179,6 @@
               }
             ]
           },
-          "max": 1,
-          "min": 0,
           "unit": "percentunit"
         },
         "overrides": []
@@ -207,14 +207,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(redacted|XXXX|masked)\" [5m])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m])) + 1)",
+          "legendFormat": "mask rate",
           "queryType": "range",
-          "legendFormat": "mask rate"
+          "refId": "A"
         }
       ],
       "title": "Redactor mask rate (5m)",
@@ -291,14 +291,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "PII events by employee (top 10, 1h)",
@@ -309,7 +309,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top-1 employee by confidential disclosure events \u2014 Jordan from Finance lights up first.",
+      "description": "Top-1 employee by confidential disclosure events — Jordan from Finance lights up first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -359,14 +359,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(1, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Top-1 confidential discloser (1h)",
@@ -425,14 +425,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Confidential disclosure leaderboard (1h)",
@@ -456,7 +456,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Prompt-injection-detector counter \u2014 total events, 1h.",
+      "description": "Prompt-injection-detector counter — total events, 1h.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -506,14 +506,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" [1h]))",
+          "legendFormat": "injection events",
           "queryType": "instant",
-          "legendFormat": "injection events"
+          "refId": "A"
         }
       ],
       "title": "prompt-injection-detector (1h)",
@@ -524,7 +524,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "pii_echo events \u2014 bot repeats user PII back. Single event = P0.",
+      "description": "pii_echo events — bot repeats user PII back. Single event = P0.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -570,17 +570,17 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [1h]))",
+          "legendFormat": "pii echo events",
           "queryType": "instant",
-          "legendFormat": "pii echo events"
+          "refId": "A"
         }
       ],
-      "title": "pii_echo events (1h) \u2014 P0 if > 0",
+      "title": "pii_echo events (1h) — P0 if > 0",
       "type": "stat"
     },
     {
@@ -615,12 +615,12 @@
       "id": 11,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -629,24 +629,24 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "legendFormat": "{{ai_o11y_specialist}} injection",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}} injection"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m]))",
+          "legendFormat": "pii echo",
           "queryType": "range",
-          "legendFormat": "pii echo"
+          "refId": "B"
         }
       ],
       "title": "Prompt injection + PII echo rate (5m)",
@@ -701,34 +701,34 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [1h]))",
+          "legendFormat": "ssn",
           "queryType": "range",
-          "legendFormat": "ssn"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number)\" [1h]))",
+          "legendFormat": "credit-card",
           "queryType": "range",
-          "legendFormat": "credit-card"
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key)\" [1h]))",
+          "legendFormat": "secret",
           "queryType": "range",
-          "legendFormat": "secret"
+          "refId": "C"
         }
       ],
       "title": "PII echo events by kind (1h)",
@@ -744,7 +744,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "Loki \u2014 PII + critical events",
+      "title": "Loki — PII + critical events",
       "type": "row"
     },
     {
@@ -752,7 +752,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "PII detection log lines \u2014 credit cards, SSNs, API keys, redacted to last-4.",
+      "description": "PII detection log lines — credit cards, SSNs, API keys, redacted to last-4.",
       "gridPos": {
         "h": 11,
         "w": 14,
@@ -772,13 +772,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "PII detection log lines (Loki)",
@@ -789,7 +789,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Critical-severity events stream \u2014 single-event P0 alarms.",
+      "description": "Critical-severity events stream — single-event P0 alarms.",
       "gridPos": {
         "h": 11,
         "w": 10,
@@ -809,13 +809,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|bearer |confidential|internal only|ignore previous|disregard.*instructions)\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Critical events stream (Loki)",
@@ -930,8 +930,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 PII, Injection, Disclosure",
+  "title": "AI o11y — PII, Injection, Disclosure",
   "uid": "ai-obs-pii",
-  "version": 2,
   "weekStart": ""
 }

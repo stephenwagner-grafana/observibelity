@@ -1,0 +1,318 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "<div style=\"padding:18px 18px 6px 18px;\">\n  <h1 style=\"margin:0 0 6px 0; font-size:22px; font-weight:600; color:#e5e7eb; letter-spacing:-0.01em;\">AI Observability</h1>\n  <p style=\"margin:0; color:#a3a3a3; font-size:14px; max-width:760px;\">\n    Two production AI applications instrumented end-to-end. Open the AI Observability app for live conversations, traces, and evaluations. Open an app dashboard for service-level operational views. Open a lens for one capability across both apps.\n  </p>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 2,
+      "options": {
+        "content": "<div style=\"padding:10px 18px 18px 18px; display:flex; gap:10px; flex-wrap:wrap;\">\n  <a href=\"/plugins/grafana-sigil-app/page/ai-observability\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#3d71d9; color:#fff; text-decoration:none; font-size:14px; font-weight:600; border-radius:4px; border:1px solid #3d71d9;\">\n    Open AI Observability  →\n  </a>\n  <a href=\"/d/ai-obs-app-neoncart\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    NeonCart dashboard\n  </a>\n  <a href=\"/d/ai-obs-app-supportbot\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    Support Bot dashboard\n  </a>\n  <a href=\"/d/neoncart-ai-rca-conv\"\n     style=\"display:inline-flex; align-items:center; gap:8px; padding:10px 18px; background:#222; color:#e5e7eb; text-decoration:none; font-size:14px; font-weight:500; border-radius:4px; border:1px solid #333;\">\n    AI RCA — single conversation\n  </a>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 3,
+      "options": {
+        "content": "<div style=\"padding:14px 18px; line-height:1.55;\">\n  <div style=\"font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#a3a3a3; margin-bottom:8px;\">DEMO FLOW</div>\n  <div style=\"display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; font-size:13px;\">\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">1.</span> Start in <a href=\"/plugins/grafana-sigil-app/page/ai-observability\" style=\"color:#e5e7eb; text-decoration:underline;\">AI Observability</a></div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">2.</span> Type <code style=\"background:#1f1f1f; padding:1px 6px; border-radius:3px; color:#fbbf24;\">show me mice</code> in NeonCart chat</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">3.</span> Pivot to trace → DB error</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">4.</span> Open Gift Finder → bad recs</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">5.</span> Switch to Support Bot governance</div>\n  </div>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 11
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"neoncart\"} |= \"chat done:\" [1h]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "NeonCart — chats / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3000
+              },
+              {
+                "color": "red",
+                "value": 8000
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 11
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "quantile_over_time(0.95, {namespace=\"neoncart\"} |= \"chat done:\" | pattern `<_> dt_ms=<dt_ms>` | unwrap dt_ms [1h])",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "NeonCart — P95 chat ms",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 11
+      },
+      "id": 32,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"supportbot\", container=\"svc\"} |= \"ask role=\" [1h]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Support Bot — asks / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 11
+      },
+      "id": 33,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"supportbot\", container=\"svc\"} |= \"ask role=\" |~ \"(pii=True|inj=True|denied=True)\" [1h]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Support Bot — incidents (1h)",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 40,
+      "options": {
+        "content": "<div style=\"padding:14px 18px 6px 18px;\">\n  <div style=\"font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#a3a3a3;\">LENS DASHBOARDS — ONE CAPABILITY ACROSS BOTH APPS</div>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 41,
+      "options": {
+        "content": "<div style=\"display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; padding:6px 18px 18px 18px;\">\n  <a href=\"/d/ai-obs-traces\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">TRACES</div><div style=\"font-size:13px; margin-top:2px;\">Multi-step trace tree</div></a>\n  <a href=\"/d/ai-obs-subagent\" style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">SUB-AGENTS</div><div style=\"font-size:13px; margin-top:2px;\">Parent → child visualizer</div></a>\n  <a href=\"/d/ai-obs-tools\"    style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">TOOLS</div><div style=\"font-size:13px; margin-top:2px;\">Tool execution</div></a>\n  <a href=\"/d/ai-obs-prompts\"  style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">PROMPTS</div><div style=\"font-size:13px; margin-top:2px;\">Prompt &amp; agent insights</div></a>\n  <a href=\"/d/ai-obs-conv\"     style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">CONVERSATION</div><div style=\"font-size:13px; margin-top:2px;\">Quality &amp; CSAT</div></a>\n  <a href=\"/d/ai-obs-rag\"      style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">RAG</div><div style=\"font-size:13px; margin-top:2px;\">Retrieval quality</div></a>\n  <a href=\"/d/ai-obs-ground\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">GROUNDEDNESS</div><div style=\"font-size:13px; margin-top:2px;\">Hallucination &amp; faithfulness</div></a>\n  <a href=\"/d/ai-obs-evals\"    style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">EVALS</div><div style=\"font-size:13px; margin-top:2px;\">Online evaluators</div></a>\n  <a href=\"/d/ai-obs-pii\"      style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">PII &amp; SAFETY</div><div style=\"font-size:13px; margin-top:2px;\">Guardrails</div></a>\n  <a href=\"/d/ai-obs-errors\"   style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">ERRORS</div><div style=\"font-size:13px; margin-top:2px;\">Errors &amp; stop reasons</div></a>\n  <a href=\"/d/ai-obs-latency\"  style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">LATENCY</div><div style=\"font-size:13px; margin-top:2px;\">Latency &amp; TTFT</div></a>\n  <a href=\"/d/ai-obs-cost\"     style=\"text-decoration:none; padding:10px 12px; border:1px solid #333; border-radius:4px; background:#1a1a1a; color:#e5e7eb;\"><div style=\"font-size:11px; color:#8b5cf6; font-weight:600; letter-spacing:0.05em;\">COST</div><div style=\"font-size:13px; margin-top:2px;\">Tokens &amp; spend</div></a>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "landing",
+    "ai-observability",
+    "apps",
+    "neoncart",
+    "supportbot"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "AI Observability — Apps",
+  "uid": "ai-obs-app-landing"
+}

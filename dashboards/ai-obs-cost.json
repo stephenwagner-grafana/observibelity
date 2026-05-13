@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cost anomaly \u2014 {{ employee }}"
+        "textFormat": "cost anomaly — {{ employee }}"
       }
     ]
   },
@@ -121,16 +121,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(increase(gen_ai_client_cost_USD_total[24h]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "USD"
+          "legendFormat": "USD",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Total cost (24h)",
@@ -191,14 +191,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "count(sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_input_tokens [1h])) > 10000)",
+          "legendFormat": "count",
           "queryType": "instant",
-          "legendFormat": "count"
+          "refId": "A"
         }
       ],
       "title": "Users > 100k tokens / 1h",
@@ -240,12 +240,12 @@
       "id": 4,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -254,16 +254,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Cost over time by app (5m)",
@@ -324,16 +324,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(gen_ai_client_cost_USD_total[1h])) * 86400",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "predicted 24h USD"
+          "legendFormat": "predicted 24h USD",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Cost prediction (next 24h, extrapolated)",
@@ -409,14 +409,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_input_tokens [1h])) + sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_output_tokens [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Per-user 1h token sum (top 10)",
@@ -515,17 +515,17 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(20, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_input_tokens [1h])) > 10000)",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
-      "title": "Cost anomalies \u2014 users > 100k tokens / 1h",
+      "title": "Cost anomalies — users > 100k tokens / 1h",
       "type": "table"
     },
     {
@@ -538,7 +538,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "Cost by model + specialist",
+      "title": "Cost by model + specialist (Claude vs Ollama)",
       "type": "row"
     },
     {
@@ -546,7 +546,290 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost over time broken down by model.",
+      "description": "Cost rate by provider — anthropic (Claude) vs ollama side-by-side. The dramatic gap is the point of the demo: local models are ~10-100x cheaper per token.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_system) (rate(gen_ai_client_cost_USD_total[5m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{gen_ai_system}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost rate by provider (5m) — Claude vs Ollama",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Counterfactual: if every Ollama token had gone to Haiku ($0.25/M input, $1.25/M output) instead, how much would it have cost? Subtract actual Ollama cost to get the savings. Assumes ~$0.0000007/token blended Haiku rate.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.01
+              },
+              {
+                "color": "super-light-green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "(sum(increase(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\"}[24h])) * 0.0000007) - sum(increase(gen_ai_client_cost_USD_total{gen_ai_system=\"ollama\"}[24h]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "savings USD",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Savings from Ollama vs Haiku (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Per-model cost over 24h — Claude and Ollama models side-by-side. Watch Claude rows dominate spend even though Ollama serves most traffic.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gen_ai_request_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Model"
+              },
+              {
+                "id": "custom.width",
+                "value": 240
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "USD (24h)"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 16,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "USD (24h)"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total[24h]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by model (24h)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Cost over time broken down by model (Claude and Ollama).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -572,17 +855,17 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 31
       },
       "id": 10,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -591,16 +874,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Cost by model (5m)",
@@ -611,7 +894,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost by model breakdown \u2014 fraction of total.",
+      "description": "Cost by model breakdown — fraction of total.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -632,7 +915,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 31
       },
       "id": 11,
       "options": {
@@ -665,16 +948,16 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total[1h]))",
           "format": "time_series",
-          "range": false,
           "instant": true,
-          "legendFormat": "{{gen_ai_request_model}}"
+          "legendFormat": "{{gen_ai_request_model}}",
+          "range": false,
+          "refId": "A"
         }
       ],
       "title": "Cost share by model (1h)",
@@ -686,7 +969,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 40
       },
       "id": 12,
       "panels": [],
@@ -720,17 +1003,17 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 41
       },
       "id": 13,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -739,16 +1022,16 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
           "expr": "sum by (ai_o11y_usecase, ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist!=\"\"}[5m]))",
           "format": "time_series",
-          "range": true,
           "instant": false,
-          "legendFormat": "{{ai_o11y_usecase}} / {{ai_o11y_specialist}}"
+          "legendFormat": "{{ai_o11y_usecase}} / {{ai_o11y_specialist}}",
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "Cost over time by app + specialist (5m)",
@@ -863,8 +1146,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Cost (per-user attribution)",
+  "title": "AI o11y — Cost (per-user attribution)",
   "uid": "ai-obs-cost",
-  "version": 2,
   "weekStart": ""
 }

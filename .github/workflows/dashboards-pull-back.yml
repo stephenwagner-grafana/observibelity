@@ -1,0 +1,73 @@
+name: dashboards-pull-back
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: dashboards-pull-back
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      has_secrets: ${{ steps.check.outputs.has_secrets }}
+    steps:
+      - id: check
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+        run: |
+          if [ -n "$GRAFANA_URL" ] && [ -n "$GRAFANA_TOKEN" ]; then
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GRAFANA_URL or GRAFANA_CLOUD_API_TOKEN not set — skipping pull-back"
+          fi
+
+  pull-and-pr:
+    needs: preflight
+    if: needs.preflight.outputs.has_secrets == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull dashboards from Grafana Cloud
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p dashboards
+          curl -sS -H "Authorization: Bearer $GRAFANA_TOKEN" \
+            "${GRAFANA_URL}/api/search?folderUIDs=observibelity" \
+            | jq -r '.[] | .uid' > /tmp/uids.txt
+          echo "Found $(wc -l < /tmp/uids.txt) dashboards in ObserVIBElity folder"
+          while IFS= read -r uid; do
+            [ -n "$uid" ] || continue
+            curl -sS -H "Authorization: Bearer $GRAFANA_TOKEN" \
+              "${GRAFANA_URL}/api/dashboards/uid/${uid}" \
+              | jq '.dashboard | .id = null | del(.version)' \
+              > "dashboards/${uid}.json"
+          done < /tmp/uids.txt
+
+      - name: Open PR if drift
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: nightly dashboard sync from Grafana Cloud"
+          title: "chore: nightly dashboard sync"
+          body: |
+            Automated pull of `dashboards/` from the live `ObserVIBElity` Grafana
+            Cloud folder. If this PR is open, the repo is out of sync with the
+            live stack and one or more dashboards were edited in-place.
+
+            See `docs/audits/LIVE_REPO_AUDIT.md` for the persistence rule and
+            reconciliation policy.
+          branch: chore/nightly-dashboard-sync
+          base: main
+          delete-branch: true
+          add-paths: dashboards/

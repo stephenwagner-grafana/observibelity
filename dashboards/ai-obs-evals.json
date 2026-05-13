@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Evaluator overview \u2014 pass/fail rates across all evaluators, with toxicity panels surfaced. Covers the toxicity use case and the all-evaluators status table.",
+  "description": "Evaluator overview — pass/fail rates across all evaluators, with toxicity panels surfaced. Covers the toxicity use case and the all-evaluators status table.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -71,7 +71,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity evaluator fails \u2014 hateful content. ANY single fail opens a ticket.",
+      "description": "Toxicity evaluator fails — hateful content. ANY single fail opens a ticket.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -117,14 +117,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [1h]))",
+          "legendFormat": "toxicity events",
           "queryType": "instant",
-          "legendFormat": "toxicity events"
+          "refId": "A"
         }
       ],
       "title": "toxicity: hateful events (1h)",
@@ -135,7 +135,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity events broken down by reason \u2014 hateful, harassment, threat, slur.",
+      "description": "Toxicity events broken down by reason — hateful, harassment, threat, slur.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -197,14 +197,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_persona_id!=\"\" [24h])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Toxicity events by reason (24h)",
@@ -215,7 +215,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Toxicity alert state \u2014 fires on any toxicity fail in 5m.",
+      "description": "Toxicity alert state — fires on any toxicity fail in 5m.",
       "gridPos": {
         "h": 9,
         "w": 6,
@@ -265,6 +265,8 @@
           "color": {
             "mode": "thresholds"
           },
+          "max": 1,
+          "min": 0.95,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -282,8 +284,6 @@
               }
             ]
           },
-          "max": 1,
-          "min": 0.95,
           "unit": "percentunit"
         },
         "overrides": []
@@ -311,14 +311,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} !~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
+          "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "refId": "A"
         }
       ],
       "title": "Toxicity pass-rate by app (1h)",
@@ -334,7 +334,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "All evaluators \u2014 overview",
+      "title": "All evaluators — overview",
       "type": "row"
     },
     {
@@ -369,12 +369,12 @@
       "id": 7,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -383,44 +383,44 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [5m]))",
+          "legendFormat": "toxicity",
           "queryType": "range",
-          "legendFormat": "toxicity"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hallucinat|fabricat|made up|invent)\" [5m]))",
+          "legendFormat": "hallucination",
           "queryType": "range",
-          "legendFormat": "hallucination"
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|credit card|password|secret key)\" [5m]))",
+          "legendFormat": "pii",
           "queryType": "range",
-          "legendFormat": "pii"
+          "refId": "C"
         },
         {
-          "refId": "D",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions)\" [5m]))",
+          "legendFormat": "prompt injection",
           "queryType": "range",
-          "legendFormat": "prompt injection"
+          "refId": "D"
         }
       ],
       "title": "Evaluator firings by evaluator (5m)",
@@ -444,7 +444,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Status of every evaluator \u2014 fire rate, fails (1h), pass rate, severity.",
+      "description": "Status of every evaluator — fire rate, fails (1h), pass rate, severity.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -635,37 +635,37 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [5m]))",
+          "legendFormat": "all evals fire rate",
           "queryType": "range",
-          "legendFormat": "all evals fire rate"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h]))",
+          "legendFormat": "1h fails",
           "queryType": "instant",
-          "legendFormat": "1h fails"
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "1 - sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json [1h])) + 1)",
+          "legendFormat": "pass rate",
           "queryType": "range",
-          "legendFormat": "pass rate"
+          "refId": "C"
         }
       ],
-      "title": "All evaluators \u2014 fire rate | fails | pass rate | severity",
+      "title": "All evaluators — fire rate | fails | pass rate | severity",
       "transformations": [
         {
           "id": "joinByField",
@@ -695,7 +695,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "All currently firing evaluator alerts \u2014 critical first.",
+      "description": "All currently firing evaluator alerts — critical first.",
       "gridPos": {
         "h": 10,
         "w": 10,
@@ -741,7 +741,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Critical evaluator fail events \u2014 toxicity, pii_echo, hiring_discrimination_risk, data_theft.",
+      "description": "Critical evaluator fail events — toxicity, pii_echo, hiring_discrimination_risk, data_theft.",
       "gridPos": {
         "h": 10,
         "w": 14,
@@ -761,13 +761,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|kill yourself|hallucinat|fabricat|ssn|credit card|password|ignore previous|disregard.*instructions)\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "Critical evaluator fails (Loki)",
@@ -909,8 +909,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Evaluators (Toxicity + Overview)",
+  "title": "AI o11y — Evaluators (Toxicity + Overview)",
   "uid": "ai-obs-evals",
-  "version": 2,
   "weekStart": ""
 }

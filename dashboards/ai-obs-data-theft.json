@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cc_paste \u2014 {{ employee }} last4={{ last4 }}"
+        "textFormat": "cc_paste — {{ employee }} last4={{ last4 }}"
       }
     ]
   },
@@ -121,14 +121,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" [24h]))",
+          "legendFormat": "events",
           "queryType": "instant",
-          "legendFormat": "events"
+          "refId": "A"
         }
       ],
       "title": "Total exfil events (24h)",
@@ -189,14 +189,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [1h])) > 0)",
+          "legendFormat": "employees",
           "queryType": "instant",
-          "legendFormat": "employees"
+          "refId": "A"
         }
       ],
       "title": "Employees with exfil (1h)",
@@ -257,14 +257,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" [1h]))",
+          "legendFormat": "cc paste events",
           "queryType": "instant",
-          "legendFormat": "cc paste events"
+          "refId": "A"
         }
       ],
       "title": "cc_paste events (1h)",
@@ -384,14 +384,14 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [10m])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Top 10 employees by exfil score (10m rolling)",
@@ -429,12 +429,12 @@
       "id": 8,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "sum"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -443,14 +443,14 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [5m])))",
+          "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "refId": "A"
         }
       ],
       "title": "Exfil events per employee (5m, top 10)",
@@ -529,27 +529,27 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=\"$persona_id\" [10m]))",
+          "legendFormat": "exfil score",
           "queryType": "range",
-          "legendFormat": "exfil score"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id=\"$persona_id\" [5m]))",
+          "legendFormat": "total events",
           "queryType": "range",
-          "legendFormat": "total events"
+          "refId": "B"
         }
       ],
-      "title": "$persona_id \u2014 exfil score + events",
+      "title": "$persona_id — exfil score + events",
       "type": "timeseries"
     },
     {
@@ -607,17 +607,17 @@
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=\"$persona_id\" [10m]))",
+          "legendFormat": "events",
           "queryType": "instant",
-          "legendFormat": "events"
+          "refId": "A"
         }
       ],
-      "title": "$persona_id \u2014 exfil events (last 10m)",
+      "title": "$persona_id — exfil events (last 10m)",
       "type": "stat"
     },
     {
@@ -757,37 +757,37 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}} exfil",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}} exfil"
+          "refId": "A"
         },
         {
-          "refId": "B",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}} total",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}} total"
+          "refId": "B"
         },
         {
-          "refId": "C",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "legendFormat": "{{ai_o11y_persona_id}} cc",
           "queryType": "range",
-          "legendFormat": "{{ai_o11y_persona_id}} cc"
+          "refId": "C"
         }
       ],
-      "title": "Top exfilters \u2014 last 1h (with score + cc_paste)",
+      "title": "Top exfilters — last 1h (with score + cc_paste)",
       "transformations": [
         {
           "id": "joinByField",
@@ -809,7 +809,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "Loki \u2014 cc_paste with employee context",
+      "title": "Loki — cc_paste with employee context",
       "type": "row"
     },
     {
@@ -837,13 +837,13 @@
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "${datasource_loki}"
           },
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=~\"$persona_id\"",
-          "queryType": "range"
+          "queryType": "range",
+          "refId": "A"
         }
       ],
       "title": "cc_paste + exfil_event Loki stream",
@@ -955,8 +955,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Data Theft (per-employee exfil)",
+  "title": "AI o11y — Data Theft (per-employee exfil)",
   "uid": "ai-obs-data-theft",
-  "version": 2,
   "weekStart": ""
 }
