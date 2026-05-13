@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   integration:
-    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    if: ${{ secrets.ANTHROPIC_API_KEY != '' && secrets.GRAFANA_CLOUD_API_TOKEN != '' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
