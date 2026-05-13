@@ -1,10 +1,17 @@
 suite: basic chart sanity
+# Each template under test that uses `include (print $.Template.BasePath "/foo.yaml")`
+# needs the referenced template loaded too — otherwise helm-unittest reports
+# `no template "..." associated with template "gotpl"`.
 templates:
   - templates/postgres/statefulset.yaml
   - templates/llm-gateway/deployment.yaml
+  - templates/llm-gateway/configmap.yaml
+  - templates/llm-gateway/secret.yaml
   - templates/neoncart/deployment.yaml
+  - templates/neoncart/configmap.yaml
 tests:
   - it: postgres StatefulSet renders when enabled
+    template: templates/postgres/statefulset.yaml
     set:
       phase: 1
       postgres.enabled: true
@@ -16,12 +23,14 @@ tests:
           path: kind
           value: StatefulSet
   - it: postgres renders 0 when phase is 0
+    template: templates/postgres/statefulset.yaml
     set:
       phase: 0
     asserts:
       - hasDocuments:
           count: 0
   - it: neoncart deployment renders at phase 1
+    template: templates/neoncart/deployment.yaml
     set:
       phase: 1
       neoncart.enabled: true
@@ -31,6 +40,7 @@ tests:
           path: kind
           value: Deployment
   - it: llm-gateway deployment has required env vars
+    template: templates/llm-gateway/deployment.yaml
     set:
       phase: 1
       llmGateway.enabled: true
