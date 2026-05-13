@@ -36,13 +36,39 @@ class OllamaProvider(Provider):
         self.model = self.config.get("model", DEFAULT_MODEL)
         self.timeout = float(self.config.get("timeout", DEFAULT_TIMEOUT))
 
+    @staticmethod
+    def _flatten_messages(messages: list[dict]) -> list[dict]:
+        """Coerce OpenAI-style messages to Ollama's flat {role, content:str} shape.
+
+        OpenAI permits content as a list of typed parts (``[{"type": "text", "text": ...}]``)
+        or a list of tool-result blocks; Ollama's chat API wants ``content`` as a single
+        string. We flatten any list to plain text so tool-result echoes from the
+        specialist base don't trip Ollama with a 400.
+        """
+        out: list[dict] = []
+        for m in messages:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            if isinstance(content, list):
+                parts: list[str] = []
+                for c in content:
+                    if isinstance(c, dict):
+                        # Common shapes: {"type": "text", "text": "..."} or
+                        # {"type": "tool_result", "content": "..."}
+                        parts.append(str(c.get("text") or c.get("content") or ""))
+                    else:
+                        parts.append(str(c))
+                content = "\n".join(p for p in parts if p)
+            out.append({"role": role, "content": str(content)})
+        return out
+
     async def complete(self, req: CompleteRequest) -> CompleteResponse:
         model = req.model_override or self.model
         payload: dict[str, Any] = {
             "model": model,
-            "messages": req.messages,
+            "messages": self._flatten_messages(req.messages),
             "stream": False,
-            "options": {"num_predict": req.max_tokens},
+            "options": {"num_predict": req.max_tokens, "temperature": 0.7},
         }
         if req.tools:
             payload["tools"] = req.tools

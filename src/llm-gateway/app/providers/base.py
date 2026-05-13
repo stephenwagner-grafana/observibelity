@@ -26,6 +26,10 @@ class CompleteRequest(BaseModel):
         default=None,
         description="If set, the gateway routes to this exact model regardless of provider default.",
     )
+    provider_override: str | None = Field(
+        default=None,
+        description="If set, the gateway routes to this provider (e.g. 'anthropic', 'ollama') instead of the default.",
+    )
     max_tokens: int = Field(default=2000, ge=1, le=200_000)
     ai_o11y: dict = Field(
         default_factory=dict,

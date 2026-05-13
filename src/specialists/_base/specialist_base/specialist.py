@@ -29,6 +29,12 @@ class SpecialistRequest(BaseModel):
     session_id: str | None = None
     usecase: str | None = None
     context: dict[str, Any] = Field(default_factory=dict)
+    # Per-request LLM routing — forwarded to the gateway's /v1/complete so
+    # demos (e.g. baseline.js's 80/20 Ollama vs Claude split) can pin a
+    # provider/model without reconfiguring the chart. Leave unset to use
+    # the gateway's configured defaults.
+    provider_override: str | None = None
+    model_override: str | None = None
 
 
 class SpecialistResponse(BaseModel):
@@ -87,6 +93,13 @@ class Specialist(ABC):
         }
         if self.DEFAULT_MODEL:
             payload["model_override"] = self.DEFAULT_MODEL
+        # Per-request overrides from the inbound app (e.g. loadgen 80/20
+        # split via NeonCart /chat -> nc-chatbot -> here) trump the
+        # class-level default so the demo can drive provider mix.
+        if req.provider_override:
+            payload["provider_override"] = req.provider_override
+        if req.model_override:
+            payload["model_override"] = req.model_override
 
         with tracer.start_as_current_span(f"specialist.{self.NAME}.call_gateway") as span:
             span.set_attribute("ai_o11y.specialist", self.NAME)

@@ -347,8 +347,13 @@ async def metrics() -> Response:
 
 @app.post("/v1/complete", response_model=CompleteResponse)
 async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
-    """The one route specialists call. Routes → costs → emits event → returns."""
-    provider_name, provider = _select_provider(request, name=None)
+    """The one route specialists call. Routes → costs → emits event → returns.
+
+    Per-request ``provider_override`` lets callers pin a specific provider
+    (e.g. the loadgen's 80/20 Ollama vs Claude split). When unset we fall
+    back to the gateway's configured default provider.
+    """
+    provider_name, provider = _select_provider(request, name=req.provider_override)
 
     with tracer.start_as_current_span("llm_gateway.complete") as span:
         # gen_ai.* span attrs follow OTel GenAI semantic conventions.

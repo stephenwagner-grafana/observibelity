@@ -97,15 +97,23 @@ class SbRouter(Specialist):
             span.set_attribute("ai_o11y.sb.target", target)
             url = f"http://{target}/v1/run"
             try:
+                forward_body: dict = {
+                    "message": req.message,
+                    "persona_id": req.persona_id,
+                    "session_id": req.session_id,
+                    "usecase": req.usecase,
+                    "context": {**req.context, "router_route": route},
+                }
+                # Propagate per-request LLM routing so loadgen-driven
+                # 80/20 provider mixing reaches the downstream specialist
+                # too (otherwise sb-* would all stay on the gateway default).
+                if req.provider_override:
+                    forward_body["provider_override"] = req.provider_override
+                if req.model_override:
+                    forward_body["model_override"] = req.model_override
                 resp = await self.client.post(
                     url,
-                    json={
-                        "message": req.message,
-                        "persona_id": req.persona_id,
-                        "session_id": req.session_id,
-                        "usecase": req.usecase,
-                        "context": {**req.context, "router_route": route},
-                    },
+                    json=forward_body,
                     timeout=30.0,
                 )
                 resp.raise_for_status()
