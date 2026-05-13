@@ -109,7 +109,12 @@ class Specialist(ABC):
         args: dict,
         req: SpecialistRequest,
     ) -> dict:
-        """Helper for subclasses: call a tool by name (must be in TOOL_ALLOWLIST)."""
+        """Helper for subclasses: call a tool by name (must be in TOOL_ALLOWLIST).
+
+        Propagates ``X-Caller`` (so tools with an ``ALLOWED_CALLERS`` allowlist
+        recognise the specialist) and ``X-Persona-Id`` (so tools can attribute
+        spans/metrics to the originating user).
+        """
         if tool_name not in self.TOOL_ALLOWLIST:
             raise PermissionError(
                 f"{self.NAME} not allowed to call {tool_name}"
@@ -123,7 +128,11 @@ class Specialist(ABC):
                 span.set_attribute("ai_o11y.persona_id", req.persona_id)
             if req.usecase:
                 span.set_attribute("ai_o11y.usecase", req.usecase)
-            resp = await self.client.post(tool_url, json=args)
+            headers = {
+                "X-Caller": self.NAME,
+                "X-Persona-Id": req.persona_id or "",
+            }
+            resp = await self.client.post(tool_url, json=args, headers=headers)
             resp.raise_for_status()
             return resp.json()
 

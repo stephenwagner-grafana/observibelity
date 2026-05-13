@@ -101,6 +101,7 @@ def build_app(tool: Tool) -> FastAPI:
     async def invoke(
         request: Request,
         x_caller: str | None = Header(default=None, alias="X-Caller"),
+        x_persona_id: str | None = Header(default=None, alias="X-Persona-Id"),
     ) -> JSONResponse:
         try:
             body = await request.json()
@@ -110,6 +111,14 @@ def build_app(tool: Tool) -> FastAPI:
             args = tool.Args.model_validate(body)
         except Exception as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+        # Attach caller + persona to the current HTTP server span so Tempo
+        # filters work even when the tool short-circuits (e.g. on a 403).
+        current_span = trace.get_current_span()
+        if current_span is not None:
+            if x_caller:
+                current_span.set_attribute("ai_o11y.tool.caller", x_caller)
+            if x_persona_id:
+                current_span.set_attribute("ai_o11y.persona_id", x_persona_id)
         with LATENCY.labels(tool=tool.NAME).time():
             try:
                 result = await tool.invoke(args, caller=x_caller)
