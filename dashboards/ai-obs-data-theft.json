@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -11,7 +14,10 @@
         "type": "dashboard"
       },
       {
-        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
         "enable": true,
         "hide": false,
         "iconColor": "red",
@@ -22,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cc_paste — {{ employee }} last4={{ last4 }}"
+        "textFormat": "cc_paste \u2014 {{ employee }} last4={{ last4 }}"
       }
     ]
   },
@@ -32,137 +38,250 @@
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
-     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "phase-2"
+      ],
+      "title": "AI Observability dashboards",
+      "type": "dashboards"
+    }
   ],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "panels": [],
       "title": "Headline",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Total exfil events across all employees in the last 24 hours.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 5},
-              {"color": "red", "value": 20}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
       "id": 2,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(supportbot_exfil_event_total[24h]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" [24h]))",
+          "queryType": "instant",
+          "legendFormat": "events"
         }
       ],
       "title": "Total exfil events (24h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Number of distinct employees with at least one exfil event in the last hour.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 3}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "count(sum by (employee) (increase(supportbot_exfil_event_total[1h])) > 0)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [1h])) > 0)",
+          "queryType": "instant",
+          "legendFormat": "employees"
         }
       ],
       "title": "Employees with exfil (1h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Credit-card paste events in the last hour.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 5}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
       "id": 4,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(supportbot_cc_paste_total[1h]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" [1h]))",
+          "queryType": "instant",
+          "legendFormat": "cc paste events"
         }
       ],
       "title": "cc_paste events (1h)",
       "type": "stat"
     },
     {
-      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
       "description": "data_theft alert state. Fires at >=5 events / 10m for any employee.",
-      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 1},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
       "id": 5,
       "options": {
         "alertInstanceLabelFilter": "",
@@ -172,13 +291,22 @@
         "groupMode": "default",
         "maxItems": 10,
         "sortOrder": 3,
-        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": true, "pending": true},
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": false,
+          "normal": true,
+          "pending": true
+        },
         "viewMode": "list"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
           "queryType": "alerts",
           "refId": "A"
         }
@@ -188,59 +316,98 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "id": 6,
       "panels": [],
       "title": "Per-employee leaderboard",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Top 10 employees ranked by rolling exfil score over the last 10 minutes.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 0.4},
-              {"color": "red", "value": 0.7}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.4
+              },
+              {
+                "color": "red",
+                "value": 0.7
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 7},
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
       "id": 7,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, max by (employee) (supportbot_exfil_score{employee!=\"\"}))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [10m])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Top 10 employees by exfil score (10m rolling)",
       "type": "bargauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Exfil events per employee over time.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
@@ -253,18 +420,37 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 11, "w": 12, "x": 12, "y": 7},
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
       "id": 8,
       "options": {
-        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (employee) (rate(supportbot_exfil_event_total{employee!=\"\"}[5m])))",
-          "legendFormat": "{{employee}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [5m])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}}"
         }
       ],
       "title": "Exfil events per employee (5m, top 10)",
@@ -272,18 +458,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
       "id": 9,
       "panels": [],
       "title": "Single-employee drill-down",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Drill-down for the selected employee (persona_id variable). Shows exfil score over time.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 20,
@@ -295,170 +491,339 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 0.4},
-              {"color": "red", "value": 0.7}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.4
+              },
+              {
+                "color": "red",
+                "value": 0.7
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 19},
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 19
+      },
       "id": 10,
       "options": {
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "max(supportbot_exfil_score{employee=\"$persona_id\"})",
-          "legendFormat": "$persona_id exfil score",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=\"$persona_id\" [10m]))",
+          "queryType": "range",
+          "legendFormat": "exfil score"
         },
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(rate(supportbot_exfil_event_total{employee=\"$persona_id\"}[5m]))",
-          "legendFormat": "$persona_id exfil events / s",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id=\"$persona_id\" [5m]))",
+          "queryType": "range",
+          "legendFormat": "total events"
         }
       ],
-      "title": "$persona_id — exfil score + events",
+      "title": "$persona_id \u2014 exfil score + events",
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Recent exfil event count for the selected employee.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 2},
-              {"color": "red", "value": 5}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 19},
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
       "id": 11,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum(increase(supportbot_exfil_event_total{employee=\"$persona_id\"}[10m]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=\"$persona_id\" [10m]))",
+          "queryType": "instant",
+          "legendFormat": "events"
         }
       ],
-      "title": "$persona_id — exfil events (last 10m)",
+      "title": "$persona_id \u2014 exfil events (last 10m)",
       "type": "stat"
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 28},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
       "id": 12,
       "panels": [],
       "title": "Top exfilters table",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Top 20 exfilters in the last hour with most-recent event count.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "employee"},
-            "properties": [{"id": "displayName", "value": "Employee"}, {"id": "custom.width", "value": 280}]
-          },
-          {
-            "matcher": {"id": "byName", "options": "Value #A"},
+            "matcher": {
+              "id": "byName",
+              "options": "employee"
+            },
             "properties": [
-              {"id": "displayName", "value": "Exfil events (1h)"},
-              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+              {
+                "id": "displayName",
+                "value": "Employee"
+              },
+              {
+                "id": "custom.width",
+                "value": 280
+              }
             ]
           },
           {
-            "matcher": {"id": "byName", "options": "Value #B"},
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
             "properties": [
-              {"id": "displayName", "value": "Max exfil score"},
-              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+              {
+                "id": "displayName",
+                "value": "Exfil events (1h)"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              }
             ]
           },
           {
-            "matcher": {"id": "byName", "options": "Value #C"},
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
             "properties": [
-              {"id": "displayName", "value": "CC paste events"}
+              {
+                "id": "displayName",
+                "value": "Max exfil score"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CC paste events"
+              }
             ]
           }
         ]
       },
-      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 29},
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
       "id": 13,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "Exfil events (1h)"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Exfil events (1h)"
+          }
+        ]
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(20, sum by (employee) (increase(supportbot_exfil_event_total{employee!=\"\"}[1h])))",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}} exfil"
         },
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "max by (employee) (supportbot_exfil_score{employee!=\"\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}} total"
         },
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (employee) (increase(supportbot_cc_paste_total{employee!=\"\"}[1h]))",
-          "format": "table",
-          "instant": true,
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "queryType": "range",
+          "legendFormat": "{{ai_o11y_persona_id}} cc"
         }
       ],
-      "title": "Top exfilters — last 1h (with score + cc_paste)",
+      "title": "Top exfilters \u2014 last 1h (with score + cc_paste)",
       "transformations": [
-        {"id": "joinByField", "options": {"byField": "employee", "mode": "outer"}}
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "employee",
+            "mode": "outer"
+          }
+        }
       ],
       "type": "table"
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
       "id": 14,
       "panels": [],
-      "title": "Loki — cc_paste with employee context",
+      "title": "Loki \u2014 cc_paste with employee context",
       "type": "row"
     },
     {
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Live cc_paste events from SupportBot, tagged with employee + last4.",
-      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 42},
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
       "id": 15,
       "options": {
         "dedupStrategy": "none",
@@ -472,9 +837,13 @@
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"(cc_paste|exfil_event)\" | logfmt | employee=~\"$persona_id|.+\"",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=~\"$persona_id\"",
+          "queryType": "range"
         }
       ],
       "title": "cc_paste + exfil_event Loki stream",
@@ -483,44 +852,111 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["ai-observability", "phase-2", "security", "data-theft"],
+  "tags": [
+    "ai-observability",
+    "phase-2",
+    "security",
+    "data-theft"
+  ],
   "templating": {
     "list": [
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
-        "name": "datasource_prom", "options": [], "query": "prometheus",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
-        "name": "datasource_loki", "options": [], "query": "loki",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
-        "name": "datasource_tempo", "options": [], "query": "tempo",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": true, "text": "u-tim-l", "value": "u-tim-l"},
-        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-        "definition": "label_values(supportbot_exfil_event_total, employee)",
-        "hide": 0, "includeAll": false, "label": "Employee", "multi": false,
-        "name": "persona_id", "options": [],
-        "query": {"query": "label_values(supportbot_exfil_event_total, employee)",
-                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
-        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+        "current": {
+          "selected": true,
+          "text": "u-tim-l",
+          "value": "u-tim-l"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
+        "definition": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\"",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Employee",
+        "multi": false,
+        "name": "persona_id",
+        "options": [],
+        "query": "label_values({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\", ai_o11y_persona_id)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
-  "time": {"from": "now-1h", "to": "now"},
-  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
   "timezone": "",
-  "title": "AI o11y — Data Theft (per-employee exfil)",
+  "title": "AI o11y \u2014 Data Theft (per-employee exfil)",
   "uid": "ai-obs-data-theft",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

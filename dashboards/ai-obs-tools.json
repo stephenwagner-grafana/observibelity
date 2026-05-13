@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -11,7 +14,10 @@
         "type": "dashboard"
       },
       {
-        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
         "enable": true,
         "hide": false,
         "iconColor": "red",
@@ -22,41 +28,70 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "runaway — {{ conv_id }} / {{ tool_name }}"
+        "textFormat": "runaway \u2014 {{ conv_id }} / {{ tool_name }}"
       }
     ]
   },
-  "description": "Tool call analytics — agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
+  "description": "Tool call analytics \u2014 agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
-     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "phase-2"
+      ],
+      "title": "AI Observability dashboards",
+      "type": "dashboards"
+    }
   ],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "panels": [],
       "title": "Runaway detection",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Max tool-calls-to-same-tool across all conversations in the last 10m. > 20 fires the runaway alert.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 10},
-              {"color": "red", "value": 20}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
             ]
           },
           "max": 50,
@@ -65,63 +100,112 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 1},
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
       "id": 2,
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showThresholdLabels": true,
         "showThresholdMarkers": true
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "max(sum by (conv_id, ai_o11y_tool) (increase(tool_invoke_total[10m])))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max(sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "max"
         }
       ],
       "title": "tool_call_runaway gauge (max calls / conv / tool, 10m)",
       "type": "gauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Top conversations by tool-call count to a single tool.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 10},
-              {"color": "red", "value": 20}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 7, "w": 16, "x": 8, "y": 1},
+      "gridPos": {
+        "h": 7,
+        "w": 16,
+        "x": 8,
+        "y": 1
+      },
       "id": 3,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (conv_id, ai_o11y_tool) (increase(tool_invoke_total[10m])))",
-          "legendFormat": "{{conv_id}} / {{ai_o11y_tool}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{service}}"
         }
       ],
       "title": "Top conversations by tool-call count (10m)",
@@ -129,18 +213,28 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 8},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
       "id": 4,
       "panels": [],
       "title": "Tool call rate + per-tool breakdown",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Tool invocation rate by tool.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 15,
@@ -153,29 +247,55 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 9},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
       "id": 5,
       "options": {
-        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (ai_o11y_tool) (rate(tool_invoke_total{ai_o11y_tool=~\"$tool\"}[5m]))",
-          "legendFormat": "{{ai_o11y_tool}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"$tool\"}[5m]))",
+          "format": "time_series",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{service}}"
         }
       ],
       "title": "Tool call rate by tool (5m)",
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Per-conversation tool-call counter — how many tool calls a session has accumulated.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Per-conversation tool-call counter \u2014 how many tool calls a session has accumulated.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
@@ -188,18 +308,39 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 9},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
       "id": 6,
       "options": {
-        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["max"]},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(10, sum by (conv_id) (increase(tool_invoke_total[5m])))",
-          "legendFormat": "{{conv_id}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])))",
+          "format": "time_series",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{service}}"
         }
       ],
       "title": "Per-conversation tool call counter (5m, top 10)",
@@ -207,23 +348,47 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
       "id": 7,
       "panels": [],
       "title": "Tool latency + errors",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "description": "Tool latency distribution heatmap.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
-          "custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}, "scaleDistribution": {"type": "linear"}}
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 19},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
       "id": 8,
       "options": {
         "calculate": false,
@@ -237,38 +402,72 @@
           "scheme": "Oranges",
           "steps": 64
         },
-        "exemplars": {"color": "rgba(255,0,255,0.7)"},
-        "filterValues": {"le": 1e-9},
-        "legend": {"show": true},
-        "rowsFrame": {"layout": "auto"},
-        "tooltip": {"show": true, "yHistogram": false},
-        "yAxis": {"axisPlacement": "left", "reverse": false, "unit": "s"}
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "s"
+        }
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (le) (rate(tool_invoke_duration_seconds_bucket{ai_o11y_tool=~\"$tool\"}[5m]))",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\", service=~\"$tool\"}[5m]))",
           "format": "heatmap",
-          "legendFormat": "{{le}}",
-          "refId": "A"
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{le}}"
         }
       ],
       "title": "Tool latency distribution (5m)",
       "type": "heatmap"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Tool error rate by tool — fraction of tool invocations with status=error.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Tool error rate by tool \u2014 fraction of tool invocations with status=error.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "continuous-GrYlRd"},
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 0.05},
-              {"color": "red", "value": 0.2}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.05
+              },
+              {
+                "color": "red",
+                "value": 0.2
+              }
             ]
           },
           "max": 1,
@@ -277,24 +476,41 @@
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 19},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
       "id": 9,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showUnfilled": true,
         "valueMode": "color"
       },
       "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "sum by (ai_o11y_tool) (rate(tool_invoke_total{status=\"error\"}[5m])) / clamp_min(sum by (ai_o11y_tool) (rate(tool_invoke_total[5m])), 0.001)",
-          "legendFormat": "{{ai_o11y_tool}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) or on(service) sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m]) * 0)) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
+          "format": "time_series",
+          "range": true,
+          "instant": false,
+          "legendFormat": "{{service}}"
         }
       ],
       "title": "Tool error rate by tool (5m)",
@@ -302,55 +518,140 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 28},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
       "id": 10,
       "panels": [],
       "title": "Top sessions table",
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-      "description": "Sessions with most tool calls in last 10m — investigation list.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Sessions with most tool calls in last 10m \u2014 investigation list.",
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 20}]},
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "conv_id"},
-            "properties": [{"id": "displayName", "value": "Conversation"}, {"id": "custom.width", "value": 260}]
-          },
-          {
-            "matcher": {"id": "byName", "options": "ai_o11y_tool"},
-            "properties": [{"id": "displayName", "value": "Dominant tool"}, {"id": "custom.width", "value": 220}]
-          },
-          {
-            "matcher": {"id": "byName", "options": "Value"},
+            "matcher": {
+              "id": "byName",
+              "options": "conv_id"
+            },
             "properties": [
-              {"id": "displayName", "value": "Tool calls (10m)"},
-              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+              {
+                "id": "displayName",
+                "value": "Conversation"
+              },
+              {
+                "id": "custom.width",
+                "value": 260
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ai_o11y_tool"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Dominant tool"
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tool calls (10m)"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
             ]
           }
         ]
       },
-      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 29},
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
       "id": 11,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "Tool calls (10m)"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Tool calls (10m)"
+          }
+        ]
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-          "expr": "topk(20, sum by (conv_id, ai_o11y_tool) (increase(tool_invoke_total[10m])))",
-          "format": "table",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(20, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
+          "format": "time_series",
+          "range": false,
           "instant": true,
-          "refId": "A"
+          "legendFormat": "{{service}}"
         }
       ],
       "title": "Top sessions with most tool calls (10m)",
@@ -358,16 +659,29 @@
     },
     {
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 40},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
       "id": 12,
       "panels": [],
-      "title": "Loki — tool errors",
+      "title": "Loki \u2014 tool errors",
       "type": "row"
     },
     {
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "description": "Tool invocation errors stream.",
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 41},
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
       "id": 13,
       "options": {
         "dedupStrategy": "none",
@@ -381,9 +695,13 @@
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
-          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"tool_call\" |~ \"(?i)(error|retry|timeout|fail)\"",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{namespace=\"observibelity\",container=~\"tool|neoncart|supportbot\"} |~ \"(?i)(error|exception|fail|retry|timeout|traceback)\"",
+          "queryType": "range"
         }
       ],
       "title": "Tool errors stream (Loki)",
@@ -392,44 +710,114 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["ai-observability", "phase-2", "tools", "agentic"],
+  "tags": [
+    "ai-observability",
+    "phase-2",
+    "tools",
+    "agentic"
+  ],
   "templating": {
     "list": [
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
-        "name": "datasource_prom", "options": [], "query": "prometheus",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
-        "name": "datasource_loki", "options": [], "query": "loki",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "default", "value": "default"},
-        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
-        "name": "datasource_tempo", "options": [], "query": "tempo",
-        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       },
       {
-        "current": {"selected": false, "text": "All", "value": "$__all"},
-        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-        "definition": "label_values(tool_invoke_total, ai_o11y_tool)",
-        "hide": 0, "includeAll": true, "label": "Tool", "multi": true,
-        "name": "tool", "options": [],
-        "query": {"query": "label_values(tool_invoke_total, ai_o11y_tool)",
-                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
-        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "definition": "label_values(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Tool",
+        "multi": true,
+        "name": "tool",
+        "options": [],
+        "query": {
+          "query": "label_values(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
-  "time": {"from": "now-1h", "to": "now"},
-  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
   "timezone": "",
-  "title": "AI o11y — Tools (Runaway loops)",
+  "title": "AI o11y \u2014 Tools (Runaway loops)",
   "uid": "ai-obs-tools",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
