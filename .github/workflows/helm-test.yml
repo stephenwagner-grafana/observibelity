@@ -1,5 +1,8 @@
 name: helm-test
-on: [pull_request, push, workflow_dispatch]
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 concurrency:
   group: helm-test-${{ github.ref }}
   cancel-in-progress: true

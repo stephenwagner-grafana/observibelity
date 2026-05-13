@@ -7,15 +7,8 @@ name: build-images
 # Use this when you want fresh images off main without cutting a tagged release.
 # (A release tag uses release.yml which also stamps the :VERSION tag.)
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/**'
-      - 'migrations/**'
-      - 'seed_data/**'
-      - 'tools/seed-loader.py'
-      - '.github/workflows/build-images.yml'
+  pull_request:
+    branches: [main]
   workflow_dispatch: {}
 
 concurrency:
