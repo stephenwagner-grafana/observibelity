@@ -60,16 +60,16 @@ spec:
                 configMapKeyRef:
                   name: neoncart-branding
                   key: BRANDING_NAME
-            - name: TAGLINE
+            - name: BRANDING_TAGLINE
               valueFrom:
                 configMapKeyRef:
                   name: neoncart-branding
-                  key: TAGLINE
-            - name: PRIMARY_COLOR
+                  key: BRANDING_TAGLINE
+            - name: BRANDING_PRIMARY_COLOR
               valueFrom:
                 configMapKeyRef:
                   name: neoncart-branding
-                  key: PRIMARY_COLOR
+                  key: BRANDING_PRIMARY_COLOR
           readinessProbe:
             httpGet:
               path: /health

@@ -9,6 +9,6 @@ metadata:
     app.kubernetes.io/component: neoncart
 data:
   BRANDING_NAME: {{ (.Values.neoncart.branding).name | default "NeonCart" | quote }}
-  TAGLINE: {{ (.Values.neoncart.branding).tagline | default "Shop the future, today." | quote }}
-  PRIMARY_COLOR: {{ (.Values.neoncart.branding).primaryColor | default "#22d3ee" | quote }}
+  BRANDING_TAGLINE: {{ (.Values.neoncart.branding).tagline | default "Glow on. Shop on." | quote }}
+  BRANDING_PRIMARY_COLOR: {{ (.Values.neoncart.branding).primaryColor | default "#22d3ee" | quote }}
 {{- end }}

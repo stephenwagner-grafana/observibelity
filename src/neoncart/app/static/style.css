@@ -1,16 +1,27 @@
-/* NeonCart storefront styles. --primary-color is injected per-deploy
-   from values.yaml -> neoncart.branding.primaryColor (see base.html). */
+/* NeonCart storefront — neon-arcade aesthetic.
+   --primary-color is injected per-deploy from values.yaml ->
+   neoncart.branding.primaryColor (see base.html). Defaults to electric
+   cyan; accent is hot magenta. Background is near-black with violet
+   undertones so the neon glows read on first paint. */
 
 :root {
-  --primary-color: #7c3aed;
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-elev: #273449;
+  --primary-color: #22d3ee;        /* electric cyan (overridable) */
+  --accent-color: #ec4899;         /* hot magenta */
+  --accent-color-soft: rgba(236, 72, 153, 0.35);
+  --primary-color-soft: rgba(34, 211, 238, 0.35);
+  --bg: #050314;                   /* near-black violet */
+  --surface: #0f0a2e;              /* midnight purple */
+  --surface-elev: #1a1140;
   --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --border: #334155;
+  --text-muted: #a78bfa;           /* lavender, not slate */
+  --border: rgba(167, 139, 250, 0.25);
+  --border-hot: var(--primary-color);
   --danger: #ef4444;
-  --radius: 10px;
+  --radius: 12px;
+  --glow-primary: 0 0 10px var(--primary-color-soft),
+                  0 0 24px var(--primary-color-soft);
+  --glow-accent:  0 0 10px var(--accent-color-soft),
+                  0 0 24px var(--accent-color-soft);
 }
 
 * { box-sizing: border-box; }
@@ -19,38 +30,47 @@ body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(34, 211, 238, 0.08), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 40%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a { color: var(--primary-color); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { text-decoration: underline; text-shadow: var(--glow-primary); }
 
 /* ---- Nav ---------------------------------------------------------- */
 .nc-nav {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 2rem; background: var(--surface);
+  padding: 1rem 2rem;
+  background: rgba(15, 10, 46, 0.6);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
 }
 .nc-brand {
   display: flex; gap: 0.6rem; align-items: center;
-  font-weight: 700; font-size: 1.25rem; color: var(--text);
+  font-weight: 700; font-size: 1.35rem; color: var(--text);
+  letter-spacing: 0.02em;
+  text-shadow: var(--glow-primary);
 }
 .nc-brand img { height: 28px; }
 .nc-nav nav a { margin-left: 1.25rem; color: var(--text-muted); }
-.nc-nav nav a:hover { color: var(--text); }
+.nc-nav nav a:hover { color: var(--primary-color); }
 
 /* ---- "View as" persona picker ------------------------------------- */
 .persona-picker {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
+  display: flex; align-items: center; gap: 0.5rem; margin-left: auto;
 }
 .persona-picker label {
   color: var(--text-muted);
   font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 .persona-picker select {
   background: var(--surface);
@@ -63,33 +83,93 @@ a:hover { text-decoration: underline; }
   max-width: 260px;
 }
 .persona-picker select:focus {
-  outline: 2px solid var(--primary-color);
+  outline: 1px solid var(--primary-color);
   outline-offset: 1px;
+  box-shadow: var(--glow-primary);
 }
-.persona-picker option[selected] {
-  font-weight: bold;
-}
+.persona-picker option[selected] { font-weight: bold; }
 
 /* ---- Layout ------------------------------------------------------- */
 .nc-main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
 .nc-section { margin: 2rem 0; }
-.nc-section h2 { margin-bottom: 1rem; }
-.nc-footer { text-align: center; padding: 2rem; color: var(--text-muted); }
+.nc-section h2 {
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  border-left: 3px solid var(--accent-color);
+  padding-left: 0.75rem;
+}
+.nc-footer {
+  text-align: center; padding: 2rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
 
 /* ---- Hero --------------------------------------------------------- */
 .nc-hero {
-  padding: 3rem 2rem;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--surface-elev) 100%);
+  padding: 4rem 2rem;
+  background:
+    radial-gradient(circle at 80% 20%, var(--accent-color-soft), transparent 55%),
+    radial-gradient(circle at 20% 80%, var(--primary-color-soft), transparent 55%),
+    linear-gradient(135deg, var(--surface) 0%, var(--surface-elev) 100%);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
-.nc-hero h1 { font-size: 2.5rem; margin: 0 0 0.5rem; }
+.nc-hero::before {
+  /* subtle scan-line grid */
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(167, 139, 250, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+}
+.nc-hero h1 {
+  font-size: 3.5rem;
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-shadow: var(--glow-primary);
+  position: relative;
+}
+.nc-hero p {
+  margin: 0;
+  color: var(--accent-color);
+  text-shadow: var(--glow-accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  position: relative;
+}
 .nc-cta {
-  display: inline-block; margin-top: 1rem; padding: 0.6rem 1.2rem;
-  background: var(--primary-color); color: #fff !important;
-  border-radius: var(--radius); border: 0; cursor: pointer; font-weight: 600;
+  display: inline-block; margin-top: 1.5rem; padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--primary-color) !important;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  transition: all .15s ease;
+  position: relative;
+  box-shadow: var(--glow-primary);
 }
-.nc-cta:hover { filter: brightness(1.1); text-decoration: none; }
+.nc-cta:hover {
+  background: var(--primary-color);
+  color: var(--bg) !important;
+  text-decoration: none;
+  text-shadow: none;
+  box-shadow: 0 0 16px var(--primary-color), 0 0 32px var(--primary-color-soft);
+}
 
 /* ---- Cards / grid -------------------------------------------------- */
 .nc-grid {
@@ -97,25 +177,65 @@ a:hover { text-decoration: underline; }
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 .nc-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); overflow: hidden; transition: transform .12s;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all .18s ease;
+  position: relative;
 }
-.nc-card:hover { transform: translateY(-2px); }
+.nc-card::after {
+  /* hover-only neon underline */
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .25s ease;
+}
+.nc-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-color);
+  box-shadow: var(--glow-primary);
+}
+.nc-card:hover::after { transform: scaleX(1); }
 .nc-card a { color: var(--text); display: block; padding: 0.75rem; }
 .nc-card img, .nc-card__placeholder {
   width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
-  background: var(--surface-elev); border-radius: 6px;
+  background:
+    linear-gradient(135deg, var(--surface-elev) 0%, var(--surface) 100%);
+  border-radius: 6px;
 }
 .nc-card h3 { margin: 0.5rem 0 0.25rem; font-size: 1rem; }
-.nc-card__price { font-weight: 700; color: var(--primary-color); margin: 0; }
-.nc-card__brand { color: var(--text-muted); font-size: 0.85rem; margin: 0.25rem 0 0; }
+.nc-card__price {
+  font-weight: 700;
+  color: var(--accent-color);
+  margin: 0;
+  text-shadow: 0 0 8px var(--accent-color-soft);
+}
+.nc-card__brand {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0.25rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .nc-empty { color: var(--text-muted); }
 
 /* ---- Filters / pager --------------------------------------------- */
 .nc-filters { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
 .nc-filters a {
-  padding: 0.3rem 0.7rem; background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0.3rem 0.7rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.nc-filters a:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  text-decoration: none;
 }
 .nc-pager { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
 
@@ -125,65 +245,120 @@ a:hover { text-decoration: underline; }
 .nc-product__media img,
 .nc-product__placeholder {
   width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
-  border-radius: var(--radius); background: var(--surface-elev);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, var(--surface-elev) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
 }
-.nc-product__brand { color: var(--text-muted); margin: 0; }
-.nc-product__price { font-size: 1.5rem; color: var(--primary-color); font-weight: 700; }
-.nc-product__sku code { background: var(--surface); padding: 2px 6px; border-radius: 4px; }
+.nc-product__brand {
+  color: var(--text-muted); margin: 0;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.nc-product__price {
+  font-size: 1.75rem;
+  color: var(--accent-color);
+  font-weight: 700;
+  text-shadow: var(--glow-accent);
+}
+.nc-product__sku code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--primary-color);
+}
 .nc-product__stock { color: var(--text-muted); }
 
 /* ---- Chat widget -------------------------------------------------- */
 .nc-chat { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 50; }
 .nc-chat__toggle {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.75rem 1rem; background: var(--primary-color);
-  color: #fff; border: 0; border-radius: 999px; cursor: pointer;
-  font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  padding: 0.85rem 1.25rem;
+  background: var(--surface);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  box-shadow: var(--glow-primary);
+  transition: all .15s ease;
+}
+.nc-chat__toggle:hover {
+  background: var(--primary-color);
+  color: var(--bg);
+  box-shadow: 0 0 16px var(--primary-color), 0 0 32px var(--primary-color-soft);
 }
 .nc-chat__toggle-icon { font-size: 1.2rem; }
 
 .nc-chat__panel {
   display: none; position: absolute; right: 0; bottom: 3.5rem;
   width: 360px; max-width: 90vw; height: 480px; max-height: 70vh;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  background: var(--surface);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px var(--primary-color-soft), 0 16px 40px rgba(0,0,0,0.5);
   flex-direction: column;
+  overflow: hidden;
 }
 .nc-chat[data-open="true"] .nc-chat__panel { display: flex; }
 .nc-chat[data-open="true"] .nc-chat__toggle-text { display: none; }
 
 .nc-chat__header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-elev);
 }
 .nc-chat__close {
   background: transparent; border: 0; color: var(--text-muted);
   font-size: 1.25rem; cursor: pointer;
 }
+.nc-chat__close:hover { color: var(--accent-color); }
 
 .nc-chat__messages {
   flex: 1; padding: 0.75rem; overflow-y: auto;
   display: flex; flex-direction: column; gap: 0.5rem;
 }
 .chat-msg {
-  padding: 0.5rem 0.75rem; border-radius: var(--radius);
+  padding: 0.55rem 0.85rem; border-radius: var(--radius);
   max-width: 85%; word-wrap: break-word;
 }
-.chat-msg--user { background: var(--primary-color); color: #fff; align-self: flex-end; }
-.chat-msg--bot { background: var(--surface-elev); align-self: flex-start; }
+.chat-msg--user {
+  background: linear-gradient(135deg, var(--primary-color), #0891b2);
+  color: var(--bg);
+  align-self: flex-end;
+  font-weight: 500;
+}
+.chat-msg--bot {
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+}
 .chat-msg--err { background: var(--danger); color: #fff; }
 
 .nc-chat__form {
   display: flex; gap: 0.5rem; padding: 0.75rem;
   border-top: 1px solid var(--border);
+  background: var(--surface-elev);
 }
 .nc-chat__form input {
   flex: 1; padding: 0.5rem; background: var(--bg);
   color: var(--text); border: 1px solid var(--border); border-radius: 6px;
 }
-.nc-chat__send {
-  padding: 0.5rem 0.9rem; background: var(--primary-color);
-  color: #fff; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600;
+.nc-chat__form input:focus {
+  outline: 0; border-color: var(--primary-color);
+  box-shadow: var(--glow-primary);
 }
+.nc-chat__send {
+  padding: 0.5rem 0.9rem;
+  background: var(--primary-color);
+  color: var(--bg);
+  border: 0; border-radius: 6px; cursor: pointer; font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.nc-chat__send:hover { box-shadow: var(--glow-primary); }
 .nc-chat__spinner { display: none; align-self: center; color: var(--text-muted); }
 .nc-chat__spinner.htmx-request { display: inline; }

@@ -120,6 +120,14 @@ neoncart:
     enabled: false
     host: ""
     className: ""
+  branding:
+    name: "NeonCart"
+    tagline: "Glow on. Shop on."
+    # CSS custom property injected into base.html — drives accent on hero,
+    # buttons, links, card prices. The CSS also defines a hot-magenta accent
+    # baked into style.css (var --accent-color) that is NOT user-tunable;
+    # change style.css directly if you want a different secondary.
+    primaryColor: "#22d3ee"
   resources:
     requests:
       cpu: 200m
