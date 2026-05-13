@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install k3d
         run: curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.6.0 bash
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
         with: { version: v3.13.3 }
-      - uses: azure/setup-kubectl@v4
-      - uses: actions/setup-python@v5
+      - uses: azure/setup-kubectl@v5
+      - uses: actions/setup-python@v6
         with: { python-version: '3.12' }
       - name: Install python deps
         run: |
@@ -35,7 +35,7 @@ jobs:
           kubectl get events -A > integration-events.txt 2>&1 || true
       - name: Upload diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-failure-${{ github.sha }}
           path: |

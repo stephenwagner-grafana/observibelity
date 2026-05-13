@@ -14,7 +14,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Stage wiki content
         run: |
           mkdir -p _wiki
@@ -38,7 +38,7 @@ jobs:
           # Quick-Start = README.md trimmed to the Quick start section
           awk '/^## Quick start/{flag=1} flag && /^## /{if (count++>0) exit} flag' README.md > _wiki/Quick-Start.md
       - name: Push to wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        uses: Andrew-Chen-Wang/github-wiki-action@v5
         with:
           path: _wiki/
           token: ${{ secrets.GITHUB_TOKEN }}
