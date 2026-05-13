@@ -52,8 +52,10 @@ spec:
               value: "http://supportbot"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://otel-collector:4318"
+            {{- with .Values.k6.output }}
             - name: K6_OUT
-              value: "experimental-otel"
+              value: {{ . | quote }}
+            {{- end }}
             - name: CYCLE_SECONDS
               value: "{{ .Values.k6.cycle_seconds | default 10 }}"
             - name: DEFAULT_RATE
