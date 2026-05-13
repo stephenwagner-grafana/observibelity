@@ -9,8 +9,26 @@ concurrency:
   group: integration
   cancel-in-progress: false
 jobs:
+  preflight:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      has_secrets: ${{ steps.check.outputs.has_secrets }}
+    steps:
+      - id: check
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GRAFANA_CLOUD_API_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ] && [ -n "$GRAFANA_CLOUD_API_TOKEN" ]; then
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Required secrets unset — skipping integration job"
+          fi
   integration:
-    if: ${{ secrets.ANTHROPIC_API_KEY != '' && secrets.GRAFANA_CLOUD_API_TOKEN != '' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) }}
+    needs: preflight
+    if: needs.preflight.outputs.has_secrets == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
