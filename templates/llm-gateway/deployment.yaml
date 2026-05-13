@@ -57,6 +57,17 @@ spec:
               value: {{ .Values.llmGateway.providers.ollama.baseUrl | default "" | quote }}
             - name: OLLAMA_DEFAULT_MODEL
               value: {{ .Values.llmGateway.providers.ollama.model | default "llama3.1:8b" | quote }}
+            # Lockstep model rotation (see values.yaml + providers/ollama.py).
+            # Every llm-gateway replica reads the same wall clock, so every
+            # call from every Ollama-bound specialist lands on the same model
+            # during a given ``windowSeconds`` window — then they all flip
+            # to the next entry simultaneously.
+            - name: OLLAMA_ROTATION_ENABLED
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).enabled | default false | quote }}
+            - name: OLLAMA_ROTATION_WINDOW_SECONDS
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).windowSeconds | default 300 | quote }}
+            - name: OLLAMA_ROTATION_MODELS
+              value: {{ (default (list) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).models) | join "," | quote }}
             - name: LLM_GATEWAY_DEFAULT_PROVIDER
               value: {{ .Values.llmGateway.defaultProvider | default "anthropic" | quote }}
             - name: OTEL_SERVICE_NAME
