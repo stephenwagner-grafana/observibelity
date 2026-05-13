@@ -1,0 +1,19 @@
+groups:
+- name: cost-anomaly-per-user
+  rules:
+  - alert: ai-o11y-cost-per-user
+    expr: "max by (employee) (\n  sum_over_time(supportbot_tokens_total{employee!=\"\
+      \"}[1h])\n    + sum_over_time(neoncart_tokens_total{employee!=\"\"}[1h])\n)\
+      \ > 100000\n"
+    for: 5m
+    labels:
+      severity: high
+      use_case: cost-anomaly-per-user
+      app: both
+      route: finance-ops@acme.local
+    annotations:
+      summary: "Cost Anomaly per User \u2014 Priya pastes 40-80x paragraphs: ai-o11y-cost-per-user\
+        \ firing"
+      description: Sticky persona u-priya-research pastes 40-80x repeated paragraphs
+        of
+      runbook: registry/use_cases/cost-anomaly-per-user.yaml

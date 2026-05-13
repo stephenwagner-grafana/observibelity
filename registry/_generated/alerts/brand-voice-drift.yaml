@@ -1,0 +1,17 @@
+groups:
+- name: brand-voice-drift
+  rules:
+  - alert: ai-o11y-brand-drift
+    expr: "(\n  avg_over_time(neoncart_brand_voice_score[30m])\n    < (avg_over_time(neoncart_brand_voice_score[6h])\n\
+      \       - 2 * stddev_over_time(neoncart_brand_voice_score[6h]))\n)\n"
+    for: 15m
+    labels:
+      severity: medium
+      use_case: brand-voice-drift
+      app: neoncart
+      route: brand@acme.local
+    annotations:
+      summary: "Brand Voice Drift \u2014 tone as SLO: ai-o11y-brand-drift firing"
+      description: The tone-checker specialist scores every assistant response against
+        the
+      runbook: registry/use_cases/brand-voice-drift.yaml

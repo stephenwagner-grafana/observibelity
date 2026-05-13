@@ -1,0 +1,19 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: hiring-discrimination-risk
+  displayName: "Hiring Discrimination Risk \u2014 single event = P0"
+  labels:
+    use_case: hiring-discrimination-risk
+    app: supportbot
+    archetype: single-event-severity
+spec:
+  description: zero hiring_discrimination_risk critical events per 30d
+  service: supportbot
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 30d
+    isRolling: true
+  objectives:
+  - displayName: zero hiring_discrimination_risk critical events per 30d
+    target: 1.0

@@ -1,0 +1,25 @@
+{{- if (and .Values.supportbot.enabled .Values.supportbot.ingress.enabled (le 2 (int .Values.phase))) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: supportbot
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: supportbot
+spec:
+  {{- if .Values.supportbot.ingress.className }}
+  ingressClassName: {{ .Values.supportbot.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.supportbot.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: supportbot
+                port:
+                  number: 80
+{{- end }}

@@ -1,0 +1,19 @@
+{{- if (and .Values.k6.enabled (le 2 (int .Values.phase))) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-scenarios
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: traffic
+data:
+  baseline.js: |
+    {{- .Files.Get "registry/_generated/scenarios/baseline.js" | default "// no baseline.js" | nindent 4 }}
+  {{- range $path, $_ := .Files.Glob "registry/_generated/scenarios/*.js" }}
+  {{- if ne (base $path) "baseline.js" }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}

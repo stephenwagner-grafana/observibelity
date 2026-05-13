@@ -1,0 +1,18 @@
+groups:
+- name: refund-policy-compliance
+  rules:
+  - alert: refund_policy_compliance.window_violation_rate
+    expr: "sum(rate(sigil_eval_result_total{evaluator=\"refund_policy_compliance\"\
+      ,verdict=\"fail\"}[15m]))\n  / sum(rate(neoncart_refund_offer_total[15m])) >\
+      \ 0.02\n"
+    for: 10m
+    labels:
+      severity: high
+      use_case: refund-policy-compliance
+      app: neoncart
+      route: oncall@acme.local
+    annotations:
+      summary: "Refund Policy Compliance \u2014 every refund audited: refund_policy_compliance.window_violation_rate\
+        \ firing"
+      description: The bot occasionally offers refunds outside of policy (e.g. a 90-day-old
+      runbook: registry/use_cases/refund-policy-compliance.yaml

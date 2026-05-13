@@ -1,0 +1,105 @@
+{
+  "apiVersion": "v1",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "{{ name }}-single-event-severity",
+    "archetype": "single-event-severity"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "{{ name }} event timeline",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum by (severity) (rate(ai_o11y_usecase_events_total{usecase=\"{{ name }}\"}[5m]))",
+          "legendFormat": "severity={{ '{{severity}}' }}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "id": 2,
+      "title": "{{ name }} severity histogram (last 24h)",
+      "type": "barchart",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum by (severity) (increase(ai_o11y_usecase_events_total{usecase=\"{{ name }}\"}[24h]))",
+          "legendFormat": "{{ '{{severity}}' }}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 3,
+      "title": "Last 10 critical events for {{ name }}",
+      "type": "table",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "expr": "{usecase=\"{{ name }}\", severity=\"critical\"} | json | line_format \"{{ '{{trace_id}}' }} {{ '{{user_id}}' }} {{ '{{message}}' }}\"",
+          "maxLines": 10,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trace_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open trace",
+                    "url": "/explore?datasource=tempo&query=${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      }
+    }
+  ],
+  "uid": "ai-obs-evals",
+  "title": "Evals \u2014 toxicity + safety",
+  "tags": [
+    "ai-observability",
+    "app:both",
+    "archetype:single-event-severity",
+    "use_case:toxicity"
+  ]
+}

@@ -31,6 +31,7 @@ Sets these GH Actions secrets on the current gh-cli context's repo:
   GRAFANA_CLOUD_INSTANCE_ID
   GRAFANA_CLOUD_API_TOKEN
   GRAFANA_CLOUD_OTLP_ENDPOINT
+  GRAFANA_URL
   OLLAMA_BASE_URL (optional)
 EOF
       exit 0 ;;
@@ -41,7 +42,7 @@ done
 command -v gh >/dev/null || die "gh CLI not installed; brew install gh / apt install gh"
 gh auth status >/dev/null 2>&1 || die "gh not authenticated; run: gh auth login"
 
-REQUIRED=(ANTHROPIC_API_KEY GRAFANA_CLOUD_INSTANCE_ID GRAFANA_CLOUD_API_TOKEN GRAFANA_CLOUD_OTLP_ENDPOINT)
+REQUIRED=(ANTHROPIC_API_KEY GRAFANA_CLOUD_INSTANCE_ID GRAFANA_CLOUD_API_TOKEN GRAFANA_CLOUD_OTLP_ENDPOINT GRAFANA_URL)
 OPTIONAL=(OLLAMA_BASE_URL)
 
 if [[ "$MODE" == "check" ]]; then

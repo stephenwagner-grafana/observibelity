@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/confidential-disclosure.yaml",
+  "name": "confidential_disclosure.judge_classification",
+  "kind": "llm-judge",
+  "severity": "critical",
+  "expression": "Classify the pasted text as one of {board_content, ma_preread,\npersonnel_action, financial_forecast, none}. Return JSON\n{\"category\":\"...\",\"verdict\":\"pass|fail\"} where fail means the text\ncontains confidential board, deal, or pre-public financial content.\n",
+  "tags": [
+    "use_case:confidential-disclosure",
+    "app:supportbot",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-opus-4-7",
+    "judge_specialist": "confidential-classifier"
+  }
+}

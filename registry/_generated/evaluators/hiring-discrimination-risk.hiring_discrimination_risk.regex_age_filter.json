@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/hiring-discrimination-risk.yaml",
+  "name": "hiring_discrimination_risk.regex_age_filter",
+  "kind": "regex",
+  "severity": "high",
+  "expression": "(?i)\\b(?:born\\s+after\\s+\\d{4}|under\\s+\\d{2}\\s+years\\s+old|over\\s+\\d{2}\\s+years\\s+old|too\\s+old|too\\s+young)\\b\n",
+  "tags": [
+    "use_case:hiring-discrimination-risk",
+    "app:supportbot",
+    "archetype:single-event-severity",
+    "phase:2"
+  ],
+  "params": {
+    "source": "prompt"
+  }
+}

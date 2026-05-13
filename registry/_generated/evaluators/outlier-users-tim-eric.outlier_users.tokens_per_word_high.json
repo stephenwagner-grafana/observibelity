@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/outlier-users-tim-eric.yaml",
+  "name": "outlier_users.tokens_per_word_high",
+  "kind": "rule",
+  "severity": "medium",
+  "expression": "(request.input_tokens / max(request.input_word_count, 1)) > 8\nand request.user in [\"u-tim-l\", \"u-eric-w\"]\n",
+  "tags": [
+    "use_case:outlier-users-tim-eric",
+    "app:supportbot",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {}
+}

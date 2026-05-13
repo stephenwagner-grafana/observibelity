@@ -1,0 +1,488 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "enable": true,
+        "hide": false,
+        "iconColor": "yellow",
+        "name": "Brand drift fires",
+        "target": {
+          "expr": "{namespace=\"neoncart\"} |~ \"brand_drift\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "brand drift"
+      }
+    ]
+  },
+  "description": "Conversational quality — refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Refund policy compliance",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Refund policy compliance failure rate — fraction of refund offers that violate policy.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.01},
+              {"color": "red", "value": 0.02}
+            ]
+          },
+          "max": 0.1,
+          "min": 0,
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"refund_policy_compliance\",verdict=\"fail\"}[15m])) / clamp_min(sum(rate(neoncart_refund_offer_total[15m])), 0.001)",
+          "refId": "A"
+        }
+      ],
+      "title": "refund_policy_compliance fail rate",
+      "type": "gauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Refund policy violations over time, broken down by reason (window vs category).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 18, "x": 6, "y": 1},
+      "id": 3,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (reason) (rate(sigil_eval_result_total{evaluator=\"refund_policy_compliance\",verdict=\"fail\"}[5m]))",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Refund policy violations by reason (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Total refund policy violations in the last hour.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 3, "w": 6, "x": 0, "y": 7},
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(sigil_eval_result_total{evaluator=\"refund_policy_compliance\",verdict=\"fail\"}[1h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Violations (1h)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 10},
+      "id": 5,
+      "panels": [],
+      "title": "Customer frustration",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Customer frustration unaddressed events — bot failed to acknowledge or escalate.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 11},
+      "id": 6,
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"customer_frustration\",verdict=\"fail\"}[5m]))",
+          "legendFormat": "unaddressed frustration",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(neoncart_frustration_conversation_total[5m]))",
+          "legendFormat": "all frustration convs",
+          "refId": "B"
+        }
+      ],
+      "title": "Customer frustration — addressed vs unaddressed (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Unaddressed fraction — > 10% fires the customer_frustration alert.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.05},
+              {"color": "red", "value": 0.1}
+            ]
+          },
+          "max": 0.5,
+          "min": 0,
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 11},
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"customer_frustration\",verdict=\"fail\"}[15m])) / clamp_min(sum(rate(neoncart_frustration_conversation_total[15m])), 0.001)",
+          "refId": "A"
+        }
+      ],
+      "title": "Unaddressed frustration rate (15m)",
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 20},
+      "id": 8,
+      "panels": [],
+      "title": "Brand voice drift",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Rolling 30-minute average brand-voice score (NeonCart rubric, 0-10). Higher is better.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "max": 10,
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "current (30m)"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "baseline (6h)"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "2σ lower bound"},
+            "properties": [
+              {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+              {"id": "custom.lineStyle", "value": {"dash": [5, 5], "fill": "dash"}}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 10, "w": 16, "x": 0, "y": 21},
+      "id": 9,
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "avg_over_time(neoncart_brand_voice_score[30m])",
+          "legendFormat": "current (30m)",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "avg_over_time(neoncart_brand_voice_score[6h])",
+          "legendFormat": "baseline (6h)",
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "avg_over_time(neoncart_brand_voice_score[6h]) - 2 * stddev_over_time(neoncart_brand_voice_score[6h])",
+          "legendFormat": "2σ lower bound",
+          "refId": "C"
+        }
+      ],
+      "title": "Brand voice drift — rolling vs baseline ± 2σ",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "2-sigma drift indicator. Red when current is below baseline - 2 sigma.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": -1},
+              {"color": "green", "value": 0}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 8, "x": 16, "y": 21},
+      "id": 10,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "avg_over_time(neoncart_brand_voice_score[30m]) - (avg_over_time(neoncart_brand_voice_score[6h]) - 2 * stddev_over_time(neoncart_brand_voice_score[6h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Brand drift indicator (current - 2σ lower bound)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31},
+      "id": 11,
+      "panels": [],
+      "title": "Per-specialist conversation quality",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Per-specialist conversation quality scores — pass-rate across all conversational evaluators.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "percentunit"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "ai_o11y_specialist"},
+            "properties": [{"id": "displayName", "value": "Specialist"}, {"id": "custom.width", "value": 320}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #A"},
+            "properties": [
+              {"id": "displayName", "value": "Refund compliance %"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #B"},
+            "properties": [
+              {"id": "displayName", "value": "Frustration addressed %"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #C"},
+            "properties": [
+              {"id": "displayName", "value": "Avg brand score"},
+              {"id": "unit", "value": "short"}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 32},
+      "id": 12,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Avg brand score"}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (ai_o11y_specialist) (rate(sigil_eval_result_total{evaluator=\"refund_policy_compliance\",verdict=\"pass\"}[1h])) / clamp_min(sum by (ai_o11y_specialist) (rate(sigil_eval_result_total{evaluator=\"refund_policy_compliance\"}[1h])), 0.001)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (ai_o11y_specialist) (rate(sigil_eval_result_total{evaluator=\"customer_frustration\",verdict=\"pass\"}[1h])) / clamp_min(sum by (ai_o11y_specialist) (rate(sigil_eval_result_total{evaluator=\"customer_frustration\"}[1h])), 0.001)",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "avg by (ai_o11y_specialist) (avg_over_time(neoncart_brand_voice_score[1h]))",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Conversation quality by specialist (1h)",
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "ai_o11y_specialist", "mode": "outer"}}
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "phase-2", "conversation"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
+        "name": "datasource_prom", "options": [], "query": "prometheus",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
+        "name": "datasource_loki", "options": [], "query": "loki",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
+        "name": "datasource_tempo", "options": [], "query": "tempo",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(sigil_eval_result_total, ai_o11y_specialist)",
+        "hide": 0, "includeAll": true, "label": "Specialist", "multi": true,
+        "name": "specialist", "options": [],
+        "query": {"query": "label_values(sigil_eval_result_total, ai_o11y_specialist)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "timezone": "",
+  "title": "AI o11y — Conversations (Refund, Frustration, Brand)",
+  "uid": "ai-obs-conv",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/sensitive-data-leaks.yaml",
+  "name": "sensitive_data.ssn_pattern",
+  "kind": "regex",
+  "severity": "critical",
+  "expression": "\\b\\d{3}-\\d{2}-\\d{4}\\b\n",
+  "tags": [
+    "use_case:sensitive-data-leaks",
+    "app:supportbot",
+    "archetype:single-event-severity",
+    "phase:2"
+  ],
+  "params": {
+    "source": "prompt_or_response"
+  }
+}

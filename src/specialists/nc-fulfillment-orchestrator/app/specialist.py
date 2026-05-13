@@ -57,6 +57,10 @@ class NcFulfillmentOrchestrator(Specialist):
             f"specialist.{self.NAME}.fulfill"
         ) as span:
             span.set_attribute("ai_o11y.specialist", self.NAME)
+            if req.persona_id:
+                span.set_attribute("ai_o11y.persona_id", req.persona_id)
+            if req.usecase:
+                span.set_attribute("ai_o11y.usecase", req.usecase)
             if sku:
                 span.set_attribute("nc.sku", sku)
 

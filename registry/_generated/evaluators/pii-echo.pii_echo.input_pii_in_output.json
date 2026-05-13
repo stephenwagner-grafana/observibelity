@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/pii-echo.yaml",
+  "name": "pii_echo.input_pii_in_output",
+  "kind": "rule",
+  "severity": "critical",
+  "expression": "response.text contains_any(request.detected_pii_values)\nand len(request.detected_pii_values) > 0\n",
+  "tags": [
+    "use_case:pii-echo",
+    "app:both",
+    "archetype:single-event-severity",
+    "phase:2"
+  ],
+  "params": {}
+}

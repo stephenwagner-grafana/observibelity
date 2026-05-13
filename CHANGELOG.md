@@ -7,6 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-13
+
+The Phase 2 release. Support Bot ships alongside NeonCart, 11 more dashboards, persona-based demo UX, k6 continuous traffic, automated image builds and Grafana Cloud sync.
+
+### Added
+
+#### Apps + workloads
+- **Support Bot** (`src/supportbot/`) — internal HR/IT support FastAPI app with persona picker UI, ticket views, KB browser
+- **11 Support Bot specialists**: sb-router, sb-policy-finder, sb-kb-search, sb-ticket-helper, sb-employee-info, sb-it-troubleshoot, sb-hr-info, sb-expense-helper, sb-security-handler, sb-hiring-helper, sb-escalator
+- **10 Support Bot tools**: kb_search, list_tickets, get_ticket, create_ticket, update_ticket, get_employee, get_employee_history, reset_password, request_access, create_expense
+- **Persona picker UI** in both apps — "View as: Tim Lewis" dropdown propagates persona_id to every specialist call; every span gets `ai_o11y.persona_id`
+- **k6 continuous-traffic engine** (`templates/k6/`) — Deployment + ConfigMap, runs all use case scenarios on a 10-second loop
+- **baseline.js** scenario — always-on heartbeat traffic across all 200 personas
+
+#### Data
+- **200 personas** (up from 50) with 30 offenders distributed across 6 patterns (exfil, cascade, leak, verbose, bad_faith, injection)
+- **500 catalog items** (up from 200)
+- **~1000 historical orders** + ~2500 order_items, distributed over 90 days
+- **~5000 conversation turns** across ~2000 sessions, with realistic per-persona content (including offender patterns)
+- **30 Support Bot KB articles**: policies, IT, HR, security, expense, hiring, etc.
+- **~500 tickets** seed data for the Support Bot ticket views
+- **`seed_data/_generate.py`** — deterministic CSV regeneration script (fixed seed)
+
+#### Dashboards (12 total now, was 1)
+- ai-obs-best-models — Model winner leaderboard
+- ai-obs-cascade-spike — Email cascade detection
+- ai-obs-data-theft — Tim exfil leaderboard
+- ai-obs-app-supportbot — Support Bot health
+- ai-obs-pii — PII detection cross-app
+- ai-obs-ground — Hallucination/groundedness
+- ai-obs-conv — Conversational metrics
+- ai-obs-compliance — Compliance signals
+- ai-obs-tools — Tool call analytics
+- ai-obs-cost — Cost tracking + per-user anomalies
+- ai-obs-evals — Evaluator overview
+
+#### Alerting + SLOs
+- **`templates/alerts/_loop.yaml`** — emits PrometheusRule CRDs or ConfigMaps from `registry/_generated/alerts/`
+- **`templates/slos/_loop.yaml`** — emits OpenSLO ConfigMaps from `registry/_generated/slos/`
+- **`tools/alerts-sync.sh`** — push Mimir alerts via Grafana Cloud API
+
+#### Automation
+- **`release.yml` image builds** — docker buildx + multi-arch (linux/amd64 + linux/arm64), pushes 24 images to ghcr.io on tag
+- **`build-images.yml`** — same image builds triggered on push to main with `:latest` tags only
+- **`sync.yml`** — auto-pushes dashboards + evaluators + alerts to Grafana Cloud on push to main
+- **`tools/dashboards-sync.sh`** — real implementation (gcx + REST fallback) replacing the Phase 0 stub
+- **`tools/evaluators-sync.sh`** — real Grafana AI Observability plugin REST API integration
+- **`tools/alerts-sync.sh`** — Mimir rules API integration
+
+#### Deployment
+- **`make deploy-k3s-local`** — builds images locally, imports into k3s containerd, deploys
+- **`tools/k3s-import-images.sh`** — supports local + remote (`--remote HOST`) k3s nodes
+- **`docs/K3S-LOCAL.md`** — full local-k3s deploy guide
+
+#### Tests
+- **k6 helm-unittest** for the traffic engine templates
+
+### Changed
+- `values.yaml` adds: k6 (full config), alerts, slos, supportbot enabled, expanded specialists + tools registry lists (now 14 specialists + 16 tools)
+- `release.yml` actually builds images now (Phase 1 had a TODO)
+- Both Dockerfiles for specialists + tools accept `SPECIALIST_BASE` / `TOOL_BASE` build args
+
+### Notes
+- 24 container images on first tag push: 2 base + 2 apps + 14 specialists + 16 tools (matching the matrix in release.yml/build-images.yml)
+- The k6 engine runs continuously when phase>=2; in phase 1 it stays off (gate in template)
+- For users without Grafana Cloud, alerts target=configmap-only emits raw ConfigMaps for inspection
+- For users with Grafana Cloud, sync.yml auto-pushes dashboards/alerts/evaluators on push to main when secrets are set
+
 ## [0.2.0] - 2026-05-13
 
 The Phase 1 release. NeonCart end-to-end with mice-rca centerpiece. All 22 planner use cases authored.
@@ -111,6 +179,7 @@ The Phase 0 scaffold release. No application pods are deployed yet — those lan
 - Phase 1 (target: +3 days) adds Postgres + llm-gateway + NeonCart + 3 specialists + 6 tools + mice-rca use case + 1 dashboard.
 - Phase 2 (target: +1-2 weeks after Phase 1) adds Support Bot + remaining specialists/tools + 10 use cases + 26 evaluators + 6 SLOs + ~14 alerts + k6 + 11 dashboards.
 
-[Unreleased]: https://github.com/stephenwagner-grafana/observibelity/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/stephenwagner-grafana/observibelity/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/stephenwagner-grafana/observibelity/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/stephenwagner-grafana/observibelity/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/stephenwagner-grafana/observibelity/releases/tag/v0.1.0

@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/hallucination-product-price.yaml",
+  "name": "hallucination.regex_sku_format",
+  "kind": "regex",
+  "severity": "medium",
+  "expression": "\\bSKU-[A-Z0-9]{6,}\\b\n",
+  "tags": [
+    "use_case:hallucination-product-price",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {
+    "source": "response"
+  }
+}

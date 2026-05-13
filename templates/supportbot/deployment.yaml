@@ -1,0 +1,81 @@
+{{- if (and .Values.supportbot.enabled (le 2 (int .Values.phase))) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supportbot
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: supportbot
+spec:
+  replicas: {{ .Values.supportbot.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "observibelity.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: supportbot
+  template:
+    metadata:
+      labels:
+        {{- include "observibelity.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: supportbot
+      annotations:
+        checksum/branding: {{ include (print $.Template.BasePath "/supportbot/configmap.yaml") . | sha256sum }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.supportbot.securityContext | nindent 8 }}
+      containers:
+        - name: supportbot
+          image: "{{ .Values.global.imageRegistry }}/observibelity-supportbot:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: DATABASE_URL
+            - name: ROUTER_URL
+              value: http://sb-router/v1/run
+            - name: LLM_GATEWAY_URL
+              value: http://llm-gateway
+            - name: OTEL_SERVICE_NAME
+              value: supportbot
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=supportbot,service.namespace={{ .Values.global.namespace }}"
+            - name: BRANDING_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: supportbot-branding
+                  key: BRANDING_NAME
+            - name: BRANDING_TAGLINE
+              valueFrom:
+                configMapKeyRef:
+                  name: supportbot-branding
+                  key: BRANDING_TAGLINE
+            - name: BRANDING_PRIMARY_COLOR
+              valueFrom:
+                configMapKeyRef:
+                  name: supportbot-branding
+                  key: BRANDING_PRIMARY_COLOR
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.supportbot.resources | nindent 12 }}
+{{- end }}

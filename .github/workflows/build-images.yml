@@ -1,0 +1,224 @@
+name: build-images
+# Builds + pushes all ObserVIBElity container images tagged ":latest" only.
+# Use this when you want fresh images off main without cutting a tagged release.
+# (A release tag uses release.yml which also stamps the :VERSION tag.)
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/build-images.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: build-images-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/stephenwagner-grafana/observibelity
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Base images first — derived images FROM these.
+  # ---------------------------------------------------------------------------
+  base-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: specialist-base
+            context: src/specialists
+            dockerfile: src/specialists/.Dockerfile.shared
+          - name: tool-base
+            context: src/tools
+            dockerfile: src/tools/.Dockerfile.shared
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max
+
+  # ---------------------------------------------------------------------------
+  # App + specialist + tool images. Specialists/tools FROM `*-base:latest`
+  # (the default ARG in their Dockerfiles), which we just pushed above.
+  # ---------------------------------------------------------------------------
+  app-images:
+    runs-on: ubuntu-latest
+    needs: base-images
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ---- Apps ---------------------------------------------------
+          - name: neoncart
+            context: src/neoncart
+          - name: supportbot
+            context: src/supportbot
+          - name: llm-gateway
+            context: src/llm-gateway
+          # ---- Phase 1: NeonCart specialists --------------------------
+          - name: nc-chatbot
+            context: src/specialists/nc-chatbot
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: nc-fraud-detector
+            context: src/specialists/nc-fraud-detector
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: nc-fulfillment-orchestrator
+            context: src/specialists/nc-fulfillment-orchestrator
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          # ---- Phase 2: Support Bot specialists -----------------------
+          - name: sb-router
+            context: src/specialists/sb-router
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-policy-finder
+            context: src/specialists/sb-policy-finder
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-kb-search
+            context: src/specialists/sb-kb-search
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-ticket-helper
+            context: src/specialists/sb-ticket-helper
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-employee-info
+            context: src/specialists/sb-employee-info
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-it-troubleshoot
+            context: src/specialists/sb-it-troubleshoot
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-hr-info
+            context: src/specialists/sb-hr-info
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-expense-helper
+            context: src/specialists/sb-expense-helper
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-security-handler
+            context: src/specialists/sb-security-handler
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-hiring-helper
+            context: src/specialists/sb-hiring-helper
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: sb-escalator
+            context: src/specialists/sb-escalator
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          # ---- Phase 1: NeonCart tools --------------------------------
+          - name: search_products
+            context: src/tools/search_products
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: get_product
+            context: src/tools/get_product
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: get_order_history
+            context: src/tools/get_order_history
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: geo_lookup
+            context: src/tools/geo_lookup
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: get_inventory
+            context: src/tools/get_inventory
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: place_order
+            context: src/tools/place_order
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          # ---- Phase 2: Support Bot tools -----------------------------
+          - name: kb_search
+            context: src/tools/kb_search
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: list_tickets
+            context: src/tools/list_tickets
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: get_ticket
+            context: src/tools/get_ticket
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: create_ticket
+            context: src/tools/create_ticket
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: update_ticket
+            context: src/tools/update_ticket
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: get_employee
+            context: src/tools/get_employee
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: get_employee_history
+            context: src/tools/get_employee_history
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: reset_password
+            context: src/tools/reset_password
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: request_access
+            context: src/tools/request_access
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: create_expense
+            context: src/tools/create_expense
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+          build-args: ${{ matrix.build-args }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max

@@ -1,0 +1,19 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: cost-anomaly-per-user
+  displayName: "Cost Anomaly per User \u2014 Priya pastes 40-80x paragraphs"
+  labels:
+    use_case: cost-anomaly-per-user
+    app: both
+    archetype: per-user-pattern
+spec:
+  description: per-employee 1h token sum <= 100k for >= 99% of employees over 30d
+  service: both
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 30d
+    isRolling: true
+  objectives:
+  - displayName: per-employee 1h token sum <= 100k for >= 99% of employees over 30d
+    target: 0.99

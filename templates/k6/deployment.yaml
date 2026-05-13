@@ -1,0 +1,70 @@
+{{- if (and .Values.k6.enabled (le 2 (int .Values.phase))) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k6-traffic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: traffic
+spec:
+  replicas: {{ .Values.k6.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "observibelity.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: traffic
+  template:
+    metadata:
+      labels:
+        {{- include "observibelity.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: traffic
+      annotations:
+        checksum/scenarios: {{ include (print $.Template.BasePath "/k6/configmap.yaml") . | sha256sum }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.k6.securityContext | nindent 8 }}
+      containers:
+        - name: k6
+          image: {{ .Values.k6.image | default "grafana/k6:0.50.0" }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              echo "ObserVIBElity k6 traffic engine starting"
+              CYCLE_SECONDS="${CYCLE_SECONDS:-{{ .Values.k6.cycle_seconds | default 10 }}}"
+              while true; do
+                for script in /etc/k6/scripts/*.js; do
+                  if [ -f "$script" ]; then
+                    echo "Running $(basename "$script")"
+                    k6 run --quiet --no-summary "$script" || true
+                  fi
+                done
+                sleep "$CYCLE_SECONDS"
+              done
+          env:
+            - name: NEONCART_URL
+              value: "http://neoncart"
+            - name: SUPPORTBOT_URL
+              value: "http://supportbot"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector:4318"
+            - name: K6_OUT
+              value: "experimental-otel"
+            - name: CYCLE_SECONDS
+              value: "{{ .Values.k6.cycle_seconds | default 10 }}"
+            - name: DEFAULT_RATE
+              value: "{{ .Values.k6.default_rate | default "5m" }}"
+          volumeMounts:
+            - name: scripts
+              mountPath: /etc/k6/scripts
+              readOnly: true
+          resources:
+            {{- toYaml .Values.k6.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.k6.securityContext | nindent 12 }}
+      volumes:
+        - name: scripts
+          configMap:
+            name: k6-scenarios
+{{- end }}

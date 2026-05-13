@@ -26,13 +26,22 @@ def build_app(specialist: Specialist) -> FastAPI:
 
     @app.post("/v1/run", response_model=SpecialistResponse)
     async def run(req: SpecialistRequest) -> SpecialistResponse:
+        # Stamp the run-level span with persona + usecase so every child
+        # span (call_gateway, call_tool, asyncpg, etc.) inherits the
+        # attributes through OTel's resource-detector cascade.
+        span = trace.get_current_span()
+        if span and span.is_recording():
+            span.set_attribute("ai_o11y.specialist", specialist.NAME)
+            if req.persona_id:
+                span.set_attribute("ai_o11y.persona_id", req.persona_id)
+            if req.usecase:
+                span.set_attribute("ai_o11y.usecase", req.usecase)
         try:
             resp = await specialist.handle(req)
         except PermissionError as exc:
             raise HTTPException(status_code=403, detail=str(exc)) from exc
         # Attach the current span id so callers can correlate downstream
         if resp.span_id is None:
-            span = trace.get_current_span()
             ctx = span.get_span_context() if span else None
             if ctx and ctx.is_valid:
                 resp.span_id = format(ctx.span_id, "016x")

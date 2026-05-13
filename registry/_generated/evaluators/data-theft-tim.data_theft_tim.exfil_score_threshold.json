@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/data-theft-tim.yaml",
+  "name": "data_theft_tim.exfil_score_threshold",
+  "kind": "rule",
+  "severity": "critical",
+  "expression": "event.name == \"exfil_event\"\nand event.attributes[\"employee\"] != \"\"\nand event.attributes[\"score\"] >= 0.7\n",
+  "tags": [
+    "use_case:data-theft-tim",
+    "app:supportbot",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {}
+}

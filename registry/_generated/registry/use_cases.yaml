@@ -1,0 +1,211 @@
+use_cases:
+- name: mice-rca
+  title: "NeonCart \u2014 \"show me mice\" deterministic RCA"
+  app: neoncart
+  phase: 1
+  centerpiece: true
+  archetype: trace-and-fix
+  description: The customer types "show me mice" in NeonCart's chat UI. The search
+    service
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/mice-rca.yaml
+- name: bad-question-askers
+  title: "Bad Question Askers \u2014 refusal + escalation leaderboard"
+  app: supportbot
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: Ranks employees by how often the bot refused, escalated, or denied
+    their
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/bad-question-askers.yaml
+- name: brand-voice-drift
+  title: "Brand Voice Drift \u2014 tone as SLO"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: The tone-checker specialist scores every assistant response against
+    the
+  scenario_count: 1
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/brand-voice-drift.yaml
+- name: confidential-disclosure
+  title: "Confidential Disclosure \u2014 top leakers (Jordan from Finance)"
+  app: supportbot
+  phase: 2
+  centerpiece: true
+  archetype: per-user-pattern
+  description: Sticky persona u-jordan-finance pastes 4 per hour fake Q4 board content
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/confidential-disclosure.yaml
+- name: cost-anomaly-per-user
+  title: "Cost Anomaly per User \u2014 Priya pastes 40-80x paragraphs"
+  app: both
+  phase: 2
+  centerpiece: true
+  archetype: per-user-pattern
+  description: Sticky persona u-priya-research pastes 40-80x repeated paragraphs of
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/cost-anomaly-per-user.yaml
+- name: customer-frustration
+  title: "Customer Frustration \u2014 detect and route"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: The tone-checker + escalation-detector pair flags frustrated customers
+  scenario_count: 1
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/customer-frustration.yaml
+- name: data-theft-tim
+  title: "Data Theft \u2014 Tim Heidecker (malicious insider)"
+  app: supportbot
+  phase: 2
+  centerpiece: true
+  archetype: per-user-pattern
+  description: Tim Heidecker (persona u-tim-l) is the loadgen archetype for a malicious-
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/data-theft-tim.yaml
+- name: hallucination-product-price
+  title: "Hallucinated product / price \u2014 regression by category"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: The bot fabricates SKUs and prices that do not exist in the catalog.
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/hallucination-product-price.yaml
+- name: hiring-discrimination-risk
+  title: "Hiring Discrimination Risk \u2014 single event = P0"
+  app: supportbot
+  phase: 2
+  centerpiece: true
+  archetype: single-event-severity
+  description: Single-event-severity audit log for protected-characteristic screening
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/hiring-discrimination-risk.yaml
+- name: model-winner
+  title: "Model Winner \u2014 rank by ATC, not eval scores"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: Customer types "I'm shopping for my 10-year-old nephew, budget $50"
+    in the
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/model-winner.yaml
+- name: outlier-users-tim-eric
+  title: "Outlier Users \u2014 Tim & Eric (cost + governance)"
+  app: supportbot
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: "Two outlier employees in the SupportBot loadgen \u2014 Tim Heidecker\
+    \ (weight 8.0,"
+  scenario_count: 2
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/outlier-users-tim-eric.yaml
+- name: pii-echo
+  title: "PII Echo \u2014 single-event severity P0"
+  app: both
+  phase: 2
+  centerpiece: false
+  archetype: single-event-severity
+  description: The bot repeats user-supplied PII (credit card, SSN) back in plain
+    text.
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/pii-echo.yaml
+- name: policy-circumvention
+  title: "Policy Circumvention \u2014 caught at the prompt"
+  app: supportbot
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: Per-policy-rate breakdown of employees using AI to bypass approval,
+  scenario_count: 1
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/policy-circumvention.yaml
+- name: quality-trend
+  title: "Gift Recommender \u2014 Quality Trend (helpfulness, groundedness, bias)"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: Three quality axes for the gift-finder specialist, derived from real
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/quality-trend.yaml
+- name: refund-policy-compliance
+  title: "Refund Policy Compliance \u2014 every refund audited"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: leaderboard
+  description: The bot occasionally offers refunds outside of policy (e.g. a 90-day-old
+  scenario_count: 1
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/refund-policy-compliance.yaml
+- name: sensitive-data-leaks
+  title: "Sensitive Data Leaks \u2014 PII redaction as a span"
+  app: supportbot
+  phase: 2
+  centerpiece: false
+  archetype: single-event-severity
+  description: The PII detector flags every input and output for credit cards, SSNs,
+  scenario_count: 1
+  evaluator_count: 3
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/sensitive-data-leaks.yaml
+- name: toxicity
+  title: "Toxicity \u2014 pre-screen abusive AI output"
+  app: both
+  phase: 2
+  centerpiece: false
+  archetype: single-event-severity
+  description: The safety-judge specialist scores every chatbot response for toxicity
+  scenario_count: 1
+  evaluator_count: 2
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/toxicity.yaml

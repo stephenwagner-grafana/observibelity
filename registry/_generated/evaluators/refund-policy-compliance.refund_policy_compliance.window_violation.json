@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/refund-policy-compliance.yaml",
+  "name": "refund_policy_compliance.window_violation",
+  "kind": "llm-judge",
+  "severity": "high",
+  "expression": "Given the customer's purchase date (from context) and the refund policy\nwindow (30 days for general, 14 days for electronics), determine whether\nthe assistant's refund offer is within policy. Return JSON\n{\"verdict\":\"pass|fail\",\"reason\":\"window_violation|category_violation|none\"}.\n",
+  "tags": [
+    "use_case:refund-policy-compliance",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-opus-4-7",
+    "judge_specialist": "refund-policy-judge"
+  }
+}

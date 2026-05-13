@@ -1,0 +1,14 @@
+{{- if (and .Values.supportbot.enabled (le 2 (int .Values.phase))) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supportbot-branding
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: supportbot
+data:
+  BRANDING_NAME: {{ (.Values.supportbot.branding).name | default "Ask Acme" | quote }}
+  BRANDING_TAGLINE: {{ (.Values.supportbot.branding).tagline | default "Internal support, on tap." | quote }}
+  BRANDING_PRIMARY_COLOR: {{ (.Values.supportbot.branding).primaryColor | default "#2563eb" | quote }}
+{{- end }}

@@ -20,6 +20,30 @@
       <a href="/catalog">Catalog</a>
       <a href="/cart">Cart</a>
     </nav>
+    {% if personas %}
+    <div class="persona-picker">
+      <label for="persona-select">View as:</label>
+      <select
+        id="persona-select"
+        name="persona_id"
+        hx-post="/api/persona/select"
+        hx-trigger="change"
+        hx-ext="json-enc"
+        hx-vals='js:{persona_id: event.target.value}'
+        hx-swap="none"
+        hx-on::after-request="window.location.reload()"
+      >
+        <option value="u-guest" {% if current_persona == "u-guest" %}selected{% endif %}>
+          Guest (no persona)
+        </option>
+        {% for p in personas %}
+        <option value="{{ p.persona_id }}" {% if p.persona_id == current_persona %}selected{% endif %}>
+          {{ p.name }}{% if p.offender_pattern %} ({{ p.offender_pattern }}){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
   </header>
 
   <main class="nc-main">

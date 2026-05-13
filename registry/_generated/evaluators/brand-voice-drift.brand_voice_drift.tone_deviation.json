@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/brand-voice-drift.yaml",
+  "name": "brand_voice_drift.tone_deviation",
+  "kind": "llm-judge",
+  "severity": "medium",
+  "expression": "Score the assistant response on a 0-10 scale against the NeonCart brand\nvoice rubric (warm, playful, concise, uses neon emoji on greetings).\nReturn JSON {\"score\":N,\"reason\":\"dry|corporate|on_brand|other\"}. score<5\ncounts as a brand-voice fail.\n",
+  "tags": [
+    "use_case:brand-voice-drift",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-opus-4-7",
+    "judge_specialist": "tone-checker"
+  }
+}

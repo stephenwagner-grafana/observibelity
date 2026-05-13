@@ -63,11 +63,19 @@ class Persona(Base):
 
     Loadgen picks one of these per session; the chosen persona id flows into
     span attributes as `ai_o11y.persona_id` for cardinality-bounded slicing.
+
+    Schema mirrors migrations/versions/0001_initial.py — the canonical
+    persona_id is the string slug (e.g. ``u-tim-l``), and ``id`` is just the
+    surrogate PK for FK joins.
     """
 
     __tablename__ = "personas"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    role: Mapped[str] = mapped_column(String(64), nullable=False, default="shopper")
+    persona_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
+    role: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    archetype: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    offender_pattern: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    weight: Mapped[float] = mapped_column(default=1.0, nullable=False)

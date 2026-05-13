@@ -1,0 +1,423 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "enable": true,
+        "hide": false,
+        "iconColor": "purple",
+        "name": "Hallucination events",
+        "tagKeys": "category,sku",
+        "target": {
+          "expr": "{namespace=\"neoncart\"} |~ \"evaluator fail hallucination\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "halluc — {{ category }}"
+      }
+    ]
+  },
+  "description": "Groundedness / hallucination detection — bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Headline",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Total hallucination fails in the last hour.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[1h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination fails (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Hallucination fail rate vs. trailing 4h baseline. > 2x triggers the rate-regression alert.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1.5},
+              {"color": "red", "value": 2}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[15m])) / clamp_min(sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[4h])), 0.0001)",
+          "refId": "A"
+        }
+      ],
+      "title": "Regression vs 4h baseline (ratio)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "description": "Hallucination rate-regression alert state.",
+      "gridPos": {"h": 5, "w": 12, "x": 12, "y": 1},
+      "id": 4,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "hallucination",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 10,
+        "sortOrder": 3,
+        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": true, "pending": true},
+        "viewMode": "list"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "queryType": "alerts",
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination alert state",
+      "type": "alertlist"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "id": 5,
+      "panels": [],
+      "title": "Rate + baseline comparison",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Hallucination eval failures by category (product, price, policy).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 14, "x": 0, "y": 7},
+      "id": 6,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (category) (rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[5m]))",
+          "legendFormat": "{{category}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination eval failures by category (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Current 15-minute hallucination rate vs trailing 4-hour baseline.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "baseline (4h)"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "current (15m)"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 9, "w": 10, "x": 14, "y": 7},
+      "id": 7,
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[15m]))",
+          "legendFormat": "current (15m)",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[4h]))",
+          "legendFormat": "baseline (4h)",
+          "refId": "B"
+        }
+      ],
+      "title": "Current 15m vs baseline 4h",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16},
+      "id": 8,
+      "panels": [],
+      "title": "Per-category drill-down",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Top hallucinated topics — categories with most evaluator fails.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-GrYlRd"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 17},
+      "id": 9,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(10, sum by (category) (increase(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[1h])))",
+          "legendFormat": "{{category}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top hallucinated categories (1h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Per-category table — fail count + recent rate.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "category"},
+            "properties": [{"id": "displayName", "value": "Category"}, {"id": "custom.width", "value": 220}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #A"},
+            "properties": [
+              {"id": "displayName", "value": "Fails (1h)"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #B"},
+            "properties": [
+              {"id": "displayName", "value": "Pass-rate"},
+              {"id": "unit", "value": "percentunit"}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 17},
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Fails (1h)"}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (category) (increase(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"fail\"}[1h]))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (category) (rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"pass\"}[1h])) / clamp_min(sum by (category) (rate(sigil_eval_result_total{evaluator=\"hallucination\"}[1h])), 0.001)",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Per-category — fails + pass-rate (1h)",
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "category", "mode": "outer"}}
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 26},
+      "id": 11,
+      "panels": [],
+      "title": "Loki — hallucination events",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "description": "Live hallucination evaluator fail events.",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 27},
+      "id": 12,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "expr": "{namespace=\"neoncart\"} |~ \"hallucination\" | logfmt",
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination evaluator events (Loki)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "phase-2", "groundedness", "hallucination"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
+        "name": "datasource_prom", "options": [], "query": "prometheus",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
+        "name": "datasource_loki", "options": [], "query": "loki",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
+        "name": "datasource_tempo", "options": [], "query": "tempo",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(sigil_eval_result_total{evaluator=\"hallucination\"}, category)",
+        "hide": 0, "includeAll": true, "label": "Category", "multi": true,
+        "name": "category", "options": [],
+        "query": {"query": "label_values(sigil_eval_result_total{evaluator=\"hallucination\"}, category)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "timezone": "",
+  "title": "AI o11y — Groundedness (Hallucinations)",
+  "uid": "ai-obs-ground",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,460 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "enable": true,
+        "hide": false,
+        "iconColor": "yellow",
+        "name": "Cost anomaly fires",
+        "tagKeys": "employee",
+        "target": {
+          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"cost_anomaly\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "cost anomaly — {{ employee }}"
+      }
+    ]
+  },
+  "description": "Cost tracking + per-user attribution. The bill explains itself: u-priya-research lights up the top of the leaderboard with 40-80x repeated paragraphs.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Cost headline",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Total USD cost across all apps + models in the last 24 hours.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 50},
+              {"color": "red", "value": 200}
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(gen_ai_usage_cost_total_usd[24h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Total cost (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Number of users currently above the 100k/hr cost anomaly threshold.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 3}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "count(max by (employee) (sum_over_time(supportbot_tokens_total{employee!=\"\"}[1h]) + sum_over_time(neoncart_tokens_total{employee!=\"\"}[1h])) > 100000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Users > 100k tokens / 1h",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Total cost over time, by app.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {"group": "A", "mode": "normal"}
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 1},
+      "id": 4,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (service) (rate(gen_ai_usage_cost_total_usd[5m]))",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost over time by app (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Predicted cost over the next 24 hours, extrapolated from current 1h rate.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 100},
+              {"color": "red", "value": 500}
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 12, "x": 0, "y": 6},
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(gen_ai_usage_cost_total_usd[1h])) * 86400",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost prediction (next 24h, extrapolated)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 10},
+      "id": 6,
+      "panels": [],
+      "title": "Per-user cost attribution",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Top spenders by 1h token sum across both apps. > 100k fires the cost anomaly alert.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-GrYlRd"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 50000},
+              {"color": "red", "value": 100000}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 11},
+      "id": 7,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(10, sum by (employee) (sum_over_time(supportbot_tokens_total{employee!=\"\"}[1h]) + sum_over_time(neoncart_tokens_total{employee!=\"\"}[1h])))",
+          "legendFormat": "{{employee}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Per-user 1h token sum (top 10)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Users currently above the 100k tokens/1h cost-anomaly threshold.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "employee"},
+            "properties": [{"id": "displayName", "value": "Employee"}, {"id": "custom.width", "value": 280}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value"},
+            "properties": [
+              {"id": "displayName", "value": "Tokens / 1h"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 11},
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Tokens / 1h"}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(20, (sum by (employee) (sum_over_time(supportbot_tokens_total{employee!=\"\"}[1h]) + sum_over_time(neoncart_tokens_total{employee!=\"\"}[1h]))) > 100000)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost anomalies — users > 100k tokens / 1h",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+      "id": 9,
+      "panels": [],
+      "title": "Cost by model + specialist",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Cost over time broken down by model.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {"group": "A", "mode": "normal"}
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 22},
+      "id": 10,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_usage_cost_total_usd[5m]))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by model (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Cost by model breakdown — fraction of total.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false}
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 22},
+      "id": 11,
+      "options": {
+        "displayLabels": ["name", "percent"],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut",
+        "reduceOptions": {"calcs": ["sum"], "fields": "", "values": false},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_usage_cost_total_usd[1h]))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost share by model (1h)",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31},
+      "id": 12,
+      "panels": [],
+      "title": "Cost by app / specialist",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Cost by specialist + app over time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 32},
+      "id": 13,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (service, ai_o11y_specialist) (rate(gen_ai_usage_cost_total_usd{ai_o11y_specialist!=\"\"}[5m]))",
+          "legendFormat": "{{service}} / {{ai_o11y_specialist}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost over time by app + specialist (5m)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "phase-2", "cost", "finops"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
+        "name": "datasource_prom", "options": [], "query": "prometheus",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
+        "name": "datasource_loki", "options": [], "query": "loki",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
+        "name": "datasource_tempo", "options": [], "query": "tempo",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(supportbot_tokens_total, employee)",
+        "hide": 0, "includeAll": true, "label": "Employee", "multi": true,
+        "name": "employee_id", "options": [],
+        "query": {"query": "label_values(supportbot_tokens_total, employee)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "timezone": "",
+  "title": "AI o11y — Cost (per-user attribution)",
+  "uid": "ai-obs-cost",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,20 @@
+{{- if (and .Values.k6.enabled (le 2 (int .Values.phase))) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: k6-traffic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: traffic
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "observibelity.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: traffic
+  ports:
+    - port: 6565
+      targetPort: 6565
+      name: api
+      protocol: TCP
+{{- end }}

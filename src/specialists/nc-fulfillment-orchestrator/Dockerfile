@@ -2,7 +2,7 @@
 # nc-fulfillment-orchestrator - NeonCart order fulfillment coordination specialist.
 # Thin layer on top of the shared specialist-base image.
 
-ARG SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:0.1.0
+ARG SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
 FROM ${SPECIALIST_BASE}
 
 LABEL org.opencontainers.image.title="observibelity-nc-fulfillment-orchestrator" \

@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/model-winner.yaml",
+  "name": "model_winner.atc_attributed_to_model",
+  "kind": "rule",
+  "severity": "low",
+  "expression": "event.name == \"atc_event\"\nand event.attributes[\"source\"] == \"live\"\nand event.attributes[\"model\"] != \"\"\nand event.attributes[\"specialist\"] == \"gift-finder\"\n",
+  "tags": [
+    "use_case:model-winner",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {}
+}

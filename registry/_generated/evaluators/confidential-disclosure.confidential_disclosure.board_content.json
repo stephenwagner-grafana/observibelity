@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/confidential-disclosure.yaml",
+  "name": "confidential_disclosure.board_content",
+  "kind": "regex",
+  "severity": "critical",
+  "expression": "(?i)(board\\s+pre-?read|q[1-4]\\s+earnings\\s+draft|m&a\\s+target|deal\\s+memo\\s+draft|preliminary\\s+10-?q)\n",
+  "tags": [
+    "use_case:confidential-disclosure",
+    "app:supportbot",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {
+    "source": "prompt"
+  }
+}

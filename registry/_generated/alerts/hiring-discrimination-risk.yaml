@@ -1,0 +1,19 @@
+groups:
+- name: hiring-discrimination-risk
+  rules:
+  - alert: ai-o11y-hiring-discrim
+    expr: 'sum(rate(sigil_eval_result_total{evaluator="hiring_discrimination_risk",verdict="fail",severity="critical"}[1m]))
+      > 0
+
+      '
+    for: 0s
+    labels:
+      severity: critical
+      use_case: hiring-discrimination-risk
+      app: supportbot
+      route: hr-compliance@acme.local
+    annotations:
+      summary: "Hiring Discrimination Risk \u2014 single event = P0: ai-o11y-hiring-discrim\
+        \ firing"
+      description: Single-event-severity audit log for protected-characteristic screening
+      runbook: registry/use_cases/hiring-discrimination-risk.yaml

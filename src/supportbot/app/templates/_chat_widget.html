@@ -1,0 +1,67 @@
+<div id="ab-chat" class="ab-chat" data-open="false">
+  <button
+    type="button"
+    id="ab-chat-toggle"
+    class="ab-chat__toggle"
+    aria-controls="ab-chat-panel"
+    aria-expanded="false"
+  >
+    <span class="ab-chat__toggle-icon" aria-hidden="true">&#9993;</span>
+    <span class="ab-chat__toggle-text">Ask {{ branding.name }}</span>
+  </button>
+
+  <section
+    id="ab-chat-panel"
+    class="ab-chat__panel"
+    aria-hidden="true"
+    aria-label="Chat with {{ branding.name }}"
+  >
+    <header class="ab-chat__header">
+      <strong>{{ branding.name }}</strong>
+      <button
+        type="button"
+        id="ab-chat-close"
+        class="ab-chat__close"
+        aria-label="Close chat"
+      >&times;</button>
+    </header>
+
+    <div
+      id="chat-messages"
+      class="ab-chat__messages"
+      aria-live="polite"
+      aria-busy="false"
+    >
+      <div class="ab-chat-msg ab-chat-msg--bot">
+        Hi! I help Acme staff with HR, IT, expenses, policy and more.
+        Try <em>"how do I reset my VPN password?"</em>
+      </div>
+    </div>
+
+    <form
+      id="ab-chat-form"
+      class="ab-chat__form"
+      hx-post="/chat"
+      hx-target="#chat-messages"
+      hx-swap="beforeend"
+      hx-ext="json-enc"
+      hx-indicator="#ab-chat-spinner"
+      hx-on::after-request="this.reset()"
+    >
+      <input
+        type="text"
+        name="message"
+        id="ab-chat-input"
+        placeholder="Ask Acme anything…"
+        autocomplete="off"
+        required
+        minlength="1"
+        maxlength="4096"
+      />
+      <button type="submit" class="ab-chat__send">Send</button>
+      <span id="ab-chat-spinner" class="ab-chat__spinner" aria-hidden="true">
+        &#8230;
+      </span>
+    </form>
+  </section>
+</div>

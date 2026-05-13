@@ -40,6 +40,12 @@ TABLE_KEY_MAP: dict[str, str] = {
     "ip_geo": "id",
     "store_locations": "id",
     "neoncart_kb": "slug",
+    "supportbot_kb": "slug",
+    "orders": "order_number",
+    "order_items": "id",
+    "sessions": "id",
+    "conversations": "id",
+    "tickets": "ticket_number",
 }
 
 # Load order matters because of FKs. Parents first, then children.
@@ -54,6 +60,12 @@ LOAD_ORDER: list[str] = [
     "promotions",
     "personas",
     "neoncart_kb",
+    "supportbot_kb",
+    "orders",
+    "order_items",
+    "sessions",
+    "conversations",
+    "tickets",
 ]
 
 

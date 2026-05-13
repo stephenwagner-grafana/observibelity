@@ -2,7 +2,7 @@
 # search_products - Product catalog search tool.
 # Thin layer on top of the shared tool-base image.
 
-ARG TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:0.1.0
+ARG TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
 FROM ${TOOL_BASE}
 
 LABEL org.opencontainers.image.title="observibelity-search_products" \

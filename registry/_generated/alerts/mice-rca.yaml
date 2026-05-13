@@ -1,0 +1,20 @@
+groups:
+- name: mice-rca
+  rules:
+  - alert: mice_rca.search_5xx_burst
+    expr: 'sum(rate(http_server_requests_total{app="neoncart",route="/search",status=~"5.."}[5m]))
+      > 0.05
+
+      '
+    for: 2m
+    labels:
+      severity: high
+      use_case: mice-rca
+      app: neoncart
+      route: oncall@acme.local
+    annotations:
+      summary: "NeonCart \u2014 \"show me mice\" deterministic RCA: mice_rca.search_5xx_burst\
+        \ firing"
+      description: The customer types "show me mice" in NeonCart's chat UI. The search
+        service
+      runbook: registry/use_cases/mice-rca.yaml

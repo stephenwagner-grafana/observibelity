@@ -1,0 +1,19 @@
+groups:
+- name: bad-question-askers
+  rules:
+  - alert: bad_question_askers.user_refusal_rate_high
+    expr: "sum by (employee) (rate(supportbot_response_classification_total{verdict=~\"\
+      refuse|decline\"}[15m]))\n  / sum by (employee) (rate(supportbot_response_total[15m]))\
+      \ > 0.4\n"
+    for: 15m
+    labels:
+      severity: medium
+      use_case: bad-question-askers
+      app: supportbot
+      route: oncall@acme.local
+    annotations:
+      summary: "Bad Question Askers \u2014 refusal + escalation leaderboard: bad_question_askers.user_refusal_rate_high\
+        \ firing"
+      description: Ranks employees by how often the bot refused, escalated, or denied
+        their
+      runbook: registry/use_cases/bad-question-askers.yaml

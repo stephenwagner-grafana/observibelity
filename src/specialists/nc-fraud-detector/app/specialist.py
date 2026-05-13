@@ -43,6 +43,10 @@ class NcFraudDetector(Specialist):
 
         with tracer.start_as_current_span(f"specialist.{self.NAME}.score") as span:
             span.set_attribute("ai_o11y.specialist", self.NAME)
+            if req.persona_id:
+                span.set_attribute("ai_o11y.persona_id", req.persona_id)
+            if req.usecase:
+                span.set_attribute("ai_o11y.usecase", req.usecase)
             if "order_id" in order_context:
                 span.set_attribute("nc.order_id", str(order_context["order_id"]))
 

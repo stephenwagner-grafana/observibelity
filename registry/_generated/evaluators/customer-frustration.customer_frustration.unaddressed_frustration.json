@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/customer-frustration.yaml",
+  "name": "customer_frustration.unaddressed_frustration",
+  "kind": "llm-judge",
+  "severity": "medium",
+  "expression": "Given the customer message (which shows frustration signals such as\ncaps, repeated punctuation, or escalation language) and the assistant's\nresponse, determine whether the assistant addressed the frustration\n(acknowledged, offered de-escalation, or escalated to human). Return JSON\n{\"verdict\":\"pass|fail\",\"reason\":\"unaddressed_frustration|none\"}.\n",
+  "tags": [
+    "use_case:customer-frustration",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-opus-4-7",
+    "judge_specialist": "tone-checker"
+  }
+}

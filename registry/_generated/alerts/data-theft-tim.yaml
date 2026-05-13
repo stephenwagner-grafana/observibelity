@@ -1,0 +1,18 @@
+groups:
+- name: data-theft-tim
+  rules:
+  - alert: data_theft
+    expr: "sum by (employee) (\n  count_over_time(\n    {namespace=\"supportbot\"\
+      ,app_kubernetes_io_name=\"acme-bot-api\"}\n    |~ \"exfil_event\" | logfmt |\
+      \ employee != \"\" [10m]\n  )\n) >= 5\n"
+    for: 5m
+    labels:
+      severity: critical
+      use_case: data-theft-tim
+      app: supportbot
+      route: security@acme.local
+    annotations:
+      summary: "Data Theft \u2014 Tim Heidecker (malicious insider): data_theft firing"
+      description: Tim Heidecker (persona u-tim-l) is the loadgen archetype for a
+        malicious-
+      runbook: registry/use_cases/data-theft-tim.yaml

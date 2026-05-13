@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/quality-trend.yaml",
+  "name": "quality_trend.helpfulness_relevant_products",
+  "kind": "rule",
+  "severity": "medium",
+  "expression": "event.name == \"specialist_eval_result\"\nand event.attributes[\"specialist\"] == \"gift-finder\"\nand event.attributes[\"reason\"] == \"relevant_products\"\n",
+  "tags": [
+    "use_case:quality-trend",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {}
+}

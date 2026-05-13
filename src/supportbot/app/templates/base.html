@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}{{ branding.name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+  <style>
+    :root { --primary-color: {{ branding.primary_color }}; }
+  </style>
+</head>
+<body>
+  <header class="ab-nav">
+    <a class="ab-brand" href="/">
+      {% if branding.logo_url %}<img src="{{ branding.logo_url }}" alt="" />{% endif %}
+      <span>{{ branding.name }}</span>
+    </a>
+    <nav class="ab-nav__links">
+      <a href="/tickets">My tickets</a>
+      <a href="/kb">Knowledge base</a>
+    </nav>
+    <div class="ab-persona-picker" data-persona-picker>
+      <button type="button" class="ab-persona-picker__toggle" aria-haspopup="listbox">
+        <span class="ab-persona-picker__label">View as…</span>
+        <span class="ab-persona-picker__current" data-persona-current></span>
+      </button>
+      <ul class="ab-persona-picker__menu" role="listbox" data-persona-menu hidden></ul>
+    </div>
+  </header>
+
+  <main class="ab-main">
+    {% block content %}{{ body_block | default("") }}{% endblock %}
+  </main>
+
+  <footer class="ab-footer">
+    <small>{{ branding.tagline }}</small>
+  </footer>
+
+  {% include "_chat_widget.html" %}
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

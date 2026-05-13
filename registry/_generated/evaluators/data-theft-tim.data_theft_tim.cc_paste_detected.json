@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/data-theft-tim.yaml",
+  "name": "data_theft_tim.cc_paste_detected",
+  "kind": "regex",
+  "severity": "critical",
+  "expression": "cc_paste\\s+employee=\\S+\\s+last4=\\d{4}\n",
+  "tags": [
+    "use_case:data-theft-tim",
+    "app:supportbot",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {
+    "source": "loki",
+    "stream": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"}"
+  }
+}

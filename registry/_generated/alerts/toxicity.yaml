@@ -1,0 +1,18 @@
+groups:
+- name: toxicity
+  rules:
+  - alert: toxicity.any_fail
+    expr: 'sum(rate(sigil_eval_result_total{evaluator="toxicity",verdict="fail"}[5m]))
+      > 0
+
+      '
+    for: 1m
+    labels:
+      severity: critical
+      use_case: toxicity
+      app: both
+      route: safety@acme.local
+    annotations:
+      summary: "Toxicity \u2014 pre-screen abusive AI output: toxicity.any_fail firing"
+      description: The safety-judge specialist scores every chatbot response for toxicity
+      runbook: registry/use_cases/toxicity.yaml

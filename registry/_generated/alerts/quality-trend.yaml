@@ -1,0 +1,19 @@
+groups:
+- name: quality-trend
+  rules:
+  - alert: quality_trend.helpfulness_regression
+    expr: "sum(rate(specialist_eval_result_total{specialist=\"gift-finder\",reason=\"\
+      relevant_products\"}[15m]))\n  /\nsum(rate(specialist_eval_result_total{specialist=\"\
+      gift-finder\"}[15m]))\n  < 0.6\n"
+    for: 10m
+    labels:
+      severity: medium
+      use_case: quality-trend
+      app: neoncart
+      route: oncall@acme.local
+    annotations:
+      summary: "Gift Recommender \u2014 Quality Trend (helpfulness, groundedness,\
+        \ bias): quality_trend.helpfulness_regression firing"
+      description: Three quality axes for the gift-finder specialist, derived from
+        real
+      runbook: registry/use_cases/quality-trend.yaml

@@ -1,0 +1,18 @@
+groups:
+- name: customer-frustration
+  rules:
+  - alert: customer_frustration.unaddressed_rate_10pct
+    expr: "sum(rate(sigil_eval_result_total{evaluator=\"customer_frustration\",verdict=\"\
+      fail\"}[15m]))\n  / sum(rate(neoncart_frustration_conversation_total[15m]))\
+      \ > 0.10\n"
+    for: 15m
+    labels:
+      severity: medium
+      use_case: customer-frustration
+      app: neoncart
+      route: customer-success@acme.local
+    annotations:
+      summary: "Customer Frustration \u2014 detect and route: customer_frustration.unaddressed_rate_10pct\
+        \ firing"
+      description: The tone-checker + escalation-detector pair flags frustrated customers
+      runbook: registry/use_cases/customer-frustration.yaml

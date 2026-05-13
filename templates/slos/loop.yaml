@@ -1,0 +1,33 @@
+{{- /*
+slos/_loop.yaml — emit per-use-case OpenSLO ConfigMaps.
+
+Reads registry/_generated/slos/<usecase>.yaml (built by tools/usecase-build.sh)
+and ships the SLO definition as a ConfigMap. Downstream tooling (Pyrra, an
+OpenSLO operator, or a sidecar that scrapes ConfigMaps) consumes the
+`slo.yaml` key. We deliberately avoid hard-binding to a single operator's
+CRD so the chart stays portable across clusters.
+
+Phase-gated: SLOs come online in Phase 2 with the rest of the
+use-case-driven artifacts.
+*/ -}}
+{{- if (and .Values.slos.enabled (le 2 (int .Values.phase))) }}
+{{- range $path, $_ := .Files.Glob "registry/_generated/slos/*.yaml" }}
+{{- $content := $.Files.Get $path }}
+{{- $usecase := base $path | trimSuffix ".yaml" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slo-{{ $usecase }}
+  namespace: {{ $.Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: slo
+    observibelity.io/use-case: {{ $usecase | quote }}
+  annotations:
+    observibelity.io/slo-format: {{ $.Values.slos.format | default "openslo-v1" | quote }}
+data:
+  slo.yaml: |
+    {{- $content | nindent 4 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/sensitive-data-leaks.yaml",
+  "name": "sensitive_data.api_key_pattern",
+  "kind": "regex",
+  "severity": "critical",
+  "expression": "(?i)(?:sk-[a-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36})\n",
+  "tags": [
+    "use_case:sensitive-data-leaks",
+    "app:supportbot",
+    "archetype:single-event-severity",
+    "phase:2"
+  ],
+  "params": {
+    "source": "prompt_or_response"
+  }
+}

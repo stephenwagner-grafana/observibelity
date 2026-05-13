@@ -1,0 +1,19 @@
+groups:
+- name: model-winner
+  rules:
+  - alert: model_winner.atc_rate_collapse
+    expr: "sum by (model) (rate(neoncart_atc_event_total{source=\"live\"}[15m]))\n\
+      \  / sum by (model) (rate(neoncart_specialist_recommendation_total[15m])) <\
+      \ 0.01\n"
+    for: 10m
+    labels:
+      severity: medium
+      use_case: model-winner
+      app: neoncart
+      route: oncall@acme.local
+    annotations:
+      summary: "Model Winner \u2014 rank by ATC, not eval scores: model_winner.atc_rate_collapse\
+        \ firing"
+      description: Customer types "I'm shopping for my 10-year-old nephew, budget
+        $50" in the
+      runbook: registry/use_cases/model-winner.yaml

@@ -1,0 +1,18 @@
+groups:
+- name: outlier-users-tim-eric
+  rules:
+  - alert: outlier_users.cost_concentration
+    expr: "max by (employee) (sum_over_time(supportbot_tokens_total[1h]))\n  / sum(rate(supportbot_tokens_total[1h])\
+      \ * 3600) > 0.25\n"
+    for: 15m
+    labels:
+      severity: medium
+      use_case: outlier-users-tim-eric
+      app: supportbot
+      route: oncall@acme.local
+    annotations:
+      summary: "Outlier Users \u2014 Tim & Eric (cost + governance): outlier_users.cost_concentration\
+        \ firing"
+      description: "Two outlier employees in the SupportBot loadgen \u2014 Tim Heidecker\
+        \ (weight 8.0,"
+      runbook: registry/use_cases/outlier-users-tim-eric.yaml

@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/cost-anomaly-per-user.yaml",
+  "name": "cost_anomaly.repeated_paragraph_pattern",
+  "kind": "rule",
+  "severity": "medium",
+  "expression": "request.prompt_paragraph_count >= 40\nand request.prompt_unique_paragraph_count / request.prompt_paragraph_count < 0.3\n",
+  "tags": [
+    "use_case:cost-anomaly-per-user",
+    "app:both",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {}
+}

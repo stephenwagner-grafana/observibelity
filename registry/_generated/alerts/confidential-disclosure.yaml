@@ -1,0 +1,19 @@
+groups:
+- name: confidential-disclosure
+  rules:
+  - alert: confidential_disclosure.user_paste_burst
+    expr: "sum by (employee) (\n  count_over_time(\n    {namespace=\"supportbot\"\
+      ,app_kubernetes_io_name=\"acme-bot-api\"}\n    |~ \"confidential_disclosure\"\
+      \ | logfmt | category=\"board_content\" [15m]\n  )\n) >= 3\n"
+    for: 1m
+    labels:
+      severity: critical
+      use_case: confidential-disclosure
+      app: supportbot
+      route: security@acme.local
+    annotations:
+      summary: "Confidential Disclosure \u2014 top leakers (Jordan from Finance):\
+        \ confidential_disclosure.user_paste_burst firing"
+      description: Sticky persona u-jordan-finance pastes 4 per hour fake Q4 board
+        content
+      runbook: registry/use_cases/confidential-disclosure.yaml

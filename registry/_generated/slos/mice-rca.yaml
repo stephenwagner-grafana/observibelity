@@ -1,0 +1,21 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: mice-rca
+  displayName: "NeonCart \u2014 \"show me mice\" deterministic RCA"
+  labels:
+    use_case: mice-rca
+    app: neoncart
+    archetype: trace-and-fix
+spec:
+  description: search_success_rate >= 0.99 over 30d (column rodent_qty incident excluded
+    post-fix)
+  service: neoncart
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 30d
+    isRolling: true
+  objectives:
+  - displayName: search_success_rate >= 0.99 over 30d (column rodent_qty incident
+      excluded post-fix)
+    target: 0.999

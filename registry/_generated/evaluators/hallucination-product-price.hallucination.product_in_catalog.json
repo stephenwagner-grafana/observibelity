@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/hallucination-product-price.yaml",
+  "name": "hallucination.product_in_catalog",
+  "kind": "llm-judge",
+  "severity": "high",
+  "expression": "Compare every product SKU and price mentioned in the assistant response\nagainst the catalog snippet provided in the context. Return JSON\n{\"verdict\":\"pass|fail\",\"category\":\"product|price|policy|none\",\"missing\":[...]}\nwhere verdict=fail means at least one SKU or price is not in the catalog.\n",
+  "tags": [
+    "use_case:hallucination-product-price",
+    "app:neoncart",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-opus-4-7",
+    "judge_specialist": "groundedness-judge"
+  }
+}

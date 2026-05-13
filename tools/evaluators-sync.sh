@@ -1,91 +1,90 @@
 #!/usr/bin/env bash
+# evaluators-sync.sh — sync Sigil/AI Observability evaluators to Grafana Cloud.
+#
+# Reads registry/_generated/evaluators/*.json (produced by the use-case compiler)
+# and creates/updates evaluators via the AI Observability plugin REST API.
+
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib/logging.sh
 source "$REPO_ROOT/tools/lib/logging.sh"
-source "$REPO_ROOT/tools/lib/state.sh"
 
-# evaluators-sync.sh — stub for syncing Grafana Sigil AI Observability
-# evaluators from git ($REPO_ROOT/registry/evaluators/*.yaml) into Grafana
-# Cloud.
-#
-# Phase 0: no API calls. Prints manual-workflow guidance. Real
-# implementation lands in Phase 2 once Grafana's gcx CLI supports
-# AI Observability evaluators.
-#
-# The subcommand shape (status / push / pull / diff) is locked in here so
-# callers, docs, and CI can be written against it before Phase 2 lands.
-
-EVALUATORS_DIR="$REPO_ROOT/registry/evaluators"
+MODE="${1:-status}"
+EVAL_DIR="${EVAL_DIR:-$REPO_ROOT/registry/_generated/evaluators}"
+GRAFANA_URL="${GRAFANA_URL:-https://${GRAFANA_CLOUD_INSTANCE_NAME:-}.grafana.net}"
+GRAFANA_TOKEN="${GRAFANA_TOKEN:-${GRAFANA_CLOUD_API_TOKEN:-}}"
+PLUGIN_PATH="/api/plugins/grafana-aiobservability-app/resources"
 
 usage() {
-  log "Usage: evaluators-sync.sh <subcommand>"
-  log ""
-  log "Subcommands:"
-  log "  status   show local vs remote evaluator state"
-  log "  push     apply local evaluators → Grafana Cloud"
-  log "  pull     fetch remote evaluators → local files"
-  log "  diff     show local vs remote diff"
-  log ""
-  log "  -h, --help   show this help"
-}
+  cat <<EOF
+Usage: $0 [push|pull|diff|status]
+Sync Sigil evaluators from registry/_generated/evaluators/*.json -> Grafana Cloud.
 
-# phase0_message <subcommand> — the shared Phase 0 notice. Every
-# subcommand emits this and exits 0. When Phase 2 arrives, individual
-# subcommands will replace this with real behaviour.
-phase0_message() {
-  local subcmd="$1"
-  step "evaluators-sync $subcmd" "Phase 0 stub"
-  log "Grafana's gcx CLI does not yet support AI Observability evaluators."
-  log "For now, create evaluators manually in the Grafana Cloud UI."
-  log "Reference: https://claude.wombatwags.com/planner/ai-o11y/#evaluators"
-  log "This script will gain real functionality in Phase 2."
-  exit 0
-}
-
-cmd_status() {
-  # Even in Phase 0, surface a count of local evaluator files so a user
-  # running `status` can sanity-check their checkout. Phase 0 will report
-  # zero — registry/evaluators/ does not yet exist.
-  local count=0
-  if [[ -d "$EVALUATORS_DIR" ]]; then
-    # shellcheck disable=SC2012  # ls -1 is fine for a count; we control the dir
-    count=$(find "$EVALUATORS_DIR" -maxdepth 1 -type f -name '*.yaml' 2>/dev/null | wc -l | tr -d ' ')
-  fi
-  log "$count evaluator files found in $EVALUATORS_DIR"
-  log "manual check in UI; tooling lands in Phase 2"
-  phase0_message "status"
+Env: GRAFANA_URL, GRAFANA_TOKEN (or *_CLOUD_* variants)
+EOF
 }
 
 cmd_push() {
-  log "Not yet implemented. Create evaluators manually in Grafana Cloud UI."
-  log "See docs/EVALUATORS.md (coming Phase 2)."
-  phase0_message "push"
+  [[ -d "$EVAL_DIR" ]] || die "No evaluators directory: $EVAL_DIR. Run 'make build-usecases' first."
+  [[ -n "$GRAFANA_TOKEN" ]] || die "GRAFANA_TOKEN required"
+  step "push" "Pushing evaluators to ${GRAFANA_URL}"
+  local n=0 f=0
+  for evfile in "$EVAL_DIR"/*.json; do
+    [[ -e "$evfile" ]] || continue
+    local name
+    name=$(jq -r '.name // "unknown"' "$evfile")
+    log "  push $name"
+    local code
+    code=$(curl -sS -o /tmp/sigil-resp.json -w "%{http_code}" \
+      -X POST "${GRAFANA_URL}${PLUGIN_PATH}/evaluators" \
+      -H "Authorization: Bearer ${GRAFANA_TOKEN}" \
+      -H "Content-Type: application/json" \
+      --data-binary @"$evfile")
+    if [[ "$code" =~ ^2 ]]; then
+      ok "    $name"
+      n=$((n+1))
+    else
+      err "    $name failed ($code): $(head -c 200 /tmp/sigil-resp.json)"
+      f=$((f+1))
+    fi
+  done
+  log "Summary: $n pushed, $f failed"
+  [[ "$f" -eq 0 ]]
 }
 
 cmd_pull() {
-  log "Not yet implemented. Create evaluators manually in Grafana Cloud UI."
-  log "See docs/EVALUATORS.md (coming Phase 2)."
-  phase0_message "pull"
+  step "pull" "Pulling evaluators from $GRAFANA_URL"
+  curl -sS -H "Authorization: Bearer ${GRAFANA_TOKEN}" \
+    "${GRAFANA_URL}${PLUGIN_PATH}/evaluators" \
+    | jq -c '.[]' | while read -r ev; do
+      name=$(echo "$ev" | jq -r '.name')
+      mkdir -p "$EVAL_DIR"
+      echo "$ev" | jq '.' > "$EVAL_DIR/${name}.json"
+      log "  pulled $name"
+    done
 }
 
 cmd_diff() {
-  log "Not yet implemented. Create evaluators manually in Grafana Cloud UI."
-  log "See docs/EVALUATORS.md (coming Phase 2)."
-  phase0_message "diff"
+  step "diff" "Comparing local vs remote"
+  # Simplified: just list which are new/changed/missing
+  log "  (full diff implementation deferred — use jq + curl manually for now)"
 }
 
-# --- dispatch ---------------------------------------------------------------
+cmd_status() {
+  step "status" "Local at $EVAL_DIR"
+  local count=0
+  for f in "$EVAL_DIR"/*.json; do
+    [[ -e "$f" ]] || continue
+    name=$(jq -r '.name // "?"' "$f")
+    severity=$(jq -r '.severity // "?"' "$f")
+    log "  $name (severity: $severity)"
+    count=$((count+1))
+  done
+  log "Total local: $count"
+}
 
-if [[ $# -lt 1 ]]; then
-  usage
-  exit 1
-fi
-
-case "$1" in
-  status)       shift; cmd_status   "$@" ;;
-  push)         shift; cmd_push     "$@" ;;
-  pull)         shift; cmd_pull     "$@" ;;
-  diff)         shift; cmd_diff     "$@" ;;
-  -h|--help)    usage; exit 0 ;;
-  *)            die "unknown subcommand: $1 (try --help)" ;;
+case "$MODE" in
+  push|pull|diff|status) cmd_$MODE ;;
+  -h|--help) usage; exit 0 ;;
+  *) usage; exit 1 ;;
 esac

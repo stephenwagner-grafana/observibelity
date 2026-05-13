@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Ticket #{{ ticket.id }} — {{ branding.name }}{% endblock %}
+
+{% block content %}
+<section class="ab-section">
+  <a href="/tickets" class="ab-back">&larr; All tickets</a>
+  <article class="ab-ticket">
+    <header class="ab-ticket__header">
+      <h1>#{{ ticket.id }} — {{ ticket.subject }}</h1>
+      <span class="ab-status ab-status--{{ ticket.status }}">{{ ticket.status }}</span>
+    </header>
+
+    <dl class="ab-ticket__meta">
+      <dt>Category</dt><dd>{{ ticket.category or "Uncategorized" }}</dd>
+      <dt>Filed</dt><dd>{{ ticket.created_at.strftime("%Y-%m-%d %H:%M") if ticket.created_at else "—" }}</dd>
+      {% if ticket.updated_at %}
+        <dt>Updated</dt><dd>{{ ticket.updated_at.strftime("%Y-%m-%d %H:%M") }}</dd>
+      {% endif %}
+      {% if ticket.persona %}
+        <dt>Filed by</dt><dd>{{ ticket.persona.name }} ({{ ticket.persona.department or ticket.persona.role }})</dd>
+      {% endif %}
+    </dl>
+
+    {% if ticket.body %}
+      <section class="ab-ticket__body">
+        <h2>Description</h2>
+        <p>{{ ticket.body }}</p>
+      </section>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}

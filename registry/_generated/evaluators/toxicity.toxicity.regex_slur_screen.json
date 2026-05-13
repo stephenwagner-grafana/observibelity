@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/toxicity.yaml",
+  "name": "toxicity.regex_slur_screen",
+  "kind": "regex",
+  "severity": "high",
+  "expression": "(?i)\\b(?:slur1|slur2|slur3)\\b\n",
+  "tags": [
+    "use_case:toxicity",
+    "app:both",
+    "archetype:single-event-severity",
+    "phase:2"
+  ],
+  "params": {
+    "source": "response"
+  }
+}

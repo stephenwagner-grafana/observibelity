@@ -2,19 +2,27 @@
 
 Phase 1 contract (see ../README.md):
 
-  GET  /              -> home page with featured items
-  GET  /products/{id} -> product detail
-  GET  /catalog       -> paginated catalog grid
-  GET  /cart          -> placeholder cart view
-  POST /chat          -> proxy to nc-chatbot specialist
-  GET  /health        -> liveness
-  GET  /readyz        -> readiness (pings postgres)
-  GET  /metrics       -> Prometheus metrics
+  GET  /                      -> home page with featured items
+  GET  /products/{id}         -> product detail
+  GET  /catalog               -> paginated catalog grid
+  GET  /cart                  -> placeholder cart view
+  POST /chat                  -> proxy to nc-chatbot specialist
+  GET  /api/personas          -> persona dropdown data (JSON)
+  POST /api/persona/select    -> set the persona cookie ("view as" picker)
+  GET  /health                -> liveness
+  GET  /readyz                -> readiness (pings postgres)
+  GET  /metrics               -> Prometheus metrics
 
 The chatbot proxy uses httpx; OTel httpx instrumentation propagates the
 trace context to nc-chatbot, which is what makes the mice-rca demo flow
 appear as one continuous trace from browser -> chatbot -> orchestrator ->
 postgres (where the column-doesnt-exist error lights up).
+
+Every endpoint resolves a ``persona_id`` from ``X-Persona-Id`` header or
+``persona`` cookie via the ``get_persona_id`` dependency and stamps it on
+the active OTel span as ``ai_o11y.persona_id``. The chat proxy forwards
+the same value to nc-chatbot so it propagates all the way through to the
+llm-gateway span.
 """
 
 from __future__ import annotations
@@ -37,6 +45,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import db
 from app.models import CatalogItem, Category
+from app.personas import (
+    GUEST_PERSONA_ID,
+    get_persona_id,
+    list_personas,
+    set_persona_span_attr,
+)
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -86,6 +100,34 @@ def _set_usecase_attr(usecase: str = DEFAULT_USECASE) -> None:
         pass
 
 
+async def _render_with_personas(
+    template_name: str,
+    request: Request,
+    session: AsyncSession,
+    persona_id: str,
+    extra: dict[str, Any],
+) -> HTMLResponse:
+    """Helper: render a template with ``personas`` + ``current_persona`` injected.
+
+    Catches DB failures gracefully — if Postgres is unreachable or the
+    table isn't seeded yet, the picker simply shows the guest option
+    rather than 500-ing the page.
+    """
+    try:
+        personas = await list_personas(session)
+    except Exception as exc:  # noqa: BLE001 — picker is nice-to-have
+        log.warning("persona list query failed: %s", exc)
+        personas = []
+    ctx: dict[str, Any] = {
+        "request": request,
+        "branding": BRANDING,
+        "personas": personas,
+        "current_persona": persona_id,
+    }
+    ctx.update(extra)
+    return templates.TemplateResponse(template_name, ctx)
+
+
 # ---- Lifespan --------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -115,7 +157,9 @@ templates.env.globals["branding"] = BRANDING
 # ---- Schemas ---------------------------------------------------------------
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2048)
-    persona_id: int | None = None
+    # ``persona_id`` may arrive on the wire (e.g. from loadgen) but the
+    # request-scoped dependency overrides it when set via header/cookie.
+    persona_id: str | None = None
     usecase: str | None = None
 
 
@@ -125,15 +169,23 @@ class ChatResponse(BaseModel):
     usecase: str
 
 
+class PersonaSelectRequest(BaseModel):
+    persona_id: str = Field(..., min_length=1, max_length=64)
+
+
 # ---- HTML routes -----------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request, session: AsyncSession = Depends(db.get_session)) -> HTMLResponse:
+async def home(
+    request: Request,
+    persona_id: str = Depends(get_persona_id),
+    session: AsyncSession = Depends(db.get_session),
+) -> HTMLResponse:
     _set_usecase_attr()
+    set_persona_span_attr(persona_id)
     result = await session.execute(select(CatalogItem).limit(8))
     items = result.scalars().all()
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "items": items, "branding": BRANDING},
+    return await _render_with_personas(
+        "index.html", request, session, persona_id, {"items": items}
     )
 
 
@@ -141,15 +193,16 @@ async def home(request: Request, session: AsyncSession = Depends(db.get_session)
 async def product_detail(
     product_id: int,
     request: Request,
+    persona_id: str = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     _set_usecase_attr()
+    set_persona_span_attr(persona_id)
     item = await session.get(CatalogItem, product_id)
     if item is None:
         raise HTTPException(status_code=404, detail="product not found")
-    return templates.TemplateResponse(
-        "products/detail.html",
-        {"request": request, "item": item, "branding": BRANDING},
+    return await _render_with_personas(
+        "products/detail.html", request, session, persona_id, {"item": item}
     )
 
 
@@ -158,51 +211,70 @@ async def catalog(
     request: Request,
     page: int = Query(1, ge=1),
     per_page: int = Query(24, ge=1, le=100),
+    persona_id: str = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     _set_usecase_attr()
+    set_persona_span_attr(persona_id)
     offset = (page - 1) * per_page
     items_q = select(CatalogItem).offset(offset).limit(per_page)
     cats_q = select(Category)
     items = (await session.execute(items_q)).scalars().all()
     categories = (await session.execute(cats_q)).scalars().all()
-    return templates.TemplateResponse(
+    return await _render_with_personas(
         "catalog.html",
-        {
-            "request": request,
-            "items": items,
-            "categories": categories,
-            "branding": BRANDING,
-            "page": page,
-        },
+        request,
+        session,
+        persona_id,
+        {"items": items, "categories": categories, "page": page},
     )
 
 
 @app.get("/cart", response_class=HTMLResponse)
-async def cart(request: Request) -> HTMLResponse:
+async def cart(
+    request: Request,
+    persona_id: str = Depends(get_persona_id),
+    session: AsyncSession = Depends(db.get_session),
+) -> HTMLResponse:
     # TODO(phase1): wire actual cart state once orders schema lands.
-    return templates.TemplateResponse(
+    set_persona_span_attr(persona_id)
+    return await _render_with_personas(
         "base.html",
-        {"request": request, "branding": BRANDING, "body_block": "Cart is empty."},
+        request,
+        session,
+        persona_id,
+        {"body_block": "Cart is empty."},
     )
 
 
 # ---- API routes ------------------------------------------------------------
 @app.post("/chat")
-async def chat(request: Request, payload: ChatRequest) -> Response:
+async def chat(
+    request: Request,
+    payload: ChatRequest,
+    persona_id: str = Depends(get_persona_id),
+) -> Response:
     """Proxy to the nc-chatbot specialist.
 
     The httpx OTel instrumentation injects W3C tracecontext headers; the
     specialist picks them up and continues the span tree. That's how the
     mice-rca flow shows up as one trace in Tempo.
+
+    The persona resolved from header/cookie wins over any wire payload, so
+    the loadgen path (which sets ``persona_id`` in the body) and the
+    "view as" picker (header/cookie) both end up with the correct value
+    flowing through to llm-gateway span attributes.
     """
     usecase = payload.usecase or DEFAULT_USECASE
     _set_usecase_attr(usecase)
 
+    effective_persona = persona_id or payload.persona_id or GUEST_PERSONA_ID
+    set_persona_span_attr(effective_persona)
+
     client: httpx.AsyncClient = request.app.state.http
     body = {
         "message": payload.message,
-        "persona_id": payload.persona_id,
+        "persona_id": effective_persona,
         "usecase": usecase,
     }
     try:
@@ -233,6 +305,50 @@ async def chat(request: Request, payload: ChatRequest) -> Response:
         f'<div class="chat-msg chat-msg--user">{payload.message}</div>'
         f'<div class="chat-msg chat-msg--bot">{reply}</div>'
     )
+
+
+# ---- Persona API -----------------------------------------------------------
+@app.get("/api/personas")
+async def api_list_personas(
+    session: AsyncSession = Depends(db.get_session),
+) -> JSONResponse:
+    """List all personas as JSON for UI dropdowns + scripts.
+
+    Returns a stable shape (id, name, role, archetype, offender_pattern)
+    even if the underlying schema gains columns later.
+    """
+    personas = await list_personas(session)
+    payload = [
+        {
+            "persona_id": p.persona_id,
+            "name": p.name,
+            "role": p.role,
+            "archetype": p.archetype,
+            "offender_pattern": p.offender_pattern,
+        }
+        for p in personas
+    ]
+    return JSONResponse(payload)
+
+
+@app.post("/api/persona/select")
+async def api_persona_select(payload: PersonaSelectRequest) -> JSONResponse:
+    """Set the ``persona`` cookie so subsequent requests act as that user.
+
+    The cookie is HttpOnly + SameSite=Lax + Path=/. HTMX-driven select boxes
+    POST here on change; the server response is small enough to be a no-op
+    swap target.
+    """
+    response = JSONResponse({"persona_id": payload.persona_id, "ok": True})
+    response.set_cookie(
+        key="persona",
+        value=payload.persona_id,
+        httponly=True,
+        samesite="lax",
+        path="/",
+        max_age=60 * 60 * 24 * 30,  # 30 days — demo sessions are long-lived
+    )
+    return response
 
 
 # ---- Ops endpoints ---------------------------------------------------------

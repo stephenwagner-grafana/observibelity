@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/bad-question-askers.yaml",
+  "name": "bad_question_askers.escalation_response",
+  "kind": "rule",
+  "severity": "medium",
+  "expression": "response.classification == \"escalate\"\nand request.user != \"\"\n",
+  "tags": [
+    "use_case:bad-question-askers",
+    "app:supportbot",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {}
+}

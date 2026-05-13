@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/mice-rca.yaml",
+  "name": "mice_rca.postgres_column_not_found",
+  "kind": "regex",
+  "severity": "critical",
+  "expression": "ERROR:\\s+column\\s+\"rodent_qty\"\\s+does\\s+not\\s+exist|sqlstate=42703\n",
+  "tags": [
+    "use_case:mice-rca",
+    "app:neoncart",
+    "archetype:trace-and-fix",
+    "phase:1"
+  ],
+  "params": {
+    "source": "loki",
+    "stream": "{namespace=\"neoncart\",container=\"postgres\"}"
+  }
+}

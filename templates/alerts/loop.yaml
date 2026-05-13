@@ -1,0 +1,55 @@
+{{- /*
+alerts/_loop.yaml — emit per-use-case Prometheus alerting rules.
+
+Reads registry/_generated/alerts/<usecase>.yaml (built by tools/usecase-build.sh)
+and renders one of three shapes per file, selected by .Values.alerts.target:
+
+  prometheus-operator  PrometheusRule CRD (monitoring.coreos.com/v1)
+                       Requires prometheus-operator installed in the cluster.
+  configmap-only       ConfigMap with rules.yaml — useful when a raw
+                       Prometheus is sidecar-mounting rule files or when
+                       the cluster lacks the operator CRDs.
+  grafana-cloud        Skipped here; pushed out-of-band via
+                       tools/alerts-sync.sh -> Grafana Cloud Mimir alerting.
+
+Phase-gated: alerts come online in Phase 2 (use cases + dashboards land first).
+*/ -}}
+{{- if (and .Values.alerts.enabled (le 2 (int .Values.phase))) }}
+{{- $target := .Values.alerts.target | default "configmap-only" }}
+{{- if ne $target "grafana-cloud" }}
+{{- range $path, $_ := .Files.Glob "registry/_generated/alerts/*.yaml" }}
+{{- $content := $.Files.Get $path }}
+{{- $usecase := base $path | trimSuffix ".yaml" }}
+---
+{{- if eq $target "prometheus-operator" }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: observibelity-{{ $usecase }}
+  namespace: {{ $.Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: alert
+    observibelity.io/use-case: {{ $usecase | quote }}
+spec:
+  {{- $content | nindent 2 }}
+{{- else }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alerts-{{ $usecase }}
+  namespace: {{ $.Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: alert
+    observibelity.io/use-case: {{ $usecase | quote }}
+  annotations:
+    observibelity.io/alert-target: {{ $target | quote }}
+    observibelity.io/default-route: {{ $.Values.alerts.default_route | default "default-receiver" | quote }}
+data:
+  rules.yaml: |
+    {{- $content | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

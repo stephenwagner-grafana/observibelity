@@ -1,0 +1,449 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "enable": true,
+        "hide": false,
+        "iconColor": "blue",
+        "name": "Model rollouts",
+        "target": {
+          "expr": "{service=\"llm-gateway\"} | json | event=\"model.rollout\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "model rollout: {{ model }}"
+      }
+    ]
+  },
+  "description": "Rank models by ATC + purchase events, not by offline eval scores. Cheapest performant model wins.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Headline ranking",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Top 10 models by ATC events in the last hour. Real business outcome, not eval scores.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-GrYlRd"},
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineWidth": 1
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": false},
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {"mode": "single", "sort": "none"},
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(10, sum by (gen_ai_request_model) (increase(neoncart_atc_event_total{source=\"live\"}[1h])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "ATC events by model (top 10, 1h)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "ATC bargauge ranking by model — leaderboard view.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-GrYlRd"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "red", "value": 50}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 1},
+      "id": 3,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 24,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(10, sum by (gen_ai_request_model) (increase(neoncart_atc_event_total[1h])))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Bargauge ranking by ATC event count",
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 10},
+      "id": 4,
+      "panels": [],
+      "title": "Trends",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "ATC event rate per model over time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 11},
+      "id": 5,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (rate(neoncart_atc_event_total[5m]))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "ATC rate per model (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Cheapest performant model — minimum cost-per-ATC over the last hour. Lower is better.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.01},
+              {"color": "red", "value": 0.1}
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 11},
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "bottomk(1, sum by (gen_ai_request_model) (rate(gen_ai_usage_cost_total_usd[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(neoncart_atc_event_total[1h])), 0.0001))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cheapest performant model (USD / ATC)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 20},
+      "id": 7,
+      "panels": [],
+      "title": "Full leaderboard",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Full leaderboard — model | total ATC | conversion rate | avg latency | cost per conversion.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "align": "auto",
+            "cellOptions": {"type": "auto"}
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "gen_ai_request_model"},
+            "properties": [
+              {"id": "displayName", "value": "Model"},
+              {"id": "custom.width", "value": 260}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #A"},
+            "properties": [
+              {"id": "displayName", "value": "Total ATC (1h)"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #B"},
+            "properties": [
+              {"id": "displayName", "value": "Conversion %"},
+              {"id": "unit", "value": "percentunit"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #C"},
+            "properties": [
+              {"id": "displayName", "value": "Avg latency"},
+              {"id": "unit", "value": "s"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #D"},
+            "properties": [
+              {"id": "displayName", "value": "USD / conversion"},
+              {"id": "unit", "value": "currencyUSD"}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 11, "w": 24, "x": 0, "y": 21},
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Total ATC (1h)"}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (increase(neoncart_atc_event_total[1h]))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (rate(neoncart_atc_event_total[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(neoncart_specialist_recommendation_total[1h])), 0.001)",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "histogram_quantile(0.5, sum by (gen_ai_request_model, le) (rate(specialist_request_duration_seconds_bucket[1h])))",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_usage_cost_total_usd[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(neoncart_purchase_event_total[1h])), 0.0001)",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        }
+      ],
+      "title": "Leaderboard: model | ATC | conv % | latency | $ / conv",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {"byField": "gen_ai_request_model", "mode": "outer"}
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 32},
+      "id": 9,
+      "panels": [],
+      "title": "Per-model cost + quality",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Cost per second by model.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {"group": "A", "mode": "normal"}
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 33},
+      "id": 10,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_usage_cost_total_usd[5m]))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost / s by model (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "p95 latency per model.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 33},
+      "id": 11,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "histogram_quantile(0.95, sum by (gen_ai_request_model, le) (rate(specialist_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "p95 latency per model (5m)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "phase-2", "models", "leaderboard"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
+        "name": "datasource_prom", "options": [], "query": "prometheus",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
+        "name": "datasource_loki", "options": [], "query": "loki",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
+        "name": "datasource_tempo", "options": [], "query": "tempo",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(gen_ai_usage_cost_total_usd, gen_ai_request_model)",
+        "hide": 0, "includeAll": true, "label": "Model", "multi": true,
+        "name": "model", "options": [],
+        "query": {"query": "label_values(gen_ai_usage_cost_total_usd, gen_ai_request_model)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "timezone": "",
+  "title": "AI o11y — Best Models (ranked by ATC)",
+  "uid": "ai-obs-best-models",
+  "version": 1,
+  "weekStart": ""
+}

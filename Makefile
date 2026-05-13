@@ -8,11 +8,11 @@ CHART_DIR := .
 KUBECONFIG ?= $(HOME)/.kube/config
 TIMEOUT ?= 5m
 
-.PHONY: help dev-cluster dev-cluster-down dev dev-diff dev-down verify test test-unit test-bats test-helm smoke doctor snapshot watch images lint clean init verify-repo build-usecases test-usecases new-usecase import-usecases migrate migrate-down migrate-status seed logs logs-app pf-neoncart pf-llm-gateway pf-postgres trigger-mice usecases usecases-status phase
+.PHONY: help dev-cluster dev-cluster-down dev dev-diff dev-down verify test test-unit test-bats test-helm smoke doctor snapshot watch images lint clean init verify-repo build-usecases test-usecases new-usecase import-usecases migrate migrate-down migrate-status seed seed-regenerate logs logs-app pf-neoncart pf-llm-gateway pf-postgres trigger-mice usecases usecases-status phase deploy-k3s-local k3s-import images-local dashboards-push dashboards-pull dashboards-diff evaluators-push evaluators-status k6-logs k6-scenarios k6-restart alerts-push alerts-status
 
 help:  ## Print this help (auto-generated from target docstrings).
 	@awk 'BEGIN {FS = ":.*?## "; printf "ObserVIBElity — make targets\n\n"} \
-		/^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+		/^[a-zA-Z0-9_-]+:.*?## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 dev-cluster:  ## Bootstrap a local dev cluster (k3d/kind/docker-desktop).
 	./tools/bootstrap-cluster.sh
@@ -63,6 +63,21 @@ watch:  ## Skaffold dev mode (Loop 2 inner loop for app code).
 
 images:  ## Build/list container images for this phase.
 	@echo "Phase 0: no images yet. Phase 1 builds neoncart, llm-gateway, specialists, tools."
+
+images-local: ## Build all 13 container images locally with docker (no push)
+	@./tools/k3s-import-images.sh --no-build || ./tools/k3s-import-images.sh
+
+k3s-import: ## Import locally-built images into k3s containerd
+	@./tools/k3s-import-images.sh --no-build
+
+deploy-k3s-local: images-local ## Build images, import into k3s, helm install with IfNotPresent
+	@echo "▸ Deploying to k3s (local images)"
+	@helm upgrade --install $(HELM_RELEASE) . \
+		--namespace $(NAMESPACE) --create-namespace \
+		$(if $(wildcard $(VALUES)),-f $(VALUES),) \
+		--set global.imagePullPolicy=IfNotPresent \
+		--atomic --wait --timeout $(TIMEOUT)
+	@$(MAKE) verify
 
 lint:  ## Run shellcheck + yamllint + helm lint (all best-effort).
 	shellcheck install.sh uninstall.sh tools/*.sh tools/**/*.sh 2>/dev/null || true
@@ -141,6 +156,9 @@ seed: ## Run the seed loader (idempotent CSV upsert into Postgres)
 	@kubectl create job --from=cronjob/seed-loader seed-manual-$(shell date +%s) -n $(NAMESPACE) 2>/dev/null || \
 		echo "Seed runs automatically as a Helm hook; this triggers a manual re-run"
 
+seed-regenerate: ## Regenerate the seed data CSVs from _generate.py
+	@cd seed_data && python3 _generate.py
+
 logs: ## Tail logs from all observibelity pods
 	@kubectl logs -n $(NAMESPACE) -l app.kubernetes.io/instance=$(HELM_RELEASE) --tail=50 -f --max-log-requests=20
 
@@ -172,3 +190,33 @@ usecases-status: ## Show which use cases have been deployed (vs just authored)
 
 phase: ## Show current phase setting in values.yaml
 	@awk '/^phase:/ {print "  phase:", $$2}' values.yaml
+
+dashboards-push: ## Push dashboards/*.json to Grafana Cloud
+	@./tools/dashboards-sync.sh push
+
+dashboards-pull: ## Pull dashboards from Grafana Cloud -> dashboards/
+	@./tools/dashboards-sync.sh pull
+
+dashboards-diff: ## Show local vs remote dashboard diff
+	@./tools/dashboards-sync.sh diff
+
+evaluators-push: ## Push compiled evaluators to Grafana Cloud
+	@./tools/evaluators-sync.sh push
+
+evaluators-status: ## Show local evaluator files
+	@./tools/evaluators-sync.sh status
+
+k6-logs: ## Tail k6 traffic engine logs
+	@./tools/k6-tail.sh
+
+k6-scenarios: ## List generated scenarios in the ConfigMap
+	@kubectl get configmap -n $(NAMESPACE) k6-scenarios -o jsonpath='{.data}' | jq -r 'keys[]'
+
+k6-restart: ## Restart the k6 traffic engine
+	@kubectl rollout restart -n $(NAMESPACE) deployment/k6-traffic
+
+alerts-push: ## Push compiled alerts to Grafana Cloud Mimir
+	@./tools/alerts-sync.sh push
+
+alerts-status: ## Show local alert files
+	@./tools/alerts-sync.sh status

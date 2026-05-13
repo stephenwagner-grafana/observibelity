@@ -1,0 +1,21 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: confidential-disclosure
+  displayName: "Confidential Disclosure \u2014 top leakers (Jordan from Finance)"
+  labels:
+    use_case: confidential-disclosure
+    app: supportbot
+    archetype: per-user-pattern
+spec:
+  description: per-employee confidential_disclosure events <= 1 per 30d for >= 99%
+    of employees
+  service: supportbot
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 30d
+    isRolling: true
+  objectives:
+  - displayName: per-employee confidential_disclosure events <= 1 per 30d for >= 99%
+      of employees
+    target: 0.999

@@ -1,0 +1,62 @@
+name: sync
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboards/**'
+      - 'registry/use_cases/**'
+      - 'registry/_generated/**'
+      - 'tools/dashboards-sync.sh'
+      - 'tools/evaluators-sync.sh'
+      - 'tools/alerts-sync.sh'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dashboards:
+    if: ${{ secrets.GRAFANA_CLOUD_API_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    env:
+      GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y jq curl
+      - name: Push dashboards
+        run: ./tools/dashboards-sync.sh push
+
+  evaluators:
+    if: ${{ secrets.GRAFANA_CLOUD_API_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    env:
+      GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -e tools/
+      - name: Compile use case YAMLs
+        run: ./tools/usecase-build.sh
+      - name: Push evaluators
+        run: ./tools/evaluators-sync.sh push
+
+  alerts:
+    if: ${{ secrets.GRAFANA_CLOUD_API_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    env:
+      GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+      NAMESPACE: observibelity
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -e tools/
+      - name: Compile use case YAMLs
+        run: ./tools/usecase-build.sh
+      - name: Push alerting rules to Mimir
+        run: ./tools/alerts-sync.sh push

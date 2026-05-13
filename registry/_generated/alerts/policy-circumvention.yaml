@@ -1,0 +1,18 @@
+groups:
+- name: policy-circumvention
+  rules:
+  - alert: policy_circumvention.burst_15m
+    expr: "sum(\n  count_over_time(\n    {namespace=\"supportbot\",app_kubernetes_io_name=\"\
+      acme-bot-api\"}\n    |~ \"policy_circumvention\" | logfmt | category=\"approval_bypass\"\
+      \ [15m]\n  )\n) > 3\n"
+    for: 1m
+    labels:
+      severity: high
+      use_case: policy-circumvention
+      app: supportbot
+      route: compliance@acme.local
+    annotations:
+      summary: "Policy Circumvention \u2014 caught at the prompt: policy_circumvention.burst_15m\
+        \ firing"
+      description: Per-policy-rate breakdown of employees using AI to bypass approval,
+      runbook: registry/use_cases/policy-circumvention.yaml

@@ -1,0 +1,20 @@
+groups:
+- name: sensitive-data-leaks
+  rules:
+  - alert: sensitive_data.any_match
+    expr: 'sum(rate(supportbot_pii_match_total{kind=~"credit_card|ssn|api_key"}[5m]))
+      > 0
+
+      '
+    for: 1m
+    labels:
+      severity: high
+      use_case: sensitive-data-leaks
+      app: supportbot
+      route: security@acme.local
+    annotations:
+      summary: "Sensitive Data Leaks \u2014 PII redaction as a span: sensitive_data.any_match\
+        \ firing"
+      description: The PII detector flags every input and output for credit cards,
+        SSNs,
+      runbook: registry/use_cases/sensitive-data-leaks.yaml

@@ -1,0 +1,526 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "enable": true,
+        "hide": false,
+        "iconColor": "red",
+        "name": "cc_paste events",
+        "tagKeys": "employee,last4",
+        "target": {
+          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"cc_paste\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "cc_paste — {{ employee }} last4={{ last4 }}"
+      }
+    ]
+  },
+  "description": "Per-employee data exfiltration: Tim Heidecker's 8x malicious-insider archetype. cc_paste + exfil_event Loki lines, rolling 10m exfil score, data_theft alert.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Headline",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Total exfil events across all employees in the last 24 hours.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 20}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(supportbot_exfil_event_total[24h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Total exfil events (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Number of distinct employees with at least one exfil event in the last hour.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 3}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "count(sum by (employee) (increase(supportbot_exfil_event_total[1h])) > 0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Employees with exfil (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Credit-card paste events in the last hour.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 5}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 1},
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(supportbot_cc_paste_total[1h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "cc_paste events (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "description": "data_theft alert state. Fires at >=5 events / 10m for any employee.",
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 1},
+      "id": 5,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "data_theft",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 10,
+        "sortOrder": 3,
+        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": true, "pending": true},
+        "viewMode": "list"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "queryType": "alerts",
+          "refId": "A"
+        }
+      ],
+      "title": "data_theft alert state",
+      "type": "alertlist"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "id": 6,
+      "panels": [],
+      "title": "Per-employee leaderboard",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Top 10 employees ranked by rolling exfil score over the last 10 minutes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-GrYlRd"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.4},
+              {"color": "red", "value": 0.7}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 7},
+      "id": 7,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(10, max by (employee) (supportbot_exfil_score{employee!=\"\"}))",
+          "legendFormat": "{{employee}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 employees by exfil score (10m rolling)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Exfil events per employee over time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 11, "w": 12, "x": 12, "y": 7},
+      "id": 8,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(10, sum by (employee) (rate(supportbot_exfil_event_total{employee!=\"\"}[5m])))",
+          "legendFormat": "{{employee}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Exfil events per employee (5m, top 10)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "id": 9,
+      "panels": [],
+      "title": "Single-employee drill-down",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Drill-down for the selected employee (persona_id variable). Shows exfil score over time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "always",
+            "spanNulls": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.4},
+              {"color": "red", "value": 0.7}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 19},
+      "id": 10,
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "max(supportbot_exfil_score{employee=\"$persona_id\"})",
+          "legendFormat": "$persona_id exfil score",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(supportbot_exfil_event_total{employee=\"$persona_id\"}[5m]))",
+          "legendFormat": "$persona_id exfil events / s",
+          "refId": "B"
+        }
+      ],
+      "title": "$persona_id — exfil score + events",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Recent exfil event count for the selected employee.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 2},
+              {"color": "red", "value": 5}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 19},
+      "id": 11,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(supportbot_exfil_event_total{employee=\"$persona_id\"}[10m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "$persona_id — exfil events (last 10m)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 28},
+      "id": 12,
+      "panels": [],
+      "title": "Top exfilters table",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Top 20 exfilters in the last hour with most-recent event count.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-GrYlRd"},
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "employee"},
+            "properties": [{"id": "displayName", "value": "Employee"}, {"id": "custom.width", "value": 280}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #A"},
+            "properties": [
+              {"id": "displayName", "value": "Exfil events (1h)"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #B"},
+            "properties": [
+              {"id": "displayName", "value": "Max exfil score"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #C"},
+            "properties": [
+              {"id": "displayName", "value": "CC paste events"}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 29},
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Exfil events (1h)"}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "topk(20, sum by (employee) (increase(supportbot_exfil_event_total{employee!=\"\"}[1h])))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "max by (employee) (supportbot_exfil_score{employee!=\"\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (employee) (increase(supportbot_cc_paste_total{employee!=\"\"}[1h]))",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Top exfilters — last 1h (with score + cc_paste)",
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "employee", "mode": "outer"}}
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
+      "id": 14,
+      "panels": [],
+      "title": "Loki — cc_paste with employee context",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "description": "Live cc_paste events from SupportBot, tagged with employee + last4.",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 42},
+      "id": 15,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "expr": "{namespace=\"supportbot\",app_kubernetes_io_name=\"acme-bot-api\"} |~ \"(cc_paste|exfil_event)\" | logfmt | employee=~\"$persona_id|.+\"",
+          "refId": "A"
+        }
+      ],
+      "title": "cc_paste + exfil_event Loki stream",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "phase-2", "security", "data-theft"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
+        "name": "datasource_prom", "options": [], "query": "prometheus",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
+        "name": "datasource_loki", "options": [], "query": "loki",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
+        "name": "datasource_tempo", "options": [], "query": "tempo",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": "u-tim-l", "value": "u-tim-l"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(supportbot_exfil_event_total, employee)",
+        "hide": 0, "includeAll": false, "label": "Employee", "multi": false,
+        "name": "persona_id", "options": [],
+        "query": {"query": "label_values(supportbot_exfil_event_total, employee)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "timezone": "",
+  "title": "AI o11y — Data Theft (per-employee exfil)",
+  "uid": "ai-obs-data-theft",
+  "version": 1,
+  "weekStart": ""
+}

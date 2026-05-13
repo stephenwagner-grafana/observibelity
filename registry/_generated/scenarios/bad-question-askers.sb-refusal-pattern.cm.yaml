@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadgen-bad-question-askers-sb-refusal-pattern
+  labels:
+    app.kubernetes.io/component: loadgen
+    observibelity.io/use-case: bad-question-askers
+    observibelity.io/scenario: sb-refusal-pattern
+data:
+  bad-question-askers.sb-refusal-pattern.js: "// k6 scenario template: leaderboard\
+    \ archetype\n// Generated for use case: {{ name }}\n// App target:           {{\
+    \ app }}\n// Rank by:              {{ rank_by }}\n// Grouped by:           {{\
+    \ group_by }}\n//\n// Generates baseline traffic at {{ baseline_rate }}/min spread\
+    \ across\n// every category in CATEGORIES so the leaderboard always has signal.\n\
+    \nimport http from 'k6/http';\nimport { check, sleep } from 'k6/check';\n\nexport\
+    \ const options = {\n  scenarios: {\n    {{ name }}_leaderboard: {\n      executor:\
+    \ 'constant-arrival-rate',\n      rate: {{ baseline_rate }},\n      timeUnit:\
+    \ '1m',\n      duration: '24h',\n      preAllocatedVUs: 4,\n      maxVUs: 12,\n\
+    \      exec: 'fire',\n    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL ||\
+    \ 'http://{{ app }}.observibelity.svc.cluster.local';\nconst CATEGORIES = {{ categories\
+    \ }};\n\nconst SAMPLE_MESSAGES = [\n  'summarize this support thread',\n  'what\
+    \ is your return policy',\n  'help me pick a plan',\n  'i want a refund please',\n\
+    \  'compare your top three skus',\n  'reset my password',\n];\n\nfunction pickCategory()\
+    \ {\n  return CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];\n}\n\n\
+    function pickMessage() {\n  return SAMPLE_MESSAGES[Math.floor(Math.random() *\
+    \ SAMPLE_MESSAGES.length)];\n}\n\nexport function fire() {\n  const category =\
+    \ pickCategory();\n  const payload = JSON.stringify({\n    message: pickMessage(),\n\
+    \    user_id: `u-leaderboard-${Math.floor(Math.random() * 50)}`,\n    session_id:\
+    \ `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,\n    metadata:\
+    \ {\n      usecase: '{{ name }}',\n      archetype: 'leaderboard',\n      group_by:\
+    \ '{{ group_by }}',\n      category: category,\n    },\n  });\n  const headers\
+    \ = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase': '{{ name\
+    \ }}',\n    'ai_o11y-archetype': 'leaderboard',\n    'ai_o11y-group-by': '{{ group_by\
+    \ }}',\n    'ai_o11y-category': category,\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
+    \ payload, { headers });\n  check(res, { 'request accepted': (r) => r.status <\
+    \ 500 });\n  sleep(1);\n}\n"

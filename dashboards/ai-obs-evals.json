@@ -1,0 +1,455 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+        "enable": true,
+        "hide": false,
+        "iconColor": "red",
+        "name": "Critical evaluator fires",
+        "tagKeys": "evaluator",
+        "target": {
+          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail\" | logfmt | severity=\"critical\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "{{ evaluator }} fail"
+      }
+    ]
+  },
+  "description": "Evaluator overview — pass/fail rates across all evaluators, with toxicity panels surfaced. Covers the toxicity use case and the all-evaluators status table.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+     "tags": ["ai-observability", "phase-2"], "title": "AI Observability dashboards", "type": "dashboards"}
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "Toxicity",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Toxicity evaluator fails — hateful content. ANY single fail opens a ticket.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(increase(sigil_eval_result_total{evaluator=\"toxicity\",verdict=\"fail\"}[1h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "toxicity: hateful events (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Toxicity events broken down by reason — hateful, harassment, threat, slur.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "continuous-RdYlGr"},
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineWidth": 1
+          },
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 6, "y": 1},
+      "id": 3,
+      "options": {
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": false},
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {"mode": "single", "sort": "none"},
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (reason) (increase(sigil_eval_result_total{evaluator=\"toxicity\",verdict=\"fail\"}[24h]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Toxicity events by reason (24h)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "description": "Toxicity alert state — fires on any toxicity fail in 5m.",
+      "gridPos": {"h": 9, "w": 6, "x": 18, "y": 1},
+      "id": 4,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "toxicity",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 10,
+        "sortOrder": 3,
+        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": true, "pending": true},
+        "viewMode": "list"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "queryType": "alerts",
+          "refId": "A"
+        }
+      ],
+      "title": "Toxicity alert state",
+      "type": "alertlist"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Toxicity pass-rate per app.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 0.99},
+              {"color": "green", "value": 0.999}
+            ]
+          },
+          "max": 1,
+          "min": 0.95,
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 6},
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (service) (rate(sigil_eval_result_total{evaluator=\"toxicity\",verdict=\"pass\"}[1h])) / clamp_min(sum by (service) (rate(sigil_eval_result_total{evaluator=\"toxicity\"}[1h])), 0.001)",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Toxicity pass-rate by app (1h)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 10},
+      "id": 6,
+      "panels": [],
+      "title": "All evaluators — overview",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Evaluator firing rate by use case + evaluator.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 11},
+      "id": 7,
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (evaluator) (rate(sigil_eval_result_total{evaluator=~\"$evaluator\",verdict=\"fail\"}[5m]))",
+          "legendFormat": "{{evaluator}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Evaluator firings by evaluator (5m)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+      "id": 8,
+      "panels": [],
+      "title": "All evaluators status table",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Status of every evaluator — fire rate, fails (1h), pass rate, severity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "evaluator"},
+            "properties": [{"id": "displayName", "value": "Evaluator"}, {"id": "custom.width", "value": 320}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "severity"},
+            "properties": [
+              {"id": "displayName", "value": "Severity"},
+              {"id": "custom.width", "value": 110},
+              {"id": "mappings", "value": [
+                {"options": {"critical": {"color": "red", "index": 0}}, "type": "value"},
+                {"options": {"high": {"color": "orange", "index": 1}}, "type": "value"},
+                {"options": {"medium": {"color": "yellow", "index": 2}}, "type": "value"},
+                {"options": {"low": {"color": "blue", "index": 3}}, "type": "value"}
+              ]},
+              {"id": "custom.cellOptions", "value": {"mode": "basic", "type": "color-background"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #A"},
+            "properties": [
+              {"id": "displayName", "value": "Fire rate (5m)"},
+              {"id": "unit", "value": "short"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #B"},
+            "properties": [
+              {"id": "displayName", "value": "Fails (1h)"},
+              {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "color-background"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #C"},
+            "properties": [
+              {"id": "displayName", "value": "Pass rate (1h)"},
+              {"id": "unit", "value": "percentunit"}
+            ]
+          }
+        ]
+      },
+      "gridPos": {"h": 13, "w": 24, "x": 0, "y": 22},
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Fails (1h)"}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (evaluator, severity) (rate(sigil_eval_result_total{verdict=\"fail\"}[5m]))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (evaluator) (increase(sigil_eval_result_total{verdict=\"fail\"}[1h]))",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (evaluator) (rate(sigil_eval_result_total{verdict=\"pass\"}[1h])) / clamp_min(sum by (evaluator) (rate(sigil_eval_result_total[1h])), 0.001)",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        }
+      ],
+      "title": "All evaluators — fire rate | fails | pass rate | severity",
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "evaluator", "mode": "outer"}}
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 35},
+      "id": 10,
+      "panels": [],
+      "title": "Critical evaluator events",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "description": "All currently firing evaluator alerts — critical first.",
+      "gridPos": {"h": 10, "w": 10, "x": 0, "y": 36},
+      "id": 11,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": ["severity"],
+        "groupMode": "custom",
+        "maxItems": 30,
+        "sortOrder": 3,
+        "stateFilter": {"error": true, "firing": true, "noData": false, "normal": false, "pending": true},
+        "viewMode": "list"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+          "queryType": "alerts",
+          "refId": "A"
+        }
+      ],
+      "title": "Firing evaluator alerts",
+      "type": "alertlist"
+    },
+    {
+      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "description": "Critical evaluator fail events — toxicity, pii_echo, hiring_discrimination_risk, data_theft.",
+      "gridPos": {"h": 10, "w": 14, "x": 10, "y": 36},
+      "id": 12,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail\" | logfmt | severity=~\"critical|high\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Critical evaluator fails (Loki)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "phase-2", "evals", "toxicity"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false,
+        "name": "datasource_prom", "options": [], "query": "prometheus",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Loki", "multi": false,
+        "name": "datasource_loki", "options": [], "query": "loki",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "default", "value": "default"},
+        "hide": 0, "includeAll": false, "label": "Tempo", "multi": false,
+        "name": "datasource_tempo", "options": [], "query": "tempo",
+        "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(sigil_eval_result_total, evaluator)",
+        "hide": 0, "includeAll": true, "label": "Evaluator", "multi": true,
+        "name": "evaluator", "options": [],
+        "query": {"query": "label_values(sigil_eval_result_total, evaluator)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(sigil_eval_result_total, ai_o11y_usecase)",
+        "hide": 0, "includeAll": true, "label": "Use case", "multi": true,
+        "name": "use_case", "options": [],
+        "query": {"query": "label_values(sigil_eval_result_total, ai_o11y_usecase)",
+                  "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {"refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]},
+  "timezone": "",
+  "title": "AI o11y — Evaluators (Toxicity + Overview)",
+  "uid": "ai-obs-evals",
+  "version": 1,
+  "weekStart": ""
+}

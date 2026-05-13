@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}My tickets — {{ branding.name }}{% endblock %}
+
+{% block content %}
+<section class="ab-section">
+  <h1>My tickets</h1>
+
+  {% if tickets %}
+    <table class="ab-table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Subject</th>
+          <th scope="col">Category</th>
+          <th scope="col">Status</th>
+          <th scope="col">Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+          <tr>
+            <td><a href="/ticket/{{ t.id }}">#{{ t.id }}</a></td>
+            <td><a href="/ticket/{{ t.id }}">{{ t.subject }}</a></td>
+            <td>{{ t.category or "—" }}</td>
+            <td><span class="ab-status ab-status--{{ t.status }}">{{ t.status }}</span></td>
+            <td>{{ t.created_at.strftime("%Y-%m-%d") if t.created_at else "—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="ab-empty">
+      No tickets yet. Use the chat widget to ask a question or file a new ticket.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

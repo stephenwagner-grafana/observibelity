@@ -82,6 +82,10 @@ class Specialist(ABC):
             span.set_attribute("ai_o11y.specialist", self.NAME)
             if req.usecase:
                 span.set_attribute("ai_o11y.usecase", req.usecase)
+            if req.persona_id:
+                # Mirror the gateway's persona attr on the specialist span so
+                # Tempo/Loki filters work even before the gateway call returns.
+                span.set_attribute("ai_o11y.persona_id", req.persona_id)
             resp = await self.client.post(
                 f"{self.llm_gateway_url}/v1/complete",
                 json=payload,
@@ -105,6 +109,10 @@ class Specialist(ABC):
         with tracer.start_as_current_span(f"tool.{tool_name}") as span:
             span.set_attribute("ai_o11y.tool", tool_name)
             span.set_attribute("ai_o11y.specialist", self.NAME)
+            if req.persona_id:
+                span.set_attribute("ai_o11y.persona_id", req.persona_id)
+            if req.usecase:
+                span.set_attribute("ai_o11y.usecase", req.usecase)
             resp = await self.client.post(tool_url, json=args)
             resp.raise_for_status()
             return resp.json()

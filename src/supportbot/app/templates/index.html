@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ branding.name }} — {{ branding.tagline }}{% endblock %}
+
+{% block content %}
+<section class="ab-hero">
+  <h1>{{ branding.name }}</h1>
+  <p>{{ branding.tagline }}</p>
+  <p class="ab-hero__sub">
+    Need help with HR, IT, expenses, or policy questions? Ask in the chat or
+    browse the knowledge base.
+  </p>
+  <div class="ab-hero__cta-row">
+    <a class="ab-cta" href="/kb">Browse knowledge base</a>
+    <a class="ab-cta ab-cta--ghost" href="/tickets">My tickets</a>
+  </div>
+</section>
+
+<section class="ab-section">
+  <h2>Featured articles</h2>
+
+  {% if featured %}
+    <div class="ab-grid">
+      {% for art in featured %}
+        <article class="ab-card">
+          <span class="ab-card__category">{{ art.category or "General" }}</span>
+          <h3 class="ab-card__title">{{ art.title }}</h3>
+          <p class="ab-card__excerpt">
+            {{ art.body[:160] }}{% if art.body|length > 160 %}…{% endif %}
+          </p>
+          <a class="ab-card__link" href="/kb?category={{ art.category }}">
+            Read more &rarr;
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="ab-empty">
+      No KB articles yet — the chat widget can still answer common questions.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

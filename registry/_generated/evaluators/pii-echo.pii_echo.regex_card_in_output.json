@@ -1,0 +1,16 @@
+{
+  "_source": "registry/use_cases/pii-echo.yaml",
+  "name": "pii_echo.regex_card_in_output",
+  "kind": "regex",
+  "severity": "critical",
+  "expression": "\\b(?:\\d[ -]*?){13,16}\\b\n",
+  "tags": [
+    "use_case:pii-echo",
+    "app:both",
+    "archetype:single-event-severity",
+    "phase:2"
+  ],
+  "params": {
+    "source": "response"
+  }
+}

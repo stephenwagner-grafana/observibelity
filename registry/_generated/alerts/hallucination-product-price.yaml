@@ -1,0 +1,18 @@
+groups:
+- name: hallucination-product-price
+  rules:
+  - alert: hallucination.rate_regression_2x
+    expr: "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"\
+      fail\"}[15m]))\n  > 2 * sum(rate(sigil_eval_result_total{evaluator=\"hallucination\"\
+      ,verdict=\"fail\"}[4h]))\n"
+    for: 10m
+    labels:
+      severity: high
+      use_case: hallucination-product-price
+      app: neoncart
+      route: oncall@acme.local
+    annotations:
+      summary: "Hallucinated product / price \u2014 regression by category: hallucination.rate_regression_2x\
+        \ firing"
+      description: The bot fabricates SKUs and prices that do not exist in the catalog.
+      runbook: registry/use_cases/hallucination-product-price.yaml

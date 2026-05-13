@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Knowledge base — {{ branding.name }}{% endblock %}
+
+{% block content %}
+<section class="ab-section">
+  <h1>Knowledge base</h1>
+  {% if category %}
+    <p class="ab-muted">Filter: <strong>{{ category }}</strong> &middot; <a href="/kb">Clear</a></p>
+  {% endif %}
+
+  {% if articles %}
+    <div class="ab-grid">
+      {% for art in articles %}
+        <article class="ab-card">
+          <span class="ab-card__category">{{ art.category or "General" }}</span>
+          <h3 class="ab-card__title">{{ art.title }}</h3>
+          <p class="ab-card__excerpt">
+            {{ art.body[:240] }}{% if art.body|length > 240 %}…{% endif %}
+          </p>
+          {% if art.tags %}
+            <p class="ab-card__tags">{{ art.tags }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="ab-empty">No articles in this view.</p>
+  {% endif %}
+</section>
+{% endblock %}

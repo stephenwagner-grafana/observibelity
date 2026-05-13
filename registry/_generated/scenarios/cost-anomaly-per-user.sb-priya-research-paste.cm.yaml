@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadgen-cost-anomaly-per-user-sb-priya-research-paste
+  labels:
+    app.kubernetes.io/component: loadgen
+    observibelity.io/use-case: cost-anomaly-per-user
+    observibelity.io/scenario: sb-priya-research-paste
+data:
+  cost-anomaly-per-user.sb-priya-research-paste.js: "// k6 scenario template: per-user-pattern\
+    \ archetype\n// Generated for use case: {{ name }}\n// App target:           {{\
+    \ app }}\n// Persona:              {{ persona_id }}\n// Pattern signature:   \
+    \ {{ pattern_signature }}\n//\n// Sticky persona u-{{ persona_id }} sends {{ message_count\
+    \ }} messages,\n// each matching the pattern signature. Rate is {{ weight }}x\
+    \ baseline\n// so the persona surfaces on the leaderboard.\n\nimport http from\
+    \ 'k6/http';\nimport { check, sleep } from 'k6/check';\n\nexport const options\
+    \ = {\n  scenarios: {\n    {{ name }}_offender: {\n      executor: 'constant-arrival-rate',\n\
+    \      rate: {{ weight }},\n      timeUnit: '1m',\n      duration: '24h',\n  \
+    \    preAllocatedVUs: 2,\n      maxVUs: 4,\n      exec: 'fireOffender',\n    },\n\
+    \    {{ name }}_baseline: {\n      executor: 'constant-arrival-rate',\n      rate:\
+    \ 1,\n      timeUnit: '1m',\n      duration: '24h',\n      preAllocatedVUs: 4,\n\
+    \      maxVUs: 8,\n      exec: 'fireBaseline',\n    },\n  },\n};\n\nconst BASE_URL\
+    \ = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster.local';\n\
+    const PATTERN_MESSAGES = [\n  '{{ message_template }}',\n];\nconst BASELINE_PERSONAS\
+    \ = ['u-base-a', 'u-base-b', 'u-base-c', 'u-base-d'];\n\nexport function fireOffender()\
+    \ {\n  const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];\n\
+    \  const payload = JSON.stringify({\n    message: msg,\n    user_id: '{{ persona_id\
+    \ }}',\n    session_id: `s-{{ persona_id }}-${Date.now()}`,\n    metadata: {\n\
+    \      usecase: '{{ name }}',\n      archetype: 'per-user-pattern',\n      pattern_signature:\
+    \ '{{ pattern_signature }}',\n    },\n  });\n  const headers = {\n    'Content-Type':\
+    \ 'application/json',\n    'ai_o11y-usecase': '{{ name }}',\n    'ai_o11y-archetype':\
+    \ 'per-user-pattern',\n    'ai_o11y-persona': '{{ persona_id }}',\n  };\n  const\
+    \ res = http.post(`${BASE_URL}/chat`, payload, { headers });\n  check(res, { 'request\
+    \ accepted': (r) => r.status < 500 });\n  sleep(1);\n}\n\nexport function fireBaseline()\
+    \ {\n  const persona = BASELINE_PERSONAS[Math.floor(Math.random() * BASELINE_PERSONAS.length)];\n\
+    \  const payload = JSON.stringify({\n    message: 'help me with my order please',\n\
+    \    user_id: persona,\n    session_id: `s-u-priya-research-${Date.now()}`,\n\
+    \    metadata: { usecase: '{{ name }}', archetype: 'per-user-pattern' },\n  });\n\
+    \  const headers = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase':\
+    \ '{{ name }}',\n    'ai_o11y-archetype': 'per-user-pattern',\n    'ai_o11y-persona':\
+    \ persona,\n  };\n  http.post(`${BASE_URL}/chat`, payload, { headers });\n  sleep(1);\n\
+    }\n"

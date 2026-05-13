@@ -1,0 +1,94 @@
+suite: k6 traffic engine
+templates:
+  - templates/k6/deployment.yaml
+  - templates/k6/configmap.yaml
+  - templates/k6/service.yaml
+tests:
+  - it: renders nothing when phase < 2
+    set:
+      phase: 0
+      k6:
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders nothing when k6 disabled even at phase 2
+    set:
+      phase: 2
+      k6:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders one document per template when phase >= 2 and enabled
+    set:
+      phase: 2
+      k6:
+        enabled: true
+        image: grafana/k6:0.50.0
+        replicas: 1
+        resources:
+          requests: { cpu: 100m, memory: 256Mi }
+          limits: { cpu: 500m, memory: 1Gi }
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+        cycle_seconds: 10
+        default_rate: "5m"
+    asserts:
+      - hasDocuments:
+          count: 1
+
+  - it: deployment uses configured k6 image and traffic component label
+    template: templates/k6/deployment.yaml
+    set:
+      phase: 2
+      k6:
+        enabled: true
+        image: grafana/k6:0.50.0
+        replicas: 1
+        resources:
+          requests: { cpu: 100m, memory: 256Mi }
+          limits: { cpu: 500m, memory: 1Gi }
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+        cycle_seconds: 10
+        default_rate: "5m"
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: grafana/k6:0.50.0
+      - equal:
+          path: metadata.labels["app.kubernetes.io/component"]
+          value: traffic
+
+  - it: service exposes the k6 api port
+    template: templates/k6/service.yaml
+    set:
+      phase: 2
+      k6:
+        enabled: true
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.ports[0].port
+          value: 6565
+
+  - it: configmap is named k6-scenarios
+    template: templates/k6/configmap.yaml
+    set:
+      phase: 2
+      k6:
+        enabled: true
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: k6-scenarios

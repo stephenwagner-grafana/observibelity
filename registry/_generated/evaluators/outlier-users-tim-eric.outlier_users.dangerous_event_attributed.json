@@ -1,0 +1,14 @@
+{
+  "_source": "registry/use_cases/outlier-users-tim-eric.yaml",
+  "name": "outlier_users.dangerous_event_attributed",
+  "kind": "rule",
+  "severity": "high",
+  "expression": "event.attributes[\"danger_category\"] != \"\"\nand event.attributes[\"employee\"] in [\"u-tim-l\", \"u-eric-w\"]\n",
+  "tags": [
+    "use_case:outlier-users-tim-eric",
+    "app:supportbot",
+    "archetype:leaderboard",
+    "phase:2"
+  ],
+  "params": {}
+}

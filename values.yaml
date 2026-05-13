@@ -106,10 +106,20 @@ neoncart:
     capabilities:
       drop: [ALL]
 
-# Support Bot — chat-with-your-store assistant.
-# Disabled in Phase 0/1; comes online in Phase 2.
+# Support Bot ("Ask Acme") — internal HR/IT support assistant.
+# Phase 2+: enabled by default. Phase gate in templates/supportbot/* still
+# guards rollout (phase>=2 required).
 supportbot:
-  enabled: false
+  enabled: true
+  replicas: 1
+  ingress:
+    enabled: false
+    host: ""
+    className: ""
+  branding:
+    name: "Ask Acme"
+    tagline: "Internal support, on tap."
+    primaryColor: "#2563eb"
   resources:
     requests:
       cpu: 50m
@@ -144,9 +154,23 @@ otel:
     apiToken: ""
 
 # k6 load tooling for staged synthetic traffic.
-# Disabled in Phase 0; enabled once the use cases are wired in Phase 2.
+# Disabled in Phase 0/1 by the template phase gate; enabled in Phase 2+.
 k6:
-  enabled: false
+  enabled: true        # Phase 2+ defaults on; Phase 0/1 still suppressed by phase gate in templates
+  image: grafana/k6:0.50.0
+  replicas: 1
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: 500m, memory: 1Gi }
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: false   # k6 writes temp files
+    allowPrivilegeEscalation: false
+    capabilities: { drop: [ALL] }
+  # Continuous-traffic config
+  cycle_seconds: 10       # seconds between full scenario loops
+  default_rate: "5m"      # default rate per scenario if not specified
 
 # Observability behaviors shared across components.
 # traffic_origin_default: continuous vs scenario-driven mix; never call this "loadgen".
@@ -157,8 +181,10 @@ observability:
 # that aren't ready yet (e.g. supportbot, k6, mice-rca use case).
 phase: 0
 
-# Phase 1 specialists (auto-discovered by templates/specialists/_loop.yaml)
+# Specialists registry (auto-discovered by templates/specialists/_loop.yaml).
+# Phase 1: NeonCart (nc-*). Phase 2: Support Bot (sb-*).
 specialists:
+  # ---- Phase 1: NeonCart -------------------------------------------------
   - name: nc-chatbot
     replicas: 1
     tool_allowlist: [search_products, get_product, get_order_history, place_order]
@@ -168,9 +194,45 @@ specialists:
   - name: nc-fulfillment-orchestrator
     replicas: 1
     tool_allowlist: [get_inventory, place_order, geo_lookup]
+  # ---- Phase 2: Support Bot ---------------------------------------------
+  - name: sb-router
+    replicas: 1
+    tool_allowlist: []
+  - name: sb-policy-finder
+    replicas: 1
+    tool_allowlist: [kb_search, get_employee]
+  - name: sb-kb-search
+    replicas: 1
+    tool_allowlist: [kb_search]
+  - name: sb-ticket-helper
+    replicas: 1
+    tool_allowlist: [list_tickets, get_ticket, create_ticket, update_ticket]
+  - name: sb-employee-info
+    replicas: 1
+    tool_allowlist: [get_employee, get_employee_history]
+  - name: sb-it-troubleshoot
+    replicas: 1
+    tool_allowlist: [kb_search, reset_password, request_access]
+  - name: sb-hr-info
+    replicas: 1
+    tool_allowlist: [kb_search, get_employee]
+  - name: sb-expense-helper
+    replicas: 1
+    tool_allowlist: [create_expense, kb_search]
+  - name: sb-security-handler
+    replicas: 1
+    tool_allowlist: [kb_search]
+  - name: sb-hiring-helper
+    replicas: 1
+    tool_allowlist: [kb_search]
+  - name: sb-escalator
+    replicas: 1
+    tool_allowlist: [create_ticket]
 
-# Phase 1 tools (auto-discovered by templates/tools/_loop.yaml)
+# Tools registry (auto-discovered by templates/tools/_loop.yaml).
+# Phase 1: NeonCart tools. Phase 2: Support Bot tools.
 tools:
+  # ---- Phase 1: NeonCart -------------------------------------------------
   - name: search_products
     replicas: 2
     backing_tables: [catalog_items, categories]
@@ -189,3 +251,52 @@ tools:
   - name: place_order
     replicas: 1
     backing_tables: [orders, order_items, catalog_items]
+  # ---- Phase 2: Support Bot ---------------------------------------------
+  - name: kb_search
+    replicas: 2
+    backing_tables: [supportbot_kb]
+  - name: list_tickets
+    replicas: 1
+    backing_tables: [tickets]
+  - name: get_ticket
+    replicas: 1
+    backing_tables: [tickets]
+  - name: create_ticket
+    replicas: 1
+    backing_tables: [tickets]
+  - name: update_ticket
+    replicas: 1
+    backing_tables: [tickets]
+  - name: get_employee
+    replicas: 1
+    backing_tables: [personas]
+  - name: get_employee_history
+    replicas: 1
+    backing_tables: [orders, conversations]
+  - name: reset_password
+    replicas: 1
+    backing_tables: []
+  - name: request_access
+    replicas: 1
+    backing_tables: [tickets]
+  - name: create_expense
+    replicas: 1
+    backing_tables: [expenses]
+
+# Phase 2 alerting + SLO config.
+# alerts: emits Prometheus alerting rules per use case under
+#   registry/_generated/alerts/*.yaml. target chooses the K8s shape:
+#     configmap-only       — ConfigMap with rules.yaml (default; works anywhere)
+#     prometheus-operator  — PrometheusRule CRD (requires operator installed)
+#     grafana-cloud        — skipped in-chart; pushed via tools/alerts-sync.sh
+# slos: emits OpenSLO-flavored ConfigMaps per use case under
+#   registry/_generated/slos/*.yaml. format passes through to a label
+#   so downstream consumers (Pyrra, etc) can dispatch on it.
+alerts:
+  enabled: true
+  target: configmap-only   # configmap-only | prometheus-operator | grafana-cloud
+  default_route: "default-receiver"
+
+slos:
+  enabled: true
+  format: openslo-v1

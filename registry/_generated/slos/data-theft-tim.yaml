@@ -1,0 +1,21 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: data-theft-tim
+  displayName: "Data Theft \u2014 Tim Heidecker (malicious insider)"
+  labels:
+    use_case: data-theft-tim
+    app: supportbot
+    archetype: per-user-pattern
+spec:
+  description: per-employee exfil_event count <= 2 per 10m for >= 99.9% of employees
+    over 30d
+  service: supportbot
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 30d
+    isRolling: true
+  objectives:
+  - displayName: per-employee exfil_event count <= 2 per 10m for >= 99.9% of employees
+      over 30d
+    target: 0.999
