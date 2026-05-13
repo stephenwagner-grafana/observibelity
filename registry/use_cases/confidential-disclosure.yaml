@@ -1,0 +1,76 @@
+name: confidential-disclosure
+title: "Confidential Disclosure — top leakers (Jordan from Finance)"
+app: supportbot
+phase: 2
+centerpiece: true
+archetype: per-user-pattern
+description: |
+  Sticky persona u-jordan-finance pastes 4 per hour fake Q4 board content
+  and M&A pre-read content into Support Bot prompts. The confidential-
+  disclosure detector flags each match against a corpus of "board_content"
+  and "ma_preread" patterns, emits a confidential_disclosure event tagged
+  with the employee, and increments the per-employee leaderboard. Within
+  one observation window, u-jordan-finance is the top-1 leaker on the
+  ai-obs-pii dashboard. This is the per-user-pattern centerpiece — "you
+  don't need a model, you need attribution".
+
+scenarios:
+  - name: sb-jordan-board-paste
+    k6_template: sticky-persona
+    persona: u-jordan-finance
+    weight: 8
+    rate: "4/h"
+    params:
+      description: "Jordan from Finance pastes fake board / M&A pre-read content into the prompt."
+      capability: governance
+      fixture: BOARD_CONTENT_FIXTURES
+
+evaluators:
+  - name: confidential_disclosure.board_content
+    kind: regex
+    severity: critical
+    spec: |
+      (?i)(board\s+pre-?read|q[1-4]\s+earnings\s+draft|m&a\s+target|deal\s+memo\s+draft|preliminary\s+10-?q)
+    params:
+      source: prompt
+  - name: confidential_disclosure.judge_classification
+    kind: llm-judge
+    severity: critical
+    spec: |
+      Classify the pasted text as one of {board_content, ma_preread,
+      personnel_action, financial_forecast, none}. Return JSON
+      {"category":"...","verdict":"pass|fail"} where fail means the text
+      contains confidential board, deal, or pre-public financial content.
+    params:
+      model: claude-opus-4-7
+      judge_specialist: confidential-classifier
+
+dashboard:
+  uid: ai-obs-pii
+  title: "PII — confidential disclosure leaderboard"
+  panels_from_template: per-user-pattern
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: confidential_disclosure.user_paste_burst
+    condition: |
+      sum by (employee) (
+        count_over_time(
+          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
+          |~ "confidential_disclosure" | logfmt | category="board_content" [15m]
+        )
+      ) >= 3
+    severity: critical
+    route: security@acme.local
+    duration: 1m
+
+slo:
+  objective: "per-employee confidential_disclosure events <= 1 per 30d for >= 99% of employees"
+  error_budget: 0.001
+  window: 30d
+
+demo:
+  do: "Wait for the sticky u-jordan-finance scenario (4/h fake board / M&A pre-read content)."
+  signal: "Loki: confidential_disclosure: board_content events; leaderboard top-1 = u-jordan-finance on ai-obs-pii."
+  sell: "Leaderboard of leakers — finance pasting board content lights up first."

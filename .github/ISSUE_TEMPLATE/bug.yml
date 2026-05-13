@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a problem with ObserVIBElity
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Before submitting, please:
+        1. Run `./tools/deploy-doctor.sh --collect-only` and have the tarball ready to attach
+        2. Skim [docs/TROUBLESHOOTING.md](https://github.com/stephenwagner-grafana/observibelity/blob/main/docs/TROUBLESHOOTING.md)
+  - type: input
+    id: short
+    attributes:
+      label: Short description
+      placeholder: e.g. install.sh preflight crashes when /etc/os-release is missing
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Fresh clone on Fedora 39
+        2. Run `./install.sh preflight`
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior (paste error output)
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: env
+    attributes:
+      label: Cluster type
+      options:
+        - k3d (local)
+        - Docker Desktop
+        - k3s
+        - EKS
+        - GKE
+        - AKS
+        - other (specify in actual behavior)
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "Output of `kubectl version --short && helm version --short && cat Chart.yaml | grep version:`"
+      render: text
+  - type: textarea
+    id: tarball
+    attributes:
+      label: Diagnostics tarball
+      description: Attach `observibelity-failure-*.tar.gz` from `./tools/deploy-doctor.sh --collect-only` (drag-drop into this field)
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I ran `./tools/deploy-doctor.sh --collect-only`
+        - label: I read `docs/TROUBLESHOOTING.md`
+        - label: I searched existing issues for duplicates

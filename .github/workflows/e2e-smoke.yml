@@ -1,0 +1,37 @@
+name: e2e-smoke
+on:
+  pull_request:
+    types: [closed]  # runs on merge
+  schedule:
+    - cron: '0 6 * * *'  # daily 06:00 UTC
+  workflow_dispatch:
+concurrency:
+  group: e2e-smoke
+  cancel-in-progress: false  # don't cancel — these are expensive
+jobs:
+  smoke:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GRAFANA_CLOUD_INSTANCE_ID: ${{ secrets.GRAFANA_CLOUD_INSTANCE_ID }}
+      GRAFANA_CLOUD_API_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+      GRAFANA_CLOUD_OTLP_ENDPOINT: ${{ secrets.GRAFANA_CLOUD_OTLP_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install k3d
+        run: curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.6.0 bash
+      - uses: azure/setup-helm@v4
+        with: { version: v3.13.3 }
+      - uses: azure/setup-kubectl@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Run smoke
+        run: bash tests/e2e/smoke-k3d.sh
+      - name: Upload failure tarball
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: observibelity-failure-${{ github.sha }}
+          path: observibelity-failure-*.tar.gz

@@ -1,0 +1,55 @@
+name: token-spikes
+title: "Token Spikes — real-time anomaly"
+app: both
+phase: 2
+centerpiece: false
+archetype: cascade
+description: |
+  Per-evaluator and per-user token-rate anomaly detection. The spike-ratio
+  metric is current 1-minute rate divided by trailing 1-hour rate; greater
+  than 3x is alert-worthy. Useful for catching abuse loops, runaway cascades
+  (see email-cascade), and pathological summarizer fan-outs in real time
+  without waiting for cost dashboards to catch up.
+
+scenarios:
+  - name: sb-token-spike-burst
+    k6_template: burst-then-quiet
+    weight: 2
+    rate: "30/m"
+    params:
+      description: "Drives a 1-minute token-rate burst that exceeds the 1-hour rolling baseline by >3x."
+      capability: cost
+      burst_duration_seconds: 60
+
+evaluators:
+  - name: token_spikes.spike_ratio_high
+    kind: rule
+    severity: high
+    spec: |
+      (rate_1m(tokens_total) / max(rate_1h(tokens_total), 1)) > 3.0
+  - name: token_spikes.per_user_spike
+    kind: rule
+    severity: high
+    spec: |
+      employee.tokens_per_minute > 5000
+      and employee.tokens_per_minute > employee.baseline_tokens_per_minute * 3
+
+dashboard:
+  uid: ai-obs-app-supportbot
+  title: "SupportBot — App Overview (token-spike row)"
+  panels_from_template: cascade
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: token_spikes.spike_ratio_3x
+    condition: |
+      sum(rate(supportbot_tokens_total[1m])) / sum(rate(supportbot_tokens_total[1h])) > 3
+    severity: high
+    route: oncall@acme.local
+    duration: 2m
+
+demo:
+  do: "Run any cascade scenario, or wait for any naturally occurring token burst."
+  signal: "spike_ratio = rate(1m)/rate(1h) > 3 panel turns red on ai-obs-app-supportbot."
+  sell: "Real-time anomaly detection — spot abuse and runaway loops before cost dashboards catch up."

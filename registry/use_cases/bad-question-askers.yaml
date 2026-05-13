@@ -1,0 +1,57 @@
+name: bad-question-askers
+title: "Bad Question Askers — refusal + escalation leaderboard"
+app: supportbot
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  Ranks employees by how often the bot refused, escalated, or denied their
+  requests. A classic insider-threat / over-curious-employee early-warning
+  signal: even before a single policy violation, a sustained refusal-rate or
+  escalation-rate spike attributable to one user is worth investigating.
+  Wait at least 5 minutes for continuous traffic before the panels populate.
+
+scenarios:
+  - name: sb-refusal-pattern
+    k6_template: sticky-persona
+    weight: 3
+    rate: "30/m"
+    params:
+      description: "Mix of borderline questions that drive refusal / escalation responses."
+      capability: governance
+      fixture: BORDERLINE_FIXTURES
+
+evaluators:
+  - name: bad_question_askers.refusal_response
+    kind: rule
+    severity: medium
+    spec: |
+      response.classification in ["refuse", "decline", "policy_violation"]
+      and request.user != ""
+  - name: bad_question_askers.escalation_response
+    kind: rule
+    severity: medium
+    spec: |
+      response.classification == "escalate"
+      and request.user != ""
+
+dashboard:
+  uid: ai-obs-app-supportbot
+  title: "SupportBot — App Overview (bad-question row)"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: bad_question_askers.user_refusal_rate_high
+    condition: |
+      sum by (employee) (rate(supportbot_response_classification_total{verdict=~"refuse|decline"}[15m]))
+        / sum by (employee) (rate(supportbot_response_total[15m])) > 0.4
+    severity: medium
+    route: oncall@acme.local
+    duration: 15m
+
+demo:
+  do: "Wait >= 5m for continuous SupportBot traffic with the borderline-fixture mix."
+  signal: "Refusal-rate + escalation-rate panels populate per employee on ai-obs-app-supportbot."
+  sell: "Who's pushing the limits — insider-threat early warning, attributed."

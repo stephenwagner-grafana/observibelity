@@ -1,0 +1,21 @@
+apiVersion: v2
+name: observibelity
+description: Click-to-deploy AI observability demo (NeonCart + Support Bot, llm-gateway, Postgres, Grafana Cloud telemetry)
+type: application
+version: 0.2.0
+appVersion: "0.2.0"
+kubeVersion: ">=1.27.0-0"
+home: https://github.com/stephenwagner-grafana/observibelity
+sources:
+  - https://github.com/stephenwagner-grafana/observibelity
+maintainers:
+  - name: Stephen Wagner
+    url: https://github.com/stephenwagner-grafana
+keywords:
+  - grafana
+  - observability
+  - ai
+  - llm
+  - demo
+  - claude
+  - otel

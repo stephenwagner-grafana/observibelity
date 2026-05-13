@@ -1,0 +1,7 @@
+# personas.yaml — persona archetypes
+# Default count: 50 employees. Offenders: 5 (exfil, injection, cascade, verbose, bad_faith)
+personas:
+  defaults:
+    count: 50
+    offender_count: 5
+    offender_patterns: [exfil, injection, cascade, verbose, bad_faith]

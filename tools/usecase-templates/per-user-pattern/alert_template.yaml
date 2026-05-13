@@ -1,0 +1,53 @@
+---
+# Prometheus alert rule template: per-user-pattern archetype
+# Generated for use case: {{ name }}
+# Per-persona breach: >= alert_threshold hits in 15m AND > 20% of msgs flagged.
+# Severity: high (an offender persona is doing something repeatable).
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: "{{ name }}-per-user-pattern"
+  labels:
+    archetype: per-user-pattern
+    usecase: "{{ name }}"
+    app: "{{ app }}"
+spec:
+  groups:
+    - name: "{{ name }}.per_user_pattern"
+      interval: 30s
+      rules:
+        - alert: "{{ name }}PerUserPattern"
+          expr: |
+            (
+              sum by (persona_id) (
+                increase({{ leaderboard_metric }}{usecase="{{ name }}"}[15m])
+              ) >= {{ alert_threshold }}
+            )
+            and
+            (
+              sum by (persona_id) (
+                increase({{ leaderboard_metric }}{usecase="{{ name }}"}[15m])
+              )
+              /
+              sum by (persona_id) (
+                increase(ai_o11y_usecase_messages_total{usecase="{{ name }}"}[15m])
+              )
+              > 0.2
+            )
+          for: 2m
+          labels:
+            severity: high
+            archetype: per-user-pattern
+            usecase: "{{ name }}"
+            app: "{{ app }}"
+            persona_id: "{{ '{{ $labels.persona_id }}' }}"
+          annotations:
+            summary: "Persona {{ '{{ $labels.persona_id }}' }} breached {{ name }} pattern"
+            description: |
+              Persona {{ '{{ $labels.persona_id }}' }} hit pattern
+              {{ pattern_signature }} more than {{ alert_threshold }} times
+              in 15m for use case {{ name }}. Drill down on the persona
+              and review the per-user timeline.
+            pattern_signature: '{{ pattern_signature }}'
+            leaderboard_metric: '{{ leaderboard_metric }}'
+            score_calculation: '{{ score_calculation }}'

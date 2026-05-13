@@ -1,0 +1,42 @@
+---
+# Prometheus alert rule template: cascade archetype
+# Generated for use case: {{ name }}
+# Fires when counter_metric > threshold within window for any session.
+# Severity=critical - cascades cause real damage.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: "{{ name }}-cascade"
+  labels:
+    archetype: cascade
+    usecase: "{{ name }}"
+    app: "{{ app }}"
+spec:
+  groups:
+    - name: "{{ name }}.cascade"
+      interval: 30s
+      rules:
+        - alert: "{{ name }}Cascade"
+          expr: |
+            (
+              sum by (session_id) (
+                increase({{ counter_metric }}{usecase="{{ name }}"}[{{ window }}])
+              )
+            ) > {{ threshold }}
+          for: 1m
+          labels:
+            severity: critical
+            archetype: cascade
+            usecase: "{{ name }}"
+            app: "{{ app }}"
+            session_id: "{{ '{{ $labels.session_id }}' }}"
+          annotations:
+            summary: "{{ name }} cascade: session {{ '{{ $labels.session_id }}' }} crossed {{ threshold }}/{{ window }}"
+            description: |
+              Counter {{ counter_metric }} for session
+              {{ '{{ $labels.session_id }}' }} exceeded {{ threshold }} per
+              {{ window }} for use case {{ name }}. Open the dashboard and
+              inspect the cascade timeline.
+            counter_metric: "{{ counter_metric }}"
+            threshold: "{{ threshold }}"
+            window: "{{ window }}"

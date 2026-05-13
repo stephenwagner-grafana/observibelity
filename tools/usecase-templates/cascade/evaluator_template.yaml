@@ -1,0 +1,38 @@
+---
+# Sigil evaluator template: cascade archetype
+# Generated for use case: {{ name }}
+# Rule evaluator counting cascade events per conversation. Emits the
+# counter metric that the alert and panels read.
+apiVersion: sigil.observibelity.dev/v1
+kind: Evaluator
+metadata:
+  name: "{{ name }}-cascade"
+  archetype: cascade
+  usecase: "{{ name }}"
+spec:
+  description: |
+    Counts cascade events per session for {{ name }}. Increments
+    {{ counter_metric }} every time the event fires. Alert fires when
+    the per-session sum exceeds {{ threshold }} in {{ window }}.
+  evaluators:
+    - name: "{{ name }}_cascade_counter"
+      kind: rule
+      severity: critical
+      target: span
+      group_by: session_id
+      expression: |
+        span.attributes.cascade_event == true
+        or span.name =~ "{{ name }}\\..*"
+      emit_metric: "{{ counter_metric }}"
+      labels:
+        usecase: "{{ name }}"
+        session_id: "${span.attributes.session_id}"
+        persona_id: "${span.attributes.user_id}"
+      window: "{{ window }}"
+      threshold: {{ threshold }}
+      on_threshold_breach:
+        action: page
+        severity: critical
+        message: |
+          Cascade fired for {{ name }} - session
+          ${span.attributes.session_id} exceeded {{ threshold }}/{{ window }}.

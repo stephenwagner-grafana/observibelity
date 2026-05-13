@@ -1,0 +1,60 @@
+name: brand-voice-drift
+title: "Brand Voice Drift — tone as SLO"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  The tone-checker specialist scores every assistant response against the
+  brand-voice rubric (warmth, playfulness, NeonCart-specific phrases).
+  4 per hour dry-tone-prone prompts are injected ("provide a formal
+  itemized breakdown"). The rolling 30-minute tone deviation is compared
+  against the 6-hour baseline; >2 sigma drift fires the brand-drift alert
+  before customers notice. Brand voice becomes an SLO, not a vibes check.
+
+scenarios:
+  - name: nc-brand-voice-probe
+    k6_template: rate-by-category
+    weight: 2
+    rate: "4/h"
+    params:
+      description: "Dry-tone-prone prompts — drive tone-checker deviation from baseline."
+      capability: behavior
+      fixture: DRY_TONE_FIXTURES
+
+evaluators:
+  - name: brand_voice_drift.tone_deviation
+    kind: llm-judge
+    severity: medium
+    spec: |
+      Score the assistant response on a 0-10 scale against the NeonCart brand
+      voice rubric (warm, playful, concise, uses neon emoji on greetings).
+      Return JSON {"score":N,"reason":"dry|corporate|on_brand|other"}. score<5
+      counts as a brand-voice fail.
+    params:
+      model: claude-opus-4-7
+      judge_specialist: tone-checker
+
+dashboard:
+  uid: ai-obs-conv
+  title: "Conversations — brand voice drift"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: ai-o11y-brand-drift
+    condition: |
+      (
+        avg_over_time(neoncart_brand_voice_score[30m])
+          < (avg_over_time(neoncart_brand_voice_score[6h])
+             - 2 * stddev_over_time(neoncart_brand_voice_score[6h]))
+      )
+    severity: medium
+    route: brand@acme.local
+    duration: 15m
+
+demo:
+  do: "Wait for the 4/h dry-tone-prone prompts."
+  signal: "Rolling tone-deviation >2 sigma from 6h baseline; ai-o11y-brand-drift FIRES on ai-obs-conv."
+  sell: "Brand voice as an SLO — watch the trend, not the snapshot."

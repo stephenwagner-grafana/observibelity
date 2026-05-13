@@ -1,0 +1,36 @@
+---
+# Prometheus alert rule template: single-event-severity archetype
+# Generated for use case: {{ name }}
+# Zero tolerance: the alert fires on the FIRST event in 5m. Severity=critical.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: "{{ name }}-single-event-severity"
+  labels:
+    archetype: single-event-severity
+    usecase: "{{ name }}"
+    app: "{{ app }}"
+spec:
+  groups:
+    - name: "{{ name }}.single_event_severity"
+      interval: 15s
+      rules:
+        - alert: "{{ name }}CriticalEvent"
+          expr: |
+            sum(increase(ai_o11y_usecase_events_total{usecase="{{ name }}", severity="critical"}[5m])) >= 1
+          for: 0s
+          labels:
+            severity: critical
+            archetype: single-event-severity
+            usecase: "{{ name }}"
+            app: "{{ app }}"
+            page: "true"
+          annotations:
+            summary: "{{ name }} - critical event fired"
+            description: |
+              A critical event matching {{ event_pattern }} was emitted for
+              use case {{ name }}. ZERO TOLERANCE - investigate immediately.
+              Severity signal: {{ severity_signal }}.
+            event_pattern: '{{ event_pattern }}'
+            severity_signal: '{{ severity_signal }}'
+            runbook_url: "https://grafana/d/single-event-severity?var-usecase={{ name }}"

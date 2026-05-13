@@ -1,0 +1,43 @@
+name: integration
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '0 5 * * *'  # 05:00 UTC daily, before e2e-smoke
+  workflow_dispatch:
+concurrency:
+  group: integration
+  cancel-in-progress: false
+jobs:
+  integration:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install k3d
+        run: curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.6.0 bash
+      - uses: azure/setup-helm@v4
+        with: { version: v3.13.3 }
+      - uses: azure/setup-kubectl@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Install python deps
+        run: |
+          pip install --upgrade pip
+          pip install pytest pytest-timeout
+      - name: Run integration tests
+        run: pytest tests/integration/ -v --timeout=600 --tb=short
+      - name: Capture cluster state on failure
+        if: failure()
+        run: |
+          kubectl get all -A > integration-cluster-state.txt 2>&1 || true
+          kubectl get events -A > integration-events.txt 2>&1 || true
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-failure-${{ github.sha }}
+          path: |
+            integration-*.txt
+            observibelity-failure-*.tar.gz

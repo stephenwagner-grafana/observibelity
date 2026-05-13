@@ -1,0 +1,67 @@
+name: mice-rca
+title: "NeonCart — \"show me mice\" deterministic RCA"
+app: neoncart
+phase: 1
+centerpiece: true
+archetype: trace-and-fix
+description: |
+  The customer types "show me mice" in NeonCart's chat UI. The search service
+  runs a deliberately broken SQL query against a non-existent column rodent_qty,
+  Postgres returns sqlstate 42703 (column does not exist), and the trace span
+  chain goes red end-to-end. The dashboard's trace-pivot panel jumps to the
+  failing trace; the Loki pivot reads in canonical Postgres-server format
+  (LOG/ERROR/STATEMENT/CONTEXT) so a DBA recognizes it instantly. The fix is
+  a one-line column rename in the SQL builder. This is the Phase 1 centerpiece:
+  the "one trace ID, one fix" demo that opens every SE conversation.
+
+scenarios:
+  - name: nc-show-me-mice
+    k6_template: single-trigger
+    weight: 3
+    rate: "30/m"
+    params:
+      message: "show me mice"
+      description: "Drives the deterministic Postgres column-not-found RCA story."
+      capability: agentic
+
+evaluators:
+  - name: mice_rca.postgres_column_not_found
+    kind: regex
+    severity: critical
+    spec: |
+      ERROR:\s+column\s+"rodent_qty"\s+does\s+not\s+exist|sqlstate=42703
+    params:
+      source: loki
+      stream: '{namespace="neoncart",container="postgres"}'
+  - name: mice_rca.trace_has_red_span
+    kind: rule
+    severity: high
+    spec: |
+      span.status_code == "ERROR"
+      and span.attributes["db.system"] == "postgresql"
+      and span.attributes["db.statement"] contains "rodent_qty"
+
+dashboard:
+  uid: ai-obs-app-neoncart
+  title: "NeonCart — App Overview"
+  panels_from_template: trace-and-fix
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: mice_rca.search_5xx_burst
+    condition: |
+      sum(rate(http_server_requests_total{app="neoncart",route="/search",status=~"5.."}[5m])) > 0.05
+    severity: high
+    route: oncall@acme.local
+    duration: 2m
+
+slo:
+  objective: "search_success_rate >= 0.99 over 30d (column rodent_qty incident excluded post-fix)"
+  error_budget: 0.001
+  window: 30d
+
+demo:
+  do: "Type 'show me mice' in the NeonCart chat UI."
+  signal: "Postgres ERROR: column \"rodent_qty\" does not exist (sqlstate 42703); same trace ID across metrics, logs, traces, AI telemetry on dashboard ai-obs-app-neoncart."
+  sell: "One trace ID, one fix — metrics, logs, traces, and AI telemetry on one investigation."

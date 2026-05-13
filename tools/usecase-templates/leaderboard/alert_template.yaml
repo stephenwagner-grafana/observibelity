@@ -1,0 +1,48 @@
+---
+# Prometheus alert rule template: leaderboard archetype
+# Generated for use case: {{ name }}
+# Fires when any group_by value regresses by regression_threshold vs
+# its own baseline over baseline_window.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: "{{ name }}-leaderboard"
+  labels:
+    archetype: leaderboard
+    usecase: "{{ name }}"
+    app: "{{ app }}"
+spec:
+  groups:
+    - name: "{{ name }}.leaderboard"
+      interval: 60s
+      rules:
+        - alert: "{{ name }}LeaderboardRegression"
+          expr: |
+            (
+              sum by ({{ group_by }}) (
+                rate({{ rank_by }}{usecase="{{ name }}"}[15m])
+              )
+              /
+              sum by ({{ group_by }}) (
+                avg_over_time({{ rank_by }}{usecase="{{ name }}"}[{{ baseline_window }}])
+              )
+            ) < (1 - {{ regression_threshold }})
+          for: 10m
+          labels:
+            severity: medium
+            archetype: leaderboard
+            usecase: "{{ name }}"
+            app: "{{ app }}"
+            group_by: "{{ group_by }}"
+            regressed_value: "{{ '{{ $labels.' }}{{ group_by }}{{ ' }}' }}"
+          annotations:
+            summary: "{{ name }} - {{ '{{ $labels.' }}{{ group_by }}{{ ' }}' }} regressed"
+            description: |
+              {{ rank_by }} for {{ group_by }}={{ '{{ $labels.' }}{{ group_by }}{{ ' }}' }}
+              is more than {{ regression_threshold }} below its
+              {{ baseline_window }} baseline. Open the leaderboard dashboard
+              and inspect the trend line.
+            rank_by: "{{ rank_by }}"
+            group_by: "{{ group_by }}"
+            regression_threshold: "{{ regression_threshold }}"
+            baseline_window: "{{ baseline_window }}"

@@ -1,0 +1,52 @@
+{{- if (and .Values.postgres.enabled (le 1 (int .Values.phase))) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: observibelity-seed
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: seed
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        {{- include "observibelity.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: seed
+    spec:
+      restartPolicy: OnFailure
+      {{- with .Values.podDefaults.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: seed
+          image: "{{ .Values.global.imageRegistry }}/observibelity-seed:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["python"]
+          args: ["/app/seed_loader.py"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: DATABASE_URL
+            - name: SEED_DATA_DIR
+              value: /app/seed_data
+            - name: OTEL_SERVICE_NAME
+              value: observibelity-seed
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+          {{- if .Values.podDefaults.enabled }}
+          resources:
+            {{- toYaml .Values.podDefaults.resources | nindent 12 }}
+          {{- end }}
+{{- end }}

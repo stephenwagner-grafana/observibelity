@@ -1,0 +1,60 @@
+name: prompt-injection
+title: "Prompt Injection — attributed per user (live baseline)"
+app: both
+phase: 2
+centerpiece: false
+archetype: single-event-severity
+description: |
+  Distinct from prompt-injection-llm01 (live demo trigger): this is the
+  continuous-traffic version. The sb-outlier-injection scenario fires
+  injection probes at ~138 per hour as part of the always-on loadgen
+  baseline. prompt_injection events flow continuously; the leaderboard
+  on ai-obs-pii is populated within minutes; the prompt_injection_burst
+  alert flips at >= 2 in any 5-minute window. The story: not the live
+  demo trigger, but the steady-state attribution view.
+
+scenarios:
+  - name: sb-outlier-injection-baseline
+    k6_template: rate-by-category
+    weight: 7
+    rate: "138/h"
+    params:
+      description: "Continuous baseline of OUTLIER_DANGEROUS_FIXTURES injection probes."
+      capability: security
+      fixture: OUTLIER_DANGEROUS_FIXTURES
+
+evaluators:
+  - name: prompt_injection.detector_flagged
+    kind: rule
+    severity: high
+    spec: |
+      event.name == "specialist_eval_result"
+      and event.attributes["specialist"] == "prompt-injection-detector"
+      and event.attributes["verdict"] == "flag"
+  - name: prompt_injection.regex_inject_pattern
+    kind: regex
+    severity: high
+    spec: |
+      (?i)(ignore\s+previous|disregard\s+all|forget\s+everything|system\s+prompt\s*[:=]|act\s+as\s+if\s+you\s+are)
+    params:
+      source: prompt
+
+dashboard:
+  uid: ai-obs-pii
+  title: "PII — prompt injection (continuous)"
+  panels_from_template: single-event-severity
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: prompt_injection_burst
+    condition: |
+      sum(rate(supportbot_prompt_injection_events_total[5m])) * 300 >= 2
+    severity: high
+    route: security@acme.local
+    duration: 1m
+
+demo:
+  do: "Wait for the continuous sb-outlier-injection baseline (~138/h)."
+  signal: "prompt_injection events flowing; leaderboard populated on ai-obs-pii; prompt_injection_burst alert at >= 2 in 5m."
+  sell: "Attributed per user (live) — same detector, continuous attribution."

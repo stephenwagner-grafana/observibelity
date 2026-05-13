@@ -1,0 +1,4 @@
+# use_cases.yaml — demo scenarios
+# Phase 1 ships: mice-rca (the centerpiece)
+# Phase 2 adds 9 more including email-cascade, data-theft-tim
+use_cases: []

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}{{ branding.name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+  <style>
+    :root { --primary-color: {{ branding.primary_color }}; }
+  </style>
+</head>
+<body>
+  <header class="nc-nav">
+    <a class="nc-brand" href="/">
+      {% if branding.logo_url %}<img src="{{ branding.logo_url }}" alt="" />{% endif %}
+      <span>{{ branding.name }}</span>
+    </a>
+    <nav>
+      <a href="/catalog">Catalog</a>
+      <a href="/cart">Cart</a>
+    </nav>
+  </header>
+
+  <main class="nc-main">
+    {% block content %}{{ body_block | default("") }}{% endblock %}
+  </main>
+
+  <footer class="nc-footer">
+    <small>{{ branding.tagline }}</small>
+  </footer>
+
+  {% include "_chat_widget.html" %}
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

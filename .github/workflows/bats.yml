@@ -1,0 +1,14 @@
+name: bats
+on: [pull_request, push, workflow_dispatch]
+concurrency:
+  group: bats-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  bats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats-core
+        run: sudo apt-get update && sudo apt-get install -y bats jq
+      - name: Run bats
+        run: bats tests/bats/

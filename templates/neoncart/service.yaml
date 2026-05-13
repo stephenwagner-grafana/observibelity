@@ -1,0 +1,20 @@
+{{- if (and .Values.neoncart.enabled (le 1 (int .Values.phase))) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: neoncart
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: neoncart
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    {{- include "observibelity.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: neoncart
+{{- end }}

@@ -1,0 +1,69 @@
+name: outlier-users-tim-eric
+title: "Outlier Users — Tim & Eric (cost + governance)"
+app: supportbot
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  Two outlier employees in the SupportBot loadgen — Tim Heidecker (weight 8.0,
+  persona u-tim-l) and Eric Wareheim (weight 7.0, persona u-eric-w) — pull
+  3-4x normal volume. 70% of their queries get verbose padding ("provide a
+  comprehensive, exhaustive answer..."), and 50% pull from the dangerous-
+  fixture pool. They dominate the "least-efficient employees by tokens-per-
+  word", "top spenders", and "dangerous events by user" panels on the
+  ai-obs-app-supportbot dashboard within 5 minutes of traffic.
+
+scenarios:
+  - name: sb-outlier-padded-policy
+    k6_template: sticky-persona
+    persona_filter: ["u-tim-l", "u-eric-w"]
+    weight: 7
+    rate: "30/m"
+    params:
+      description: "Tim or Eric asks a normal policy question with verbose padding (\"comprehensive, exhaustive answer...\"). Inflates input tokens."
+      capability: cost
+      padding_ratio: 0.7
+  - name: sb-outlier-dangerous-fixture
+    k6_template: sticky-persona
+    persona_filter: ["u-tim-l", "u-eric-w"]
+    weight: 7
+    rate: "30/m"
+    params:
+      description: "Tim or Eric pulls from OUTLIER_DANGEROUS_FIXTURES — explicit prompt-injection probes."
+      capability: security
+      dangerous_ratio: 0.5
+
+evaluators:
+  - name: outlier_users.tokens_per_word_high
+    kind: rule
+    severity: medium
+    spec: |
+      (request.input_tokens / max(request.input_word_count, 1)) > 8
+      and request.user in ["u-tim-l", "u-eric-w"]
+  - name: outlier_users.dangerous_event_attributed
+    kind: rule
+    severity: high
+    spec: |
+      event.attributes["danger_category"] != ""
+      and event.attributes["employee"] in ["u-tim-l", "u-eric-w"]
+
+dashboard:
+  uid: ai-obs-app-supportbot
+  title: "SupportBot — App Overview (outlier rows)"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: outlier_users.cost_concentration
+    condition: |
+      max by (employee) (sum_over_time(supportbot_tokens_total[1h]))
+        / sum(rate(supportbot_tokens_total[1h]) * 3600) > 0.25
+    severity: medium
+    route: oncall@acme.local
+    duration: 15m
+
+demo:
+  do: "Wait >= 5m for continuous SupportBot traffic; Tim and Eric are weighted 7-8x."
+  signal: "Tim + Eric dominate Top Spenders / Tokens-per-word / Dangerous Events panels on ai-obs-app-supportbot."
+  sell: "Cost plus governance per employee — AI usage is unevenly distributed; show me who."

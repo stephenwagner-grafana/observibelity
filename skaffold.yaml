@@ -1,0 +1,39 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: observibelity
+build:
+  local:
+    push: false
+    useBuildkit: true
+  artifacts: []  # Phase 1 fills in: neoncart, llm-gateway, specialists, tools
+manifests:
+  helm:
+    releases:
+      - name: observibelity
+        chartPath: .
+        namespace: observibelity
+        createNamespace: true
+        valuesFiles:
+          - .env
+        wait: true
+deploy:
+  helm: {}
+portForward:
+  - resourceType: service
+    resourceName: neoncart
+    namespace: observibelity
+    port: 80
+    localPort: 8080
+profiles:
+  - name: docker-desktop
+    activation:
+      - kubeContext: docker-desktop
+    manifests:
+      helm:
+        releases:
+          - name: observibelity
+            chartPath: .
+            namespace: observibelity
+            valuesFiles: [.env, values-docker-desktop.yaml]
+            wait: true

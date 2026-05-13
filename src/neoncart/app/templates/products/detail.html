@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }} — {{ branding.name }}{% endblock %}
+
+{% block content %}
+<article class="nc-product">
+  <div class="nc-product__media">
+    {% if item.image_url %}
+      <img src="{{ item.image_url }}" alt="{{ item.name }}" />
+    {% else %}
+      <div class="nc-card__placeholder nc-product__placeholder" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+
+  <div class="nc-product__body">
+    <h1>{{ item.name }}</h1>
+    {% if item.brand %}<p class="nc-product__brand">{{ item.brand.name }}</p>{% endif %}
+    <p class="nc-product__price">${{ "%.2f"|format(item.price_usd) }}</p>
+    <p class="nc-product__sku"><code>SKU {{ item.sku }}</code></p>
+
+    {% if item.description %}
+      <p class="nc-product__desc">{{ item.description }}</p>
+    {% endif %}
+
+    <form
+      class="nc-product__buy"
+      hx-post="/cart"
+      hx-swap="none"
+    >
+      <input type="hidden" name="sku" value="{{ item.sku }}" />
+      <button type="submit" class="nc-cta">Buy</button>
+    </form>
+
+    <p class="nc-product__stock">
+      {% if item.stock_qty and item.stock_qty > 0 %}
+        In stock ({{ item.stock_qty }} available)
+      {% else %}
+        Currently out of stock — try the chat to ask when it's back.
+      {% endif %}
+    </p>
+  </div>
+</article>
+{% endblock %}

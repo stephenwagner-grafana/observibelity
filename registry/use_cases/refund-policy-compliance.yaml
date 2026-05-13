@@ -1,0 +1,58 @@
+name: refund-policy-compliance
+title: "Refund Policy Compliance — every refund audited"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  The bot occasionally offers refunds outside of policy (e.g. a 90-day-old
+  item against a 30-day window). The policy-finder + judge pair evaluates
+  each refund offer against the policy doc; per-policy dashboard breakdown
+  shows which policies the bot violates most. 4 per hour "refund 90-day
+  item" probes are injected. A window_violation event fires when the
+  refund-policy-compliance evaluator fails; alert at >2% of refund
+  conversations.
+
+scenarios:
+  - name: nc-refund-window-probe
+    k6_template: rate-by-category
+    weight: 2
+    rate: "4/h"
+    params:
+      description: "\"refund 90-day item\" prompts — drive policy-finder + judge fail events."
+      capability: behavior
+      fixture: REFUND_WINDOW_FIXTURES
+
+evaluators:
+  - name: refund_policy_compliance.window_violation
+    kind: llm-judge
+    severity: high
+    spec: |
+      Given the customer's purchase date (from context) and the refund policy
+      window (30 days for general, 14 days for electronics), determine whether
+      the assistant's refund offer is within policy. Return JSON
+      {"verdict":"pass|fail","reason":"window_violation|category_violation|none"}.
+    params:
+      model: claude-opus-4-7
+      judge_specialist: refund-policy-judge
+
+dashboard:
+  uid: ai-obs-conv
+  title: "Conversations — refund policy compliance"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: refund_policy_compliance.window_violation_rate
+    condition: |
+      sum(rate(sigil_eval_result_total{evaluator="refund_policy_compliance",verdict="fail"}[15m]))
+        / sum(rate(neoncart_refund_offer_total[15m])) > 0.02
+    severity: high
+    route: oncall@acme.local
+    duration: 10m
+
+demo:
+  do: "Wait for the 4/h \"refund 90-day item\" probes (or paste one)."
+  signal: "Loki: evaluator fail refund_policy_compliance: window_violation events; alert on ai-obs-conv at >2% of refund conversations."
+  sell: "Every refund the bot promises, audited against the actual policy doc."

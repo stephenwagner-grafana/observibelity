@@ -1,0 +1,61 @@
+{
+  "apiVersion": "v1",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "{{ name }}-trace-and-fix",
+    "archetype": "trace-and-fix"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Traces for {{ name }}",
+      "type": "table",
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "queryType": "traceqlSearch",
+          "query": "{ resource.ai_o11y.usecase = \"{{ name }}\" && status = error }",
+          "limit": 25
+        }
+      ],
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 8}
+    },
+    {
+      "id": 2,
+      "title": "Error rate for {{ name }} (per 5m)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(ai_o11y_usecase_errors_total{usecase=\"{{ name }}\"}[5m]))",
+          "legendFormat": "errors/sec",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8}
+    },
+    {
+      "id": 3,
+      "title": "Top error patterns for {{ name }}",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (error_pattern) (rate(ai_o11y_usecase_errors_total{usecase=\"{{ name }}\"}[15m])))",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8}
+    }
+  ]
+}

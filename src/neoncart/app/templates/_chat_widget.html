@@ -1,0 +1,67 @@
+<div id="nc-chat" class="nc-chat" data-open="false">
+  <button
+    type="button"
+    id="nc-chat-toggle"
+    class="nc-chat__toggle"
+    aria-controls="nc-chat-panel"
+    aria-expanded="false"
+  >
+    <span class="nc-chat__toggle-icon" aria-hidden="true">&#9786;</span>
+    <span class="nc-chat__toggle-text">Chat with {{ branding.name }}</span>
+  </button>
+
+  <section
+    id="nc-chat-panel"
+    class="nc-chat__panel"
+    aria-hidden="true"
+    aria-label="Chat with {{ branding.name }}"
+  >
+    <header class="nc-chat__header">
+      <strong>{{ branding.name }} Assistant</strong>
+      <button
+        type="button"
+        id="nc-chat-close"
+        class="nc-chat__close"
+        aria-label="Close chat"
+      >&times;</button>
+    </header>
+
+    <div
+      id="chat-messages"
+      class="nc-chat__messages"
+      aria-live="polite"
+      aria-busy="false"
+    >
+      <div class="chat-msg chat-msg--bot">
+        Hi! I can help you find products. Try
+        <em>"show me mice"</em>.
+      </div>
+    </div>
+
+    <form
+      id="nc-chat-form"
+      class="nc-chat__form"
+      hx-post="/chat"
+      hx-target="#chat-messages"
+      hx-swap="beforeend"
+      hx-ext="json-enc"
+      hx-indicator="#nc-chat-spinner"
+      hx-on::after-request="this.reset()"
+    >
+      <input
+        type="text"
+        name="message"
+        id="nc-chat-input"
+        placeholder="Ask about anything…"
+        autocomplete="off"
+        required
+        minlength="1"
+        maxlength="2048"
+      />
+      <button type="submit" class="nc-chat__send">Send</button>
+      <span id="nc-chat-spinner" class="nc-chat__spinner" aria-hidden="true">
+        &#8230;
+      </span>
+    </form>
+  </section>
+</div>

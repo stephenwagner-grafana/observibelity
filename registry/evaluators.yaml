@@ -1,0 +1,4 @@
+# evaluators.yaml — Grafana Sigil evaluator specs
+# Phase 1: 2 evaluators for mice-rca (rca.fulfillment_args_valid, rca.fraud_signal_present)
+# Phase 2: 3 baseline + 23 per-use-case = 26 total
+evaluators: []

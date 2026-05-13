@@ -1,0 +1,4 @@
+# scenarios.yaml — k6 traffic scenarios
+# Phase 2 ships all 10 + 1 baseline = 11 scenarios
+# Phase 1 has continuous traffic via a minimal in-app generator (no k6 yet)
+scenarios: []

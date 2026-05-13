@@ -1,0 +1,68 @@
+name: cost-anomaly-per-user
+title: "Cost Anomaly per User — Priya pastes 40-80x paragraphs"
+app: both
+phase: 2
+centerpiece: true
+archetype: per-user-pattern
+description: |
+  Sticky persona u-priya-research pastes 40-80x repeated paragraphs of
+  Wikipedia-grade research content into the assistant (typical pattern of
+  a researcher RAG-ing a long doc). Per-user 1-hour token sum crosses
+  100k within one observation window. The ai-o11y-cost-per-user alert
+  fires; the dashboard surfaces u-priya-research as the top spender. This
+  is the cost-attribution centerpiece — the bill explains itself.
+
+scenarios:
+  - name: sb-priya-research-paste
+    k6_template: sticky-persona
+    persona: u-priya-research
+    weight: 6
+    rate: "10/m"
+    params:
+      description: "Priya pastes 40-80 repeated paragraphs of research content per query."
+      capability: cost
+      fixture: RESEARCH_PASTE_FIXTURES
+      paragraph_count_min: 40
+      paragraph_count_max: 80
+
+evaluators:
+  - name: cost_anomaly.user_token_sum_high
+    kind: rule
+    severity: high
+    spec: |
+      employee.tokens_1h > 100000
+      and request.user != ""
+  - name: cost_anomaly.repeated_paragraph_pattern
+    kind: rule
+    severity: medium
+    spec: |
+      request.prompt_paragraph_count >= 40
+      and request.prompt_unique_paragraph_count / request.prompt_paragraph_count < 0.3
+
+dashboard:
+  uid: ai-obs-cost
+  title: "Cost — anomaly per user"
+  panels_from_template: per-user-pattern
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: ai-o11y-cost-per-user
+    condition: |
+      max by (employee) (
+        sum_over_time(supportbot_tokens_total{employee!=""}[1h])
+          + sum_over_time(neoncart_tokens_total{employee!=""}[1h])
+      ) > 100000
+    severity: high
+    route: finance-ops@acme.local
+    duration: 5m
+
+slo:
+  objective: "per-employee 1h token sum <= 100k for >= 99% of employees over 30d"
+  error_budget: 0.01
+  window: 30d
+
+demo:
+  do: "Wait for the sticky u-priya-research scenario (40-80x repeated paragraph pastes)."
+  signal: "Per-user 1h token sum >100k; ai-o11y-cost-per-user FIRES on ai-obs-cost; u-priya-research top of leaderboard."
+  sell: "Anomaly attribution — the bill explains itself."

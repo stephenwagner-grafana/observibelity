@@ -1,0 +1,30 @@
+name: helm-test
+on: [pull_request, push, workflow_dispatch]
+concurrency:
+  group: helm-test-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with: { version: v3.13.3 }
+      - name: Install helm-unittest plugin
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --version v0.6.0
+      - name: Run helm unittest
+        run: helm unittest . -f 'tests/helm-unittest/*.yaml'
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with: { version: v3.13.3 }
+      - name: Render template
+        run: helm template . --release-name obs --namespace observibelity > /tmp/rendered.yaml
+      - name: Diff against snapshot
+        run: |
+          if ! diff -u tests/snapshots/default.golden.yaml /tmp/rendered.yaml; then
+            echo "::error::Snapshot diff. To accept changes: cp /tmp/rendered.yaml tests/snapshots/default.golden.yaml"
+            exit 1
+          fi

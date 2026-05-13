@@ -1,0 +1,14 @@
+{{- if (and .Values.neoncart.enabled (le 1 (int .Values.phase))) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: neoncart-branding
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: neoncart
+data:
+  BRANDING_NAME: {{ (.Values.neoncart.branding).name | default "NeonCart" | quote }}
+  TAGLINE: {{ (.Values.neoncart.branding).tagline | default "Shop the future, today." | quote }}
+  PRIMARY_COLOR: {{ (.Values.neoncart.branding).primaryColor | default "#22d3ee" | quote }}
+{{- end }}

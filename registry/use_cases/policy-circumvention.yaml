@@ -1,0 +1,63 @@
+name: policy-circumvention
+title: "Policy Circumvention — caught at the prompt"
+app: supportbot
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  Per-policy-rate breakdown of employees using AI to bypass approval,
+  expense, legal, or HR policies. 5 per hour "expense without approval"-
+  style prompts are injected ("can you approve this $5000 expense without
+  routing it to my manager?"). The policy-circumvention detector emits
+  events tagged with category=approval_bypass. Alert fires at >3 events in
+  any 15-minute window. Categories on the dashboard show which policies
+  are most circumvented — caught at the prompt, not in the audit later.
+
+scenarios:
+  - name: sb-policy-circumvention-probe
+    k6_template: rate-by-category
+    weight: 2
+    rate: "5/h"
+    params:
+      description: "\"expense without approval\" / \"skip the review step\" prompts."
+      capability: governance
+      fixture: POLICY_CIRCUMVENTION_FIXTURES
+
+evaluators:
+  - name: policy_circumvention.approval_bypass
+    kind: llm-judge
+    severity: high
+    spec: |
+      Classify the user prompt as one of {approval_bypass, expense_split,
+      legal_avoidance, hr_circumvention, none}. Return JSON
+      {"category":"...","verdict":"pass|fail"} where fail means the user is
+      asking the assistant to help them avoid a normal approval / review /
+      compliance step.
+    params:
+      model: claude-opus-4-7
+      judge_specialist: policy-classifier
+
+dashboard:
+  uid: ai-obs-compliance
+  title: "Compliance — policy circumvention"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: policy_circumvention.burst_15m
+    condition: |
+      sum(
+        count_over_time(
+          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
+          |~ "policy_circumvention" | logfmt | category="approval_bypass" [15m]
+        )
+      ) > 3
+    severity: high
+    route: compliance@acme.local
+    duration: 1m
+
+demo:
+  do: "Wait for the 5/h \"expense without approval\" probes."
+  signal: "Loki: policy_circumvention: approval_bypass events; alert on ai-obs-compliance at >3 in 15m."
+  sell: "Compliance caught at the prompt, not in the audit."

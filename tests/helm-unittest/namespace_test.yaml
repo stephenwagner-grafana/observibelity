@@ -1,0 +1,28 @@
+suite: namespace template
+templates:
+  - templates/namespace.yaml
+tests:
+  - it: default global.namespace renders Namespace named "observibelity"
+    asserts:
+      - isKind:
+          of: Namespace
+      - equal:
+          path: metadata.name
+          value: observibelity
+
+  - it: labels include helm.sh/chart
+    asserts:
+      - isNotNullOrEmpty:
+          path: metadata.labels["helm.sh/chart"]
+
+  - it: labels include app.kubernetes.io/name=observibelity
+    asserts:
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: observibelity
+
+  - it: labels include app.kubernetes.io/managed-by=Helm
+    asserts:
+      - equal:
+          path: metadata.labels["app.kubernetes.io/managed-by"]
+          value: Helm

@@ -1,0 +1,3 @@
+# specialists.yaml — sub-agent registry
+# Phase 1 adds: nc-chatbot, nc-fraud-detector, nc-fulfillment-orchestrator
+specialists: []

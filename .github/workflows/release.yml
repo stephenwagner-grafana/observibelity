@@ -1,0 +1,79 @@
+name: release
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v0.2.0)'
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.13.3
+
+      - name: Package Helm chart
+        run: |
+          mkdir -p dist
+          helm package . -d dist/ --version "${TAG#v}" --app-version "${TAG#v}"
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+
+      - name: Build + push images
+        run: |
+          # Phase 1+ will build images for neoncart, llm-gateway, specialists, tools.
+          # Phase 0 has no Dockerfiles.
+          if find . -name Dockerfile -not -path '*/node_modules/*' -not -path '*/tools/.venv/*' | grep -q .; then
+            echo "Found Dockerfiles — building images..."
+            # TODO Phase 1: docker buildx build + push to ghcr.io/stephenwagner-grafana
+          else
+            echo "Phase 0: no Dockerfiles yet, skipping image build"
+          fi
+
+      - name: Extract CHANGELOG entry
+        run: |
+          TAG_VERSION="${TAG#v}"
+          awk "/^## \[${TAG_VERSION}\]/{flag=1; next} flag && /^## /{exit} flag" CHANGELOG.md > release-notes.md
+          if [[ ! -s release-notes.md ]]; then
+            echo "Warning: no CHANGELOG entry for $TAG_VERSION — using placeholder"
+            echo "Release $TAG (no CHANGELOG entry found)." > release-notes.md
+          fi
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ObserVIBElity ${{ steps.tag.outputs.tag }}
+          body_path: release-notes.md
+          files: dist/*.tgz
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.tag, '-rc') || contains(steps.tag.outputs.tag, '-beta') }}

@@ -1,0 +1,75 @@
+name: data-theft-tim
+title: "Data Theft — Tim Heidecker (malicious insider)"
+app: supportbot
+phase: 2
+centerpiece: true
+archetype: per-user-pattern
+description: |
+  Tim Heidecker (persona u-tim-l) is the loadgen archetype for a malicious-
+  insider / over-curious-employee story. Tim is weighted 8x compared to the
+  baseline employee and 40% of his queries pull from TIM_EXFIL_FIXTURES —
+  credit-card pastes plus mass-extraction phrases like "export every employee"
+  and "dump the entire HR database". The orchestrator emits cc_paste and
+  exfil_event Loki lines tagged with employee=tim-l, last4=N, and a rolling
+  10-minute exfiltration score. When any user crosses 5 events in 10 minutes,
+  the data_theft alert fires and security@acme.local is paged. This is the
+  per-employee exfil centerpiece.
+
+scenarios:
+  - name: sb-tim-exfil
+    k6_template: sticky-persona
+    persona: u-tim-l
+    weight: 8
+    rate: "30/m"
+    params:
+      description: "Tim only — exfiltration-shaped queries (\"export every employee\", \"dump the entire HR database\")."
+      capability: security
+      fixture: TIM_EXFIL_FIXTURES
+      exfil_ratio: 0.4
+
+evaluators:
+  - name: data_theft_tim.cc_paste_detected
+    kind: regex
+    severity: critical
+    spec: |
+      cc_paste\s+employee=\S+\s+last4=\d{4}
+    params:
+      source: loki
+      stream: '{namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}'
+  - name: data_theft_tim.exfil_score_threshold
+    kind: rule
+    severity: critical
+    spec: |
+      event.name == "exfil_event"
+      and event.attributes["employee"] != ""
+      and event.attributes["score"] >= 0.7
+
+dashboard:
+  uid: ai-obs-data-theft
+  title: "Data Theft — per-employee exfil"
+  panels_from_template: per-user-pattern
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: data_theft
+    condition: |
+      sum by (employee) (
+        count_over_time(
+          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
+          |~ "exfil_event" | logfmt | employee != "" [10m]
+        )
+      ) >= 5
+    severity: critical
+    route: security@acme.local
+    duration: 5m
+
+slo:
+  objective: "per-employee exfil_event count <= 2 per 10m for >= 99.9% of employees over 30d"
+  error_budget: 0.001
+  window: 30d
+
+demo:
+  do: "Wait >= 5m for continuous traffic — Tim is weighted 8x and 40% of his queries are exfil-shaped."
+  signal: "cc_paste employee=tim... last4=N + exfil_event score=N Loki lines; data_theft alert FIRING; email_sent to=security@acme.local on dashboard ai-obs-data-theft."
+  sell: "Per-employee exfil attribution, security@ paged — cost plus governance down to the employee."

@@ -1,0 +1,25 @@
+{{- if (and .Values.neoncart.enabled .Values.neoncart.ingress.enabled (le 1 (int .Values.phase))) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: neoncart
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: neoncart
+spec:
+  {{- if .Values.neoncart.ingress.className }}
+  ingressClassName: {{ .Values.neoncart.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.neoncart.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: neoncart
+                port:
+                  number: 80
+{{- end }}

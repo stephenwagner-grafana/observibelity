@@ -1,0 +1,29 @@
+---
+# Sigil evaluator template: leaderboard archetype
+# Generated for use case: {{ name }}
+# Single rubric evaluator emitting per-category leaderboard signal.
+apiVersion: sigil.observibelity.dev/v1
+kind: Evaluator
+metadata:
+  name: "{{ name }}-leaderboard"
+  archetype: leaderboard
+  usecase: "{{ name }}"
+spec:
+  description: |
+    Produces the {{ rank_by }} signal for {{ name }}, scored per {{ group_by }}.
+    Used by the leaderboard panel and the regression alert.
+  evaluators:
+    - name: "{{ name }}_rubric_score"
+      kind: rubric
+      severity: medium
+      target: message
+      group_by: "{{ group_by }}"
+      model: claude-opus-4-7
+      rubric: |
+        Score the response on a 0-1 scale for {{ name }}. This score will
+        be aggregated into the {{ rank_by }} leaderboard ranked by
+        {{ group_by }}. A score below baseline triggers regression alerts.
+      emit_metric: "{{ rank_by }}"
+      labels:
+        "{{ group_by }}": "${message.metadata.{{ group_by }}}"
+        usecase: "{{ name }}"

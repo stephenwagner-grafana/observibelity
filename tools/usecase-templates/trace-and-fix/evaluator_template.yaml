@@ -1,0 +1,38 @@
+---
+# Sigil evaluator template: trace-and-fix archetype
+# Generated for use case: {{ name }}
+# Single rule-kind evaluator that confirms the expected error span exists
+# inside the trace. If the span is missing, the use case is considered
+# unverified - the demo flow is broken.
+apiVersion: sigil.observibelity.dev/v1
+kind: Evaluator
+metadata:
+  name: "{{ name }}-trace-and-fix"
+  archetype: trace-and-fix
+  usecase: "{{ name }}"
+spec:
+  description: |
+    Confirms the canonical trace-and-fix error span is emitted for {{ name }}.
+    Fails when no span matching trace_filter+error_pattern is found in the
+    last 5 minutes of traces tagged ai_o11y.usecase={{ name }}.
+  evaluators:
+    - name: "{{ name }}_error_span_present"
+      kind: rule
+      severity: medium
+      target: trace
+      filter:
+        resource.ai_o11y.usecase: "{{ name }}"
+      expression: |
+        span.name =~ "{{ trace_filter }}"
+        and span.status == "error"
+        and span.attributes.error_message =~ "{{ error_pattern }}"
+      window: 5m
+      on_match:
+        result: present
+        message: "Expected error span found for {{ name }}"
+      on_no_match:
+        result: missing
+        severity: high
+        message: |
+          No span matching {{ trace_filter }} found for {{ name }} in last 5m.
+          Demo flow is broken - investigate loadgen scenario.

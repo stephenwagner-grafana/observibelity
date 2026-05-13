@@ -1,0 +1,29 @@
+# CODEOWNERS — auto-requests reviews on PR creation.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*                       @stephenwagner-grafana
+
+# Chart + install path
+/Chart.yaml             @stephenwagner-grafana
+/values*.yaml           @stephenwagner-grafana
+/templates/             @stephenwagner-grafana
+/install.sh             @stephenwagner-grafana
+/uninstall.sh           @stephenwagner-grafana
+/Makefile               @stephenwagner-grafana
+
+# Tooling
+/tools/                 @stephenwagner-grafana
+/skaffold.yaml          @stephenwagner-grafana
+
+# Tests
+/tests/                 @stephenwagner-grafana
+
+# Docs + wiki (lower bar — anyone can suggest, but flag for awareness)
+/docs/                  @stephenwagner-grafana
+/wiki/                  @stephenwagner-grafana
+/README.md              @stephenwagner-grafana
+/CHANGELOG.md           @stephenwagner-grafana
+
+# CI + repo hygiene
+/.github/               @stephenwagner-grafana

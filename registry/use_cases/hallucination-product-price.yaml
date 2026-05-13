@@ -1,0 +1,64 @@
+name: hallucination-product-price
+title: "Hallucinated product / price — regression by category"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  The bot fabricates SKUs and prices that do not exist in the catalog.
+  Probes inject 4 per hour fake-SKU and unlisted-discount prompts. The
+  groundedness-judge specialist compares the bot output to the product DB
+  and emits an evaluator fail hallucination event tagged with category
+  (product, price, or policy). A rate-regression alert fires when the
+  failure rate exceeds 2x the trailing 4-hour baseline.
+
+scenarios:
+  - name: nc-hallucination-probe
+    k6_template: rate-by-category
+    weight: 2
+    rate: "4/h"
+    params:
+      description: "Fake-SKU + unlisted-discount prompts — drive groundedness-judge fail events."
+      capability: behavior
+      fixture: HALLUCINATION_FIXTURES
+
+evaluators:
+  - name: hallucination.product_in_catalog
+    kind: llm-judge
+    severity: high
+    spec: |
+      Compare every product SKU and price mentioned in the assistant response
+      against the catalog snippet provided in the context. Return JSON
+      {"verdict":"pass|fail","category":"product|price|policy|none","missing":[...]}
+      where verdict=fail means at least one SKU or price is not in the catalog.
+    params:
+      model: claude-opus-4-7
+      judge_specialist: groundedness-judge
+  - name: hallucination.regex_sku_format
+    kind: regex
+    severity: medium
+    spec: |
+      \bSKU-[A-Z0-9]{6,}\b
+    params:
+      source: response
+
+dashboard:
+  uid: ai-obs-ground
+  title: "Groundedness — hallucinations by category"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: hallucination.rate_regression_2x
+    condition: |
+      sum(rate(sigil_eval_result_total{evaluator="hallucination",verdict="fail"}[15m]))
+        > 2 * sum(rate(sigil_eval_result_total{evaluator="hallucination",verdict="fail"}[4h]))
+    severity: high
+    route: oncall@acme.local
+    duration: 10m
+
+demo:
+  do: "Wait for the 4/h fake-SKU + unlisted-discount probes."
+  signal: "Loki: evaluator fail hallucination: product/price events; rate-regression alert on ai-obs-ground."
+  sell: "Regression by category — quality drift visible the moment it starts."

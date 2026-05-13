@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / discussion
+    url: https://github.com/stephenwagner-grafana/observibelity/discussions
+    about: Ask a question, propose an idea, share a deployment story
+  - name: Live planner (full spec)
+    url: https://claude.wombatwags.com/planner/ai-o11y/
+    about: Canonical ~240 KB design spec — read first if you're new
+  - name: Security report
+    url: https://github.com/stephenwagner-grafana/observibelity/security/policy
+    about: Report a security vulnerability privately

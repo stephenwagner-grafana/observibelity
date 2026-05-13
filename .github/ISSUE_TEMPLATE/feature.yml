@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest a new feature or improvement
+title: "[feat] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this solve? Who feels the pain?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase scope
+      options:
+        - Phase 1 (mice-rca centerpiece)
+        - Phase 2 (full set)
+        - Cross-phase tooling
+        - Outside current roadmap
+    validations:
+      required: true
+  - type: textarea
+    id: planner
+    attributes:
+      label: Planner reference
+      description: Does this connect to a section in https://claude.wombatwags.com/planner/ai-o11y/ ?

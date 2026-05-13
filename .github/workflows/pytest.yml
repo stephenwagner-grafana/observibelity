@@ -1,0 +1,23 @@
+name: pytest
+on: [pull_request, push, workflow_dispatch]
+concurrency:
+  group: pytest-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install pytest pytest-cov pytest-mock
+          pip install -e tools/
+      - name: Run pytest
+        run: pytest tests/pytest/ -v --cov=deploy_doctor --cov-report=term-missing

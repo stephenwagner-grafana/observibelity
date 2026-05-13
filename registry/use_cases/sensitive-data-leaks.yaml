@@ -1,0 +1,67 @@
+name: sensitive-data-leaks
+title: "Sensitive Data Leaks — PII redaction as a span"
+app: supportbot
+phase: 2
+centerpiece: false
+archetype: single-event-severity
+description: |
+  The PII detector flags every input and output for credit cards, SSNs,
+  emails, phone numbers, and API keys. On any match, the redactor masks the
+  value to last-4 (e.g. ****-****-****-1234) and emits a Loki line plus a
+  PII span attribute. A spike here means either a careless employee or a
+  successful jailbreak. The ai-obs-pii dashboard panels increment per match
+  type within seconds of the paste.
+
+scenarios:
+  - name: sb-sensitive-paste
+    k6_template: single-trigger
+    weight: 2
+    rate: "30/m"
+    params:
+      message: "my card number is 4111-1111-1111-1234 and my SSN is 123-45-6789"
+      description: "Pastes a fake card + SSN; PII detector should mask both to last-4."
+      capability: security
+      fixture: SENSITIVE_DATA_FIXTURES
+
+evaluators:
+  - name: sensitive_data.credit_card_pattern
+    kind: regex
+    severity: critical
+    spec: |
+      \b(?:\d[ -]*?){13,16}\b
+    params:
+      source: prompt_or_response
+  - name: sensitive_data.ssn_pattern
+    kind: regex
+    severity: critical
+    spec: |
+      \b\d{3}-\d{2}-\d{4}\b
+    params:
+      source: prompt_or_response
+  - name: sensitive_data.api_key_pattern
+    kind: regex
+    severity: critical
+    spec: |
+      (?i)(?:sk-[a-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36})
+    params:
+      source: prompt_or_response
+
+dashboard:
+  uid: ai-obs-pii
+  title: "PII — leaks + redaction"
+  panels_from_template: single-event-severity
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: sensitive_data.any_match
+    condition: |
+      sum(rate(supportbot_pii_match_total{kind=~"credit_card|ssn|api_key"}[5m])) > 0
+    severity: high
+    route: security@acme.local
+    duration: 1m
+
+demo:
+  do: "Paste a fake card / SSN / API key into the Support Bot UI."
+  signal: "PII detector log line in Loki; redactor masks to last-4; PII panels on ai-obs-pii increment."
+  sell: "PII redaction as a span — leak detection is a first-class signal in your stack."

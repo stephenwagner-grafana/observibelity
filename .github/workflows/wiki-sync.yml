@@ -1,0 +1,44 @@
+name: wiki-sync
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'wiki/**'
+      - 'README.md'
+  workflow_dispatch:
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage wiki content
+        run: |
+          mkdir -p _wiki
+          # Wiki-only pages (navigation + landing)
+          cp wiki/Home.md _wiki/Home.md
+          cp wiki/_Sidebar.md _wiki/_Sidebar.md
+          cp wiki/_Footer.md _wiki/_Footer.md
+          cp wiki/Topology.md _wiki/Topology.md
+          cp wiki/Deployment-Scenarios.md _wiki/Deployment-Scenarios.md
+          cp wiki/Phase-Status.md _wiki/Phase-Status.md
+          cp wiki/FAQ.md _wiki/FAQ.md
+          # Mirror canonical docs/ as additional wiki pages
+          cp docs/INSTALL.md _wiki/Install.md
+          cp docs/TROUBLESHOOTING.md _wiki/Troubleshooting.md
+          cp docs/ARCHITECTURE.md _wiki/Architecture.md
+          cp docs/PROVIDERS.md _wiki/Providers.md
+          cp docs/DEVELOPMENT.md _wiki/Development.md
+          cp docs/GITOPS.md _wiki/Gitops.md
+          cp docs/CLAUDE-CODE.md _wiki/Claude-Code.md
+          cp docs/USE-CASES.md _wiki/Use-Cases.md
+          # Quick-Start = README.md trimmed to the Quick start section
+          awk '/^## Quick start/{flag=1} flag && /^## /{if (count++>0) exit} flag' README.md > _wiki/Quick-Start.md
+      - name: Push to wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        with:
+          path: _wiki/
+          token: ${{ secrets.GITHUB_TOKEN }}

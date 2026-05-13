@@ -1,0 +1,57 @@
+# pre-commit hooks for ObserVIBElity
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.golden\.yaml$
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        exclude: ^(templates/|tests/helm-unittest/|tests/snapshots/)
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main]
+      - id: check-added-large-files
+        args: [--maxkb=512]
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+        args: [-S, warning]
+        exclude: ^tests/snapshots/
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c, .yamllint]
+        exclude: ^(templates/|tests/helm-unittest/|tests/snapshots/|tools/.venv/)
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: helm-lint
+        name: helm lint
+        entry: helm lint .
+        language: system
+        pass_filenames: false
+        files: ^(templates/|values.yaml|values-.*\.yaml|Chart.yaml)$
+      - id: snapshot-check
+        name: helm template snapshot diff
+        entry: bash -c 'if helm template . --release-name obs --namespace observibelity 2>/dev/null > /tmp/rendered.yaml; then diff -q tests/snapshots/default.golden.yaml /tmp/rendered.yaml || (echo "Snapshot diverged. Run: make snapshot" && exit 1); fi'
+        language: system
+        pass_filenames: false
+        files: ^(templates/|values.yaml|Chart.yaml)$

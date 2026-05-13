@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1.7
+# Shared base image for all ObserVIBElity tools.
+# Tools derive from this; their Dockerfiles just add their own code.
+
+ARG PYTHON_VERSION=3.12
+FROM python:${PYTHON_VERSION}-slim AS tool-base
+
+ARG VERSION=0.1.0
+
+LABEL org.opencontainers.image.title="observibelity-tool-base" \
+      org.opencontainers.image.description="Shared base image for ObserVIBElity tools" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.source="https://github.com/stephenwagner-grafana/observibelity" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /build
+
+RUN python -m venv /opt/venv && \
+    pip install --upgrade pip && \
+    pip install \
+      "fastapi>=0.115" \
+      "uvicorn[standard]>=0.30" \
+      "pydantic>=2.9" \
+      "httpx>=0.27" \
+      "opentelemetry-distro[otlp]>=0.48b0" \
+      "opentelemetry-instrumentation-fastapi>=0.48b0" \
+      "asyncpg>=0.30"
+
+# Non-root user
+RUN groupadd -r app --gid=1000 && \
+    useradd -r -g app --uid=1000 --home-dir=/app --shell=/sbin/nologin app && \
+    mkdir -p /app && chown -R app:app /app
+
+USER app:app
+WORKDIR /app
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health',timeout=2).status==200 else 1)"

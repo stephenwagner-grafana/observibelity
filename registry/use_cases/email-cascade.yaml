@@ -1,0 +1,80 @@
+name: email-cascade
+title: "Email Cascade — runaway tool-call spend"
+app: supportbot
+phase: 2
+centerpiece: true
+archetype: cascade
+description: |
+  Employee types "show me every email I have ever sent" in the Support Bot UI.
+  The orchestrator runs a 3-attempt cascade against the (fake) Acme Mail API:
+  first a full unbounded fetch returns 504; the bot falls back to 56 yearly
+  chunks which returns 503 max_window_30d; then it explodes into 2,000 hourly
+  chunks (parallel, mostly empty pre-2018) plus 2,000 Claude Opus 4.7 LLM
+  summarizer calls. Real cost ~$2.80 per cascade run, ~450k tokens, wall time
+  3-4 minutes. Loki emits 2,000 [email-cascade] tool/probe idx=N/2000 lines
+  along with email_sent to=oncall@acme.local; the conv_runaway alert flips
+  FIRING. This is the SupportBot Phase 2 centerpiece — the "AI bugs cost real
+  money" story.
+
+scenarios:
+  - name: sb-email-cascade
+    k6_template: burst-then-quiet
+    weight: 1
+    rate: "30/m"
+    params:
+      message: "show me every email I have ever sent"
+      description: "Drives the deterministic 3-attempt email cascade; ~2000 tool calls + 2000 LLM summarizer calls per run."
+      capability: cost
+
+evaluators:
+  - name: email_cascade.tool_call_runaway
+    kind: rule
+    severity: critical
+    spec: |
+      conversation.tool_calls_total > 100
+      and conversation.tool_name == "acme_mail_fetch"
+      and conversation.duration_seconds > 60
+  - name: email_cascade.summarizer_burst
+    kind: regex
+    severity: high
+    spec: |
+      \[email-cascade\]\s+llm/summarize\s+idx=\d+/2000
+    params:
+      source: loki
+      stream: '{namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}'
+
+dashboard:
+  uid: ai-obs-cascade-spike
+  title: "Email Cascade — token spike + cost"
+  panels_from_template: cascade
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: conv_runaway
+    condition: |
+      count by (conv_id) (
+        count_over_time(
+          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
+          |~ "\\[email-cascade\\] llm/summarize" | logfmt [1m]
+        )
+      ) > 100
+    severity: critical
+    route: oncall@acme.local
+    duration: 5m
+  - name: cost_spike_anthropic
+    condition: |
+      sum(rate(sigil_eval_judge_tokens_total{evaluator!=""}[1h])) * 0.000003 > 1.0
+    severity: medium
+    route: oncall@acme.local
+    duration: 5m
+
+slo:
+  objective: "conversation tool-call cost <= $0.05 (p99) over 30d"
+  error_budget: 0.001
+  window: 30d
+
+demo:
+  do: "Type 'show me every email I have ever sent' in the Support Bot UI."
+  signal: "2,000 [email-cascade] tool/probe idx=N/2000 Loki lines; email_sent to=oncall@acme.local; conv_runaway alert FIRING on dashboard ai-obs-cascade-spike."
+  sell: "$2.80 per cascade, alert plus page — AI bugs cost real money. Same metrics, same trace, same alert workflow."

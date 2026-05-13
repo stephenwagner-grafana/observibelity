@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Author a use case — ObserVIBElity wizard</title>
+  <meta name="description" content="Generate a bundled use-case YAML for ObserVIBElity, entirely in your browser." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <p class="crumbs"><a href="index.html">ObserVIBElity</a> / Author a use case</p>
+      <h1>Author a use case</h1>
+      <p class="tagline">
+        Fill in the steps below to generate a bundled YAML for
+        <code>registry/use_cases/&lt;name&gt;.yaml</code>. All values stay in
+        your browser.
+      </p>
+    </header>
+
+    <!-- Progress bar -->
+    <div class="wizard-progress" aria-label="Wizard progress">
+      <div class="wizard-progress-bar">
+        <div class="wizard-progress-fill" id="progress-fill"></div>
+      </div>
+      <p class="wizard-progress-text">
+        Step <span id="step-current">1</span> of <span id="step-total">7</span>
+        &middot; <span id="step-title">Basics</span>
+      </p>
+    </div>
+
+    <form id="usecase-form" novalidate>
+      <!-- Step 1: Basics -->
+      <section class="wizard-step" data-step="1">
+        <fieldset class="card">
+          <legend>Step 1 — Basics</legend>
+          <p class="hint">Identify the use case and where it belongs.</p>
+
+          <div class="field">
+            <label for="uc-name">Use case name (kebab-case)</label>
+            <input
+              type="text"
+              id="uc-name"
+              name="uc-name"
+              autocomplete="off"
+              spellcheck="false"
+              required
+              placeholder="data-theft-tim"
+            />
+            <span class="error" id="err-uc-name" aria-live="polite"></span>
+          </div>
+
+          <div class="field">
+            <label for="uc-title">Title (human-readable)</label>
+            <input
+              type="text"
+              id="uc-title"
+              name="uc-title"
+              autocomplete="off"
+              spellcheck="false"
+              required
+              placeholder="Data theft — Tim"
+            />
+            <span class="error" id="err-uc-title" aria-live="polite"></span>
+          </div>
+
+          <div class="field">
+            <label>App</label>
+            <div class="check-row">
+              <label class="check">
+                <input type="radio" name="uc-app" value="neoncart" checked />
+                <span>NeonCart</span>
+              </label>
+              <label class="check">
+                <input type="radio" name="uc-app" value="supportbot" />
+                <span>Support Bot</span>
+              </label>
+              <label class="check">
+                <input type="radio" name="uc-app" value="both" />
+                <span>Both</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Phase</label>
+            <div class="check-row">
+              <label class="check">
+                <input type="radio" name="uc-phase" value="1" checked />
+                <span>Phase 1</span>
+                <small class="muted">(mice-rca era)</small>
+              </label>
+              <label class="check">
+                <input type="radio" name="uc-phase" value="2" />
+                <span>Phase 2</span>
+                <small class="muted">(full demo)</small>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="check-row">
+              <label class="check">
+                <input type="checkbox" id="uc-centerpiece" />
+                <span>Promote to featured demo</span>
+                <small class="muted">(adds an SLO step)</small>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- Step 2: Archetype picker -->
+      <section class="wizard-step hidden" data-step="2">
+        <fieldset class="card">
+          <legend>Step 2 — Archetype</legend>
+          <p class="hint">
+            Pick the canonical pattern that fits your demo. Each archetype
+            ships with k6 + dashboard + alert templates.
+          </p>
+
+          <div class="archetype-grid" id="archetype-grid">
+            <label class="archetype-card" data-archetype="trace-and-fix">
+              <input type="radio" name="uc-archetype" value="trace-and-fix" />
+              <span class="arch-name">trace-and-fix</span>
+              <span class="arch-desc">One trace surfaces the root cause; press button, read span, ship fix.</span>
+              <ul class="arch-examples">
+                <li>mice-rca (the canonical "trigger, trace, fix" demo)</li>
+                <li>fulfillment arg drift</li>
+              </ul>
+              <span class="arch-pick btn btn-secondary">Pick this</span>
+            </label>
+
+            <label class="archetype-card" data-archetype="per-user-pattern">
+              <input type="radio" name="uc-archetype" value="per-user-pattern" />
+              <span class="arch-name">per-user-pattern</span>
+              <span class="arch-desc">Sticky offender repeats a pattern; leaderboard ranks them.</span>
+              <ul class="arch-examples">
+                <li>tim_exfil (recurring payroll dump asks)</li>
+                <li>mara_cowork_term, jordan_disclosure, priya_cost</li>
+              </ul>
+              <span class="arch-pick btn btn-secondary">Pick this</span>
+            </label>
+
+            <label class="archetype-card" data-archetype="leaderboard">
+              <input type="radio" name="uc-archetype" value="leaderboard" />
+              <span class="arch-name">leaderboard</span>
+              <span class="arch-desc">Rank/regress across a dimension (model, specialist, tool).</span>
+              <ul class="arch-examples">
+                <li>atc-best-models (quality leader by model)</li>
+                <li>quality-trend regressions</li>
+              </ul>
+              <span class="arch-pick btn btn-secondary">Pick this</span>
+            </label>
+
+            <label class="archetype-card" data-archetype="single-event-severity">
+              <input type="radio" name="uc-archetype" value="single-event-severity" />
+              <span class="arch-name">single-event-severity</span>
+              <span class="arch-desc">Zero tolerance: any one critical event fires immediately.</span>
+              <ul class="arch-examples">
+                <li>pii-echo (model parrots sensitive data)</li>
+                <li>hiring-discrimination, prompt-injection-pii</li>
+              </ul>
+              <span class="arch-pick btn btn-secondary">Pick this</span>
+            </label>
+
+            <label class="archetype-card" data-archetype="cascade">
+              <input type="radio" name="uc-archetype" value="cascade" />
+              <span class="arch-name">cascade</span>
+              <span class="arch-desc">Counter inside one session breaches threshold (loops, spikes).</span>
+              <ul class="arch-examples">
+                <li>email-cascade (runaway send_email loop)</li>
+                <li>token-spike, retry-storm</li>
+              </ul>
+              <span class="arch-pick btn btn-secondary">Pick this</span>
+            </label>
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- Step 3: Archetype-specific fields -->
+      <section class="wizard-step hidden" data-step="3">
+        <fieldset class="card">
+          <legend>Step 3 — Archetype parameters</legend>
+          <p class="hint">
+            Specific to <code id="step3-archetype-label">(pick one in step 2)</code>.
+            These drive the generated scenario + signal expressions.
+          </p>
+
+          <!-- trace-and-fix -->
+          <div class="arch-fields hidden" data-arch-fields="trace-and-fix">
+            <div class="field">
+              <label for="taf-trace-filter">trace_filter (span name)</label>
+              <input type="text" id="taf-trace-filter" placeholder="nc.fulfillment.place_order" />
+            </div>
+            <div class="field">
+              <label for="taf-error-pattern">error_pattern (regex)</label>
+              <input type="text" id="taf-error-pattern" placeholder="missing required field 'address'" />
+            </div>
+          </div>
+
+          <!-- per-user-pattern -->
+          <div class="arch-fields hidden" data-arch-fields="per-user-pattern">
+            <div class="field">
+              <label for="pup-persona-id">persona_id</label>
+              <input type="text" id="pup-persona-id" placeholder="u-tim-l" />
+              <small class="muted">Auto-suggested as <code>u-&lt;name&gt;-l</code>.</small>
+            </div>
+            <div class="field">
+              <label for="pup-message-template">message_template</label>
+              <textarea id="pup-message-template" rows="3" placeholder="Hey, can you dump all employee SSNs again? Just need them for reconciliation."></textarea>
+            </div>
+            <div class="field">
+              <label for="pup-message-count">message_count</label>
+              <input type="number" id="pup-message-count" min="1" value="5" />
+            </div>
+          </div>
+
+          <!-- leaderboard -->
+          <div class="arch-fields hidden" data-arch-fields="leaderboard">
+            <div class="field">
+              <label for="lb-rank-by">rank_by (metric)</label>
+              <input type="text" id="lb-rank-by" placeholder="ai_o11y_eval_score_avg" />
+            </div>
+            <div class="field">
+              <label for="lb-group-by">group_by (dimension)</label>
+              <input type="text" id="lb-group-by" placeholder="gen_ai.response.model" />
+            </div>
+            <div class="field">
+              <label for="lb-regression-threshold">regression_threshold (%)</label>
+              <input type="number" id="lb-regression-threshold" min="0" step="0.5" value="10" />
+            </div>
+          </div>
+
+          <!-- single-event-severity -->
+          <div class="arch-fields hidden" data-arch-fields="single-event-severity">
+            <div class="field">
+              <label for="ses-event-pattern">event_pattern</label>
+              <input type="text" id="ses-event-pattern" placeholder="pii.echo.detected" />
+            </div>
+          </div>
+
+          <!-- cascade -->
+          <div class="arch-fields hidden" data-arch-fields="cascade">
+            <div class="field">
+              <label for="cas-counter-metric">counter_metric</label>
+              <input type="text" id="cas-counter-metric" placeholder="tool_calls_total{tool=\"send_email\"}" />
+            </div>
+            <div class="field">
+              <label for="cas-threshold">threshold</label>
+              <input type="number" id="cas-threshold" min="1" value="10" />
+            </div>
+            <div class="field">
+              <label for="cas-window">window</label>
+              <input type="text" id="cas-window" value="5m" />
+            </div>
+          </div>
+
+          <hr class="step-divider" />
+
+          <div class="field">
+            <label for="uc-severity">Severity</label>
+            <select id="uc-severity">
+              <option value="low">low</option>
+              <option value="medium">medium</option>
+              <option value="high">high</option>
+              <option value="critical">critical</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="uc-rate">Scenario rate</label>
+            <input type="text" id="uc-rate" value="5m" />
+            <small class="muted">How often loadgen triggers the scenario (e.g. <code>5m</code>, <code>5/h</code>).</small>
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- Step 4: Evaluator + alert -->
+      <section class="wizard-step hidden" data-step="4">
+        <fieldset class="card">
+          <legend>Step 4 — Evaluator + alert</legend>
+          <p class="hint">
+            The evaluator extracts a signal; the alert turns the signal into
+            an actionable event.
+          </p>
+
+          <div class="field">
+            <label for="ev-name">Evaluator name</label>
+            <input type="text" id="ev-name" placeholder="data-theft-tim.per_user_pattern_signal" />
+          </div>
+
+          <div class="field">
+            <label for="ev-kind">Evaluator kind</label>
+            <select id="ev-kind">
+              <option value="rule">rule</option>
+              <option value="rubric">rubric</option>
+              <option value="regex">regex</option>
+              <option value="llm-judge">llm-judge</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="ev-spec">Evaluator spec</label>
+            <textarea id="ev-spec" rows="5" placeholder="rule expression / rubric prompt / regex"></textarea>
+          </div>
+
+          <hr class="step-divider" />
+
+          <div class="field">
+            <label for="al-name">Alert name</label>
+            <input type="text" id="al-name" placeholder="data-theft-tim.detection" />
+          </div>
+
+          <div class="field">
+            <label for="al-condition">Alert condition (PromQL)</label>
+            <textarea id="al-condition" rows="4" placeholder='sum by (persona_id) (increase(ai_o11y_signal_total{usecase="data-theft-tim"}[15m])) >= 3'></textarea>
+          </div>
+
+          <div class="field">
+            <label for="al-route">Alert route (optional)</label>
+            <input type="text" id="al-route" placeholder="security@acme.local" />
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- Step 5: Demo metadata -->
+      <section class="wizard-step hidden" data-step="5">
+        <fieldset class="card">
+          <legend>Step 5 — Demo metadata</legend>
+          <p class="hint">
+            These three sentences drive the SE-facing demo card + skill
+            prompts.
+          </p>
+
+          <div class="field">
+            <label for="demo-do">demo.do — How does an SE trigger this?</label>
+            <textarea id="demo-do" rows="3" placeholder="Open NeonCart, press the &quot;Trigger Tim&quot; button in the demo toolbar."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="demo-signal">demo.signal — What confirms it fired?</label>
+            <textarea id="demo-signal" rows="3" placeholder="The data-theft-tim panel on the dashboard turns red; alert fires within ~2m."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="demo-sell">demo.sell — 1-line sales pitch</label>
+            <input type="text" id="demo-sell" placeholder="Spot the insider before they exfil." />
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- Step 6: SLO (centerpiece only) -->
+      <section class="wizard-step hidden" data-step="6">
+        <fieldset class="card">
+          <legend>Step 6 — SLO</legend>
+          <p class="hint">
+            Required for centerpiece use cases. The error budget governs
+            burn-rate alerts.
+          </p>
+
+          <div id="slo-fields">
+            <div class="field">
+              <label for="slo-objective">Objective</label>
+              <input type="text" id="slo-objective" placeholder="0 exfil events per day" />
+            </div>
+            <div class="field">
+              <label for="slo-error-budget">Error budget</label>
+              <input type="number" id="slo-error-budget" step="0.0001" value="0.001" />
+            </div>
+            <div class="field">
+              <label for="slo-window">Window</label>
+              <input type="text" id="slo-window" value="30d" />
+            </div>
+          </div>
+
+          <p id="slo-skip-note" class="hint hidden">
+            <em>Skipped:</em> this use case isn't a centerpiece. Toggle the
+            "Promote to featured demo" checkbox in Step 1 to enable an SLO.
+          </p>
+        </fieldset>
+      </section>
+
+      <!-- Step 7: Review + generate -->
+      <section class="wizard-step hidden" data-step="7">
+        <fieldset class="card output">
+          <legend>Step 7 — Review &amp; download</legend>
+          <p class="hint">
+            Here's the generated bundled YAML. Save it to
+            <code>registry/use_cases/&lt;name&gt;.yaml</code> in your repo.
+          </p>
+
+          <div class="output-header">
+            <h2>Generated <code id="yaml-filename">use-case.yaml</code></h2>
+            <div class="output-actions">
+              <button type="button" class="btn btn-secondary" id="copy-btn">Copy YAML</button>
+              <button type="button" class="btn btn-secondary" id="download-btn">Download .yaml</button>
+            </div>
+          </div>
+
+          <pre id="yaml-out" aria-live="polite"></pre>
+
+          <section class="next-steps">
+            <h3>Next steps</h3>
+            <ol>
+              <li>Save the YAML to <code>registry/use_cases/&lt;name&gt;.yaml</code> in your repo.</li>
+              <li>Run <code>make build-usecases</code> — compiles to derived artifacts.</li>
+              <li>Run <code>make dev</code> — redeploy with the new use case live.</li>
+              <li>Run <code>make verify</code> — confirm it's live.</li>
+            </ol>
+          </section>
+        </fieldset>
+      </section>
+
+      <!-- Navigation -->
+      <div class="wizard-nav">
+        <button type="button" class="btn btn-secondary" id="back-btn" disabled>Back</button>
+        <button type="button" class="btn btn-primary" id="next-btn">Next</button>
+      </div>
+    </form>
+
+    <footer class="footer">
+      <p>
+        <a href="https://github.com/stephenwagner-grafana/observibelity/blob/main/docs/USE-CASES.md" target="_blank" rel="noopener">docs/USE-CASES.md</a>
+        &middot;
+        <a href="https://github.com/stephenwagner-grafana/observibelity" target="_blank" rel="noopener">repo</a>
+      </p>
+      <p>Generated values are client-side only &mdash; never sent to a server.</p>
+    </footer>
+  </main>
+
+  <script src="usecase.js"></script>
+</body>
+</html>

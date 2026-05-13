@@ -1,0 +1,29 @@
+# ObserVIBElity — Docker Desktop overlay
+#
+# Use this overlay when running on Docker Desktop's built-in Kubernetes (Mac or
+# Windows). It assumes a single-node cluster with the default hostpath-backed
+# StorageClass and no Ingress controller. Access NeonCart via `kubectl
+# port-forward` rather than an Ingress host.
+#
+# Apply with:
+#   helm install observibelity . -f values.yaml -f values-docker-desktop.yaml
+
+global:
+  imagePullPolicy: IfNotPresent
+
+# Docker Desktop ships a default StorageClass (hostpath / docker.io/hostpath).
+# Leaving className empty lets Kubernetes pick it automatically — explicit names
+# vary by Docker Desktop version, so empty is the portable choice.
+storage:
+  className: ""
+  size: 1Gi
+
+llmGateway:
+  replicas: 1
+
+neoncart:
+  replicas: 1
+  ingress:
+    enabled: false
+    host: ""
+    className: ""

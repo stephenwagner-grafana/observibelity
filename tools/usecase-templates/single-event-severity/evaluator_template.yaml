@@ -1,0 +1,32 @@
+---
+# Sigil evaluator template: single-event-severity archetype
+# Generated for use case: {{ name }}
+# Rule evaluator marks severity=critical on event_pattern matches.
+apiVersion: sigil.observibelity.dev/v1
+kind: Evaluator
+metadata:
+  name: "{{ name }}-single-event-severity"
+  archetype: single-event-severity
+  usecase: "{{ name }}"
+spec:
+  description: |
+    Detects {{ name }} critical events using deterministic pattern matching.
+    Zero-tolerance: any match emits severity=critical and counts toward
+    the alert.
+  evaluators:
+    - name: "{{ name }}_critical_event"
+      kind: rule
+      severity: critical
+      target: response
+      expression: |
+        response.content =~ "{{ event_pattern }}"
+        or response.metadata.{{ severity_signal }} == "critical"
+      emit_metric: ai_o11y_usecase_events_total
+      labels:
+        usecase: "{{ name }}"
+        severity: critical
+        event_pattern: '{{ event_pattern }}'
+      on_match:
+        action: page
+        message: |
+          Critical event for {{ name }} - {{ event_pattern }} matched.

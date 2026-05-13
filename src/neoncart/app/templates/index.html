@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ branding.name }} — {{ branding.tagline }}{% endblock %}
+
+{% block content %}
+<section class="nc-hero">
+  <h1>{{ branding.name }}</h1>
+  <p>{{ branding.tagline }}</p>
+  <a class="nc-cta" href="/catalog">Browse the full catalog</a>
+</section>
+
+<section class="nc-section">
+  <h2>Featured products</h2>
+
+  {% if items %}
+    <div class="nc-grid">
+      {% for item in items %}
+        <article class="nc-card">
+          <a href="/products/{{ item.id }}">
+            {% if item.image_url %}
+              <img src="{{ item.image_url }}" alt="{{ item.name }}" />
+            {% else %}
+              <div class="nc-card__placeholder" aria-hidden="true"></div>
+            {% endif %}
+            <h3>{{ item.name }}</h3>
+            <p class="nc-card__price">${{ "%.2f"|format(item.price_usd) }}</p>
+            {% if item.brand %}<p class="nc-card__brand">{{ item.brand.name }}</p>{% endif %}
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="nc-empty">
+      Catalog is still loading. Try the chat widget — ask for what you want.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

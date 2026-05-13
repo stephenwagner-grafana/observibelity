@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "observibelity-tools"
+version = "0.2.0"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.39.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.9.0",
+    "pyyaml>=6.0",
+    "jinja2>=3.1.0",
+]
+
+[project.scripts]
+usecase-build = "usecase_build.__main__:main"
+
+[project.entry-points."observibelity.providers"]
+anthropic = "deploy_doctor.providers.anthropic:AnthropicProvider"
+ollama = "deploy_doctor.providers.ollama:OllamaProvider"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["deploy_doctor*", "usecase_build*"]

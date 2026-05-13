@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "observibelity.fullname" . }}-test"
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: smoke
+      image: busybox:1.36
+      command: ["sh", "-c"]
+      args:
+        - |
+          set -e
+          echo "ObserVIBElity helm test running."
+          echo "Phase: {{ .Values.phase | default 0 }}"
+          if [ "{{ .Values.phase | default 0 }}" = "0" ]; then
+            echo "Phase 0: no services to test (scaffolding only). PASS."
+            exit 0
+          fi
+          # Phase 1+: curl neoncart, llm-gateway, otel-collector
+          echo "Phase 1+ tests not yet implemented."
+          exit 0

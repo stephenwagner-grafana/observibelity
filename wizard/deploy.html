@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deploy ObserVIBElity — Web Wizard</title>
+  <meta name="description" content="Generate a .env file for ObserVIBElity entirely in your browser." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <p class="crumbs"><a href="index.html">ObserVIBElity</a> / Deploy</p>
+      <h1>Deploy ObserVIBElity</h1>
+      <p class="tagline">
+        Fill in the fields below to generate a <code>.env</code> file.
+        All values stay in your browser.
+      </p>
+    </header>
+
+    <form id="deploy-form" novalidate>
+      <!-- 1. App selection -->
+      <fieldset class="card">
+        <legend>App selection</legend>
+        <p class="hint">Pick which workloads to deploy. Phase 0 ships scaffolding only — NeonCart fills in during Phase 1.</p>
+        <div class="check-row">
+          <label class="check">
+            <input type="checkbox" id="app-neoncart" checked disabled />
+            <span>NeonCart</span>
+            <small class="muted">(default)</small>
+          </label>
+          <label class="check is-disabled">
+            <input type="checkbox" id="app-supportbot" disabled />
+            <span>Support Bot</span>
+            <small class="muted">(Phase 2)</small>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- 2. Anthropic -->
+      <fieldset class="card">
+        <legend>Anthropic credentials</legend>
+        <p class="hint">
+          The demo uses Claude for every AI agent and specialist.
+          <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Get a key &rarr;</a>
+        </p>
+        <div class="field">
+          <label for="anthropic-key">ANTHROPIC_API_KEY</label>
+          <div class="input-with-toggle">
+            <input
+              type="password"
+              id="anthropic-key"
+              name="anthropic-key"
+              autocomplete="off"
+              spellcheck="false"
+              required
+              placeholder="sk-ant-..."
+            />
+            <button type="button" class="toggle-btn" data-toggle="anthropic-key" aria-label="Show or hide value">Show</button>
+          </div>
+          <span class="error" id="err-anthropic-key" aria-live="polite"></span>
+        </div>
+      </fieldset>
+
+      <!-- 3. Grafana Cloud -->
+      <fieldset class="card">
+        <legend>Grafana Cloud</legend>
+        <p class="hint">
+          The free tier is plenty for this demo.
+          <a href="https://grafana.com/auth/sign-up/create-user" target="_blank" rel="noopener">Sign up free &rarr;</a>
+        </p>
+
+        <div class="field">
+          <label for="gc-instance">GRAFANA_CLOUD_INSTANCE_ID</label>
+          <input
+            type="text"
+            id="gc-instance"
+            name="gc-instance"
+            inputmode="numeric"
+            pattern="[0-9]+"
+            autocomplete="off"
+            spellcheck="false"
+            required
+            placeholder="1234567"
+          />
+          <span class="error" id="err-gc-instance" aria-live="polite"></span>
+        </div>
+
+        <div class="field">
+          <label for="gc-token">GRAFANA_CLOUD_API_TOKEN</label>
+          <div class="input-with-toggle">
+            <input
+              type="password"
+              id="gc-token"
+              name="gc-token"
+              autocomplete="off"
+              spellcheck="false"
+              required
+              placeholder="glc_..."
+            />
+            <button type="button" class="toggle-btn" data-toggle="gc-token" aria-label="Show or hide value">Show</button>
+          </div>
+          <span class="error" id="err-gc-token" aria-live="polite"></span>
+        </div>
+
+        <div class="field">
+          <label for="gc-region">GRAFANA_CLOUD_REGION</label>
+          <select id="gc-region" name="gc-region" required>
+            <option value="us-east">us-east</option>
+            <option value="us-central">us-central</option>
+            <option value="eu-west">eu-west</option>
+            <option value="ap-southeast">ap-southeast</option>
+          </select>
+          <span class="error" id="err-gc-region" aria-live="polite"></span>
+        </div>
+      </fieldset>
+
+      <!-- 4. GitHub -->
+      <fieldset class="card">
+        <legend>GitHub</legend>
+        <p class="hint">
+          Used to fork the repo so you can commit your customizations.
+          <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" rel="noopener">Create PAT with repo scope &rarr;</a>
+        </p>
+
+        <div class="check-row">
+          <label class="check">
+            <input type="checkbox" id="github-skip" />
+            <span>Skip GitHub fork (<code>--no-fork</code>)</span>
+          </label>
+        </div>
+
+        <div id="github-fields">
+          <div class="field">
+            <label for="github-token">GITHUB_TOKEN</label>
+            <div class="input-with-toggle">
+              <input
+                type="password"
+                id="github-token"
+                name="github-token"
+                autocomplete="off"
+                spellcheck="false"
+                required
+                placeholder="ghp_..."
+              />
+              <button type="button" class="toggle-btn" data-toggle="github-token" aria-label="Show or hide value">Show</button>
+            </div>
+            <span class="error" id="err-github-token" aria-live="polite"></span>
+          </div>
+
+          <div class="field">
+            <label for="github-org">GITHUB_ORG</label>
+            <input
+              type="text"
+              id="github-org"
+              name="github-org"
+              autocomplete="off"
+              spellcheck="false"
+              required
+              placeholder="your-org-or-username"
+            />
+            <span class="error" id="err-github-org" aria-live="polite"></span>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 5. Ollama -->
+      <fieldset class="card">
+        <legend>Optional: Ollama</legend>
+        <p class="hint">
+          Leave empty to use Claude only. Set this if you have a local
+          Ollama host you want the gateway to route to.
+        </p>
+        <div class="field">
+          <label for="ollama-url">OLLAMA_BASE_URL</label>
+          <input
+            type="text"
+            id="ollama-url"
+            name="ollama-url"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="http://192.168.1.50:11434"
+          />
+        </div>
+      </fieldset>
+
+      <!-- 6. Cluster -->
+      <fieldset class="card">
+        <legend>Cluster details</legend>
+        <p class="hint">Ingress + storage. Defaults work for Docker Desktop / k3d.</p>
+
+        <div class="field">
+          <label for="ingress-host">INGRESS_HOST_NEONCART</label>
+          <input
+            type="text"
+            id="ingress-host"
+            name="ingress-host"
+            autocomplete="off"
+            spellcheck="false"
+            required
+            value="neoncart.localhost"
+          />
+          <span class="error" id="err-ingress-host" aria-live="polite"></span>
+        </div>
+
+        <div class="field">
+          <label for="storage-class">STORAGE_CLASS</label>
+          <input
+            type="text"
+            id="storage-class"
+            name="storage-class"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="leave blank to use cluster default"
+          />
+        </div>
+      </fieldset>
+
+      <div class="actions actions-bottom">
+        <button type="submit" class="btn btn-primary btn-large" id="generate-btn">
+          Generate .env
+        </button>
+      </div>
+    </form>
+
+    <section id="output" class="card output hidden" aria-live="polite">
+      <header class="output-header">
+        <h2>Your <code>.env</code></h2>
+        <div class="output-actions">
+          <button type="button" class="btn btn-secondary" id="copy-btn">Copy</button>
+          <button type="button" class="btn btn-secondary" id="download-btn">Download .env</button>
+        </div>
+      </header>
+      <pre id="env-out"></pre>
+
+      <section class="next-steps">
+        <h3>Next steps</h3>
+        <ol>
+          <li>Save the file as <code>.env</code> in your cloned <code>observibelity</code> repo.</li>
+          <li>Run <code>./install.sh --auto</code>.</li>
+        </ol>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <p>
+        <a href="https://github.com/stephenwagner-grafana/observibelity/blob/main/docs/INSTALL.md" target="_blank" rel="noopener">docs/INSTALL.md</a>
+        &middot;
+        <a href="https://github.com/stephenwagner-grafana/observibelity" target="_blank" rel="noopener">repo</a>
+      </p>
+      <p>Generated values are client-side only &mdash; never sent to a server.</p>
+    </footer>
+  </main>
+
+  <script src="deploy.js"></script>
+</body>
+</html>

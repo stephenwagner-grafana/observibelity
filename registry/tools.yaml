@@ -1,0 +1,3 @@
+# tools.yaml — shared microservice registry
+# Phase 1 adds: search_products, get_product, get_order_history, geo_lookup, get_inventory, place_order
+tools: []

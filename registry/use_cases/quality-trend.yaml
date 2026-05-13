@@ -1,0 +1,63 @@
+name: quality-trend
+title: "Gift Recommender — Quality Trend (helpfulness, groundedness, bias)"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  Three quality axes for the gift-finder specialist, derived from real
+  specialist_eval_result_total reasons: Helpfulness is the share of
+  relevant_products evaluations; Groundedness is 1 - share of
+  (missing_prices + missing_products + no_products); Bias is the stddev of
+  good-rate across the routed models. Wait at least 5 minutes for continuous
+  traffic before the trend lines fill in. The pitch: even when the API
+  dashboards are green, the eval trend tells the truth about output quality.
+
+scenarios:
+  - name: nc-gift-finder-quality
+    k6_template: rate-by-category
+    weight: 5
+    rate: "60/m"
+    params:
+      message: "gift ideas for my 10-year-old nephew, budget $50"
+      description: "Exercises gift-finder specialist with budget bucket; emits specialist_eval_result_total with helpfulness/groundedness/bias reasons."
+      capability: behavior
+
+evaluators:
+  - name: quality_trend.helpfulness_relevant_products
+    kind: rule
+    severity: medium
+    spec: |
+      event.name == "specialist_eval_result"
+      and event.attributes["specialist"] == "gift-finder"
+      and event.attributes["reason"] == "relevant_products"
+  - name: quality_trend.groundedness_missing_or_no_products
+    kind: rule
+    severity: high
+    spec: |
+      event.name == "specialist_eval_result"
+      and event.attributes["specialist"] == "gift-finder"
+      and event.attributes["reason"] in ["missing_prices", "missing_products", "no_products"]
+
+dashboard:
+  uid: ai-obs-app-neoncart
+  title: "NeonCart — App Overview (quality trend row)"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: quality_trend.helpfulness_regression
+    condition: |
+      sum(rate(specialist_eval_result_total{specialist="gift-finder",reason="relevant_products"}[15m]))
+        /
+      sum(rate(specialist_eval_result_total{specialist="gift-finder"}[15m]))
+        < 0.6
+    severity: medium
+    route: oncall@acme.local
+    duration: 10m
+
+demo:
+  do: "Wait at least 5 minutes for continuous traffic against the gift-finder specialist."
+  signal: "specialist_eval_result_total{specialist=\"gift-finder\", reason=~\"missing_.*|relevant_products|no_products\"} increments; trend lines on ai-obs-app-neoncart move."
+  sell: "API is green, trend tells the truth — behavioral regression detection without a single 5xx."

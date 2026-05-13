@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# direnv .envrc — copy to .envrc and run `direnv allow`.
+# direnv auto-loads .env and adds tools/bin + tools/.venv/bin to PATH
+# when you enter this directory.
+#
+# Install direnv: https://direnv.net/
+[[ -f .env ]] && dotenv .env
+PATH_add tools/bin
+PATH_add tools/.venv/bin
+export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"

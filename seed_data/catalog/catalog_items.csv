@@ -1,0 +1,217 @@
+sku,name,description,price_usd,category_id,brand_id,image_url,stock_qty
+PHN-001,NeonTech Aurora 5G,Flagship 6.7-inch OLED smartphone,1099.00,1,1,https://cdn.neoncart.local/img/phn-001.jpg,47
+PHN-002,NeonTech Aurora Mini,Compact 5.4-inch 5G phone,899.00,1,1,https://cdn.neoncart.local/img/phn-002.jpg,32
+PHN-003,BlueWave Tide Pro,6.5-inch wave-display phone,849.00,5,2,https://cdn.neoncart.local/img/phn-003.jpg,21
+PHN-004,BlueWave Tide Lite,Budget-friendly 5G handset,499.00,5,2,https://cdn.neoncart.local/img/phn-004.jpg,88
+PHN-005,AstroByte Nova X,Astro-imaging triple-camera phone,1199.00,5,3,https://cdn.neoncart.local/img/phn-005.jpg,19
+PHN-006,AstroByte Nova X Plus,Larger 6.9-inch Nova X,1349.00,5,3,https://cdn.neoncart.local/img/phn-006.jpg,12
+PHN-007,Voltura SparkOne,Long-battery 5G phone,649.00,5,5,https://cdn.neoncart.local/img/phn-007.jpg,64
+PHN-008,Synthlex Helix 12,AI-camera 6.4-inch phone,999.00,5,6,https://cdn.neoncart.local/img/phn-008.jpg,38
+PHN-009,Quantix Q-Phone,Quantum-secured messaging phone,1099.00,5,7,https://cdn.neoncart.local/img/phn-009.jpg,9
+PHN-010,Pulsewave Rhythm 8,Music-tuned smartphone,579.00,5,8,https://cdn.neoncart.local/img/phn-010.jpg,53
+PHN-011,Korium Edge,Edgeless 6.7-inch screen phone,849.00,5,9,https://cdn.neoncart.local/img/phn-011.jpg,27
+PHN-012,Halcyon Stillwater,Minimalist non-distracting phone,699.00,5,10,https://cdn.neoncart.local/img/phn-012.jpg,41
+PHN-013,Driftloop Loop X,Foldable 7-inch phone,1499.00,5,11,https://cdn.neoncart.local/img/phn-013.jpg,7
+PHN-014,Nexora Pulse 7,Refresh-rate 144Hz gaming phone,899.00,5,12,https://cdn.neoncart.local/img/phn-014.jpg,22
+PHN-015,Stellaron StarLine S,Premium titanium frame phone,1599.00,5,13,https://cdn.neoncart.local/img/phn-015.jpg,6
+PHN-016,Vireo Verdant V,Eco-friendly recycled materials phone,699.00,5,15,https://cdn.neoncart.local/img/phn-016.jpg,30
+PHN-017,Cobaltic Indigo 3,Cobalt-tone 5G phone,599.00,5,17,https://cdn.neoncart.local/img/phn-017.jpg,35
+PHN-018,Magnetar M9,Magnetic-mount phone,749.00,5,16,https://cdn.neoncart.local/img/phn-018.jpg,24
+PHN-019,Photonix Glow,Self-illuminating bezel phone,999.00,5,21,https://cdn.neoncart.local/img/phn-019.jpg,14
+PHN-020,Kaleidos Spectrum,Color-shifting back glass phone,849.00,5,25,https://cdn.neoncart.local/img/phn-020.jpg,18
+LAP-001,NeonTech Apex 14,14-inch slim laptop,1499.00,2,1,https://cdn.neoncart.local/img/lap-001.jpg,30
+LAP-002,NeonTech Apex 16,16-inch creator laptop,2199.00,2,1,https://cdn.neoncart.local/img/lap-002.jpg,18
+LAP-003,NeonTech Apex Studio,High-end workstation laptop,2999.00,2,1,https://cdn.neoncart.local/img/lap-003.jpg,8
+LAP-004,BlueWave Surf 13,Lightweight ultrabook,1099.00,2,2,https://cdn.neoncart.local/img/lap-004.jpg,42
+LAP-005,BlueWave Surf 15,Mid-range 15-inch laptop,1299.00,2,2,https://cdn.neoncart.local/img/lap-005.jpg,33
+LAP-006,AstroByte AstroBook 14,Developer-tuned laptop,1799.00,2,3,https://cdn.neoncart.local/img/lap-006.jpg,17
+LAP-007,AstroByte AstroBook Pro 16,High-perf creator laptop,2499.00,2,3,https://cdn.neoncart.local/img/lap-007.jpg,10
+LAP-008,LumenWorks Lumen 13,OLED-display 13-inch laptop,1399.00,2,4,https://cdn.neoncart.local/img/lap-008.jpg,21
+LAP-009,LumenWorks Lumen 15,OLED 15-inch ultrabook,1699.00,2,4,https://cdn.neoncart.local/img/lap-009.jpg,19
+LAP-010,Voltura SparkBook,Budget 14-inch student laptop,699.00,2,5,https://cdn.neoncart.local/img/lap-010.jpg,72
+LAP-011,Voltura SparkBook Pro,15-inch mid-tier laptop,999.00,2,5,https://cdn.neoncart.local/img/lap-011.jpg,46
+LAP-012,Quantix Q-Book 14,AI-accelerated laptop,2299.00,2,7,https://cdn.neoncart.local/img/lap-012.jpg,12
+LAP-013,Synthlex Helix Book,14-inch convertible laptop,1599.00,2,6,https://cdn.neoncart.local/img/lap-013.jpg,15
+LAP-014,Pulsewave Rhythm Book,Audio-tuned laptop,1199.00,2,8,https://cdn.neoncart.local/img/lap-014.jpg,26
+LAP-015,Korium Edge Notebook,Edgeless 14-inch notebook,1299.00,2,9,https://cdn.neoncart.local/img/lap-015.jpg,23
+LAP-016,Halcyon Calm 13,Silent fanless laptop,1199.00,2,10,https://cdn.neoncart.local/img/lap-016.jpg,29
+LAP-017,Nexora Pulse Gaming 15,Gaming 15-inch laptop,1899.00,2,12,https://cdn.neoncart.local/img/lap-017.jpg,16
+LAP-018,Nexora Pulse Gaming 17,Gaming 17-inch laptop,2399.00,2,12,https://cdn.neoncart.local/img/lap-018.jpg,9
+LAP-019,Stellaron Titan 16,Premium 16-inch titanium laptop,2799.00,2,13,https://cdn.neoncart.local/img/lap-019.jpg,6
+LAP-020,Driftloop Fold Book,Foldable-screen laptop,2999.00,2,11,https://cdn.neoncart.local/img/lap-020.jpg,5
+DSK-001,NeonTech Cube Desktop,Compact desktop PC,1199.00,2,1,https://cdn.neoncart.local/img/dsk-001.jpg,22
+DSK-002,NeonTech Tower Pro,Full-tower workstation,2499.00,2,1,https://cdn.neoncart.local/img/dsk-002.jpg,11
+DSK-003,Nexora Pulse Tower,Gaming desktop tower,2199.00,2,12,https://cdn.neoncart.local/img/dsk-003.jpg,13
+DSK-004,Quantix Q-Workstation,AI inference workstation,4999.00,2,7,https://cdn.neoncart.local/img/dsk-004.jpg,4
+DSK-005,Stellaron Citadel,High-end gaming desktop,3499.00,2,13,https://cdn.neoncart.local/img/dsk-005.jpg,7
+DSK-006,BlueWave Wave Mini PC,Tiny form-factor PC,699.00,2,2,https://cdn.neoncart.local/img/dsk-006.jpg,38
+DSK-007,AstroByte AstroCube,Developer-cube mini PC,899.00,2,3,https://cdn.neoncart.local/img/dsk-007.jpg,25
+DSK-008,Halcyon Quiet PC,Silent passive-cooled desktop,1499.00,2,10,https://cdn.neoncart.local/img/dsk-008.jpg,14
+PER-001-KBD,NeonTech Glow Keyboard,RGB mechanical keyboard,129.00,3,1,https://cdn.neoncart.local/img/per-001-kbd.jpg,55
+PER-002-KBD,NeonTech Glow Keyboard TKL,Tenkeyless RGB keyboard,119.00,3,1,https://cdn.neoncart.local/img/per-002-kbd.jpg,47
+PER-003-KBD,BlueWave Tactile Keyboard,Tactile-switch mechanical keyboard,99.00,3,2,https://cdn.neoncart.local/img/per-003-kbd.jpg,68
+PER-004-KBD,AstroByte Compact 60,60-percent compact keyboard,89.00,3,3,https://cdn.neoncart.local/img/per-004-kbd.jpg,71
+PER-005-KBD,Synthlex Split Keyboard,Ergonomic split mechanical,179.00,3,6,https://cdn.neoncart.local/img/per-005-kbd.jpg,18
+PER-006-KBD,Korium Edge Keyboard,Low-profile aluminium keyboard,149.00,3,9,https://cdn.neoncart.local/img/per-006-kbd.jpg,33
+PER-007-KBD,Halcyon Whisper Keyboard,Silent linear-switch keyboard,129.00,3,10,https://cdn.neoncart.local/img/per-007-kbd.jpg,29
+PER-001-MOUSE,NeonTech Wireless Mouse,Ergonomic wireless mouse,49.00,3,1,https://cdn.neoncart.local/img/per-001-mouse.jpg,124
+PER-002-MOUSE-WIRELESS,BlueWave Drift Mouse,Multi-device wireless mouse,59.00,3,2,https://cdn.neoncart.local/img/per-002-mouse-wireless.jpg,98
+PER-003-MOUSE-GAMING,Nexora Pulse Gaming Mouse,Lightweight 8K-poll gaming mouse,89.00,3,12,https://cdn.neoncart.local/img/per-003-mouse-gaming.jpg,76
+PER-004-MOUSE-ERGO,Synthlex Ergo Mouse,Vertical ergonomic mouse,79.00,3,6,https://cdn.neoncart.local/img/per-004-mouse-ergo.jpg,54
+PER-005-MOUSE-COMPACT,Halcyon Mini Mouse,Portable travel mouse,39.00,3,10,https://cdn.neoncart.local/img/per-005-mouse-compact.jpg,86
+PER-001-TRACKBALL,Argentic Argent Trackball,Thumb-operated trackball,99.00,3,18,https://cdn.neoncart.local/img/per-001-trackball.jpg,22
+PER-002-TRACKBALL,Veridian Eco Trackball,Recycled-plastic trackball,79.00,3,30,https://cdn.neoncart.local/img/per-002-trackball.jpg,17
+PER-001-CAM,LumenWorks 4K Webcam,4K UHD webcam,179.00,3,4,https://cdn.neoncart.local/img/per-001-cam.jpg,41
+PER-002-CAM,LumenWorks 1080p Webcam,1080p HD webcam,79.00,3,4,https://cdn.neoncart.local/img/per-002-cam.jpg,73
+PER-003-CAM,Photonix Pro Streaming Cam,Streamer-grade webcam,249.00,3,21,https://cdn.neoncart.local/img/per-003-cam.jpg,19
+PER-001-PAD,Aether Desk Mat XL,Extra-large desk mat,39.00,3,28,https://cdn.neoncart.local/img/per-001-pad.jpg,112
+PER-002-PAD,Aether Desk Mat M,Medium desk mat,29.00,3,28,https://cdn.neoncart.local/img/per-002-pad.jpg,158
+PER-003-PAD,Nexora Pulse Gaming Mat,Hard-surface gaming mouse mat,49.00,3,12,https://cdn.neoncart.local/img/per-003-pad.jpg,67
+PER-001-HUB,Cobaltic USB-C Hub,7-in-1 USB-C hub,69.00,3,17,https://cdn.neoncart.local/img/per-001-hub.jpg,89
+PER-002-HUB,Cobaltic Thunderbolt Dock,Thunderbolt 4 dock,299.00,3,17,https://cdn.neoncart.local/img/per-002-hub.jpg,16
+PER-001-STAND,Crestform Laptop Stand,Aluminium laptop stand,59.00,3,22,https://cdn.neoncart.local/img/per-001-stand.jpg,82
+PER-002-STAND,Crestform Monitor Arm,Single-monitor articulating arm,129.00,3,22,https://cdn.neoncart.local/img/per-002-stand.jpg,38
+PER-003-STAND,Crestform Dual Monitor Arm,Dual-monitor articulating arm,179.00,3,22,https://cdn.neoncart.local/img/per-003-stand.jpg,22
+PER-001-MIC,Pulsewave Studio Mic,USB condenser microphone,179.00,3,8,https://cdn.neoncart.local/img/per-001-mic.jpg,28
+PER-002-MIC,Echelon Boom Mic,Broadcast XLR microphone,299.00,3,14,https://cdn.neoncart.local/img/per-002-mic.jpg,11
+PER-003-MIC,Pulsewave Pod Mic,Podcasting USB microphone,129.00,3,8,https://cdn.neoncart.local/img/per-003-mic.jpg,42
+AUD-001,Echelon Reverb Over-Ear,Over-ear ANC headphones,299.00,4,14,https://cdn.neoncart.local/img/aud-001.jpg,33
+AUD-002,Echelon Reverb Pro,Studio-grade headphones,449.00,4,14,https://cdn.neoncart.local/img/aud-002.jpg,18
+AUD-003,Pulsewave Air Earbuds,True-wireless earbuds,149.00,4,8,https://cdn.neoncart.local/img/aud-003.jpg,87
+AUD-004,Pulsewave Air Pro,Premium ANC earbuds,229.00,4,8,https://cdn.neoncart.local/img/aud-004.jpg,46
+AUD-005,BlueWave Tide Earbuds,Sport earbuds with hooks,99.00,4,2,https://cdn.neoncart.local/img/aud-005.jpg,103
+AUD-006,LumenWorks Glow Headphones,RGB-lit gaming headset,179.00,4,4,https://cdn.neoncart.local/img/aud-006.jpg,29
+AUD-007,LumenWorks Glow Headset Pro,Wireless gaming headset,229.00,4,4,https://cdn.neoncart.local/img/aud-007.jpg,21
+AUD-008,Halcyon Hush ANC Headphones,Premium silence-mode headphones,379.00,4,10,https://cdn.neoncart.local/img/aud-008.jpg,15
+AUD-009,Halcyon Hush Earbuds,Quiet-commute earbuds,179.00,4,10,https://cdn.neoncart.local/img/aud-009.jpg,38
+AUD-010,AstroByte AstroBuds,AI-tuned earbuds,169.00,4,3,https://cdn.neoncart.local/img/aud-010.jpg,42
+AUD-011,Photonix Soundbar 5.1,5.1 channel soundbar,499.00,4,21,https://cdn.neoncart.local/img/aud-011.jpg,12
+AUD-012,Photonix Mini Soundbar,Compact desktop soundbar,179.00,4,21,https://cdn.neoncart.local/img/aud-012.jpg,31
+AUD-013,Pulsewave Boombox One,Portable bluetooth speaker,129.00,4,8,https://cdn.neoncart.local/img/aud-013.jpg,55
+AUD-014,Pulsewave Boombox Mini,Pocket bluetooth speaker,49.00,4,8,https://cdn.neoncart.local/img/aud-014.jpg,142
+AUD-015,Echelon Reference Monitor 5,Studio monitor speaker (each),299.00,4,14,https://cdn.neoncart.local/img/aud-015.jpg,17
+AUD-016,Echelon Reference Sub,Studio subwoofer,399.00,4,14,https://cdn.neoncart.local/img/aud-016.jpg,8
+AUD-017,Nexora Pulse Gaming Headset,Surround gaming headset,129.00,4,12,https://cdn.neoncart.local/img/aud-017.jpg,49
+AUD-018,Stellaron Audiophile DAC,External USB DAC,249.00,4,13,https://cdn.neoncart.local/img/aud-018.jpg,14
+AUD-019,Stellaron Headphone Amp,Tube headphone amplifier,399.00,4,13,https://cdn.neoncart.local/img/aud-019.jpg,7
+AUD-020,Korium Edge Wireless Speaker,Multi-room wireless speaker,199.00,4,9,https://cdn.neoncart.local/img/aud-020.jpg,26
+AUD-021,Korium Edge Speaker Mini,Mini multi-room speaker,99.00,4,9,https://cdn.neoncart.local/img/aud-021.jpg,53
+AUD-022,Vireo Bamboo Speaker,Bamboo-cabinet eco speaker,149.00,4,15,https://cdn.neoncart.local/img/aud-022.jpg,19
+WAT-001,NeonTech Pulse Watch,AMOLED smartwatch,299.00,6,1,https://cdn.neoncart.local/img/wat-001.jpg,44
+WAT-002,NeonTech Pulse Watch Sport,Sport edition smartwatch,349.00,6,1,https://cdn.neoncart.local/img/wat-002.jpg,31
+WAT-003,NeonTech Pulse Watch Pro,Titanium premium smartwatch,499.00,6,1,https://cdn.neoncart.local/img/wat-003.jpg,17
+WAT-004,BlueWave Tide Watch,Diver-rated smartwatch,249.00,6,2,https://cdn.neoncart.local/img/wat-004.jpg,38
+WAT-005,Voltura Spark Band,Slim fitness tracker,99.00,6,5,https://cdn.neoncart.local/img/wat-005.jpg,112
+WAT-006,Voltura Spark Band Lite,Budget fitness band,49.00,6,5,https://cdn.neoncart.local/img/wat-006.jpg,178
+WAT-007,Synthlex Helix Watch,Health-focus smartwatch,299.00,6,6,https://cdn.neoncart.local/img/wat-007.jpg,28
+WAT-008,Halcyon Calm Watch,Minimalist e-ink watch,179.00,6,10,https://cdn.neoncart.local/img/wat-008.jpg,33
+WAT-009,Korium Edge Watch,Curved-screen smartwatch,279.00,6,9,https://cdn.neoncart.local/img/wat-009.jpg,22
+WAT-010,Nexora Pulse Pro Watch,Gamer smartwatch,329.00,6,12,https://cdn.neoncart.local/img/wat-010.jpg,15
+WAT-011,Stellaron Titan Chronograph,Premium titanium watch,699.00,6,13,https://cdn.neoncart.local/img/wat-011.jpg,8
+WAT-012,Vireo Verdant Tracker,Eco-fitness tracker,79.00,6,15,https://cdn.neoncart.local/img/wat-012.jpg,86
+WAT-013,Photonix Glow Ring,Smart ring sleep tracker,249.00,6,21,https://cdn.neoncart.local/img/wat-013.jpg,41
+WAT-014,Magnetar M-Ring,Magnetic smart ring,229.00,6,16,https://cdn.neoncart.local/img/wat-014.jpg,35
+ACC-001,Cobaltic 65W USB-C Charger,Compact GaN charger,39.00,7,17,https://cdn.neoncart.local/img/acc-001.jpg,167
+ACC-002,Cobaltic 100W USB-C Charger,Multi-port GaN charger,79.00,7,17,https://cdn.neoncart.local/img/acc-002.jpg,98
+ACC-003,Cobaltic 140W Travel Charger,Travel-ready power brick,129.00,7,17,https://cdn.neoncart.local/img/acc-003.jpg,45
+ACC-004,Magnetar MagSnap Charger,Magnetic wireless charger,49.00,7,16,https://cdn.neoncart.local/img/acc-004.jpg,138
+ACC-005,Magnetar MagStand Duo,Dual magnetic charging stand,89.00,7,16,https://cdn.neoncart.local/img/acc-005.jpg,76
+ACC-006,Aether Leather Sleeve 13,Premium leather laptop sleeve 13-inch,99.00,7,28,https://cdn.neoncart.local/img/acc-006.jpg,32
+ACC-007,Aether Leather Sleeve 16,Premium leather laptop sleeve 16-inch,119.00,7,28,https://cdn.neoncart.local/img/acc-007.jpg,28
+ACC-008,Veridian Recycled Backpack,Recycled-fabric backpack,79.00,7,30,https://cdn.neoncart.local/img/acc-008.jpg,82
+ACC-009,Veridian Recycled Tote,Recycled-fabric tote bag,39.00,7,30,https://cdn.neoncart.local/img/acc-009.jpg,124
+ACC-010,Pinnacle Forge Hard Case,Aluminium hardshell case,149.00,7,27,https://cdn.neoncart.local/img/acc-010.jpg,17
+ACC-011,Ironclad Phone Case,Drop-proof phone case,39.00,7,24,https://cdn.neoncart.local/img/acc-011.jpg,212
+ACC-012,Ironclad Tablet Case,Rugged tablet case,49.00,7,24,https://cdn.neoncart.local/img/acc-012.jpg,107
+ACC-013,Helica Spiral Cable Organizer,Spring-coil cable organizer,12.00,7,19,https://cdn.neoncart.local/img/acc-013.jpg,287
+ACC-014,Helica Desk Cable Tray,Under-desk cable management tray,49.00,7,19,https://cdn.neoncart.local/img/acc-014.jpg,68
+ACC-015,Voltura PowerBank 20K,20000mAh power bank,79.00,7,5,https://cdn.neoncart.local/img/acc-015.jpg,103
+ACC-016,Voltura PowerBank 10K,10000mAh slim power bank,39.00,7,5,https://cdn.neoncart.local/img/acc-016.jpg,178
+GAM-001,Nexora Pulse Controller,Wireless gamepad,69.00,8,12,https://cdn.neoncart.local/img/gam-001.jpg,142
+GAM-002,Nexora Pulse Elite Controller,Pro-grade modular controller,179.00,8,12,https://cdn.neoncart.local/img/gam-002.jpg,38
+GAM-003,Nexora Pulse Arcade Stick,Arcade fight stick,229.00,8,12,https://cdn.neoncart.local/img/gam-003.jpg,17
+GAM-004,Nexora Pulse Racing Wheel,Force-feedback racing wheel,399.00,8,12,https://cdn.neoncart.local/img/gam-004.jpg,11
+GAM-005,Synthlex Helix VR Headset,Standalone VR headset,499.00,8,6,https://cdn.neoncart.local/img/gam-005.jpg,16
+GAM-006,Synthlex Helix VR Pro,Premium tethered VR,999.00,8,6,https://cdn.neoncart.local/img/gam-006.jpg,7
+GAM-007,LumenWorks Glow Capture Card,4K HDMI capture card,249.00,8,4,https://cdn.neoncart.local/img/gam-007.jpg,22
+GAM-008,LumenWorks Glow Stream Deck,Programmable stream pad,179.00,8,4,https://cdn.neoncart.local/img/gam-008.jpg,33
+GAM-009,Pulsewave Gamer Chair,Ergonomic gaming chair,379.00,8,8,https://cdn.neoncart.local/img/gam-009.jpg,18
+GAM-010,Pulsewave Pro Chair,Premium gaming chair,599.00,8,8,https://cdn.neoncart.local/img/gam-010.jpg,9
+GAM-011,Tessellate Gaming Desk,Adjustable gaming desk,349.00,8,20,https://cdn.neoncart.local/img/gam-011.jpg,15
+GAM-012,Tessellate Standing Desk,Electric standing desk,499.00,8,20,https://cdn.neoncart.local/img/gam-012.jpg,12
+CAB-001,Cobaltic USB-C to USB-C Cable 1m,100W USB-C cable,19.00,9,17,https://cdn.neoncart.local/img/cab-001.jpg,412
+CAB-002,Cobaltic USB-C to USB-C Cable 2m,2m 100W USB-C cable,24.00,9,17,https://cdn.neoncart.local/img/cab-002.jpg,287
+CAB-003,Cobaltic USB-C to USB-C Cable 3m,3m 100W USB-C cable,29.00,9,17,https://cdn.neoncart.local/img/cab-003.jpg,176
+CAB-004,Cobaltic Thunderbolt 4 Cable,40Gbps TB4 cable 1m,49.00,9,17,https://cdn.neoncart.local/img/cab-004.jpg,98
+CAB-005,Helica HDMI 2.1 Cable 1m,8K HDMI cable 1m,24.00,9,19,https://cdn.neoncart.local/img/cab-005.jpg,234
+CAB-006,Helica HDMI 2.1 Cable 2m,8K HDMI cable 2m,29.00,9,19,https://cdn.neoncart.local/img/cab-006.jpg,178
+CAB-007,Helica HDMI 2.1 Cable 3m,8K HDMI cable 3m,39.00,9,19,https://cdn.neoncart.local/img/cab-007.jpg,107
+CAB-008,Helica DisplayPort 2.0 Cable,8K DisplayPort cable,39.00,9,19,https://cdn.neoncart.local/img/cab-008.jpg,73
+CAB-009,Cobaltic USB-A to USB-C Cable,USB-A to C cable 1m,12.00,9,17,https://cdn.neoncart.local/img/cab-009.jpg,488
+CAB-010,Cobaltic Lightning Cable 1m,1m lightning cable,19.00,9,17,https://cdn.neoncart.local/img/cab-010.jpg,317
+CAB-011,Helica Ethernet Cat6a Cable 2m,2m Cat6a ethernet cable,12.00,9,19,https://cdn.neoncart.local/img/cab-011.jpg,376
+CAB-012,Helica Ethernet Cat6a Cable 5m,5m Cat6a ethernet cable,19.00,9,19,https://cdn.neoncart.local/img/cab-012.jpg,229
+CAB-013,Helica Optical Audio Cable,TOSLINK optical cable,14.00,9,19,https://cdn.neoncart.local/img/cab-013.jpg,168
+CAB-014,Helica 3.5mm Audio Cable 1m,Stereo 3.5mm cable,9.00,9,19,https://cdn.neoncart.local/img/cab-014.jpg,389
+CAB-015,Cobaltic Magnetic Cable Set,Magnetic tip cable trio,29.00,9,17,https://cdn.neoncart.local/img/cab-015.jpg,142
+CAB-016,Cobaltic 5-Pack Cable Ties,Reusable velcro cable ties,9.00,9,17,https://cdn.neoncart.local/img/cab-016.jpg,512
+SMH-001,NeonTech Smart Speaker,AI assistant smart speaker,149.00,10,1,https://cdn.neoncart.local/img/smh-001.jpg,67
+SMH-002,NeonTech Smart Display,8-inch smart display,229.00,10,1,https://cdn.neoncart.local/img/smh-002.jpg,33
+SMH-003,NeonTech Smart Hub,Whole-home automation hub,179.00,10,1,https://cdn.neoncart.local/img/smh-003.jpg,29
+SMH-004,LumenWorks Smart Bulb 4-Pack,RGB color smart bulbs,49.00,10,4,https://cdn.neoncart.local/img/smh-004.jpg,142
+SMH-005,LumenWorks Smart Strip 5m,5-meter LED strip,39.00,10,4,https://cdn.neoncart.local/img/smh-005.jpg,107
+SMH-006,LumenWorks Smart Panel Kit,Hexagonal wall panels x6,179.00,10,4,https://cdn.neoncart.local/img/smh-006.jpg,28
+SMH-007,Atrellis Smart Doorbell,1080p video doorbell,179.00,10,23,https://cdn.neoncart.local/img/smh-007.jpg,38
+SMH-008,Atrellis Smart Cam Indoor,Indoor security camera,79.00,10,23,https://cdn.neoncart.local/img/smh-008.jpg,76
+SMH-009,Atrellis Smart Cam Outdoor,Weatherproof outdoor cam,149.00,10,23,https://cdn.neoncart.local/img/smh-009.jpg,42
+SMH-010,Atrellis Smart Lock,Bluetooth smart deadbolt,249.00,10,23,https://cdn.neoncart.local/img/smh-010.jpg,22
+SMH-011,Atrellis Smart Sensor 4-Pack,Door/window sensors,79.00,10,23,https://cdn.neoncart.local/img/smh-011.jpg,68
+SMH-012,Veridian Smart Thermostat,Energy-saving thermostat,229.00,10,30,https://cdn.neoncart.local/img/smh-012.jpg,33
+SMH-013,Veridian Smart Outlet 2-Pack,WiFi smart outlets,39.00,10,30,https://cdn.neoncart.local/img/smh-013.jpg,178
+SMH-014,Mythril Smart Garage Opener,Wireless garage controller,79.00,10,29,https://cdn.neoncart.local/img/smh-014.jpg,29
+SMH-015,Sunderwave Smart Sprinkler,WiFi sprinkler controller,179.00,10,26,https://cdn.neoncart.local/img/smh-015.jpg,17
+SMH-016,Sunderwave Smart Air Monitor,Indoor air quality monitor,129.00,10,26,https://cdn.neoncart.local/img/smh-016.jpg,28
+DSP-001,LumenWorks 27-inch 4K Monitor,27-inch IPS 4K monitor,499.00,11,4,https://cdn.neoncart.local/img/dsp-001.jpg,42
+DSP-002,LumenWorks 32-inch 4K Monitor,32-inch IPS 4K monitor,699.00,11,4,https://cdn.neoncart.local/img/dsp-002.jpg,28
+DSP-003,LumenWorks 32-inch OLED Monitor,OLED 4K creator monitor,1299.00,11,4,https://cdn.neoncart.local/img/dsp-003.jpg,11
+DSP-004,LumenWorks 49-inch Ultrawide,5K ultrawide monitor,1499.00,11,4,https://cdn.neoncart.local/img/dsp-004.jpg,7
+DSP-005,Nexora Pulse 27 240Hz Gaming,1440p 240Hz gaming monitor,499.00,11,12,https://cdn.neoncart.local/img/dsp-005.jpg,32
+DSP-006,Nexora Pulse 32 4K 144Hz,4K 144Hz gaming monitor,799.00,11,12,https://cdn.neoncart.local/img/dsp-006.jpg,18
+DSP-007,Nexora Pulse OLED 27,OLED 240Hz gaming monitor,999.00,11,12,https://cdn.neoncart.local/img/dsp-007.jpg,9
+DSP-008,BlueWave Wave 24,24-inch 1080p office monitor,179.00,11,2,https://cdn.neoncart.local/img/dsp-008.jpg,98
+DSP-009,BlueWave Wave 27,27-inch 1440p office monitor,299.00,11,2,https://cdn.neoncart.local/img/dsp-009.jpg,68
+DSP-010,BlueWave Wave 27 USB-C,27-inch USB-C dock monitor,379.00,11,2,https://cdn.neoncart.local/img/dsp-010.jpg,42
+DSP-011,Photonix Pro Color 27,Reference-color 27-inch monitor,1199.00,11,21,https://cdn.neoncart.local/img/dsp-011.jpg,8
+DSP-012,Photonix Pro Color 32,Reference 32-inch HDR monitor,1799.00,11,21,https://cdn.neoncart.local/img/dsp-012.jpg,5
+DSP-013,Echelon Cinema Projector 4K,4K home cinema projector,1799.00,11,14,https://cdn.neoncart.local/img/dsp-013.jpg,9
+DSP-014,Echelon Mini Projector,Portable 1080p projector,299.00,11,14,https://cdn.neoncart.local/img/dsp-014.jpg,28
+DSP-015,LumenWorks Portable 15 OLED,Portable OLED monitor,329.00,11,4,https://cdn.neoncart.local/img/dsp-015.jpg,33
+DSP-016,LumenWorks Portable 17 4K,Portable 17-inch 4K monitor,399.00,11,4,https://cdn.neoncart.local/img/dsp-016.jpg,22
+STG-001,Quantix Q-SSD 1TB NVMe,Gen4 NVMe SSD 1TB,129.00,12,7,https://cdn.neoncart.local/img/stg-001.jpg,178
+STG-002,Quantix Q-SSD 2TB NVMe,Gen4 NVMe SSD 2TB,229.00,12,7,https://cdn.neoncart.local/img/stg-002.jpg,98
+STG-003,Quantix Q-SSD 4TB NVMe,Gen4 NVMe SSD 4TB,429.00,12,7,https://cdn.neoncart.local/img/stg-003.jpg,42
+STG-004,Quantix Q-SSD 8TB NVMe,Gen4 NVMe SSD 8TB,849.00,12,7,https://cdn.neoncart.local/img/stg-004.jpg,18
+STG-005,Quantix Q-Pro 1TB Gen5,Gen5 PCIe 5.0 SSD 1TB,249.00,12,7,https://cdn.neoncart.local/img/stg-005.jpg,68
+STG-006,Quantix Q-Pro 2TB Gen5,Gen5 PCIe 5.0 SSD 2TB,429.00,12,7,https://cdn.neoncart.local/img/stg-006.jpg,38
+STG-007,Quantix Portable SSD 1TB,USB-C portable SSD 1TB,149.00,12,7,https://cdn.neoncart.local/img/stg-007.jpg,142
+STG-008,Quantix Portable SSD 2TB,USB-C portable SSD 2TB,249.00,12,7,https://cdn.neoncart.local/img/stg-008.jpg,87
+STG-009,Quantix Portable SSD 4TB,USB-C portable SSD 4TB,449.00,12,7,https://cdn.neoncart.local/img/stg-009.jpg,38
+STG-010,Mythril Vault 2-Bay NAS,2-bay home NAS enclosure,399.00,12,29,https://cdn.neoncart.local/img/stg-010.jpg,29
+STG-011,Mythril Vault 4-Bay NAS,4-bay home NAS enclosure,699.00,12,29,https://cdn.neoncart.local/img/stg-011.jpg,18
+STG-012,Mythril Vault 8-Bay NAS,8-bay prosumer NAS,1499.00,12,29,https://cdn.neoncart.local/img/stg-012.jpg,7
+STG-013,Mythril HDD 4TB,NAS-grade 4TB hard drive,119.00,12,29,https://cdn.neoncart.local/img/stg-013.jpg,168
+STG-014,Mythril HDD 8TB,NAS-grade 8TB hard drive,199.00,12,29,https://cdn.neoncart.local/img/stg-014.jpg,98
+STG-015,Mythril HDD 16TB,NAS-grade 16TB hard drive,379.00,12,29,https://cdn.neoncart.local/img/stg-015.jpg,42
+STG-016,Tessellate SD Card 128GB,V90 SD card 128GB,49.00,12,20,https://cdn.neoncart.local/img/stg-016.jpg,287
+STG-017,Tessellate SD Card 256GB,V90 SD card 256GB,89.00,12,20,https://cdn.neoncart.local/img/stg-017.jpg,178
+STG-018,Tessellate microSD 512GB,A2 microSD 512GB,79.00,12,20,https://cdn.neoncart.local/img/stg-018.jpg,229
+ELC-001,NeonTech AR Glasses,Augmented reality smart glasses,699.00,1,1,https://cdn.neoncart.local/img/elc-001.jpg,17
+ELC-002,BlueWave eReader Wave,7-inch eink ereader,179.00,1,2,https://cdn.neoncart.local/img/elc-002.jpg,68
+ELC-003,BlueWave eReader Wave XL,10-inch eink ereader,279.00,1,2,https://cdn.neoncart.local/img/elc-003.jpg,38
+ELC-004,Driftloop Drone Mini,Compact 4K drone,349.00,1,11,https://cdn.neoncart.local/img/elc-004.jpg,28
+ELC-005,Driftloop Drone Pro,Pro 6K drone,1199.00,1,11,https://cdn.neoncart.local/img/elc-005.jpg,11
+ELC-006,Halcyon Sleep Lamp,Sunrise-simulating lamp,129.00,1,10,https://cdn.neoncart.local/img/elc-006.jpg,42
+ELC-007,Kaleidos Smart Mirror,AI-augmented bathroom mirror,699.00,1,25,https://cdn.neoncart.local/img/elc-007.jpg,9
+ELC-008,Stellaron Mini PC Server,Compact home server,699.00,1,13,https://cdn.neoncart.local/img/elc-008.jpg,18
+ELC-009,Vireo Solar Charger,Foldable solar panel charger,119.00,1,15,https://cdn.neoncart.local/img/elc-009.jpg,38
+ELC-010,Voltura Travel Adapter,Universal travel power adapter,39.00,1,5,https://cdn.neoncart.local/img/elc-010.jpg,178

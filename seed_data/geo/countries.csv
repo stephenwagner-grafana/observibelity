@@ -1,0 +1,31 @@
+code,name,currency_code
+US,United States,USD
+CA,Canada,CAD
+MX,Mexico,MXN
+GB,United Kingdom,GBP
+IE,Ireland,EUR
+FR,France,EUR
+DE,Germany,EUR
+ES,Spain,EUR
+IT,Italy,EUR
+NL,Netherlands,EUR
+BE,Belgium,EUR
+PT,Portugal,EUR
+AT,Austria,EUR
+CH,Switzerland,CHF
+SE,Sweden,SEK
+NO,Norway,NOK
+DK,Denmark,DKK
+FI,Finland,EUR
+PL,Poland,PLN
+JP,Japan,JPY
+KR,South Korea,KRW
+CN,China,CNY
+HK,Hong Kong,HKD
+SG,Singapore,SGD
+AU,Australia,AUD
+NZ,New Zealand,NZD
+IN,India,INR
+BR,Brazil,BRL
+ZA,South Africa,ZAR
+AE,United Arab Emirates,USD

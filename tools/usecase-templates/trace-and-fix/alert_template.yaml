@@ -1,0 +1,38 @@
+---
+# Prometheus alert rule template: trace-and-fix archetype
+# Generated for use case: {{ name }}
+# Severity is medium - this is informational. The operator is expected to open
+# the trace, read the span, and apply expected_fix. No paging.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: "{{ name }}-trace-and-fix"
+  labels:
+    archetype: trace-and-fix
+    usecase: "{{ name }}"
+    app: "{{ app }}"
+spec:
+  groups:
+    - name: "{{ name }}.trace_and_fix"
+      interval: 30s
+      rules:
+        - alert: "{{ name }}TraceAndFix"
+          expr: |
+            sum(rate(ai_o11y_usecase_errors_total{usecase="{{ name }}"}[5m])) > 0
+          for: 1m
+          labels:
+            severity: medium
+            archetype: trace-and-fix
+            usecase: "{{ name }}"
+            app: "{{ app }}"
+            dashboard_uid: "{{ dashboard_uid }}"
+          annotations:
+            summary: "{{ name }} trace-and-fix error detected"
+            description: |
+              A structured error span matching {{ trace_filter }} was emitted
+              for use case {{ name }}. Open the trace in Tempo and apply the
+              canonical fix: {{ expected_fix }}.
+            trace_filter: '{{ trace_filter }}'
+            error_pattern: '{{ error_pattern }}'
+            expected_fix: '{{ expected_fix }}'
+            runbook_url: "https://grafana/d/{{ dashboard_uid }}?var-usecase={{ name }}"

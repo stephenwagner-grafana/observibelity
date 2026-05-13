@@ -1,0 +1,58 @@
+name: customer-frustration
+title: "Customer Frustration — detect and route"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  The tone-checker + escalation-detector pair flags frustrated customers
+  that the bot fails to de-escalate. 5 per hour caps-rage scenarios are
+  injected ("I AM SO ANGRY, FIX THIS NOW", repeated punctuation, all-caps).
+  Each failure to address frustration emits an evaluator fail
+  customer_frustration: unaddressed_frustration event. The frustration-vs-
+  escalation panel shows the gap — frustrated but not escalated = churn risk.
+
+scenarios:
+  - name: nc-frustration-probe
+    k6_template: rate-by-category
+    weight: 2
+    rate: "5/h"
+    params:
+      description: "Caps-rage scenarios — drive tone-checker + escalation-detector fail events."
+      capability: behavior
+      fixture: FRUSTRATION_FIXTURES
+
+evaluators:
+  - name: customer_frustration.unaddressed_frustration
+    kind: llm-judge
+    severity: medium
+    spec: |
+      Given the customer message (which shows frustration signals such as
+      caps, repeated punctuation, or escalation language) and the assistant's
+      response, determine whether the assistant addressed the frustration
+      (acknowledged, offered de-escalation, or escalated to human). Return JSON
+      {"verdict":"pass|fail","reason":"unaddressed_frustration|none"}.
+    params:
+      model: claude-opus-4-7
+      judge_specialist: tone-checker
+
+dashboard:
+  uid: ai-obs-conv
+  title: "Conversations — frustration + escalation"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: customer_frustration.unaddressed_rate_10pct
+    condition: |
+      sum(rate(sigil_eval_result_total{evaluator="customer_frustration",verdict="fail"}[15m]))
+        / sum(rate(neoncart_frustration_conversation_total[15m])) > 0.10
+    severity: medium
+    route: customer-success@acme.local
+    duration: 15m
+
+demo:
+  do: "Wait for the 5/h caps-rage scenarios."
+  signal: "Loki: evaluator fail customer_frustration: unaddressed_frustration events; alert on ai-obs-conv at >10% of frustration conversations."
+  sell: "Detect-and-route signal — a robotic reply shouldn't lose a customer."

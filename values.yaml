@@ -1,0 +1,191 @@
+# ObserVIBElity — Helm values
+#
+# Defaults target a generic k8s ≥1.27 cluster. Use values-docker-desktop.yaml as
+# an overlay for local Docker Desktop development. Sensitive fields (passwords,
+# tokens) are typically populated by install.sh at deploy time — do not commit
+# real secrets here.
+
+# Global settings shared by every component.
+# namespace is created by templates/namespace.yaml when non-empty.
+global:
+  namespace: observibelity
+  imageRegistry: ghcr.io/stephenwagner-grafana
+  imagePullPolicy: IfNotPresent
+
+# podDefaults — fallback values for any component that doesn't override.
+# Set podDefaults.enabled=false to ship templates without resource limits / securityContext
+# (useful for dev clusters with tight allocations).
+podDefaults:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+# Persistent-volume settings used by Postgres and any other stateful piece.
+# Leave className empty to use the cluster's default StorageClass.
+storage:
+  className: ""
+  size: 1Gi
+
+# Postgres for app data (NeonCart catalog/orders, etc).
+# Single-replica RWO — not HA, this is a demo. Password is injected by install.sh.
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  password: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    fsGroup: 999
+
+# LLM gateway — fan-out proxy in front of model providers.
+# Toggle providers individually; Anthropic is the default for the demo.
+llmGateway:
+  enabled: true
+  replicas: 1
+  providers:
+    anthropic:
+      enabled: true
+      model: claude-haiku-4-5-20251001
+    ollama:
+      enabled: false
+      baseUrl: ""
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+# NeonCart — the e-commerce frontend (Phase 1 fills this in).
+# Set ingress.enabled=true and provide host/className to expose via an Ingress.
+neoncart:
+  enabled: true
+  replicas: 1
+  ingress:
+    enabled: false
+    host: ""
+    className: ""
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+# Support Bot — chat-with-your-store assistant.
+# Disabled in Phase 0/1; comes online in Phase 2.
+supportbot:
+  enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+# OpenTelemetry collector + Grafana Cloud OTLP destination.
+# Fill grafanaCloud.* via install.sh wizard; these are mandatory at deploy time.
+otel:
+  collector:
+    enabled: true
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 1Gi }
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 10001
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+  grafanaCloud:
+    otlpEndpoint: ""
+    instanceId: ""
+    apiToken: ""
+
+# k6 load tooling for staged synthetic traffic.
+# Disabled in Phase 0; enabled once the use cases are wired in Phase 2.
+k6:
+  enabled: false
+
+# Observability behaviors shared across components.
+# traffic_origin_default: continuous vs scenario-driven mix; never call this "loadgen".
+observability:
+  traffic_origin_default: continuous
+
+# Deployment phase gate. Templates compare against this number to skip components
+# that aren't ready yet (e.g. supportbot, k6, mice-rca use case).
+phase: 0
+
+# Phase 1 specialists (auto-discovered by templates/specialists/_loop.yaml)
+specialists:
+  - name: nc-chatbot
+    replicas: 1
+    tool_allowlist: [search_products, get_product, get_order_history, place_order]
+  - name: nc-fraud-detector
+    replicas: 1
+    tool_allowlist: [get_order_history, geo_lookup]
+  - name: nc-fulfillment-orchestrator
+    replicas: 1
+    tool_allowlist: [get_inventory, place_order, geo_lookup]
+
+# Phase 1 tools (auto-discovered by templates/tools/_loop.yaml)
+tools:
+  - name: search_products
+    replicas: 2
+    backing_tables: [catalog_items, categories]
+  - name: get_product
+    replicas: 1
+    backing_tables: [catalog_items, brands, promotions]
+  - name: get_order_history
+    replicas: 1
+    backing_tables: [orders, order_items]
+  - name: geo_lookup
+    replicas: 1
+    backing_tables: [ip_geo, countries]
+  - name: get_inventory
+    replicas: 1
+    backing_tables: [catalog_items]
+  - name: place_order
+    replicas: 1
+    backing_tables: [orders, order_items, catalog_items]

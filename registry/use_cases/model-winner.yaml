@@ -1,0 +1,62 @@
+name: model-winner
+title: "Model Winner — rank by ATC, not eval scores"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: leaderboard
+description: |
+  Customer types "I'm shopping for my 10-year-old nephew, budget $50" in the
+  NeonCart chat. The gift-finder specialist returns recommendations sourced
+  from one of several rotating model backends (Claude Opus, Claude Sonnet,
+  GPT-4o, etc.). When the user clicks "Add to Cart" on a recommendation, an
+  atc_event is emitted with source=live and model=<model-id> populated. The
+  ai-obs-best-models dashboard ranks models by ATC rate + purchase rate, not
+  by offline eval scores. This reframes the "which model is best?" question
+  around real business outcomes.
+
+scenarios:
+  - name: nc-gift-finder-atc
+    k6_template: rate-by-category
+    weight: 5
+    rate: "30/m"
+    params:
+      message: "I'm shopping for my 10-year-old nephew, budget $50"
+      description: "Gift-finder recommendation followed by ATC click; emits atc_event source=live with model label."
+      capability: ecommerce
+
+evaluators:
+  - name: model_winner.atc_attributed_to_model
+    kind: rule
+    severity: low
+    spec: |
+      event.name == "atc_event"
+      and event.attributes["source"] == "live"
+      and event.attributes["model"] != ""
+      and event.attributes["specialist"] == "gift-finder"
+  - name: model_winner.purchase_attributed_to_model
+    kind: rule
+    severity: low
+    spec: |
+      event.name == "purchase_event"
+      and event.attributes["model"] != ""
+
+dashboard:
+  uid: ai-obs-best-models
+  title: "Best Models — ranked by ATC + purchase"
+  panels_from_template: leaderboard
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: model_winner.atc_rate_collapse
+    condition: |
+      sum by (model) (rate(neoncart_atc_event_total{source="live"}[15m]))
+        / sum by (model) (rate(neoncart_specialist_recommendation_total[15m])) < 0.01
+    severity: medium
+    route: oncall@acme.local
+    duration: 10m
+
+demo:
+  do: "Type 'I'm shopping for my 10-year-old nephew, budget $50' in NeonCart chat, then click Add to Cart on a recommendation."
+  signal: "atc_event source=live with model label populates the bargauges on ai-obs-best-models."
+  sell: "Rank models by ATC + purchase, not eval scores — business outcome over leaderboard theater."

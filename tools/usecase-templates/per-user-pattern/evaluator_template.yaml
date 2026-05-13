@@ -1,0 +1,50 @@
+---
+# Sigil evaluator template: per-user-pattern archetype
+# Generated for use case: {{ name }}
+# Two evaluators:
+#  - rule:   fast, deterministic substring/regex match scoring per persona
+#  - rubric: LLM-judged scoring for nuanced cases the rule misses
+apiVersion: sigil.observibelity.dev/v1
+kind: Evaluator
+metadata:
+  name: "{{ name }}-per-user-pattern"
+  archetype: per-user-pattern
+  usecase: "{{ name }}"
+spec:
+  description: |
+    Detects {{ name }} pattern repetition by sticky personas. Rule evaluator
+    scores fast pattern matches; rubric evaluator scores subtle/paraphrased
+    forms a regex would miss.
+  evaluators:
+    - name: "{{ name }}_rule_pattern_match"
+      kind: rule
+      severity: high
+      target: message
+      group_by: persona_id
+      expression: |
+        message.content =~ "{{ pattern_signature }}"
+      window: 15m
+      score_calculation: "{{ score_calculation }}"
+      on_match:
+        emit_metric: "{{ leaderboard_metric }}"
+        labels:
+          persona_id: "${message.user_id}"
+          usecase: "{{ name }}"
+
+    - name: "{{ name }}_rubric_pattern_match"
+      kind: rubric
+      severity: high
+      target: message
+      group_by: persona_id
+      model: claude-opus-4-7
+      rubric: |
+        Score 0 to 1 whether the message exhibits the {{ name }} pattern,
+        accounting for paraphrasing or evasion. Pattern signature:
+        {{ pattern_signature }}. Persona under review: ${message.user_id}.
+      threshold: 0.7
+      on_match:
+        emit_metric: "{{ leaderboard_metric }}"
+        labels:
+          persona_id: "${message.user_id}"
+          usecase: "{{ name }}"
+          source: rubric

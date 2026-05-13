@@ -1,0 +1,62 @@
+{{- if (and .Values.otel.collector.enabled (le 1 (int .Values.phase))) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: otel-collector
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+        send_batch_size: 8192
+        timeout: 5s
+      memory_limiter:
+        check_interval: 2s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      resourcedetection/env:
+        detectors: [env, system]
+        timeout: 2s
+        override: false
+
+    exporters:
+      otlphttp/grafanacloud:
+        endpoint: {{ .Values.otel.grafanaCloud.otlpEndpoint | quote }}
+        headers:
+          authorization: Basic {{ printf "%s:%s" .Values.otel.grafanaCloud.instanceId .Values.otel.grafanaCloud.apiToken | b64enc }}
+        compression: gzip
+
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, resourcedetection/env, batch]
+          exporters: [otlphttp/grafanacloud]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, resourcedetection/env, batch]
+          exporters: [otlphttp/grafanacloud]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, resourcedetection/env, batch]
+          exporters: [otlphttp/grafanacloud]
+      telemetry:
+        logs:
+          level: info
+{{- end }}

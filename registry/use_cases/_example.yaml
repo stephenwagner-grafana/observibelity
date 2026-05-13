@@ -1,0 +1,57 @@
+# Example bundled use case YAML.
+# Copy this file to registry/use_cases/<your-name>.yaml and edit.
+# After editing, run: make build-usecases (or ./tools/usecase-build.sh)
+#
+# Files beginning with "_" are skipped by the compiler's discovery so this
+# template is safe to keep in place as documentation.
+
+name: example-use-case            # kebab-case; required
+title: "Example Use Case"          # human-readable title; required
+app: neoncart                      # neoncart | supportbot | both
+phase: 1                           # 0 | 1 | 2
+centerpiece: false                 # if true, requires SLO + evaluators + dashboard
+archetype: per-user-pattern        # one of: trace-and-fix, per-user-pattern, leaderboard, single-event-severity, cascade
+description: |
+  One-paragraph description of what this use case demonstrates and why.
+  Used in the demo script, alert annotations, and the SE-pitch panel.
+
+scenarios:
+  - name: example_scenario
+    k6_template: sticky-persona    # archetype-specific; see tools/usecase-templates/<archetype>/
+    persona: u-example-user
+    weight: 4
+    rate: "5m"
+    params:
+      message_count: 4
+      template: "fake board pre-read content"
+
+evaluators:
+  - name: example.pattern_detected
+    kind: rule                     # rule | rubric | regex | llm-judge
+    severity: critical             # low | medium | high | critical
+    spec: |
+      gen_ai.request.user == "u-example-user"
+      and ai_o11y.message.contains("board pre-read")
+
+dashboard:
+  uid: ai-obs-example
+  title: "Example Use Case"
+  panels_from_template: per-user-leaderboard
+  extra_panels: []
+
+alerts:
+  - name: example.detection
+    condition: 'rate(example_event_total[5m]) > 0'
+    severity: critical
+    route: security@acme.local
+    duration: 5m
+
+slo:
+  objective: "<99% of evaluator passes per day"
+  error_budget: 0.001
+  window: 30d
+
+demo:
+  do: "Wait >=5m for loadgen, or paste fake content as the persona via the Support Bot UI"
+  signal: "example_event with severity=critical + alert: name=example.detection state=firing"
+  sell: "one-line value prop for an SE pitch"

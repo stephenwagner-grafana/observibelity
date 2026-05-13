@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Catalog — {{ branding.name }}{% endblock %}
+
+{% block content %}
+<section class="nc-section">
+  <h1>Catalog</h1>
+
+  {% if categories %}
+    <nav class="nc-filters">
+      <a href="/catalog">All</a>
+      {% for cat in categories %}
+        <a href="/catalog?category={{ cat.slug }}">{{ cat.name }}</a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% if items %}
+    <div class="nc-grid">
+      {% for item in items %}
+        <article class="nc-card">
+          <a href="/products/{{ item.id }}">
+            {% if item.image_url %}
+              <img src="{{ item.image_url }}" alt="{{ item.name }}" />
+            {% else %}
+              <div class="nc-card__placeholder" aria-hidden="true"></div>
+            {% endif %}
+            <h3>{{ item.name }}</h3>
+            <p class="nc-card__price">${{ "%.2f"|format(item.price_usd) }}</p>
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+
+    <nav class="nc-pager" aria-label="Pagination">
+      {% if page > 1 %}<a href="/catalog?page={{ page - 1 }}">&laquo; Prev</a>{% endif %}
+      <span>Page {{ page }}</span>
+      <a href="/catalog?page={{ page + 1 }}">Next &raquo;</a>
+    </nav>
+  {% else %}
+    <p class="nc-empty">No products in this view yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

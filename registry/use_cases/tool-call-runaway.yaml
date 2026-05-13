@@ -1,0 +1,66 @@
+name: tool-call-runaway
+title: "Tool-call Runaway — agentic loop detection"
+app: both
+phase: 2
+centerpiece: false
+archetype: cascade
+description: |
+  Per-session-severity detection of agents stuck retrying a failing tool.
+  The continuous-traffic scenario forces a tool error loop in one
+  conversation (failing search.query, retried 30+ times). Top-conversations
+  panel surfaces conv_ids with >20 tool calls to the same tool — the silent
+  cost-burn pattern that shows up nowhere in averages. Alert fires when any
+  single session crosses the 20 calls / one tool threshold.
+
+scenarios:
+  - name: sb-tool-error-loop
+    k6_template: burst-then-quiet
+    weight: 2
+    rate: "30/m"
+    params:
+      description: "Drives a tool-error loop in one conv — repeatedly calls search.query against a broken backend."
+      capability: agentic
+      tool_name: search.query
+      error_rate: 1.0
+      max_attempts: 30
+
+evaluators:
+  - name: tool_call_runaway.same_tool_threshold
+    kind: rule
+    severity: high
+    spec: |
+      conversation.tool_calls_by[conversation.dominant_tool] > 20
+      and conversation.duration_seconds < 300
+  - name: tool_call_runaway.tool_error_rate_per_conv
+    kind: rule
+    severity: high
+    spec: |
+      conversation.tool_error_rate > 0.8
+      and conversation.tool_calls_total > 10
+
+dashboard:
+  uid: ai-obs-tools
+  title: "Tools — runaway agentic loops"
+  panels_from_template: cascade
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: ai-o11y-tool-runaway
+    condition: |
+      max by (conv_id) (
+        sum by (conv_id, tool_name) (
+          count_over_time(
+            {namespace=~"supportbot|neoncart"}
+            |~ "tool_call" | logfmt | conv_id != "" [10m]
+          )
+        )
+      ) > 20
+    severity: high
+    route: oncall@acme.local
+    duration: 1m
+
+demo:
+  do: "Wait for the continuous-traffic scenario to force a tool-error loop in one conversation."
+  signal: "Per-conv tool-call count >20 to the same tool; ai-o11y-tool-runaway FIRES on ai-obs-tools."
+  sell: "Per-session, not average — agentic loops detected before they bleed budget."
