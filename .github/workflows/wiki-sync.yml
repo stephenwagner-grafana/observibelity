@@ -14,7 +14,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Stage wiki content
         run: |
           mkdir -p _wiki _wiki/audits
@@ -47,7 +47,7 @@ jobs:
         # happens, `git clone <repo>.wiki.git` returns 404 — which we treat as
         # a soft failure so the rest of CI stays green.
         continue-on-error: true
-        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        uses: Andrew-Chen-Wang/github-wiki-action@v5
         with:
           path: _wiki/
           token: ${{ secrets.GITHUB_TOKEN }}

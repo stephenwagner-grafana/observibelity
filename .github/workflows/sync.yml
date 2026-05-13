@@ -40,7 +40,7 @@ jobs:
       GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
       GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: sudo apt-get install -y jq curl
       - name: Push dashboards
         run: ./tools/dashboards-sync.sh push
@@ -53,8 +53,8 @@ jobs:
       GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
       GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with: { python-version: '3.12' }
       - run: pip install -e tools/
       - name: Compile use case YAMLs
@@ -71,8 +71,8 @@ jobs:
       GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
       NAMESPACE: observibelity
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with: { python-version: '3.12' }
       - run: pip install -e tools/
       - name: Compile use case YAMLs
