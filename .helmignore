@@ -36,10 +36,27 @@ skaffold.yaml
 # Deployment + Service, leaving specialists unable to call their tools.
 /tools/
 
+# Dashboards are shipped to Grafana Cloud via gcx git-sync directly from
+# repo, never bundled into the chart. Keeping them out of the .tgz keeps
+# the helm release Secret comfortably under k8s' 1.5MB/3MB etcd object
+# limit. ~2.3MB saved.
+/dashboards/
+
 # Generated alerts/slos/scenarios only needed when those features enabled
 # We're keeping them since Files.Glob conditionally references them
 # But trim the use_cases sources since the compiler ran already
 /registry/use_cases/
+
+# Generated artifacts NOT referenced by any chart template:
+#   - dashboards (gcx pushes from /dashboards/ directly)
+#   - evaluators (created in Grafana UI today; future evaluators-sync.sh)
+#   - registry index (build-time only)
+#   - scenarios.disabled (k6 traffic engine reads scenarios/ only)
+# Templates only reference _generated/scenarios/, _generated/alerts/, _generated/slos/
+/registry/_generated/dashboards/
+/registry/_generated/evaluators/
+/registry/_generated/registry/
+/registry/_generated/scenarios.disabled/
 
 # Wizard (gh pages, not k8s)
 /wizard/

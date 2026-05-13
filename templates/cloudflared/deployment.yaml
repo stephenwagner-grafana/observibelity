@@ -1,0 +1,85 @@
+{{- if .Values.cloudflareTunnel.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cloudflared
+spec:
+  replicas: {{ .Values.cloudflareTunnel.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "observibelity.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: cloudflared
+  template:
+    metadata:
+      labels:
+        {{- include "observibelity.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: cloudflared
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/cloudflared/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- $podSc := include "observibelity.podSecurityContext" .Values.cloudflareTunnel.securityContext }}
+      {{- if $podSc }}
+      securityContext:
+        {{- $podSc | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: cloudflared
+          image: {{ .Values.cloudflareTunnel.image | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.cloudflareTunnel.securityContext }}
+          {{- if $ctrSc }}
+          securityContext:
+            {{- $ctrSc | nindent 12 }}
+          {{- end }}
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config.yaml
+            - run
+          ports:
+            - name: metrics
+              containerPort: 2000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.cloudflareTunnel.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: credentials
+              mountPath: /etc/cloudflared/credentials.json
+              subPath: credentials.json
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared
+            items:
+              - key: config.yaml
+                path: config.yaml
+        - name: credentials
+          secret:
+            secretName: {{ .Values.cloudflareTunnel.credentialsSecret | quote }}
+            items:
+              - key: credentials.json
+                path: credentials.json
+{{- end }}

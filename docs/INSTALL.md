@@ -61,6 +61,70 @@ The current release is **Phase 0: scaffolding only**. `preflight` and `wizard` a
 ## State file
 `./.observibelity-state` (JSON) tracks which phases passed. Re-running `./install.sh` resumes from where you left off. `--reset` wipes it. Each input is stored as a sha256 hash, not the raw value, so the file is safe to share.
 
+## Exposing apps publicly (NeonCart + Support Bot)
+
+The chart produces a plain `Ingress` per frontend when you set the host. How that hostname resolves to the cluster is your problem to solve — pick one of the patterns below.
+
+### Pattern A — chart-bundled Cloudflare Tunnel (declarative)
+
+Best when you want hostnames + routes versioned in `values.yaml`.
+
+```bash
+# one-time, from the machine you'll deploy from
+cloudflared tunnel login
+cloudflared tunnel create observibelity   # prints a UUID
+cloudflared tunnel route dns observibelity neoncart.example.com
+cloudflared tunnel route dns observibelity support.example.com
+
+# create the credentials Secret
+kubectl create ns observibelity
+kubectl -n observibelity create secret generic cloudflared-credentials \
+  --from-file=credentials.json=$HOME/.cloudflared/<UUID>.json
+```
+
+Then in `values-deploy.yaml`:
+```yaml
+neoncart:
+  ingress: { enabled: true, className: traefik, host: neoncart.example.com }
+supportbot:
+  ingress: { enabled: true, className: traefik, host: support.example.com }
+cloudflareTunnel:
+  enabled: true
+  tunnelId: "<UUID-from-cloudflared-tunnel-create>"
+  ingress:
+    - hostname: neoncart.example.com
+      service: http://neoncart.observibelity.svc.cluster.local:80
+    - hostname: support.example.com
+      service: http://supportbot.observibelity.svc.cluster.local:80
+```
+
+Re-run `helm upgrade` and the chart's bundled `cloudflared` Deployment picks up the routes. Hostnames + routes round-trip through git — `tools/dashboards-sync.sh push` style consistency.
+
+### Pattern B — existing tunnel managed in the Cloudflare dashboard (token-style)
+
+Best when you already run `cloudflared` outside the chart (e.g. with `--token`) and prefer the Zero Trust UI for route management.
+
+1. Leave `cloudflareTunnel.enabled: false` in values.
+2. Set `<app>.ingress.host` for each frontend you want exposed.
+3. In **Cloudflare Zero Trust → Networks → Tunnels → [your tunnel] → Public Hostnames**, add:
+   - `neoncart.example.com` → `http://neoncart.observibelity.svc.cluster.local:80`
+   - `support.example.com` → `http://supportbot.observibelity.svc.cluster.local:80`
+
+Adding the public hostname auto-creates a CNAME on Cloudflare's DNS. Validate with `curl https://neoncart.example.com/`.
+
+### Pattern C — your own ingress controller (no tunnel)
+
+If the cluster has a public LoadBalancer + DNS pointing at it (e.g. EKS + Route53), just set `<app>.ingress.host` and `<app>.ingress.className` and you're done. Cert-manager handles TLS.
+
+### Verifying it works
+
+```bash
+curl -sS -o /dev/null -w "neoncart: %{http_code}\n" https://neoncart.example.com/
+curl -sS -o /dev/null -w "support:  %{http_code}\n" https://support.example.com/
+```
+
+Both should return `200`. If you get `530`/`1033`, the tunnel can't reach the Service — check `kubectl -n observibelity logs deploy/cloudflared` (Pattern A) or your existing cloudflared logs (Pattern B).
+
 ## Uninstall
 ```
 ./uninstall.sh

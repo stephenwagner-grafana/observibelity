@@ -1,0 +1,29 @@
+{{- if .Values.cloudflareTunnel.enabled }}
+{{- if not .Values.cloudflareTunnel.tunnelId }}
+{{ fail "cloudflareTunnel.enabled=true requires cloudflareTunnel.tunnelId (the UUID returned by `cloudflared tunnel create`)" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "observibelity.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cloudflared
+data:
+  config.yaml: |
+    tunnel: {{ .Values.cloudflareTunnel.tunnelId }}
+    credentials-file: /etc/cloudflared/credentials.json
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+    ingress:
+      {{- range .Values.cloudflareTunnel.ingress }}
+      - hostname: {{ .hostname | quote }}
+        service: {{ .service | quote }}
+        {{- with .originRequest }}
+        originRequest:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      - service: http_status:404
+{{- end }}
