@@ -23,7 +23,14 @@ ask() {
 
     local answer
     printf '%s: ' "${display}" >&2
-    IFS= read -r answer
+    if ! IFS= read -r answer; then
+        # stdin closed — fall back to the default if we have one, else die.
+        if [[ -n "${default}" ]]; then
+            answer="${default}"
+        else
+            die "ask: stdin closed and no default for prompt: ${prompt}"
+        fi
+    fi
     if [[ -z "${answer}" ]]; then
         answer="${default}"
     fi
@@ -66,7 +73,10 @@ ask_yn() {
     local answer
     while true; do
         printf '%s %s: ' "${prompt}" "${hint}" >&2
-        IFS= read -r answer
+        if ! IFS= read -r answer; then
+            # stdin closed (non-interactive) — fall through to default.
+            answer=""
+        fi
         if [[ -z "${answer}" ]]; then
             case "${default}" in
                 Y|y) return 0 ;;
@@ -118,7 +128,11 @@ ask_choice() {
     local answer
     while true; do
         printf 'Select [1-%d]: ' "${n}" >&2
-        IFS= read -r answer
+        if ! IFS= read -r answer; then
+            # EOF on stdin (non-interactive). Bail out so the caller can fail
+            # cleanly instead of looping forever — common in CI / piped runs.
+            die "ask_choice: stdin closed; rerun interactively or set OBSERVIBELITY_AUTO=1"
+        fi
         if [[ "${answer}" =~ ^[0-9]+$ ]] && (( answer >= 1 && answer <= n )); then
             if (( echo_value == 1 )); then
                 printf '%s' "${options[$((answer-1))]}"

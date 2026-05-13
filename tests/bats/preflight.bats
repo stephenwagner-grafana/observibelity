@@ -75,6 +75,10 @@ _shim() {
     fi
     # Provide a kubectl shim that fails like the real one when KUBECONFIG is bogus
     _shim kubectl 'echo "error: unable to read kubeconfig" >&2; exit 1'
-    run env KUBECONFIG="/nonexistent" bash "${BATS_TEST_TMPDIR}/tools/preflight/check-cluster.sh"
+    # OBSERVIBELITY_AUTO=1 skips the interactive "how would you like to
+    # proceed?" prompt in check-cluster.sh — without it the prompt hangs
+    # forever when stdin is closed (as it is in CI).
+    run env KUBECONFIG="/nonexistent" OBSERVIBELITY_AUTO=1 \
+        bash "${BATS_TEST_TMPDIR}/tools/preflight/check-cluster.sh"
     [[ "$status" -ne 0 ]]
 }
