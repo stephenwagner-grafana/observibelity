@@ -21,22 +21,29 @@ spec:
         app.kubernetes.io/component: seed
     spec:
       restartPolicy: OnFailure
-      {{- with .Values.podDefaults.securityContext }}
+      {{- $podSc := include "observibelity.podSecurityContext" .Values.podDefaults.securityContext }}
+      {{- if $podSc }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- $podSc | nindent 8 }}
       {{- end }}
       containers:
         - name: seed
           image: "{{ .Values.global.imageRegistry }}/observibelity-seed:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.podDefaults.securityContext }}
+          {{- if $ctrSc }}
+          securityContext:
+            {{- $ctrSc | nindent 12 }}
+          {{- end }}
           command: ["python"]
           args: ["/app/seed_loader.py"]
           env:
+            # seed_loader.py uses psycopg2 (sync) — read the sync URL.
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: postgres-creds
-                  key: DATABASE_URL
+                  key: DATABASE_URL_SYNC
             - name: SEED_DATA_DIR
               value: /app/seed_data
             - name: OTEL_SERVICE_NAME

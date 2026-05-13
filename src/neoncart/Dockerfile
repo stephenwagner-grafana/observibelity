@@ -13,18 +13,18 @@ ENV PIP_NO_CACHE_DIR=1 \
 
 WORKDIR /build
 
-# Copy only what's needed for dep resolution
+# Copy pyproject + README + the app/ source so `pip install .` actually
+# installs the `app` package (not just its declared deps).
 COPY pyproject.toml ./
 COPY README.md ./
+COPY app/ ./app/
 
-# Install deps into /opt/venv
+# Install deps + the local `app` package into /opt/venv
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip && \
     pip install .
-
-COPY app/ ./app/
 
 # --- Runtime stage ----------------------------------------------------------
 FROM python:${PYTHON_VERSION}-slim AS runtime

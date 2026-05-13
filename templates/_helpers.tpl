@@ -60,3 +60,39 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Split a unified securityContext block into pod-level keys only.
+Kubernetes rejects container-level fields (capabilities, readOnlyRootFilesystem,
+allowPrivilegeEscalation, privileged, procMount) at the pod level.
+Usage: {{- include "observibelity.podSecurityContext" .Values.X.securityContext }}
+*/}}
+{{- define "observibelity.podSecurityContext" -}}
+{{- $sc := . -}}
+{{- $pod := dict -}}
+{{- range $k, $v := $sc }}
+  {{- if has $k (list "runAsNonRoot" "runAsUser" "runAsGroup" "fsGroup" "fsGroupChangePolicy" "supplementalGroups" "seccompProfile" "sysctls" "seLinuxOptions" "windowsOptions") -}}
+    {{- $_ := set $pod $k $v -}}
+  {{- end -}}
+{{- end -}}
+{{- if $pod -}}
+{{- toYaml $pod -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Split a unified securityContext block into container-level keys only.
+Usage: {{- include "observibelity.containerSecurityContext" .Values.X.securityContext }}
+*/}}
+{{- define "observibelity.containerSecurityContext" -}}
+{{- $sc := . -}}
+{{- $ctr := dict -}}
+{{- range $k, $v := $sc }}
+  {{- if has $k (list "readOnlyRootFilesystem" "allowPrivilegeEscalation" "capabilities" "privileged" "procMount") -}}
+    {{- $_ := set $ctr $k $v -}}
+  {{- end -}}
+{{- end -}}
+{{- if $ctr -}}
+{{- toYaml $ctr -}}
+{{- end -}}
+{{- end }}

@@ -1,0 +1,51 @@
+# Helm chart inclusion exclusions
+.DS_Store
+.git/
+.gitignore
+.editorconfig
+.envrc.example
+.env*
+.observibelity-state*
+
+# Large data not needed by the chart (Files.Glob in templates targets only specific subdirs)
+# CRITICAL: directory patterns must be anchored with leading `/` so they
+# don't accidentally match nested directories under `templates/`.
+/seed_data/
+/src/
+/tests/
+/docs/
+/wiki/
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+CONSISTENCY_REPORT.md
+LICENSE
+Makefile
+skaffold.yaml
+.pre-commit-config.yaml
+.yamllint
+.vscode/
+.claude/
+.github/
+
+# Tools (the top-level scripts dir) — not part of the deployable chart.
+# CRITICAL: this pattern MUST be anchored to repo root so it does NOT match
+# `templates/tools/loop.yaml` (which iterates over .Values.tools). A bare
+# `tools/` pattern matches at any depth and silently drops every tool
+# Deployment + Service, leaving specialists unable to call their tools.
+/tools/
+
+# Generated alerts/slos/scenarios only needed when those features enabled
+# We're keeping them since Files.Glob conditionally references them
+# But trim the use_cases sources since the compiler ran already
+/registry/use_cases/
+
+# Wizard (gh pages, not k8s)
+/wizard/
+
+# Migrations are bundled in the migrate image
+/migrations/
+
+# Snapshots are CI artifacts
+*.golden.yaml

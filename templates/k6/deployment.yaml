@@ -21,8 +21,11 @@ spec:
       annotations:
         checksum/scenarios: {{ include (print $.Template.BasePath "/k6/configmap.yaml") . | sha256sum }}
     spec:
+      {{- $podSc := include "observibelity.podSecurityContext" .Values.k6.securityContext }}
+      {{- if $podSc }}
       securityContext:
-        {{- toYaml .Values.k6.securityContext | nindent 8 }}
+        {{- $podSc | nindent 8 }}
+      {{- end }}
       containers:
         - name: k6
           image: {{ .Values.k6.image | default "grafana/k6:0.50.0" }}
@@ -61,8 +64,11 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.k6.resources | nindent 12 }}
+          {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.k6.securityContext }}
+          {{- if $ctrSc }}
           securityContext:
-            {{- toYaml .Values.k6.securityContext | nindent 12 }}
+            {{- $ctrSc | nindent 12 }}
+          {{- end }}
       volumes:
         - name: scripts
           configMap:

@@ -57,12 +57,11 @@ ollama = "llm_gateway.providers.ollama:OllamaProvider"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*", "llm_gateway*"]
+include = ["llm_gateway*"]
 
-# The package is imported as `app.*` inside the container (see Dockerfile CMD),
-# but we also alias it as `llm_gateway` for the entry-point group above.
-[tool.setuptools.package-dir]
-llm_gateway = "app"
+# The Dockerfile copies app/ -> llm_gateway/ in the build context so that
+# `pip install .` produces a real `llm_gateway` Python package matching the
+# entry-point group above. Tests still `from app.*` against the source tree.
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

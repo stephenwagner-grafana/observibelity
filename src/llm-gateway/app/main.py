@@ -9,6 +9,7 @@ that's how the dashboard joins "this expensive call" to "this slow tool".
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -19,7 +20,7 @@ from fastapi.responses import PlainTextResponse, Response
 from opentelemetry import trace
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
-from .pricing import compute_cost
+from .pricing import compute_cost, load_pricing_overrides
 from .providers import (
     CompleteRequest,
     CompleteResponse,
@@ -31,7 +32,45 @@ from .sigil import emit_generation_event
 log = logging.getLogger("llm_gateway")
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
 
-DEFAULT_PROVIDER = os.environ.get("LLM_GATEWAY_DEFAULT_PROVIDER", "anthropic")
+
+def _env_bool(name: str, default: bool = True) -> bool:
+    """Read a boolean-ish env var (true/1/yes/on are truthy)."""
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _load_json_file(path: str | None) -> dict | None:
+    """Load JSON from ``path`` if set + readable; never raise."""
+    if not path:
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        log.warning("config file not found: %s", path)
+    except Exception as exc:  # noqa: BLE001 — config must never crash boot
+        log.warning("failed to read config %s: %s", path, exc)
+    return None
+
+
+# The chart's ConfigMap mounts pricing.json + routing.json at /etc/llm-gateway/.
+# Env vars below let the operator override paths; falling back to the mount path
+# means an in-cluster gateway picks up the chart-supplied configs automatically.
+PRICING_CONFIG_PATH = os.environ.get(
+    "PRICING_CONFIG_PATH", "/etc/llm-gateway/pricing.json"
+)
+ROUTING_CONFIG_PATH = os.environ.get(
+    "ROUTING_CONFIG_PATH", "/etc/llm-gateway/routing.json"
+)
+
+_routing_cfg = _load_json_file(ROUTING_CONFIG_PATH) or {}
+DEFAULT_PROVIDER = (
+    os.environ.get("LLM_GATEWAY_DEFAULT_PROVIDER")
+    or _routing_cfg.get("default_provider")
+    or "anthropic"
+)
 
 # Prometheus metrics — exposed at /metrics, scraped by the otel-collector.
 REQ_COUNT = Counter(
@@ -52,15 +91,52 @@ COST_TOTAL = Counter(
 
 
 def _build_provider_configs() -> dict[str, dict]:
-    """Read the small set of env-var knobs Helm injects into per-provider configs."""
+    """Read the small set of env-var knobs Helm injects into per-provider configs.
+
+    The chart sets ``ANTHROPIC_DEFAULT_MODEL`` and ``OLLAMA_BASE_URL``; we honor
+    those first and only fall back to the legacy ``ANTHROPIC_MODEL`` /
+    ``OLLAMA_MODEL`` names for backwards compat with hand-rolled deployments.
+    Routing config (loaded from ``ROUTING_CONFIG_PATH`` if present) can also
+    supply per-provider defaults.
+    """
+    routing_providers = (_routing_cfg.get("providers") or {}) if _routing_cfg else {}
+    anthropic_routing = routing_providers.get("anthropic") or {}
+    ollama_routing = routing_providers.get("ollama") or {}
+
+    anthropic_model = (
+        os.environ.get("ANTHROPIC_DEFAULT_MODEL")
+        or os.environ.get("ANTHROPIC_MODEL")
+        or anthropic_routing.get("default_model")
+        or "claude-haiku-4-5-20251001"
+    )
+    ollama_model = (
+        os.environ.get("OLLAMA_DEFAULT_MODEL")
+        or os.environ.get("OLLAMA_MODEL")
+        or ollama_routing.get("default_model")
+        or "llama3.1:8b"
+    )
+    ollama_base_url = (
+        os.environ.get("OLLAMA_BASE_URL")
+        or ollama_routing.get("base_url")
+        or None
+    )
+
     return {
         "anthropic": {
-            "model": os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
+            "model": anthropic_model,
             "api_key": os.environ.get("ANTHROPIC_API_KEY"),
+            "enabled": _env_bool(
+                "ANTHROPIC_ENABLED",
+                bool(anthropic_routing.get("enabled", True)),
+            ),
         },
         "ollama": {
-            "model": os.environ.get("OLLAMA_MODEL", "llama3.1:8b"),
-            "base_url": os.environ.get("OLLAMA_BASE_URL"),
+            "model": ollama_model,
+            "base_url": ollama_base_url,
+            "enabled": _env_bool(
+                "OLLAMA_ENABLED",
+                bool(ollama_routing.get("enabled", True)),
+            ),
         },
     }
 
@@ -68,13 +144,25 @@ def _build_provider_configs() -> dict[str, dict]:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Discover provider plugins once at startup and stash them on app.state."""
-    providers = discover_providers(_build_provider_configs())
+    # Load pricing overrides from the chart-supplied ConfigMap (if mounted).
+    # compute_cost() reads PRICES at call time, so the overrides take effect
+    # immediately for every subsequent /v1/complete.
+    load_pricing_overrides(_load_json_file(PRICING_CONFIG_PATH))
+
+    configs = _build_provider_configs()
+    # Drop providers explicitly disabled by env/routing config so they never load.
+    enabled_configs = {
+        name: cfg for name, cfg in configs.items() if cfg.get("enabled", True)
+    }
+    providers = discover_providers(enabled_configs)
     app.state.providers = providers
     app.state.default_provider = DEFAULT_PROVIDER
     log.info(
-        "llm-gateway ready: providers=%s default=%s",
+        "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s",
         list(providers.keys()),
         DEFAULT_PROVIDER,
+        PRICING_CONFIG_PATH,
+        ROUTING_CONFIG_PATH,
     )
     yield
     # Nothing to tear down — httpx + anthropic SDK use short-lived async clients.
