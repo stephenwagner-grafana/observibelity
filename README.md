@@ -129,4 +129,6 @@ per ecosystem.
 - **[Issues](https://github.com/stephenwagner-grafana/observibelity/issues)** — bug reports + feature requests. Attach `observibelity-failure-*.tar.gz` from `tools/deploy-doctor.sh --collect-only` for deploy failures.
 - **[Architecture](docs/ARCHITECTURE.md)** — what gets deployed and why.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** — common failure modes + fixes.
+- **[Evaluator setup](docs/EVALUATORS_SETUP.md)** — operational runbook for getting evaluators live in Grafana Cloud (auth, pipeline, verify).
+- **[Evaluator catalog](docs/EVALUATORS.md)** — per-evaluator specs (44 evaluators, manual UI fallback, cost tables).
 - **[Live planner](https://claude.wombatwags.com/planner/ai-o11y/)** — the full ~240 KB design spec (canonical reference).
