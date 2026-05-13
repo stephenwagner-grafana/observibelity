@@ -49,6 +49,34 @@ export const options = {
 const NEONCART_URL = __ENV.NEONCART_URL || 'http://neoncart';
 const SUPPORTBOT_URL = __ENV.SUPPORTBOT_URL || 'http://supportbot';
 
+// ── Per-conversation model routing ──────────────────────────────────────
+// Drives the ai-obs-best-models ("Model Winner") dashboard: 80% of chats go
+// to local Ollama (effectively free + diverse model rotation), 20% to Claude
+// (uniformly distributed across Haiku / Sonnet / Opus to populate the
+// per-model comparison panels). The gateway's provider_override +
+// model_override are wired through NeonCart /chat and Support Bot /chat,
+// then through nc-chatbot / sb-router into llm-gateway.
+const CLAUDE_MODELS = [
+  'claude-haiku-4-5-20251001',
+  'claude-sonnet-4-6',
+  'claude-opus-4-7',
+];
+const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.20');
+
+function pickModelRouting() {
+  if (Math.random() < CLAUDE_FRACTION) {
+    // 20% — Claude, uniformly across Haiku/Sonnet/Opus.
+    return {
+      provider_override: 'anthropic',
+      model_override: CLAUDE_MODELS[Math.floor(Math.random() * CLAUDE_MODELS.length)],
+    };
+  }
+  // 80% — Ollama with the gateway's configured default model (chart-supplied).
+  // Leaving model_override null lets us swap the local model fleet at deploy
+  // time without redeploying the loadgen.
+  return { provider_override: 'ollama', model_override: null };
+}
+
 // Scenario table:
 //   app:      'neoncart' | 'supportbot' | 'both'
 //   persona:  X-Persona-Id header value (and request body persona_id)
@@ -278,11 +306,17 @@ export default function () {
     : sc.app;
   const url = (app === 'supportbot' ? SUPPORTBOT_URL : NEONCART_URL) + '/chat';
 
-  const payload = JSON.stringify({
+  const routing = pickModelRouting();
+  const payloadObj = {
     message: msg,
     usecase: sc.usecase,
     persona_id: sc.persona,
-  });
+    provider_override: routing.provider_override,
+  };
+  if (routing.model_override) {
+    payloadObj.model_override = routing.model_override;
+  }
+  const payload = JSON.stringify(payloadObj);
 
   const params = {
     headers: {
@@ -290,6 +324,8 @@ export default function () {
       'X-Persona-Id': sc.persona,
       'X-AI-O11Y-Usecase': sc.usecase,
       'X-AI-O11Y-Traffic-Origin': 'continuous',
+      'X-Provider-Override': routing.provider_override,
+      'X-Model-Override': routing.model_override || '',
     },
     timeout: '30s',
   };

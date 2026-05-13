@@ -193,6 +193,11 @@ class ChatRequest(BaseModel):
     # request-scoped dependency overrides it when set via header/cookie.
     persona_id: str | None = None
     usecase: str | None = None
+    # Per-request routing knobs forwarded to nc-chatbot -> llm-gateway. The
+    # loadgen sets these to drive the 80/20 Ollama vs Claude split that
+    # populates the ai-obs-best-models dashboard.
+    provider_override: str | None = None
+    model_override: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -304,11 +309,15 @@ async def chat(
     set_persona_span_attr(effective_persona)
 
     client: httpx.AsyncClient = request.app.state.http
-    body = {
+    body: dict[str, Any] = {
         "message": payload.message,
         "persona_id": effective_persona,
         "usecase": usecase,
     }
+    if payload.provider_override:
+        body["provider_override"] = payload.provider_override
+    if payload.model_override:
+        body["model_override"] = payload.model_override
     try:
         resp = await client.post(CHATBOT_URL, json=body)
     except httpx.RequestError as exc:

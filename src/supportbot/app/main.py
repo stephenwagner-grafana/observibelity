@@ -159,6 +159,11 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=4096)
     persona_id: str | None = None
     usecase: str | None = None
+    # Per-request routing knobs forwarded to sb-router -> llm-gateway. The
+    # loadgen sets these to drive the 80/20 Ollama vs Claude split that
+    # populates the ai-obs-best-models dashboard.
+    provider_override: str | None = None
+    model_override: str | None = None
 
 
 class PersonaSelectRequest(BaseModel):
@@ -301,6 +306,10 @@ async def chat(request: Request, payload: ChatRequest) -> Response:
         "persona_id": pid,
         "usecase": usecase,
     }
+    if payload.provider_override:
+        body["provider_override"] = payload.provider_override
+    if payload.model_override:
+        body["model_override"] = payload.model_override
     try:
         resp = await client.post(ROUTER_URL, json=body)
     except httpx.RequestError as exc:
