@@ -73,6 +73,18 @@ llmGateway:
     ollama:
       enabled: false
       baseUrl: ""
+  # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
+  # Analytics, Tools, Evaluation views). The plugin reads from a regional
+  # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
+  # gateway; install.sh's wizard discovers it (typically prod-us-east-0)
+  # and writes the values here. Leave endpoint blank to disable — the
+  # gateway no-ops cleanly when SIGIL_GENERATION_EXPORT_ENDPOINT is unset.
+  sigil:
+    enabled: true
+    endpoint: ""        # e.g. "sigil-prod-us-east-0.grafana.net:443"
+    protocol: "grpc"
+    basicUser: ""       # numeric stack id (same as otel.grafanaCloud.instanceId)
+    basicPassword: ""   # Grafana Cloud token (same as otel.grafanaCloud.apiToken)
   resources:
     requests:
       cpu: 200m

@@ -71,6 +71,34 @@ spec:
               value: /etc/llm-gateway/pricing.json
             - name: ROUTING_CONFIG_PATH
               value: /etc/llm-gateway/routing.json
+            # Sigil ingest envs (all optional — the gateway's sigil.py module
+            # no-ops when SIGIL_GENERATION_EXPORT_ENDPOINT is unset, so leaving
+            # llmGateway.sigil.endpoint blank keeps the pod healthy with Sigil
+            # export disabled).
+            - name: SIGIL_GENERATION_EXPORT_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: llm-gateway-creds
+                  key: SIGIL_GENERATION_EXPORT_ENDPOINT
+                  optional: true
+            - name: SIGIL_PROTOCOL
+              valueFrom:
+                secretKeyRef:
+                  name: llm-gateway-creds
+                  key: SIGIL_PROTOCOL
+                  optional: true
+            - name: SIGIL_BASIC_USER
+              valueFrom:
+                secretKeyRef:
+                  name: llm-gateway-creds
+                  key: SIGIL_BASIC_USER
+                  optional: true
+            - name: SIGIL_BASIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: llm-gateway-creds
+                  key: SIGIL_BASIC_PASSWORD
+                  optional: true
           readinessProbe:
             httpGet:
               path: /health
