@@ -86,9 +86,32 @@ llmGateway:
       # Leave empty to disable. If you point at a Service in another
       # namespace, NetworkPolicy must allow the traffic.
       baseUrl: ""
-      # Default model name when ollama.enabled=true and the caller does not
-      # override per-request. Must be pre-pulled on the Ollama server.
+      # Fallback model when rotation is disabled OR no rotation pool is
+      # configured. Per-request callers can still pin a specific model via
+      # ``model_override`` on the request body — that always wins.
       model: ""
+      # Lockstep model rotation — every Ollama-bound specialist in the
+      # cluster uses the SAME model in a 5-minute window, then they all
+      # flip together. The pod-side trick is ``int(time.time()) //
+      # windowSeconds``: every llm-gateway replica computes the same bucket
+      # value at the same wall-clock instant, so no leader-election or
+      # shared state is needed.
+      #
+      # Why: mimics how real teams A/B-test LLMs hour-over-hour, makes the
+      # Model Winner dashboard show meaningful per-model slices, and avoids
+      # OLLAMA_MAX_LOADED_MODELS thrashing on the GPU host.
+      rotation:
+        enabled: true
+        windowSeconds: 300
+        # Ordered rotation pool. Each entry must be pre-pulled on the Ollama
+        # server (verify with ``curl ${baseUrl}/api/tags``). The cluster
+        # iterates through them in order, one per ``windowSeconds`` window.
+        models:
+          - llama3.2:1b
+          - phi3:mini
+          - qwen2.5:7b
+          - gemma2:2b
+          - tinyllama:1.1b
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
