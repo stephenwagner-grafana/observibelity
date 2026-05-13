@@ -28,15 +28,14 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} — {{ container }}"
+        "textFormat": "{{ pod }} \u2014 {{ container }}"
       }
     ]
   },
-  "description": "SupportBot app overview — request rate, error rate, latency, specialist mix, refusal/escalation, top spenders, prompt-injection burst, token-spike ratio.",
+  "description": "SupportBot app dashboard \u2014 health, specialists, 16 use cases, outliers, prompt-injection, cost, model routing, cascades, live tail. All queries against the observibelity namespace and llm-gateway sigil JSON event stream.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
   "links": [
     {
       "asDropdown": false,
@@ -63,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Health overview",
+      "title": "\ud83c\udfe5  Health overview",
       "type": "row"
     },
     {
@@ -71,7 +70,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Total HTTP request rate to SupportBot.",
+      "description": "Total HTTP request rate across SupportBot + its specialists.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -117,10 +116,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\"}[5m]))",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"supportbot|sb-.*\"}[5m]))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "req/s",
+          "legendFormat": "",
           "range": false,
           "refId": "A"
         }
@@ -133,7 +132,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Fraction of 5xx responses.",
+      "description": "Fraction of error responses.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -187,10 +186,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or on() vector(0)) / (sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])) + 0.001)",
+          "expr": "(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"supportbot|sb-.*\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or on() vector(0)) / (sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"supportbot|sb-.*\"}[5m])) + 0.001)",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "err rate",
+          "legendFormat": "",
           "range": false,
           "refId": "A"
         }
@@ -203,7 +202,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 latency.",
+      "description": "p95 latency across SupportBot + specialists.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -257,10 +256,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=~\"supportbot|sb-.*\"}[5m])))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "p95",
+          "legendFormat": "",
           "range": false,
           "refId": "A"
         }
@@ -327,10 +326,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"supportbot\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=~\"supportbot|sb-.*\"}[5m])))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "p99",
+          "legendFormat": "",
           "range": false,
           "refId": "A"
         }
@@ -348,7 +347,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "Specialist mix",
+      "title": "\ud83c\udfaf  Specialist mix \u2014 who handles the traffic",
       "type": "row"
     },
     {
@@ -356,7 +355,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Requests by specialist over time.",
+      "description": "Input-token rate per specialist over time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -370,13 +369,13 @@
             "showPoints": "never",
             "spanNulls": true
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 9,
-        "w": 24,
+        "w": 16,
         "x": 0,
         "y": 6
       },
@@ -409,8 +408,79 @@
           "refId": "A"
         }
       ],
-      "title": "Requests by specialist (5m)",
+      "title": "Token rate by specialist (5m)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Token-usage share by specialist over the last hour.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "id": 70,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h]))",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Specialist share (1h)",
+      "type": "piechart"
     },
     {
       "collapsed": false,
@@ -422,50 +492,101 @@
       },
       "id": 8,
       "panels": [],
-      "title": "Refusal + escalation (bad-question-askers)",
+      "title": "\ud83d\udcca  Use case mix \u2014 16 live demo scenarios",
       "type": "row"
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Refusal rate per employee. Insider-threat early warning.",
+      "description": "Input-token rate per use case. Each named scenario from registry/use_cases gets a line.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 16
+      },
+      "id": 80,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"$use_case\",gen_ai_token_type=\"input\"}[5m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_usecase}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Token rate by use case (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Cumulative input tokens consumed by each use case in the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "continuous-GrYlRd"
           },
-          "max": 1,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 0.2
-              },
-              {
-                "color": "red",
-                "value": 0.4
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 0,
+        "w": 8,
+        "x": 16,
         "y": 16
       },
-      "id": 9,
+      "id": 81,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
@@ -485,31 +606,44 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I cannot|I.m sorry|I.m unable|outside my scope|appreciate.*but|not designed to|I.m not equipped)\" | json | ai_o11y_specialist=~\"sb-.*\" [1h])) / (sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" [1h])) + 1))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
-          "queryType": "range",
+          "expr": "sum by (ai_o11y_usecase) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_usecase}}",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Refusal rate by employee (top 10, 15m)",
+      "title": "Tokens by use case (1h)",
       "type": "bargauge"
     },
     {
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
       },
-      "description": "Escalation rate per employee.",
+      "id": 9,
+      "panels": [],
+      "title": "\ud83d\udeab  Bad question askers \u2014 refusal & escalation",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Conversations that touched sb-escalator divided by total. High % = persona keeps getting handed off to humans.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "continuous-GrYlRd"
           },
-          "max": 1,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -527,17 +661,19 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
         },
         "overrides": []
       },
       "gridPos": {
         "h": 9,
         "w": 12,
-        "x": 12,
-        "y": 16
+        "x": 0,
+        "y": 26
       },
-      "id": 10,
+      "id": 90,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
@@ -557,16 +693,92 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [1h])) / (sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" [1h])) + 1))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\"}[15m])) / (sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[15m])) + 0.001))",
+          "format": "time_series",
+          "instant": true,
           "legendFormat": "{{ai_o11y_persona_id}}",
-          "queryType": "range",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Escalation rate by employee (top 10, 15m)",
+      "title": "Escalation rate by persona (top 10, 15m)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Share of a persona's conversations that hit sb-security-handler (denials / lockdowns). Insider-threat early warning.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.2
+              },
+              {
+                "color": "red",
+                "value": 0.4
+              }
+            ]
+          },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 91,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\"}[15m])) / (sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[15m])) + 0.001))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_persona_id}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Security-handler rate by persona (top 10, 15m)",
       "type": "bargauge"
     },
     {
@@ -575,19 +787,19 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 35
       },
-      "id": 11,
+      "id": 10,
       "panels": [],
-      "title": "Outlier users (Tim + Eric)",
+      "title": "\ud83d\udc8a  Outlier users \u2014 Tim, Eric & friends",
       "type": "row"
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Top 10 employees by total tokens consumed in the last hour.",
+      "description": "Top 10 personas by total tokens consumed in the last hour. Tim & Eric should sit at the top.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -614,16 +826,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "employee"
+              "options": "ai_o11y_persona_id"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Employee"
+                "value": "Persona"
               },
               {
                 "id": "custom.width",
-                "value": 280
+                "value": 220
               }
             ]
           },
@@ -635,7 +847,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Tokens / hr"
+                "value": "Tokens / 1h"
               },
               {
                 "id": "custom.cellOptions",
@@ -652,9 +864,9 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 26
+        "y": 36
       },
-      "id": 12,
+      "id": 100,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -669,31 +881,48 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Tokens / hr"
+            "displayName": "Tokens / 1h"
           }
         ]
       },
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_input_tokens [1h])) + sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_output_tokens [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
-          "queryType": "range",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
           "refId": "A"
         }
       ],
       "title": "Top spenders by tokens (1h)",
-      "type": "table"
+      "type": "table",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Tokens-per-word ratio per employee — high values mean verbose padding.",
+      "description": "Input-token spend per persona. Verbose padding (Eric) and recursive prompts (Tim L) light this up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -705,14 +934,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 8
               }
             ]
           },
@@ -724,9 +945,9 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 26
+        "y": 36
       },
-      "id": 13,
+      "id": 101,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
@@ -746,24 +967,161 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=~\"sb-.*\" | unwrap gen_ai_usage_input_tokens [1h])))",
+          "expr": "topk(15, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h])))",
+          "format": "time_series",
+          "instant": true,
           "legendFormat": "{{ai_o11y_persona_id}}",
-          "queryType": "range",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Tokens-per-word by employee (1h)",
+      "title": "Input tokens by persona (1h)",
       "type": "bargauge"
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Dangerous events attributed to each employee.",
+      "description": "Per-persona spike ratio. >3 indicates a sudden burst \u2014 the token-spike / cascade signature.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 36
+      },
+      "id": 102,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1m])) / (sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])) + 0.001))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_persona_id}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Spike ratio \u2014 rate(1m) / rate(1h) by persona",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 11,
+      "panels": [],
+      "title": "\ud83d\udee1\ufe0f  Sensitive data leaks & policy violations",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Token rate broken out by data-leak / policy-violation use cases.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 46
+      },
+      "id": 110,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\"}[5m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_usecase}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "PII / data-leak use cases (rate, 5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Top personas by tokens spent in sensitive-data use cases. Tim Heidecker (data-theft-tim) should top this.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -775,14 +1133,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 15
               }
             ]
           },
@@ -792,11 +1142,11 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 26
+        "w": 12,
+        "x": 12,
+        "y": 46
       },
-      "id": 14,
+      "id": 111,
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 16,
@@ -816,16 +1166,18 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\"}[1h])))",
+          "format": "time_series",
+          "instant": true,
           "legendFormat": "{{ai_o11y_persona_id}}",
-          "queryType": "range",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Dangerous events by user (1h)",
+      "title": "Personas in data-leak use cases (1h)",
       "type": "bargauge"
     },
     {
@@ -834,11 +1186,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 55
       },
-      "id": 15,
+      "id": 12,
       "panels": [],
-      "title": "Token spikes + prompt injection burst",
+      "title": "\ud83d\udea8  Prompt injection \u2014 LLM01",
       "type": "row"
     },
     {
@@ -846,82 +1198,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "spike_ratio = 1-minute token rate / 1-hour token rate. > 3x is alert-worthy.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1.5
-              },
-              {
-                "color": "red",
-                "value": 3
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 36
-      },
-      "id": 16,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1m])) / (sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])) + 0.001)",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "spike",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "spike_ratio = rate(1m) / rate(1h)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "description": "Prompt-injection events in the last 5 minutes. >= 2 fires the prompt_injection_burst alert.",
+      "description": "Conversations classified in a prompt-injection use case in the last 5 min.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -940,7 +1217,7 @@
               },
               {
                 "color": "red",
-                "value": 2
+                "value": 5
               }
             ]
           },
@@ -950,11 +1227,11 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 36
+        "w": 6,
+        "x": 0,
+        "y": 56
       },
-      "id": 17,
+      "id": 120,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -972,24 +1249,300 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" [5m]))",
-          "legendFormat": "injection bursts",
-          "queryType": "range",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"prompt-injection.*\"}[5m]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "prompt_injection_burst counter (5m)",
+      "title": "Injection-tagged events (5m)",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Toxicity-flagged conversations in last 5 min.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 56
+      },
+      "id": 121,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"toxicity\"}[5m]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Toxicity events (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Hiring-discrimination-flagged conversations in last 5 min.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 56
+      },
+      "id": 122,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"hiring-discrimination-risk\"}[5m]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Hiring-discrimination events (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Confidential-disclosure attempts in last 5 min.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 56
+      },
+      "id": 123,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"confidential-disclosure\"}[5m]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Confidential-disclosure events (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Personas with the most tokens spent in injection use cases. Eric ('u-eric-bad') should top this.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "id": 124,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"prompt-injection.*\"}[1h])))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_persona_id}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Prompt-injection personas (1h)",
+      "type": "bargauge"
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Prompt-injection events by attributed employee.",
+      "description": "Raw regex hits on injection phrasing in the sigil JSON. Backup signal in case the use-case label is missing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1012,12 +1565,12 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 40
+        "y": 60
       },
-      "id": 18,
+      "id": 125,
       "options": {
         "displayMode": "gradient",
-        "minVizHeight": 12,
+        "minVizHeight": 16,
         "minVizWidth": 8,
         "orientation": "horizontal",
         "reduceOptions": {
@@ -1037,13 +1590,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(8, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" | json [1h])))",
+          "expr": "topk(8, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist=~\"sb-.*\" |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" [1h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Prompt injection events by employee (1h)",
+      "title": "Live regex-injection hits by persona (1h)",
       "type": "bargauge"
     },
     {
@@ -1052,11 +1605,569 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 65
       },
-      "id": 19,
+      "id": 13,
       "panels": [],
-      "title": "Live event stream",
+      "title": "\ud83d\udcb0  Cost & token volume",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Hourly cost per specialist. Falls back to a $/token estimate (Sonnet input at ~$3/M) if cost metric is absent.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 66
+      },
+      "id": 130,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_cost_total{ai_o11y_specialist=~\"sb-.*\"}[5m])) * 3600 or sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[5m])) * 60 * 3e-6",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "$/hr by specialist (5m rate \u00d7 3600)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Input vs output token rate across all SupportBot specialists.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 66
+      },
+      "id": 131,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_token_type) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[5m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{gen_ai_token_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens/sec by token type",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 75
+      },
+      "id": 14,
+      "panels": [],
+      "title": "\ud83e\udd16  Model routing \u2014 which models fielded the traffic",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Share of input tokens by model. Live traffic \u2192 Claude Sonnet 4.6; loadgen \u2192 rotating Ollama pool.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 76
+      },
+      "id": 140,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_response_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h]))",
+          "instant": true,
+          "legendFormat": "{{gen_ai_response_model}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Model share by token volume (1h)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Token-rate per model over time. Watch the rotation pool dwell as different lines light up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 8,
+        "y": 76
+      },
+      "id": 141,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[5m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{gen_ai_response_model}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Model token rate (5m)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 85
+      },
+      "id": 15,
+      "panels": [],
+      "title": "\ud83d\udce7  Email cascade \u2014 the 'show me every email' demo",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Token-bearing events in the email-cascade use case in last 5 min.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 86
+      },
+      "id": 150,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"email-cascade\"}[5m]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cascade-tagged events (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Token-bearing events in the tool-call-runaway use case in last 5 min.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 86
+      },
+      "id": 151,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"tool-call-runaway\"}[5m]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Tool-call-runaway events (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Token rate for the two cascade-style use cases.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 86
+      },
+      "id": 152,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\"}[5m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_usecase}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cascade token rate (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Personas triggering the cascade scenarios.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 90
+      },
+      "id": 153,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "topk(8, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\"}[1h])))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_persona_id}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cascade personas (1h)",
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 95
+      },
+      "id": 16,
+      "panels": [],
+      "title": "\ud83d\udce1  Live event stream",
       "type": "row"
     },
     {
@@ -1064,14 +2175,14 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live SupportBot event stream — dangerous events, refusals, escalations.",
+      "description": "Live tail of the structured sigil event stream from llm-gateway. Filter by clicking labels.",
       "gridPos": {
-        "h": 11,
+        "h": 12,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 96
       },
-      "id": 20,
+      "id": 160,
       "options": {
         "dedupStrategy": "none",
         "enableLogDetails": true,
@@ -1088,12 +2199,12 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\"",
+          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist=~\"sb-.*\"",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "SupportBot event stream (Loki)",
+      "title": "SupportBot sigil events (Loki)",
       "type": "logs"
     }
   ],
@@ -1171,7 +2282,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_usecase)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_usecase)",
         "hide": 0,
         "includeAll": true,
         "label": "Use case",
@@ -1179,7 +2290,7 @@
         "name": "use_case",
         "options": [],
         "query": {
-          "query": "label_values(specialist_request_total{service=\"supportbot\"}, ai_o11y_usecase)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_usecase)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -1225,7 +2336,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(supportbot_tokens_total, employee)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_persona_id)",
         "hide": 0,
         "includeAll": true,
         "label": "Employee",
@@ -1233,7 +2344,7 @@
         "name": "employee_id",
         "options": [],
         "query": {
-          "query": "label_values(supportbot_tokens_total, employee)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_persona_id)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -1259,7 +2370,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — SupportBot",
+  "title": "AI o11y \u2014 SupportBot",
   "uid": "ai-obs-app-supportbot",
   "weekStart": ""
 }
