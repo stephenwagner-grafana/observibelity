@@ -51,7 +51,7 @@ spec:
               exit 1
       containers:
         - name: migrate
-          image: "{{ .Values.global.imageRegistry }}/observibelity-migrate:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRegistry }}/observibelity-migrate:{{ .Values.global.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.podDefaults.securityContext }}
           {{- if $ctrSc }}

@@ -1,0 +1,44 @@
+suite: basic chart sanity
+templates:
+  - templates/postgres/statefulset.yaml
+  - templates/llm-gateway/deployment.yaml
+  - templates/neoncart/deployment.yaml
+tests:
+  - it: postgres StatefulSet renders when enabled
+    set:
+      phase: 1
+      postgres.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - documentIndex: 0
+        equal:
+          path: kind
+          value: StatefulSet
+  - it: postgres renders 0 when phase is 0
+    set:
+      phase: 0
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: neoncart deployment renders at phase 1
+    set:
+      phase: 1
+      neoncart.enabled: true
+    asserts:
+      - documentIndex: 0
+        equal:
+          path: kind
+          value: Deployment
+  - it: llm-gateway deployment has required env vars
+    set:
+      phase: 1
+      llmGateway.enabled: true
+      llmGateway.providers.anthropic.apiKey: test
+    asserts:
+      - documentIndex: 0
+        contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OTEL_SERVICE_NAME
+            value: llm-gateway

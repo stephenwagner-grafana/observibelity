@@ -8,7 +8,7 @@ CHART_DIR := .
 KUBECONFIG ?= $(HOME)/.kube/config
 TIMEOUT ?= 5m
 
-.PHONY: help dev-cluster dev-cluster-down dev dev-diff dev-down verify test test-unit test-bats test-helm smoke doctor snapshot watch images lint clean init verify-repo build-usecases test-usecases new-usecase import-usecases migrate migrate-down migrate-status seed seed-regenerate logs logs-app pf-neoncart pf-llm-gateway pf-postgres trigger-mice usecases usecases-status phase deploy-k3s-local k3s-import images-local dashboards-push dashboards-pull dashboards-diff evaluators-push evaluators-status k6-logs k6-scenarios k6-restart alerts-push alerts-status
+.PHONY: help dev-cluster dev-cluster-down dev dev-diff dev-down verify test test-unit test-bats test-helm smoke doctor snapshot watch images lint clean init verify-repo build-usecases test-usecases new-usecase import-usecases migrate migrate-down migrate-status seed seed-regenerate logs logs-app pf-neoncart pf-llm-gateway pf-postgres trigger-mice usecases usecases-status phase deploy-k3s-local k3s-import images-local dashboards-push dashboards-pull dashboards-diff evaluators-push evaluators-status k6-logs k6-scenarios k6-restart alerts-push alerts-status soak watch-pods quick-test disaster-recovery
 
 help:  ## Print this help (auto-generated from target docstrings).
 	@awk 'BEGIN {FS = ":.*?## "; printf "ObserVIBElity — make targets\n\n"} \
@@ -220,3 +220,15 @@ alerts-push: ## Push compiled alerts to Grafana Cloud Mimir
 
 alerts-status: ## Show local alert files
 	@./tools/alerts-sync.sh status
+
+soak: ## Run soak test (5 min of mixed-persona traffic)
+	@./tools/soak-test.sh
+
+watch-pods: ## Tail pod state changes in real-time
+	@./tools/deploy-watch-pods.sh
+
+quick-test: ## Run 10 demo scenarios + check responses
+	@./tools/quick-test.sh
+
+disaster-recovery: ## Tear down everything (DESTRUCTIVE)
+	@./tools/disaster-recovery.sh

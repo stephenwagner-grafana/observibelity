@@ -18,6 +18,9 @@ from typing import AsyncIterator
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse, Response
 from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 from .pricing import compute_cost, load_pricing_overrides
@@ -174,6 +177,58 @@ app = FastAPI(
     description="Centralized LLM routing for observibelity specialists.",
     lifespan=lifespan,
 )
+
+
+# ---- OTel bootstrap --------------------------------------------------------
+# The collector + env-vars are wired by Helm but the SDK still has to be
+# initialized in-process: without a TracerProvider, `tracer.start_as_current_span`
+# returns a no-op span and log records emit `trace_id=""` / `span_id=""`.
+def _init_otel(fastapi_app: FastAPI) -> None:
+    """Stand up a TracerProvider + OTLP/HTTP exporter and instrument FastAPI + httpx.
+
+    Idempotent + best-effort: any failure (libs missing in tests, collector
+    unreachable at boot, etc.) downgrades to a warning rather than crashing
+    the gateway — observability must never take the process down.
+    """
+    service_name = os.environ.get("OTEL_SERVICE_NAME", "llm-gateway")
+    namespace = os.environ.get("OBSERVIBELITY_NAMESPACE", "observibelity")
+    try:
+        if not isinstance(trace.get_tracer_provider(), TracerProvider):
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.namespace": namespace,
+                }
+            )
+            provider = TracerProvider(resource=resource)
+            endpoint = os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+            ).rstrip("/")
+            # OTLP/HTTP collector exposes /v1/traces; the SDK constructor wants
+            # the fully qualified path, not the bare collector root.
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+
+            exporter = OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces")
+            provider.add_span_processor(BatchSpanProcessor(exporter))
+            trace.set_tracer_provider(provider)
+
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+        FastAPIInstrumentor.instrument_app(fastapi_app)
+        try:
+            from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+
+            HTTPXClientInstrumentor().instrument()
+        except Exception:  # noqa: BLE001 — httpx instrumentation is nice-to-have
+            pass
+        log.info("OTel SDK initialized for %s", service_name)
+    except Exception as exc:  # noqa: BLE001 — never crash on telemetry
+        log.warning("OTel init failed (%s) — spans will be no-op", exc)
+
+
+_init_otel(app)
 
 tracer = trace.get_tracer("llm_gateway")
 

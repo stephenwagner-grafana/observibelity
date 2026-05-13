@@ -23,7 +23,9 @@ async def test_handle_no_tools(monkeypatch: pytest.MonkeyPatch) -> None:
         return_value={
             "content": "Hello, how can I help?",
             "tool_calls": [],
-            "usage": {"cost": {"total_usd": 0.0012}},
+            # Gateway emits usage.cost_usd; the legacy "cost" key is also
+            # accepted by the specialist for backwards compat.
+            "usage": {"cost_usd": {"total_usd": 0.0012}},
         }
     )
     req = SpecialistRequest(message="hi")
@@ -36,21 +38,23 @@ async def test_handle_no_tools(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.asyncio
 async def test_handle_with_tool_call() -> None:
     spec = NcChatbot()
+    # Anthropic provider returns tool_calls with an "input" payload — match
+    # that shape so the specialist forwards real args to the tool.
     first = {
         "content": "",
         "tool_calls": [
             {
                 "id": "tc1",
                 "name": "search_products",
-                "args": {"q": "neon lamp"},
+                "input": {"query": "neon lamp"},
             }
         ],
-        "usage": {"cost": {"total_usd": 0.001}},
+        "usage": {"cost_usd": {"total_usd": 0.001}},
     }
     second = {
         "content": "Found 3 neon lamps.",
         "tool_calls": [],
-        "usage": {"cost": {"total_usd": 0.002}},
+        "usage": {"cost_usd": {"total_usd": 0.002}},
     }
     spec.call_gateway = AsyncMock(side_effect=[first, second])  # type: ignore[method-assign]
     spec.call_tool = AsyncMock(return_value={"items": []})  # type: ignore[method-assign]
@@ -60,3 +64,8 @@ async def test_handle_with_tool_call() -> None:
 
     assert resp.reply == "Found 3 neon lamps."
     spec.call_tool.assert_awaited_once()
+    # Ensure the args we forwarded actually came from the "input" key.
+    _, kwargs = spec.call_tool.call_args
+    call_args = spec.call_tool.call_args[0]
+    assert call_args[0] == "search_products"
+    assert call_args[1] == {"query": "neon lamp"}

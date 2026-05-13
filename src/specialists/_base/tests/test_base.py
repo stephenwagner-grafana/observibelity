@@ -31,7 +31,12 @@ def test_response_defaults() -> None:
 def test_tool_specs() -> None:
     spec = _Dummy()
     specs = spec._build_tool_specs()
-    assert specs == [{"name": "search_products", "type": "function"}]
+    # OpenAI-shape function-tool spec; gateway translates to Anthropic
+    # input_schema before calling the model.
+    assert len(specs) == 1
+    assert specs[0]["type"] == "function"
+    assert specs[0]["function"]["name"] == "search_products"
+    assert specs[0]["function"]["parameters"]["type"] == "object"
 
 
 @pytest.mark.asyncio

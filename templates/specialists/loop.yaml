@@ -35,7 +35,7 @@ spec:
       {{- end }}
       containers:
         - name: specialist
-          image: "{{ $.Values.global.imageRegistry }}/observibelity-{{ $dnsName }}:{{ $.Chart.AppVersion }}"
+          image: "{{ $.Values.global.imageRegistry }}/observibelity-{{ $dnsName }}:{{ $.Values.global.imageTag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" $.Values.podDefaults.securityContext }}
           {{- if $ctrSc }}

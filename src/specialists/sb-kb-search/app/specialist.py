@@ -37,7 +37,8 @@ class SbKbSearch(Specialist):
         ]
         result = await self.call_gateway(messages, req)
         usage = result.get("usage", {}) or {}
-        cost = usage.get("cost", {}) or {}
+        # Gateway stores per-call cost under "cost_usd".
+        cost = usage.get("cost_usd") or usage.get("cost") or {}
         tool_calls = [{"name": "kb_search", "args": {"query": req.message, "limit": 5}, "result": kb}]
         return SpecialistResponse(
             reply=result.get("content", ""),

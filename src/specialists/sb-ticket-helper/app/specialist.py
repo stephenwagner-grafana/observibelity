@@ -39,8 +39,9 @@ class SbTicketHelper(Specialist):
         result = await self.call_gateway(messages, req)
         if result.get("tool_calls"):
             for tc in result["tool_calls"]:
+                tool_args = tc.get("input") or tc.get("args") or {}
                 try:
-                    tool_result = await self.call_tool(tc["name"], tc.get("args", {}), req)
+                    tool_result = await self.call_tool(tc["name"], tool_args, req)
                 except Exception as exc:  # noqa: BLE001
                     tool_result = {"error": str(exc), "tool": tc["name"]}
                 messages.append({"role": "assistant", "tool_calls": [tc]})
@@ -54,7 +55,8 @@ class SbTicketHelper(Specialist):
             result = await self.call_gateway(messages, req)
 
         usage = result.get("usage", {}) or {}
-        cost = usage.get("cost", {}) or {}
+        # Gateway stores per-call cost under "cost_usd".
+        cost = usage.get("cost_usd") or usage.get("cost") or {}
         return SpecialistResponse(
             reply=result.get("content", ""),
             tool_calls=result.get("tool_calls", []) or [],

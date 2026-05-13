@@ -1,4 +1,10 @@
-"""get_ticket — fetch a single ticket by ID."""
+"""get_ticket — fetch a single ticket by ID.
+
+Schema sync (migrations/versions/0006_tickets.py): persona_id is a STRING
+slug (FK to personas.persona_id), there is no ``category`` or ``updated_at``
+column, and ``priority`` is the closest moral-equivalent of ``category``.
+Older drafts of this tool selected those non-existent columns and 500'd.
+"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -17,13 +23,15 @@ class GetTicketArgs(BaseModel):
 
 class GetTicketResult(BaseModel):
     id: int
-    persona_id: Optional[int] = None
+    ticket_number: str
+    persona_id: Optional[str] = None  # string slug, not int
     subject: str
     body: Optional[str] = None
     status: str
+    # ``category`` aliases ``priority`` for response-shape stability.
     category: Optional[str] = None
+    priority: Optional[str] = None
     created_at: datetime
-    updated_at: Optional[datetime] = None
 
 
 class GetTicket(Tool):
@@ -48,7 +56,8 @@ class GetTicket(Tool):
         assert session is not None, "get_ticket requires a DB session"
         stmt = text(
             """
-            SELECT id, persona_id, subject, body, status, category, created_at, updated_at
+            SELECT id, ticket_number, persona_id, subject, body, status,
+                   priority, created_at
               FROM tickets
              WHERE id = :tid
             """
@@ -58,11 +67,12 @@ class GetTicket(Tool):
             raise LookupError(f"ticket {args.ticket_id} not found")
         return GetTicketResult(
             id=row.id,
+            ticket_number=row.ticket_number,
             persona_id=row.persona_id,
             subject=row.subject,
             body=row.body,
             status=row.status,
-            category=row.category,
+            category=row.priority,
+            priority=row.priority,
             created_at=row.created_at,
-            updated_at=row.updated_at,
         )

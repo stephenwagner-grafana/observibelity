@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
         - name: supportbot
-          image: "{{ .Values.global.imageRegistry }}/observibelity-supportbot:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRegistry }}/observibelity-supportbot:{{ .Values.global.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.supportbot.securityContext }}
           {{- if $ctrSc }}

@@ -35,11 +35,21 @@ def test_knobs():
 
 @pytest.mark.asyncio
 async def test_execute_returns_hits():
-    rows = [_StubRow(id=1, slug="vpn", title="VPN reset", body="step 1...", category="it")]
+    # supportbot_kb schema (0007_supportbot_kb): no category column —
+    # tags string is the canonical source; first tag is the category.
+    rows = [
+        _StubRow(
+            id=1, slug="vpn", title="VPN reset",
+            body="step 1...", tags="it;vpn;troubleshoot",
+        )
+    ]
     sess = _StubSession(rows)
     tool = KbSearch.__new__(KbSearch)
     res = await tool.execute(KbSearchArgs(query="vpn"), sess)
     assert isinstance(res, KbSearchResult)
     assert res.total == 1
-    assert res.items[0] == KbHit(id=1, slug="vpn", title="VPN reset", snippet="step 1...", category="it")
+    assert res.items[0] == KbHit(
+        id=1, slug="vpn", title="VPN reset",
+        snippet="step 1...", category="it",
+    )
     assert sess.last_params["q"] == "%vpn%"

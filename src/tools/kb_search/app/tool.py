@@ -4,11 +4,14 @@ Phase 2 contract:
   Args:    query (>=1 char), limit (1..50), include_confidential (default False)
   Result:  items (id, slug, title, snippet, category), total
 
+Schema sync (migrations/versions/0007_supportbot_kb.py): supportbot_kb has
+slug, title, body, tags, created_at — NO ``category`` or ``is_confidential``
+columns. The "confidential" flag is encoded in ``tags`` (a ';'-separated
+list); category is the first tag. Older drafts of this tool referenced
+the column names directly and 500'd with UndefinedColumn.
+
 Confidential articles are excluded unless include_confidential=True is
-explicitly passed AND the caller is in the ALLOWED_CALLERS list. By
-default the tool does NOT enforce a caller list (sb-kb-search is the
-common path), but the `include_confidential` flag is gated by a separate
-check: only callers in CONFIDENTIAL_CALLERS may pass True.
+explicitly passed AND the caller is in CONFIDENTIAL_CALLERS.
 """
 from __future__ import annotations
 
@@ -65,18 +68,29 @@ class KbSearch(Tool):
         session: AsyncSession | None = None,
     ) -> KbSearchResult:
         assert session is not None, "kb_search requires a DB session"
-        # Build the WHERE clause dynamically.
-        clauses = ["(title ILIKE :q OR body ILIKE :q OR tags ILIKE :q)"]
+        clauses = [
+            "(title ILIKE :q OR body ILIKE :q OR COALESCE(tags, '') ILIKE :q)"
+        ]
         params: dict = {"q": f"%{args.query}%", "lim": args.limit}
         if not args.include_confidential:
-            clauses.append("is_confidential = FALSE")
+            # Confidentiality is stored in the tags string.
+            clauses.append("(tags IS NULL OR tags NOT ILIKE '%confidential%')")
         if args.category:
-            clauses.append("category = :cat")
+            # Category = the first tag in a ';'-separated list.
+            clauses.append(
+                "(tags = :cat "
+                "OR tags ILIKE :catprefix "
+                "OR tags ILIKE :catmid "
+                "OR tags ILIKE :catsuffix)"
+            )
             params["cat"] = args.category
+            params["catprefix"] = f"{args.category};%"
+            params["catmid"] = f"%;{args.category};%"
+            params["catsuffix"] = f"%;{args.category}"
         where = " AND ".join(clauses)
         stmt = text(
             f"""
-            SELECT id, slug, title, body, category
+            SELECT id, slug, title, body, tags
               FROM supportbot_kb
              WHERE {where}
              ORDER BY title
@@ -84,14 +98,18 @@ class KbSearch(Tool):
             """
         )
         rows = (await session.execute(stmt, params)).all()
-        items = [
-            KbHit(
-                id=r.id,
-                slug=r.slug,
-                title=r.title,
-                snippet=(r.body or "")[:240],
-                category=r.category,
+        items: list[KbHit] = []
+        for r in rows:
+            # Derive category from the first ';'-separated tag.
+            tags_str = r.tags or ""
+            first_tag = tags_str.split(";")[0].strip() if tags_str else None
+            items.append(
+                KbHit(
+                    id=r.id,
+                    slug=r.slug,
+                    title=r.title,
+                    snippet=(r.body or "")[:240],
+                    category=first_tag or None,
+                )
             )
-            for r in rows
-        ]
         return KbSearchResult(items=items, total=len(items))

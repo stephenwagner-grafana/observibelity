@@ -1,4 +1,13 @@
-"""get_product — fetch a product with brand + active promotions."""
+"""get_product — fetch a product with brand + active promotions.
+
+Schema sync (migrations/versions/0002_catalog.py):
+  * ``promotions`` columns: id, code, percent_off, valid_from, valid_to,
+    active, created_at. (No ``product_id``, ``description``, or
+    ``discount_pct`` — those were placeholders in an older draft.)
+Until the product/promo join table lands, surface every currently-active
+promotion code regardless of product — keeps the response shape stable
+without 500-ing on UndefinedColumn.
+"""
 from __future__ import annotations
 
 from typing import Self
@@ -24,7 +33,11 @@ class GetProductArgs(BaseModel):
 
 
 class Promotion(BaseModel):
-    """Active promotion attached to a product."""
+    """Active promotion attached to a product.
+
+    ``description`` is synthesized from the code (the DB schema doesn't
+    store one); ``discount_pct`` mirrors ``promotions.percent_off``.
+    """
 
     id: int
     code: str
@@ -102,22 +115,26 @@ class GetProduct(Tool):
             stock_qty=int(row.stock_qty),
         )
 
+        # Schema has no product_id FK on promotions yet — return every
+        # currently-active code. Older draft selected non-existent columns.
         promo_stmt = text(
             """
-            SELECT id, code, description, discount_pct
+            SELECT id, code, percent_off
               FROM promotions
-             WHERE product_id = :pid AND active
+             WHERE active = TRUE
+             LIMIT 20
             """
         )
-        promo_rows = (
-            await session.execute(promo_stmt, {"pid": product.id})
-        ).all()
+        try:
+            promo_rows = (await session.execute(promo_stmt)).all()
+        except Exception:  # noqa: BLE001 — promotions are optional decoration
+            promo_rows = []
         promotions = [
             Promotion(
                 id=r.id,
                 code=r.code,
-                description=r.description,
-                discount_pct=float(r.discount_pct),
+                description=f"Promo code {r.code}",
+                discount_pct=float(r.percent_off),
             )
             for r in promo_rows
         ]

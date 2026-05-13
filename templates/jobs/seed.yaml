@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
         - name: seed
-          image: "{{ .Values.global.imageRegistry }}/observibelity-seed:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRegistry }}/observibelity-seed:{{ .Values.global.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.podDefaults.securityContext }}
           {{- if $ctrSc }}

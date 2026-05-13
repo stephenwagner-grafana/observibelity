@@ -1,0 +1,593 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-logs"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "📧 Email cascade fires",
+        "target": {
+          "expr": "{namespace=\"supportbot\"} |~ \"\\\\[email-cascade\\\\] attempt=3 starting hourly fan-out\"",
+          "queryType": "range",
+          "refId": "annot"
+        },
+        "textFormat": "Cascade started"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3057429293850624,
+  "links": [
+    {
+      "icon": "external link",
+      "tags": [],
+      "title": "← Back to Support Bot dashboard",
+      "type": "link",
+      "url": "/d/ai-obs-app-supportbot"
+    }
+  ],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "## 📧 Email Cascade RCA — Live Spike\n\nLanding page for the *“show me every email I have ever sent”* demo. The agent fans 2000 hourly tool calls + 2000 LLM summarizer calls when a user asks for an unbounded mailbox dump. Watch:\n\n1. **Top conversations by agent calls/min** — your live ask spikes to the top within seconds.\n2. **Tokens/sec + $/sec** — cost climbs in real time.\n3. **Alert state** — the *Conv runaway* alert fires above 1k tokens/sec/conv.\n4. **Email sent** — webhook-receiver emits an `email_sent` log line when the alert routes notification.\n5. **Live cascade tail** — every per-chunk probe + summarize call, scrolling.\n\nDemo flow: type the trigger phrase → watch the right column light up → click trace → see all 2000 nested spans in Tempo.",
+        "mode": "markdown"
+      },
+      "title": "",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Distinct conv_id seen in the last 5 minutes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "count(count by (conv_id) (sum by (conv_id) (count_over_time({namespace=\"supportbot\"} | logfmt | conv_id != \"\" [5m]))))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "🔥 Active conversations now (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 200
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(rate({namespace=\"supportbot\"} |~ \"sigil generation set_result\" [1m]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "⚡ Specialist calls / second (fleet)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Specialist call rate * blended $0.005/call. Spikes during cascade.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.05
+              },
+              {
+                "color": "red",
+                "value": 0.5
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(rate({namespace=\"supportbot\"} |~ \"sigil generation set_result\" [1m])) * 0.005",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "💰 $/sec (rough estimate)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Alert fires when ANY single conversation exceeds 100 specialist calls in 1 minute.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 1,
+                "result": {
+                  "color": "red",
+                  "text": "🔥 FIRING"
+                },
+                "to": 999
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"supportbot\"} |~ \"alert: name=conv_runaway state=firing\" [1m]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "🚨 Conv runaway alert state",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Each line is one conversation. Your cascade conv lands at the top within seconds and shoots up vertically.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "last",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "topk(10, sum by (conv_id) (count_over_time({namespace=\"supportbot\"} |~ \"\\\\[email-cascade\\\\]|sigil generation\" | logfmt | conv_id != \"\" [1m])))",
+          "legendFormat": "{{conv_id}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "🏆 Top 10 conversations by agent calls / minute",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Per-minute volume on the email tool. Cascade run = visible vertical wall.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (status) (count_over_time({namespace=\"supportbot\"} |~ \"emails/search\" | regexp \" (?P<status>\\\\d{3}) \" [1m]))",
+          "legendFormat": "HTTP {{status}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Tool-call rate (acme-tools / emails.search)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Counts `email_sent` log lines from the alert webhook receiver. The Conv runaway alert routes to this receiver, which logs that an email went out to oncall@acme.local.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 25
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"supportbot\"} |~ \"email_sent\" [1h])) or vector(0)",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "📧 Email sent (webhook-receiver, last 1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Approximate via specialist call rate * 500 tokens/call.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 18,
+        "x": 6,
+        "y": 25
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "topk(5, sum by (conv_id) (count_over_time({namespace=\"supportbot\"} |~ \"sigil generation set_result\" | logfmt | conv_id != \"\" [1m]))) * 500 / 60",
+          "legendFormat": "{{conv_id}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "✨ Tokens/sec by conversation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Every probe + summarizer call, plus alert-state transitions. Click conv_id to filter.",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "{namespace=\"supportbot\"} |~ \"\\\\[email-cascade\\\\]|emails/search|email_sent|alert\"",
+          "refId": "A"
+        }
+      ],
+      "title": "🔍 Recent cascade activity (live tail)",
+      "type": "logs"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 11,
+      "options": {
+        "content": "### 🔍 Pivot to the trace\n\nGrab the conv_id from the **Top 10 conversations** panel above, then jump to **Tempo → Search** and use:\n\n```\n{ resource.service.name = \"acme-bot-api\" && conv_id = \"<paste>\" }\n```\n\nYou'll see the cascade as one big root span with 2000 nested children. The pre-2018 chunks finish in ~5ms each (empty fast); post-2018 chunks fan out to `suggested-reply-writer` for the LLM summarize. Total span count on the trace: ~2059 (1 root + 1 attempt-1 + 10 attempt-2 + 2000 attempt-3 + 48 summarizers + judges + tools).",
+        "mode": "markdown"
+      },
+      "title": "🪵 Cascade trace search hint",
+      "type": "text"
+    }
+  ],
+  "preload": false,
+  "refresh": "10s",
+  "schemaVersion": 42,
+  "tags": [
+    "ai-observability",
+    "cascade",
+    "rca",
+    "supportbot",
+    "ai-o11y"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "AI Obs · Cascade RCA — Live Spike",
+  "uid": "ai-obs-cascade-spike",
+  "version": 5
+}

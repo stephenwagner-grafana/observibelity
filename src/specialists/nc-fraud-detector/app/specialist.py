@@ -53,9 +53,10 @@ class NcFraudDetector(Specialist):
             result = await self.call_gateway(messages, req)
             if result.get("tool_calls"):
                 for tc in result["tool_calls"]:
+                    tool_args = tc.get("input") or tc.get("args") or {}
                     tool_result = await self.call_tool(
                         tc["name"],
-                        tc.get("args", {}),
+                        tool_args,
                         req,
                     )
                     messages.append({"role": "assistant", "tool_calls": [tc]})
@@ -72,7 +73,8 @@ class NcFraudDetector(Specialist):
             span.set_attribute("fraud.score", score)
 
         usage = result.get("usage", {}) or {}
-        cost = usage.get("cost", {}) or {}
+        # Gateway stores per-call cost under "cost_usd".
+        cost = usage.get("cost_usd") or usage.get("cost") or {}
         return SpecialistResponse(
             reply=json.dumps({"fraud_score": score, "reasoning": reasoning}),
             tool_calls=result.get("tool_calls", []) or [],

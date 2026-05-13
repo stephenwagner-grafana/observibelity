@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
         - name: llm-gateway
-          image: "{{ .Values.global.imageRegistry }}/observibelity-llm-gateway:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRegistry }}/observibelity-llm-gateway:{{ .Values.global.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.llmGateway.securityContext }}
           {{- if $ctrSc }}
@@ -55,6 +55,10 @@ spec:
               value: {{ .Values.llmGateway.providers.ollama.enabled | quote }}
             - name: OLLAMA_BASE_URL
               value: {{ .Values.llmGateway.providers.ollama.baseUrl | default "" | quote }}
+            - name: OLLAMA_DEFAULT_MODEL
+              value: {{ .Values.llmGateway.providers.ollama.model | default "llama3.1:8b" | quote }}
+            - name: LLM_GATEWAY_DEFAULT_PROVIDER
+              value: {{ .Values.llmGateway.defaultProvider | default "anthropic" | quote }}
             - name: OTEL_SERVICE_NAME
               value: llm-gateway
             - name: OTEL_EXPORTER_OTLP_ENDPOINT

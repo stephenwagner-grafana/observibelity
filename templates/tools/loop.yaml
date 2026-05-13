@@ -38,7 +38,7 @@ spec:
           # Image name keeps the snake_case form to match the build workflow
           # (`name: kb_search` in build-images.yml → `observibelity-kb_search`).
           # Service/Deployment names use $dnsName (hyphens) for DNS-1123 compliance.
-          image: "{{ $.Values.global.imageRegistry }}/observibelity-{{ $name }}:{{ $.Chart.AppVersion }}"
+          image: "{{ $.Values.global.imageRegistry }}/observibelity-{{ $name }}:{{ $.Values.global.imageTag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" $.Values.podDefaults.securityContext }}
           {{- if $ctrSc }}

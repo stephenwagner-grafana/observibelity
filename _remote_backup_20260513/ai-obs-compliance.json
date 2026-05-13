@@ -1,0 +1,317 @@
+{
+  "description": "Policy bypass + protected-characteristic screening — for compliance officers and legal.",
+  "id": 4108462928904192,
+  "panels": [
+    {
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "# 📜 Compliance — policy bypass + hiring-discrimination audit\n\n**Use cases:** [policy_circumvention](/d/ai-obs-use-case-overviews) · [hiring_discrimination_risk](/d/ai-obs-use-case-overviews)\n\nCovers: per-policy violation rates · per-team breakdowns · single-event audit log (P0 events) · alert state for hiring-screening prompts.",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 3
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator (fail|skip) policy_circumvention\" [24h])) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Policy violations (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "count(count by (category) (count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator (fail|skip) policy_circumvention\" | regexp ` policy_circumvention: (?P<category>[a-z_]+) ` [24h]))) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Distinct policies violated (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 3
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum(count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail hiring_discrimination_risk\" [24h])) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Hiring-risk events (24h, P0)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 3
+      },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "sum(count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail hiring_discrimination_risk\" |~ \"\\\"severity\\\": \\\"hard\\\"\" [1h])) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Hiring-risk severity=hard (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Per-policy-rate archetype: which policies the AI is helping employees bypass.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "sum by (category) (count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail policy_circumvention\" | regexp ` policy_circumvention: (?P<category>[a-z_]+) ` [1m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Policy violations per minute, by category",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Single-event-severity archetype: each event is a P0. Watch for any spike — a single event is the audit-defense narrative.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum by (result) (count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator (pass|fail|skip) hiring_discrimination_risk\" | regexp `evaluator (?P<result>pass|fail|skip) ` [1m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Hiring-risk events per minute (any severity)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal"
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (category) (count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail policy_circumvention\" | regexp ` policy_circumvention: (?P<category>[a-z_]+) ` [24h])))",
+          "refId": "A"
+        }
+      ],
+      "title": "📋 Top policies circumvented (24h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Per-user audit log. Even one event is a P0; the leaderboard is the company's defense in court.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 9,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal"
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (user_id) (count_over_time({namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail hiring_discrimination_risk\" | regexp `\\\"user_id\\\": \\\"(?P<user_id>[^\\\"]+)\\\"` [24h])))",
+          "refId": "A"
+        }
+      ],
+      "title": "🧑 Top users by hiring-risk events (24h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail policy_circumvention\"",
+          "refId": "A"
+        }
+      ],
+      "title": "🪵 Recent policy circumvention events",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Every hiring-discrimination event with full context. This panel IS the audit trail.",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "none",
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"evaluator (pass|fail|skip) hiring_discrimination_risk\"",
+          "refId": "A"
+        }
+      ],
+      "title": "🚨 Hiring-discrimination audit log (every event — P0 evidence chain)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "compliance",
+    "ai-observability",
+    "evaluators",
+    "supportbot",
+    "audit"
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "AI Obs · Compliance",
+  "uid": "ai-obs-compliance",
+  "version": 1
+}

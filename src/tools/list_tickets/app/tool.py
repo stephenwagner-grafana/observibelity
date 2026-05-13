@@ -1,4 +1,10 @@
-"""list_tickets — return recent tickets for a persona, ordered by created_at desc."""
+"""list_tickets — return recent tickets for a persona, ordered by created_at desc.
+
+Schema sync (migrations/versions/0006_tickets.py): tickets has ``priority``
+(NOT ``category``). The response's ``category`` field is now an alias for
+``priority`` so existing callers keep working — older drafts queried a
+non-existent ``category`` column and 500'd.
+"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -19,8 +25,10 @@ class ListTicketsArgs(BaseModel):
 
 class TicketRef(BaseModel):
     id: int
+    ticket_number: str
     subject: str
     status: str
+    # Sourced from the DB ``priority`` column for response-shape stability.
     category: Optional[str] = None
     created_at: datetime
 
@@ -57,7 +65,8 @@ class ListTickets(Tool):
             params["st"] = args.status
         stmt = text(
             f"""
-            SELECT id, subject, status, category, created_at
+            SELECT id, ticket_number, subject, status,
+                   priority AS category, created_at
               FROM tickets
              WHERE {where}
              ORDER BY created_at DESC
@@ -70,6 +79,7 @@ class ListTickets(Tool):
             tickets=[
                 TicketRef(
                     id=r.id,
+                    ticket_number=r.ticket_number,
                     subject=r.subject,
                     status=r.status,
                     category=r.category,

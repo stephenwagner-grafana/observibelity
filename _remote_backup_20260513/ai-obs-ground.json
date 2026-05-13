@@ -1,0 +1,347 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "Groundedness scoring, suspect-answer surfacing.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 1079452416086016,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "landing"
+      ],
+      "title": "← Back to AI Observability landing",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "# Hallucination & groundedness\n\nAn answer is grounded if every claim is supported by the retrieved KB docs or tool outputs in the same conversation. Sigil runs an LLM-judge evaluator that scores groundedness. Scores < 0.7 are highlighted as suspect.\n",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": false,
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "green",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 4
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"pass\" [1h])) / sum(count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result!=\"skip\" [1h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination pass rate (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 4
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" [1h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Suspected hallucinations / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" | severity=\"hard\" [24h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Hard-fail hallucinations (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" [5m])) / sum(rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result!=\"skip\" [5m]))",
+          "legendFormat": "fail rate",
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination fail rate over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": true,
+        "showTime": true,
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "{namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"hallucination\" |= \"\\\"result\\\": \\\"fail\\\"\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent hallucination evaluator failures",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "groundedness",
+    "hallucination",
+    "ai-observability",
+    "neoncart",
+    "sigil",
+    "ai-o11y"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
+  "timezone": "browser",
+  "title": "AI Obs · Hallucination & Groundedness",
+  "uid": "ai-obs-ground",
+  "version": 6,
+  "weekStart": ""
+}
