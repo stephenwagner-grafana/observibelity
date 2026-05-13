@@ -4,20 +4,24 @@ A live-ish dashboard of where ObserVIBElity is in its rollout. Items below
 track GitHub issues/PRs labeled by phase; this page is auto-rendered from the
 repo every push to `main`.
 
-## Current phase: Phase 1 — Mice-rca centerpiece
+## Current phase: Phase 2 — Full demo
 
-Phase 1 **shipped 2026-05-13** in v0.2.0. NeonCart is real, the chatbot is
-real, three specialists and six tools call a real `llm-gateway` (Anthropic
-provider wired), Postgres runs with 17 seeded tables, and OTel data flows
-to the user's Grafana Cloud stack. The famous "show me mice" prompt
-produces a trace in the user's Tempo and pivots through the
-`ai-obs-app-neoncart` dashboard.
+Phase 2 **shipped 2026-05-13** in v0.3.0. Both apps (NeonCart + Support
+Bot) are live with realistic data volume (200 personas, 500 products,
+1k orders, 5k convs, 30 KB articles, 500 tickets). The persona-picker
+"View as: <name>" dropdown in both navbars makes SE demos one-click;
+every span propagates `ai_o11y.persona_id`. The k6 continuous-traffic
+engine runs all use-case scenarios on a 10-second loop. 24 container
+images now build automatically (release.yml on tag, build-images.yml
+on push to main). Grafana Cloud sync is fully automated (dashboards +
+evaluators + alerts via sync.yml).
 
-All 22 planner use case YAMLs are authored on the repo; Phase 2 activates
-the remaining 21 at runtime when live evaluators + traffic engine land.
+12 dashboards now ship (was 1): best-models, cascade-spike, data-theft,
+app-supportbot, pii, ground, conv, compliance, tools, cost, evals,
+plus the Phase 1 app-neoncart.
 
-The point of Phase 1 is the **first end-to-end demo loop**: a user runs
-`./install.sh`, types "show me mice", and gets one trace ID → one fix.
+Phase 1 (shipped 2026-05-13 in v0.2.0) gave the first end-to-end demo
+loop. Phase 2 makes the whole spec real.
 
 ## Phase 0 deliverables
 
@@ -92,21 +96,32 @@ Shipped in v0.2.0 (2026-05-13). The parallel-agent build round landed:
 - [x] ai-obs-app-neoncart dashboard
 - [x] All 22 use case YAMLs authored (Phase 2 components fire when live traffic + evaluators land)
 
-## Phase 2 — Full set (target: +1-2 weeks after Phase 1)
+## Phase 2 — Full demo ✓ shipped 2026-05-13 (v0.3.0)
 
-Phase 2 is the whole spec. Support Bot, full specialist + tool inventory, full
-provider matrix, full UC catalog, full evaluator suite, full SLO+alert set,
-full traffic engine, full dashboard library, full vibe-editing surface.
+Phase 2 lands the whole spec. Both apps live with realistic data volume,
+persona-based "View as" demo UX, continuous traffic, real Grafana Cloud
+sync, automated image builds. Image inventory expanded from 13 to 24
+(2 base + 2 apps + 14 specialists + 16 tools).
 
-- [ ] Support Bot + all 11 SB specialists + all 10 SB tools
-- [ ] Remaining NeonCart specialists (10 more)
+- [x] Support Bot + all 11 SB specialists + all 10 SB tools
+- [x] Persona picker UI ("View as: Tim Lewis") in both NeonCart + SupportBot
+- [x] Expanded seed data: 200 personas, 500 products, ~1k orders, ~5k conversation turns, 30 KB articles, ~500 tickets
+- [x] 11 more dashboards (best-models, cascade-spike, data-theft, app-supportbot, pii, ground, conv, compliance, tools, cost, evals)
+- [x] k6 in-cluster traffic engine (Deployment + ConfigMap + scenarios, 10-second loop)
+- [x] SLO + alert chart templates (`templates/alerts/`, `templates/slos/`) emitting from `registry/_generated/`
+- [x] `tools/alerts-sync.sh` — Mimir rules API integration
+- [x] Real `tools/dashboards-sync.sh` + `tools/evaluators-sync.sh` (was Phase 0 stub)
+- [x] `release.yml` wired to docker buildx + multi-arch + ghcr.io push (24 images)
+- [x] `build-images.yml` for `:latest` push on main
+- [x] `sync.yml` — auto-push dashboards + evaluators + alerts on push to main
+- [x] `make deploy-k3s-local` + `tools/k3s-import-images.sh`
+- [x] `docs/K3S-LOCAL.md` — full local-k3s deploy guide
+- [x] k6 helm-unittest
+
+## Phase 3 — Polish (future)
+
 - [ ] `OllamaProvider` wired; lockstep model rotation
-- [ ] All 10 use cases (with email-cascade and data-theft-tim as centerpieces)
-- [ ] All 26 evaluators (manual UI today; `tools/evaluators-sync.sh` stub waiting on gcx)
-- [ ] 6 SLOs + ~14 alerts
-- [ ] k6 in-cluster, 10 traffic scenarios
-- [ ] 11 more dashboards (gcx git-sync)
-- [ ] All 6 `.claude/skills/`
+- [ ] All 6 `.claude/skills/` complete
 
 ## Update mechanism
 
