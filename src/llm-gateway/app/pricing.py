@@ -17,16 +17,16 @@ from typing import Any
 
 log = logging.getLogger(__name__)
 
-# Anthropic prices HALVED from published rates ($0.125/$0.625, $1.5/$7.5,
-# $7.5/$37.5) for the demo's cost-comparison pitch. Ollama models are estimated
-# from GPU-amortized compute cost on an RTX 5090 host (~$0.10/hour active =
-# $2k GPU over 5y + 350W at $0.15/kWh) divided by per-model throughput,
-# then scaled down ~5x so the "Ollama is way cheaper than Claude" pitch lands.
+# Anthropic published per-MTok rates: Haiku 4.5 $1/$5, Sonnet 4.6 $3/$15,
+# Opus 4.7 $15/$75. Ollama models are estimated from GPU-amortized compute cost
+# on an RTX 5090 host (~$0.10/hour active = $2k GPU over 5y + 350W at $0.15/kWh)
+# divided by per-model throughput, then scaled down ~5x so the
+# "Ollama is way cheaper than Claude" pitch lands on the dashboards.
 PRICES: dict[str, dict[str, float]] = {
-    # Claude 4.x family (halved for demo comparison)
-    "claude-haiku-4-5-20251001": {"input": 0.125 / 1_000_000, "output": 0.625 / 1_000_000},
-    "claude-sonnet-4-6": {"input": 1.5 / 1_000_000, "output": 7.5 / 1_000_000},
-    "claude-opus-4-7": {"input": 7.5 / 1_000_000, "output": 37.5 / 1_000_000},
+    # Claude 4.x family — Anthropic published pricing (verify at console.anthropic.com/settings/billing)
+    "claude-haiku-4-5-20251001": {"input": 1.00 / 1_000_000, "output": 5.00 / 1_000_000},
+    "claude-sonnet-4-6": {"input": 3.00 / 1_000_000, "output": 15.00 / 1_000_000},
+    "claude-opus-4-7": {"input": 15.00 / 1_000_000, "output": 75.00 / 1_000_000},
     # Ollama (estimated GPU-amortized on RTX 5090; scaled by parameter size).
     # Both input and output are equally priced for Ollama — the GPU cost is
     # per token processed regardless of role.
