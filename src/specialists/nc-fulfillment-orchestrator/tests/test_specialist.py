@@ -27,7 +27,7 @@ async def test_happy_path_non_rodent() -> None:
         return_value={
             "content": "Order placed.",
             "tool_calls": [],
-            "usage": {"cost": {"total_usd": 0.003}},
+            "usage": {"cost_usd": {"total_usd": 0.003}},
         }
     )
     req = SpecialistRequest(
@@ -63,7 +63,7 @@ async def test_rodent_request_handles_inventory_error() -> None:
         return_value={
             "content": "Inventory check failed: column rodent_qty does not exist.",
             "tool_calls": [],
-            "usage": {"cost": {"total_usd": 0.001}},
+            "usage": {"cost_usd": {"total_usd": 0.001}},
         }
     )
 

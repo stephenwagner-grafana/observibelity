@@ -90,12 +90,14 @@ class GetEmployeeHistory(Tool):
             int(args.persona_id) if args.persona_id.isdigit() else args.persona_id
         )
 
+        # orders schema (0003_orders.py) uses created_at, not placed_at;
+        # alias keeps the existing response shape stable.
         orders_stmt = text(
             """
-            SELECT id, placed_at, status, total_usd
+            SELECT id, created_at AS placed_at, status, total_usd
               FROM orders
              WHERE persona_id::text = :pid
-             ORDER BY placed_at DESC
+             ORDER BY created_at DESC
              LIMIT :lim
             """
         )

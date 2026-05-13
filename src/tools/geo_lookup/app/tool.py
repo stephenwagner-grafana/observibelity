@@ -1,4 +1,12 @@
-"""geo_lookup — resolve an IP or ZIP to country / state / city."""
+"""geo_lookup — resolve an IP or ZIP to country / state / city.
+
+Schema sync (migrations/versions/0004_geo.py):
+  * ``ip_geo`` stores IP ranges: ip_range_start, ip_range_end, country_code,
+    state, city. There is NO ``ip_address`` or ``zip_code`` column — older
+    drafts queried those directly and 500'd with UndefinedColumn.
+  * For ZIP lookups we fall back to ``store_locations`` which has a ``zip``
+    column.
+"""
 from __future__ import annotations
 
 from typing import Self
@@ -39,7 +47,7 @@ class GeoLookup(Tool):
     MAX_CONCURRENCY = 100
     CACHE_TTL_SEC = 3600
     RETRIES = 2
-    BACKING_TABLES = ["ip_geo", "countries"]
+    BACKING_TABLES = ["ip_geo", "countries", "store_locations"]
     REPLICAS = 1
 
     Args = GeoLookupArgs
@@ -52,23 +60,28 @@ class GeoLookup(Tool):
     ) -> GeoLookupResult:
         assert session is not None, "geo_lookup requires a DB session"
         if args.ip_address is not None:
+            # Schema stores IP ranges (start..end as strings); the
+            # BETWEEN comparison works for IPv4 with the seed CSVs which
+            # sort by leading octet.
             stmt = text(
                 """
                 SELECT g.country_code, g.state, g.city, c.name AS country
                   FROM ip_geo g
                   LEFT JOIN countries c ON c.code = g.country_code
-                 WHERE g.ip_address = :ip
+                 WHERE :ip BETWEEN g.ip_range_start AND g.ip_range_end
                  LIMIT 1
                 """
             )
             params: dict[str, object] = {"ip": args.ip_address}
         else:
+            # No zip column on ip_geo — fall back to store_locations.zip.
             stmt = text(
                 """
-                SELECT g.country_code, g.state, g.city, c.name AS country
-                  FROM ip_geo g
-                  LEFT JOIN countries c ON c.code = g.country_code
-                 WHERE g.zip_code = :zip
+                SELECT s.country AS country_code, s.state, s.city,
+                       c.name AS country
+                  FROM store_locations s
+                  LEFT JOIN countries c ON c.code = s.country
+                 WHERE s.zip = :zip
                  LIMIT 1
                 """
             )

@@ -30,15 +30,21 @@ def test_knobs():
 @pytest.mark.asyncio
 async def test_execute_found():
     now = datetime.now(tz=timezone.utc)
+    # Schema fields per 0006_tickets.py: ticket_number, persona_id (string),
+    # priority — older drafts of the stub used non-existent columns.
     row = _StubRow(
-        id=7, persona_id=1, subject="VPN", body="...",
-        status="open", category="it", created_at=now, updated_at=None,
+        id=7, ticket_number="T-7", persona_id="u-tim-l", subject="VPN",
+        body="...", status="open", priority="medium", created_at=now,
     )
     sess = _StubSession(row)
     tool = GetTicket.__new__(GetTicket)
     res = await tool.execute(GetTicketArgs(ticket_id=7), sess)
     assert isinstance(res, GetTicketResult)
     assert res.id == 7
+    assert res.ticket_number == "T-7"
+    assert res.persona_id == "u-tim-l"
+    # ``category`` is the legacy alias for priority.
+    assert res.category == "medium"
 
 
 @pytest.mark.asyncio

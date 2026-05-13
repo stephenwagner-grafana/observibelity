@@ -1,5 +1,9 @@
 name: build-images
-# Builds + pushes all ObserVIBElity container images tagged ":latest" only.
+# Builds + pushes all ObserVIBElity container images tagged with:
+#   :latest               — rolling tip-of-main pointer
+#   :<chart-version>      — current Chart.yaml version (e.g. 0.3.0), so deploys
+#                           that resolve {{ .Chart.AppVersion }} actually find images
+#   :main-<sha>           — immutable per-commit tag for rollbacks
 # Use this when you want fresh images off main without cutting a tagged release.
 # (A release tag uses release.yml which also stamps the :VERSION tag.)
 on:
@@ -50,6 +54,9 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get chart version
+        id: chart
+        run: echo "version=$(awk '/^version:/ {print $2; exit}' Chart.yaml)" >> $GITHUB_OUTPUT
       - uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
@@ -58,6 +65,8 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:${{ steps.chart.outputs.version }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:main-${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,scope=${{ matrix.name }},mode=max
 
@@ -222,6 +231,9 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get chart version
+        id: chart
+        run: echo "version=$(awk '/^version:/ {print $2; exit}' Chart.yaml)" >> $GITHUB_OUTPUT
       - uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
@@ -230,6 +242,8 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:${{ steps.chart.outputs.version }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:main-${{ github.sha }}
           build-args: ${{ matrix.build-args }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,scope=${{ matrix.name }},mode=max

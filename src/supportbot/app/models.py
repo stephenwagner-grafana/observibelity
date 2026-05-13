@@ -24,49 +24,77 @@ class Base(DeclarativeBase):
 class Persona(Base):
     """Synthetic employee for session attribution.
 
-    Shared schema with NeonCart's persona table — Phase 2 alembic migration
-    extends the existing table rather than creating a new one.
+    Shared schema with NeonCart's persona table (migrations/versions/0001).
+    Columns mirror the migration exactly — older drafts of this model had a
+    ``department`` column that does not exist in the DB, which 500'd the
+    ``/api/personas`` endpoint on every call.
     """
 
     __tablename__ = "personas"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    role: Mapped[str] = mapped_column(String(64), nullable=False, default="employee")
-    department: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    persona_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
+    role: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    archetype: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    offender_pattern: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    weight: Mapped[float] = mapped_column(default=1.0, nullable=False)
 
 
 class Ticket(Base):
-    """Internal support ticket — filed by an employee, resolved by IT/HR/etc."""
+    """Internal support ticket — filed by an employee, resolved by IT/HR/etc.
+
+    Schema mirrors migrations/versions/0006_tickets.py exactly: persona_id is
+    a STRING FK to ``personas.persona_id`` (the slug like ``u-tim-l``), and
+    the side-channel field is ``priority`` (open/medium/high), not
+    ``category``. Older drafts of this model had ``category``/``updated_at``
+    columns the DB doesn't expose — every SELECT or INSERT against the real
+    table would 500 with UndefinedColumn.
+    """
 
     __tablename__ = "tickets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    persona_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("personas.id"), nullable=True, index=True
+    ticket_number: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    persona_id: Mapped[Optional[str]] = mapped_column(
+        String(64), ForeignKey("personas.persona_id"), nullable=True, index=True
     )
     subject: Mapped[str] = mapped_column(String(255), nullable=False)
     body: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="open")
-    category: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    priority: Mapped[str] = mapped_column(String(16), nullable=False, default="medium")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    updated_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
 
     persona: Mapped[Optional[Persona]] = relationship(lazy="joined")
 
 
 class SupportbotKb(Base):
-    """Knowledge-base article surfaced by sb-kb-search / kb_search tool."""
+    """Knowledge-base article surfaced by sb-kb-search / kb_search tool.
+
+    Schema mirrors migrations/versions/0007_supportbot_kb.py. Older drafts
+    of this model declared ``category`` + ``is_confidential`` columns the
+    DB doesn't have — those flags are now derived from ``tags`` (e.g. a
+    "confidential" tag) rather than stored as separate columns.
+    """
 
     __tablename__ = "supportbot_kb"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    slug: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    slug: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(256), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    category: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
-    tags: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    is_confidential: Mapped[bool] = mapped_column(default=False, nullable=False)
+    tags: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+
+    @property
+    def is_confidential(self) -> bool:
+        """Derived: any KB row with a 'confidential' tag is treated as restricted."""
+        return bool(self.tags and "confidential" in (self.tags or "").lower())
+
+    @property
+    def category(self) -> Optional[str]:
+        """Derived: pick the first tag as a coarse-grained category."""
+        if not self.tags:
+            return None
+        parts = [p.strip() for p in self.tags.split(";") if p.strip()]
+        return parts[0] if parts else None

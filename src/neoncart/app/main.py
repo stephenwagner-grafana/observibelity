@@ -73,9 +73,42 @@ BRANDING: dict[str, str] = {
 
 # ---- OTel bootstrap --------------------------------------------------------
 def _instrument(app: FastAPI) -> None:
-    """Best-effort OTel wiring. Silently no-ops if libs aren't installed
-    (keeps unit tests light)."""
+    """Best-effort OTel wiring: stand up a TracerProvider + OTLP/HTTP exporter,
+    then auto-instrument FastAPI/httpx/asyncpg.
+
+    Without an explicit TracerProvider, structured log records emit
+    ``trace_id=""`` / ``span_id=""`` and traces never reach the collector,
+    which breaks the "one continuous trace" demo storyline. Silently no-ops
+    if the SDK libs aren't installed (keeps unit tests light)."""
     try:
+        from opentelemetry import trace
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        service_name = os.environ.get("OTEL_SERVICE_NAME", "neoncart")
+        namespace = os.environ.get("OBSERVIBELITY_NAMESPACE", "observibelity")
+        if not isinstance(trace.get_tracer_provider(), TracerProvider):
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.namespace": namespace,
+                }
+            )
+            provider = TracerProvider(resource=resource)
+            endpoint = os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+            ).rstrip("/")
+            # OTLP/HTTP exporter wants the fully qualified /v1/traces path,
+            # not the collector root URL.
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+
+            exporter = OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces")
+            provider.add_span_processor(BatchSpanProcessor(exporter))
+            trace.set_tracer_provider(provider)
+
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
         from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
         from opentelemetry.instrumentation.asyncpg import AsyncPGInstrumentor
@@ -83,7 +116,7 @@ def _instrument(app: FastAPI) -> None:
         FastAPIInstrumentor.instrument_app(app)
         HTTPXClientInstrumentor().instrument()
         AsyncPGInstrumentor().instrument()
-        log.info("OTel instrumentation enabled")
+        log.info("OTel instrumentation enabled (service=%s)", service_name)
     except Exception as exc:  # noqa: BLE001 — never crash on telemetry
         log.warning("OTel instrumentation skipped: %s", exc)
 
@@ -119,13 +152,12 @@ async def _render_with_personas(
         log.warning("persona list query failed: %s", exc)
         personas = []
     ctx: dict[str, Any] = {
-        "request": request,
         "branding": BRANDING,
         "personas": personas,
         "current_persona": persona_id,
     }
     ctx.update(extra)
-    return templates.TemplateResponse(template_name, ctx)
+    return templates.TemplateResponse(request, template_name, ctx)
 
 
 # ---- Lifespan --------------------------------------------------------------

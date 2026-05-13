@@ -47,7 +47,9 @@ class SbEmployeeInfo(Specialist):
         result = await self.call_gateway(messages, req)
         if result.get("tool_calls"):
             for tc in result["tool_calls"]:
-                args = tc.get("args", {})
+                # Gateway emits tool_calls with "input" (Anthropic/Ollama
+                # provider output); fall back to "args" for legacy fixtures.
+                args = dict(tc.get("input") or tc.get("args") or {})
                 # Defence-in-depth: rewrite persona_id arg to the requester's.
                 if "persona_id" in args and req.persona_id:
                     args["persona_id"] = req.persona_id
@@ -66,7 +68,8 @@ class SbEmployeeInfo(Specialist):
             result = await self.call_gateway(messages, req)
 
         usage = result.get("usage", {}) or {}
-        cost = usage.get("cost", {}) or {}
+        # Gateway stores per-call cost under "cost_usd".
+        cost = usage.get("cost_usd") or usage.get("cost") or {}
         return SpecialistResponse(
             reply=result.get("content", ""),
             tool_calls=result.get("tool_calls", []) or [],

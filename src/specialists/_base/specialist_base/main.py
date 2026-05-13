@@ -10,6 +10,7 @@ exports the resulting FastAPI app. Routes mounted:
 from __future__ import annotations
 
 import importlib
+import logging
 import os
 
 from fastapi import FastAPI, HTTPException
@@ -19,6 +20,56 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from .specialist import Specialist, SpecialistRequest, SpecialistResponse
 
+log = logging.getLogger("specialist_base")
+
+
+def _init_otel(fastapi_app: FastAPI, default_service_name: str) -> None:
+    """Stand up a TracerProvider + OTLP/HTTP exporter for the specialist pod.
+
+    Without this the SDK falls back to a NoOp provider, which means the run
+    span never gets a real trace_id and the chart's "one trace per chat turn"
+    contract breaks. Best-effort + idempotent — never crash the pod over telemetry.
+    """
+    service_name = os.environ.get("OTEL_SERVICE_NAME", default_service_name)
+    namespace = os.environ.get("OBSERVIBELITY_NAMESPACE", "observibelity")
+    try:
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        if not isinstance(trace.get_tracer_provider(), TracerProvider):
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.namespace": namespace,
+                    "observibelity.role": "specialist",
+                }
+            )
+            provider = TracerProvider(resource=resource)
+            endpoint = os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+            ).rstrip("/")
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+
+            exporter = OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces")
+            provider.add_span_processor(BatchSpanProcessor(exporter))
+            trace.set_tracer_provider(provider)
+
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+        FastAPIInstrumentor.instrument_app(fastapi_app)
+        try:
+            from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+
+            HTTPXClientInstrumentor().instrument()
+        except Exception:  # noqa: BLE001
+            pass
+        log.info("OTel SDK initialized for specialist %s", service_name)
+    except Exception as exc:  # noqa: BLE001 — never crash on telemetry
+        log.warning("OTel init failed for specialist %s (%s)", service_name, exc)
+
 
 def build_app(specialist: Specialist) -> FastAPI:
     """Wrap a Specialist instance in a FastAPI app with the standard routes."""
@@ -26,6 +77,7 @@ def build_app(specialist: Specialist) -> FastAPI:
         title=f"observibelity-specialist-{specialist.NAME}",
         version=os.environ.get("SPECIALIST_VERSION", "0.2.0"),
     )
+    _init_otel(app, default_service_name=specialist.NAME)
 
     @app.post("/v1/run", response_model=SpecialistResponse)
     async def run(req: SpecialistRequest) -> SpecialistResponse:

@@ -33,13 +33,40 @@ def test_knobs():
 @pytest.mark.asyncio
 async def test_execute_inserts_and_commits():
     now = datetime.now(tz=timezone.utc)
-    row = _StubRow(id=11, status="open", created_at=now)
+    row = _StubRow(
+        id=11, ticket_number="T-deadbeef", status="open",
+        priority="medium", created_at=now,
+    )
     sess = _StubSession(row)
     tool = CreateTicket.__new__(CreateTicket)
     res = await tool.execute(
-        CreateTicketArgs(subject="VPN broken", body="..", category="it", persona_id="3"),
+        CreateTicketArgs(subject="VPN broken", body="..", category="it", persona_id="u-tim-l"),
         sess,
     )
     assert res.ticket_id == 11
+    assert res.ticket_number == "T-deadbeef"
     assert sess.committed is True
-    assert sess.last_params["pid"] == 3
+    # persona_id is a STRING slug (FK to personas.persona_id); the tool
+    # must pass it through verbatim — not coerce to int.
+    assert sess.last_params["pid"] == "u-tim-l"
+    # category "it" is not a high-priority bucket → priority defaults to medium.
+    assert sess.last_params["prio"] == "medium"
+
+
+@pytest.mark.asyncio
+async def test_escalation_promotes_priority():
+    now = datetime.now(tz=timezone.utc)
+    row = _StubRow(
+        id=12, ticket_number="T-esc", status="open",
+        priority="high", created_at=now,
+    )
+    sess = _StubSession(row)
+    tool = CreateTicket.__new__(CreateTicket)
+    await tool.execute(
+        CreateTicketArgs(
+            subject="prod down", body="urgent",
+            category="escalation", persona_id="u-mara-chen",
+        ),
+        sess,
+    )
+    assert sess.last_params["prio"] == "high"

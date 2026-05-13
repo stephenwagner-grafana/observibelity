@@ -1,4 +1,10 @@
-"""get_order_history — list recent orders + line items for a persona."""
+"""get_order_history — list recent orders + line items for a persona.
+
+Schema sync (migrations/versions/0003_orders.py):
+  * ``orders`` uses ``created_at`` (not ``placed_at``).
+  * ``order_items`` uses ``catalog_item_id`` + ``price_each`` (not
+    ``sku``/``price_usd``); join through ``catalog_items`` for sku + name.
+"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -65,10 +71,10 @@ class GetOrderHistory(Tool):
         assert session is not None, "get_order_history requires a DB session"
         order_stmt = text(
             """
-            SELECT id, placed_at, status, total_usd
+            SELECT id, created_at AS placed_at, status, total_usd
               FROM orders
              WHERE persona_id = :pid
-             ORDER BY placed_at DESC
+             ORDER BY created_at DESC
              LIMIT :lim
             """
         )
@@ -83,9 +89,10 @@ class GetOrderHistory(Tool):
         order_ids = [r.id for r in order_rows]
         items_stmt = text(
             """
-            SELECT oi.order_id, oi.sku, oi.qty, oi.price_usd, ci.name
+            SELECT oi.order_id, ci.sku AS sku, oi.qty,
+                   oi.price_each AS price_usd, ci.name
               FROM order_items oi
-              LEFT JOIN catalog_items ci ON ci.sku = oi.sku
+              LEFT JOIN catalog_items ci ON ci.id = oi.catalog_item_id
              WHERE oi.order_id = ANY(:ids)
             """
         )
@@ -97,8 +104,8 @@ class GetOrderHistory(Tool):
         for r in item_rows:
             items_by_order.setdefault(r.order_id, []).append(
                 OrderItem(
-                    sku=r.sku,
-                    name=r.name or r.sku,
+                    sku=r.sku or "",
+                    name=r.name or r.sku or "",
                     qty=int(r.qty),
                     price_usd=float(r.price_usd),
                 )

@@ -35,9 +35,12 @@ class NcChatbot(Specialist):
         result = await self.call_gateway(messages, req)
         if result.get("tool_calls"):
             for tc in result["tool_calls"]:
+                # Gateway emits tool_calls with "input" (Anthropic/Ollama
+                # provider output); fall back to "args" for older test fixtures.
+                tool_args = tc.get("input") or tc.get("args") or {}
                 tool_result = await self.call_tool(
                     tc["name"],
-                    tc.get("args", {}),
+                    tool_args,
                     req,
                 )
                 messages.append(
@@ -53,7 +56,8 @@ class NcChatbot(Specialist):
             result = await self.call_gateway(messages, req)
 
         usage = result.get("usage", {}) or {}
-        cost = usage.get("cost", {}) or {}
+        # Gateway stores per-call cost under "cost_usd" (see llm-gateway main.py).
+        cost = usage.get("cost_usd") or usage.get("cost") or {}
         return SpecialistResponse(
             reply=result.get("content", ""),
             tool_calls=result.get("tool_calls", []) or [],

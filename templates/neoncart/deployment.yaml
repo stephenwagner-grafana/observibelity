@@ -28,7 +28,7 @@ spec:
       {{- end }}
       containers:
         - name: neoncart
-          image: "{{ .Values.global.imageRegistry }}/observibelity-neoncart:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRegistry }}/observibelity-neoncart:{{ .Values.global.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           {{- $ctrSc := include "observibelity.containerSecurityContext" .Values.neoncart.securityContext }}
           {{- if $ctrSc }}

@@ -12,6 +12,9 @@ license = { text = "Apache-2.0" }
 
 dependencies = [
     "observibelity-tool-base==0.2.0",
+    # Direct imports beyond the base — kept explicit for `pip install -e .` flows.
+    "pydantic>=2.9",
+    "sqlalchemy[asyncio]>=2.0",
 ]
 
 [project.optional-dependencies]

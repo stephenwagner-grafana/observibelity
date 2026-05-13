@@ -1,0 +1,1809 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-logs"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "orange",
+        "name": "🔁 NeonCart pod restarts",
+        "tagKeys": "pod,container",
+        "target": {
+          "expr": "{namespace=\"neoncart\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "{{ pod }} — {{ container }}"
+      },
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "grafanacloud-logs"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "red",
+        "name": "💥 NeonCart error spikes (>10/min)",
+        "target": {
+          "expr": "sum(count_over_time({namespace=\"neoncart\"} |~ \"(?i)error|exception|traceback\"[1m])) > 10",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "Error rate > 10/min"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1187845693566976,
+  "links": [],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10035,
+      "options": {
+        "content": "## AI Observability — NeonCart\n\nStory-driven view. Tabs below jump to each section. Time picker (top-right) zooms in/out.\n\n**📑 Tabs (jump):** click a row title to expand · use *Dashboards → AI Observability* in the side nav for the lens deep-dives.\n\n**Stories on this page:**\n- 🚨 Tool & Specialist Errors — what's failing right now, who's responsible\n- 🏆 Gift Recommender — Model Winner — which model converts best (CTR · ATC · purchases · revenue)\n- 🎯 Gift Recommender — Quality Trend — helpfulness · groundedness · bias\n\n**Linked lens dashboards (collapsed rows below):** Tools · Cost · Latency · TTFT · Conversation · Sub-Agent · RAG · Errors · Evals · PII · Hallucination · Prompts · Business KPIs",
+        "mode": "markdown"
+      },
+      "title": "",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 10036,
+      "title": "🚨  Tool & Specialist Errors — story",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 10001,
+      "options": {
+        "content": "## 🚨 Tool & Specialist Errors\n\nThe agentic loop is only as healthy as its weakest link. Tool calls and specialist invocations are spans; this view ranks the worst offenders, breaks down by error type, and tails the live error log.",
+        "mode": "markdown"
+      },
+      "title": "",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "Tool calls that errored in the last hour.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 15
+      },
+      "id": 10002,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(specialist_tool_attempts_total{outcome=\"error\"}[1h]))*3600 or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Tool errors / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "Span-metric error count for specialist services.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 15
+      },
+      "id": 10003,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(specialist_tool_attempts_total{outcome=\"error\"}[1h]))*3600 or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Specialist errors / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 15
+      },
+      "id": 10004,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "count(count by (service_name) (rate(specialist_tool_attempts_total{outcome=\"error\"}[1h]) > 0)) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Erroring specialists (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 15
+      },
+      "id": 10005,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "count(count by (tool) (rate(specialist_tool_attempts_total{outcome=\"error\"}[1h]) > 0)) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Erroring tools (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 10006,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (tool) (rate(specialist_tool_attempts_total{outcome=\"error\"}[5m]))*60",
+          "legendFormat": "{{tool}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Tool errors per minute, by tool",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 10007,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (service_name) (rate(specialist_tool_attempts_total{outcome=\"error\"}[5m]))*60",
+          "legendFormat": "{{service_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Specialist errors per minute, by service",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "id": 10008,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "topk(10, sum by (tool) (increase(specialist_tool_attempts_total{outcome=\"error\"}[24h])))",
+          "instant": true,
+          "legendFormat": "{{tool}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🚨 Top 10 failing tools (24h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "id": 10009,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "topk(10, sum by (service_name) (increase(specialist_tool_attempts_total{outcome=\"error\"}[24h])))",
+          "instant": true,
+          "legendFormat": "{{service_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🚨 Top 10 failing specialists (24h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 10010,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "{namespace=\"neoncart\"} |~ \"(?i)(error|exception|traceback)\" | json | __error__=\"\"",
+          "refId": "A"
+        }
+      ],
+      "title": "🪵 Recent error logs (specialists + tools)",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 10037,
+      "title": "🏆  Gift Recommender — Model Winner — story",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 10011,
+      "options": {
+        "content": "## 🏆 Gift Recommender — which model wins?\n\nNeonCart routes recommendations across 6 models (Claude Sonnet + 5 Ollama locals). Each call is evaluated `good`/`bad` and tracked through to **clicks, add-to-cart, and purchase** so you can rank models by *business outcome*, not just eval score.\n\n**Headline:** higher CTR + ATC + purchase rate = winning model.",
+        "mode": "markdown"
+      },
+      "title": "",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 57
+      },
+      "id": 10012,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(gift_recommendation_total[1h]))*3600",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Recs / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 4,
+        "y": 57
+      },
+      "id": 10013,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(gift_recommendation_click_total[1h]))*3600",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Clicks / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 8,
+        "y": 57
+      },
+      "id": 10014,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(gift_recommendation_addtocart_total[1h]))*3600",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Add-to-cart / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 57
+      },
+      "id": 10015,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(ai_recommendation_purchase_total[1h]))*3600",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Purchases / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 16,
+        "y": 57
+      },
+      "id": 10016,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(ai_recommendation_purchase_revenue_dollars[1h]))*3600",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Revenue / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 20,
+        "y": 57
+      },
+      "id": 10017,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(gift_recommendation_total{eval_result=\"good\"}[1h])) / clamp_min(sum(rate(gift_recommendation_total[1h])), 0.0001)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Overall good rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "ATC events / impressions, per model. Higher = model converts better.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 62
+      },
+      "id": 10018,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (rate(gift_recommendation_addtocart_total[1h])) / clamp_min(sum by (model) (rate(gift_recommendation_total[1h])), 0.0001)",
+          "instant": true,
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🏆 Add-to-cart rate by model (1h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "Purchases / impressions, per model. The closer-to-revenue signal.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 62
+      },
+      "id": 10019,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (rate(ai_recommendation_purchase_total[1h])) / clamp_min(sum by (model) (rate(gift_recommendation_total[1h])), 0.0001)",
+          "instant": true,
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🏆 Purchase rate by model (1h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 72
+      },
+      "id": 10020,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (rate(gift_recommendation_click_total[1h])) / clamp_min(sum by (model) (rate(gift_recommendation_total[1h])), 0.0001)",
+          "instant": true,
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🏆 CTR by model (1h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 72
+      },
+      "id": 10021,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (increase(ai_recommendation_purchase_revenue_dollars[24h]))",
+          "instant": true,
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "💰 Revenue by model (24h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 81
+      },
+      "id": 10022,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (rate(gift_recommendation_addtocart_total[5m])) / clamp_min(sum by (model) (rate(gift_recommendation_total[5m])), 0.0001)",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "ATC rate by model — over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 81
+      },
+      "id": 10023,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (rate(ai_recommendation_purchase_total[5m])) / clamp_min(sum by (model) (rate(gift_recommendation_total[5m])), 0.0001)",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Purchase rate by model — over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 91
+      },
+      "id": 10024,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sort_desc(sum by (model) (rate(gift_recommendation_addtocart_total[1h])) / clamp_min(sum by (model) (rate(gift_recommendation_total[1h])), 0.0001))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "📊 Model leaderboard (1h) — ATC rate",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {}
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 101
+      },
+      "id": 10038,
+      "title": "🎯  Gift Recommender — Quality Trend — story",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 102
+      },
+      "id": 10025,
+      "options": {
+        "content": "## 🎯 Gift Recommender — Quality Trend\n\nThree quality axes for the gift-finder specialist:\n\n| Axis | Definition (proxy from real evaluator labels) |\n|---|---|\n| **Helpfulness** | share of recs the eval marked `relevant_products` |\n| **Groundedness** | 1 − share of recs failing on `missing_prices`, `missing_products`, or `no_products` (model invented or dropped products) |\n| **Bias** | spread of `good`-rate across the 6 routed models — high spread = winners dominate, a routing bias signal |\n\nWatch the trend, not the snapshot. Regression in any one is the *\"looks healthy but quality is poor\"* signal.",
+        "mode": "markdown"
+      },
+      "title": "",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "relevant_products share — the eval's positive label.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 108
+      },
+      "id": 10026,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(specialist_eval_result_total{specialist=\"gift-finder\",reason=\"relevant_products\"}[1h])) / clamp_min(sum(rate(specialist_eval_result_total{specialist=\"gift-finder\"}[1h])), 0.0001)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Helpfulness (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "1 − share failing on invented/dropped products + missing prices.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 108
+      },
+      "id": 10027,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "1 - (sum(rate(specialist_eval_result_total{specialist=\"gift-finder\",reason=~\"missing_prices|missing_products|no_products\"}[1h])) / clamp_min(sum(rate(specialist_eval_result_total{specialist=\"gift-finder\"}[1h])), 0.0001))",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Groundedness (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "description": "Std-dev of good-rate across models. High = winners dominate.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 108
+      },
+      "id": 10028,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "stddev(sum by (model) (rate(gift_recommendation_total{eval_result=\"good\"}[1h])) / clamp_min(sum by (model) (rate(gift_recommendation_total[1h])), 0.0001))",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Bias spread (cross-model good-rate stddev, 1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 113
+      },
+      "id": 10029,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum(rate(specialist_eval_result_total{specialist=\"gift-finder\",reason=\"relevant_products\"}[5m])) / clamp_min(sum(rate(specialist_eval_result_total{specialist=\"gift-finder\"}[5m])), 0.0001)",
+          "legendFormat": "helpfulness",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Helpfulness over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 113
+      },
+      "id": 10030,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "1 - (sum(rate(specialist_eval_result_total{specialist=\"gift-finder\",reason=~\"missing_prices|missing_products|no_products\"}[5m])) / clamp_min(sum(rate(specialist_eval_result_total{specialist=\"gift-finder\"}[5m])), 0.0001))",
+          "legendFormat": "groundedness",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Groundedness over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 123
+      },
+      "id": 10031,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "stddev(sum by (model) (rate(gift_recommendation_total{eval_result=\"good\"}[5m])) / clamp_min(sum by (model) (rate(gift_recommendation_total[5m])), 0.0001))",
+          "legendFormat": "bias spread",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Bias-spread over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 123
+      },
+      "id": 10032,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (reason) (rate(specialist_eval_result_total{specialist=\"gift-finder\",result=\"bad\"}[5m]))*60",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Failure-reason mix over time (per minute)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 133
+      },
+      "id": 10033,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (model) (rate(gift_recommendation_total{eval_result=\"good\"}[1h])) / clamp_min(sum by (model) (rate(gift_recommendation_total[1h])), 0.0001)",
+          "instant": true,
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🎯 Helpfulness by model (1h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 133
+      },
+      "id": 10034,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent",
+            "value"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "expr": "sum by (reason) (increase(specialist_eval_result_total{specialist=\"gift-finder\",result=\"bad\"}[24h]))",
+          "instant": true,
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Failure-reason share (24h)",
+      "type": "piechart"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 142
+      },
+      "id": 10040,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10039,
+          "options": {
+            "content": "### 🔍 Multi-step Traces\n\nSpan trees for support-copilot conversations.\n\n→ **Open:** [🔍 Multi-step Traces dashboard](/d/ai-obs-traces) · uid: `ai-obs-traces`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "🔍 Multi-step Traces",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 143
+      },
+      "id": 10042,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10041,
+          "options": {
+            "content": "### 🛠️ Tools\n\nTool-call counts and mix.\n\n→ **Open:** [🛠️ Tools dashboard](/d/ai-obs-tools) · uid: `ai-obs-tools`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "🛠️ Tools",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 144
+      },
+      "id": 10044,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10043,
+          "options": {
+            "content": "### ⏱ Latency & TTFT\n\nGeneration duration + time-to-first-token.\n\n→ **Open:** [⏱ Latency & TTFT dashboard](/d/ai-obs-latency) · uid: `ai-obs-latency`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "⏱ Latency & TTFT",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 145
+      },
+      "id": 10046,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10045,
+          "options": {
+            "content": "### 💸 Cost & Tokens\n\nToken spend, cost per model.\n\n→ **Open:** [💸 Cost & Tokens dashboard](/d/ai-obs-cost) · uid: `ai-obs-cost`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "💸 Cost & Tokens",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 146
+      },
+      "id": 10048,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10047,
+          "options": {
+            "content": "### 💬 Conversation Quality\n\nEscalation, tool use, frustration.\n\n→ **Open:** [💬 Conversation Quality dashboard](/d/ai-obs-conv) · uid: `ai-obs-conv`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "💬 Conversation Quality",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 147
+      },
+      "id": 10050,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10049,
+          "options": {
+            "content": "### 🤖 Sub-Agent Visualizer\n\nParent/child specialist chains.\n\n→ **Open:** [🤖 Sub-Agent Visualizer dashboard](/d/ai-obs-subagent) · uid: `ai-obs-subagent`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "🤖 Sub-Agent Visualizer",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 148
+      },
+      "id": 10052,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10051,
+          "options": {
+            "content": "### 📚 RAG Quality\n\nKB hit rate, faithfulness.\n\n→ **Open:** [📚 RAG Quality dashboard](/d/ai-obs-rag) · uid: `ai-obs-rag`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "📚 RAG Quality",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 149
+      },
+      "id": 10054,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10053,
+          "options": {
+            "content": "### 🚨 Errors & Stop Reasons\n\nError rate, stop reasons, refusals.\n\n→ **Open:** [🚨 Errors & Stop Reasons dashboard](/d/ai-obs-errors) · uid: `ai-obs-errors`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "🚨 Errors & Stop Reasons",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 150
+      },
+      "id": 10056,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10055,
+          "options": {
+            "content": "### 🧪 Online Evaluators\n\nJudge / regex / heuristic eval results.\n\n→ **Open:** [🧪 Online Evaluators dashboard](/d/ai-obs-evals) · uid: `ai-obs-evals`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "🧪 Online Evaluators",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 151
+      },
+      "id": 10058,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10057,
+          "options": {
+            "content": "### 🛡️ PII & Guardrails\n\nPII detectors + prompt-injection.\n\n→ **Open:** [🛡️ PII & Guardrails dashboard](/d/ai-obs-pii) · uid: `ai-obs-pii`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "🛡️ PII & Guardrails",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 152
+      },
+      "id": 10060,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10059,
+          "options": {
+            "content": "### 👻 Hallucination & Groundedness\n\nGroundedness scoring.\n\n→ **Open:** [👻 Hallucination & Groundedness dashboard](/d/ai-obs-ground) · uid: `ai-obs-ground`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "👻 Hallucination & Groundedness",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 153
+      },
+      "id": 10062,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10061,
+          "options": {
+            "content": "### ✏️ Prompts & Agents\n\nAgent fleet, prompt versions.\n\n→ **Open:** [✏️ Prompts & Agents dashboard](/d/ai-obs-prompts) · uid: `ai-obs-prompts`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "✏️ Prompts & Agents",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 154
+      },
+      "id": 10064,
+      "panels": [
+        {
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10063,
+          "options": {
+            "content": "### 📊 Custom Business KPIs\n\nAI-driven outcomes: deflection, refunds.\n\n→ **Open:** [📊 Custom Business KPIs dashboard](/d/ai-obs-biz) · uid: `ai-obs-biz`",
+            "mode": "markdown"
+          },
+          "title": "",
+          "type": "text"
+        }
+      ],
+      "title": "📊 Custom Business KPIs",
+      "type": "row"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "ai-observability",
+    "neoncart",
+    "app",
+    "ai-o11y"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "AI Observability — NeonCart",
+  "uid": "ai-obs-app-neoncart",
+  "version": 28
+}

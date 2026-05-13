@@ -12,6 +12,11 @@ global:
   namespace: observibelity
   imageRegistry: ghcr.io/stephenwagner-grafana
   imagePullPolicy: IfNotPresent
+  # Override the image tag used by every observibelity-* image. Empty string
+  # means "fall back to .Chart.AppVersion" (the tagged-release behaviour).
+  # Set to "latest" to track the rolling tag built on every push to main, or
+  # pin to a specific value like "main-<sha>" for rollbacks.
+  imageTag: ""
 
 # podDefaults — fallback values for any component that doesn't override.
 # Set podDefaults.enabled=false to ship templates without resource limits / securityContext
@@ -138,6 +143,11 @@ supportbot:
 
 # OpenTelemetry collector + Grafana Cloud OTLP destination.
 # Fill grafanaCloud.* via install.sh wizard; these are mandatory at deploy time.
+# otlpEndpoint MUST be set to the user's specific Grafana Cloud region
+# (e.g. https://otlp-gateway-prod-us-east-2.grafana.net/otlp). The wizard
+# probes grafana.com/api/instances/<id> to discover the correct region — do
+# not hardcode a sample region here, as it will silently route telemetry to
+# the wrong stack and fail with 502.
 otel:
   collector:
     enabled: true
@@ -150,7 +160,7 @@ otel:
       readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
   grafanaCloud:
-    otlpEndpoint: ""
+    otlpEndpoint: ""   # required input from install.sh wizard (region-specific)
     instanceId: ""
     apiToken: ""
 

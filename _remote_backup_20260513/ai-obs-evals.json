@@ -1,0 +1,1824 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "LLM-judge / JSON-schema / regex / heuristic evaluator results.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 1079450520260608,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ai-observability",
+        "landing"
+      ],
+      "targetBlank": false,
+      "title": "← Back to AI Observability landing",
+      "tooltip": "",
+      "type": "dashboards"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result!=\"skip\" [5m])) * 3600",
+          "refId": "A"
+        }
+      ],
+      "title": "Eval runs / hr",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "max": 1,
+          "min": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.8
+              },
+              {
+                "color": "green",
+                "value": 0.95
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"pass\" [5m])) / sum(rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result!=\"skip\" [5m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Overall pass rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "count(sum by (name) (count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json [24h])))",
+          "refId": "A"
+        }
+      ],
+      "title": "Distinct evaluators",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum(count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" [24h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Failures (last 24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (name) (rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"pass\" [5m])) / sum by (name) (rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result!=\"skip\" [5m]))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Pass rate by evaluator",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Evaluator"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "faithfulness": {
+                        "index": 3,
+                        "text": "Faithfulness"
+                      },
+                      "groundedness": {
+                        "index": 0,
+                        "text": "Groundedness"
+                      },
+                      "hallucination": {
+                        "index": 4,
+                        "text": "Hallucination"
+                      },
+                      "language_match": {
+                        "index": 2,
+                        "text": "Language Match"
+                      },
+                      "pii_in_input": {
+                        "index": 1,
+                        "text": "PII in Input"
+                      },
+                      "pii_in_output": {
+                        "index": 5,
+                        "text": "PII in Output"
+                      },
+                      "schema_validity": {
+                        "index": 7,
+                        "text": "Schema Validity"
+                      },
+                      "tone": {
+                        "index": 6,
+                        "text": "Tone"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Failures"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "md",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Failures"
+          }
+        ]
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "app": "grafana-assistant-app",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (name) (count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" [24h]))",
+          "instant": true,
+          "queryType": "instant",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Failures (24h) by evaluator",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "name",
+                "Value #A"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#73BF69",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 8,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "app": "grafana-assistant-app",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (name) (count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json [1h]))",
+          "instant": false,
+          "legendFormat": "{{name}}",
+          "queryType": "range",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Evaluator volume share",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 9,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showControls": false,
+        "showFieldSelector": false,
+        "showLabels": true,
+        "showLevel": true,
+        "showLogAttributes": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "timestampResolution": "ms",
+        "unwrappedColumns": false,
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "{namespace=\"neoncart\"} |= \"evaluator\" |= \"fail\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent evaluator failure logs",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*· fail"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    6,
+                    4
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "auto"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "faithfulness · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Faithfulness · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#73BF69",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "groundedness · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Groundedness · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#56A64B",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hallucination · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Hallucination · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#37872D",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "language_match · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Language Match · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#96D98D",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pii_in_input · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "PII in Input · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#4DB6AC",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pii_in_output · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "PII in Output · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#26A69A",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "prompt_injection · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Prompt Injection · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#80CBC4",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schema_validity · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Schema Validity · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#C8F2C2",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tone · pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tone · Pass"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#66BB6A",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "faithfulness · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Faithfulness · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F2495C",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "groundedness · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Groundedness · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#E02F44",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hallucination · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Hallucination · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#C4162A",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "language_match · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Language Match · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FF7383",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pii_in_input · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "PII in Input · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FA6400",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pii_in_output · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "PII in Output · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#D44A3A",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "prompt_injection · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Prompt Injection · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FF6B6B",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schema_validity · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Schema Validity · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#B71C1C",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tone · fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tone · Fail"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#E05454",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 16,
+        "x": 0,
+        "y": 32
+      },
+      "id": 11,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Last",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "app": "grafana-assistant-app",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (name, result) (rate({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result!=\"skip\" [5m])) * 60",
+          "instant": false,
+          "legendFormat": "{{name}} · {{result}}",
+          "queryType": "range",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Local-eval results by name (evals / min)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#73BF69",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "api_key": {
+                  "index": 0,
+                  "text": "API Key"
+                },
+                "claimed_action_not_taken": {
+                  "index": 1,
+                  "text": "Claimed Action Not Taken"
+                },
+                "credit_card": {
+                  "index": 2,
+                  "text": "Credit Card"
+                },
+                "excessive_apology": {
+                  "index": 3,
+                  "text": "Excessive Apology"
+                },
+                "fabricated_product": {
+                  "index": 4,
+                  "text": "Fabricated Product"
+                },
+                "low_english_density": {
+                  "index": 5,
+                  "text": "Low English Density"
+                },
+                "missing_fields": {
+                  "index": 6,
+                  "text": "Missing Fields"
+                },
+                "ssn": {
+                  "index": 7,
+                  "text": "SSN"
+                },
+                "uncited_specifics": {
+                  "index": 8,
+                  "text": "Uncited Specifics"
+                },
+                "ungrounded_policy_claim": {
+                  "index": 9,
+                  "text": "Ungrounded Policy Claim"
+                },
+                "unverified_order_reference": {
+                  "index": 10,
+                  "text": "Unverified Order Reference"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claimed_action_not_taken"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Claimed Action Not Taken"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "low_english_density"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Low English Density"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "uncited_specifics"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Uncited Specifics"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credit_card"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Credit Card"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ssn"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "SSN"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "api_key"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "API Key"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "unverified_order_reference"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Unverified Order Reference"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ungrounded_policy_claim"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ungrounded Policy Claim"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "excessive_apology"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Excessive Apology"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fabricated_product"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fabricated Product"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "missing_fields"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Missing Fields"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 32
+      },
+      "id": 12,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "app": "grafana-assistant-app",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (category) (count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" [24h]))",
+          "instant": false,
+          "legendFormat": "{{category}}",
+          "queryType": "range",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Failure category mix (24h)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Evaluator"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "faithfulness": {
+                        "index": 3,
+                        "text": "Faithfulness"
+                      },
+                      "groundedness": {
+                        "index": 0,
+                        "text": "Groundedness"
+                      },
+                      "hallucination": {
+                        "index": 4,
+                        "text": "Hallucination"
+                      },
+                      "language_match": {
+                        "index": 2,
+                        "text": "Language Match"
+                      },
+                      "pii_in_input": {
+                        "index": 1,
+                        "text": "PII in Input"
+                      },
+                      "pii_in_output": {
+                        "index": 5,
+                        "text": "PII in Output"
+                      },
+                      "schema_validity": {
+                        "index": 7,
+                        "text": "Schema Validity"
+                      },
+                      "tone": {
+                        "index": 6,
+                        "text": "Tone"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Failures"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "md",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Failures"
+          }
+        ]
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "app": "grafana-assistant-app",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (name) (count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | result=\"fail\" | severity=\"hard\" [24h]))",
+          "instant": true,
+          "queryType": "instant",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Hard-fail evaluators (24h)",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "name",
+                "Value #A"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "category"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Category"
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "fabricated_product": {
+                        "index": 1,
+                        "text": "Fabricated Product"
+                      },
+                      "ungrounded_policy_claim": {
+                        "index": 0,
+                        "text": "Ungrounded Policy Claim"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Failures"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "id": 14,
+      "options": {
+        "cellHeight": "md",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Failures"
+          }
+        ]
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "app": "grafana-assistant-app",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "sum by (category) (count_over_time({namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" | pattern `<_> eval_event=<payload>` | line_format \"{{.payload}}\" | json | name=\"hallucination\" | result=\"fail\" [24h]))",
+          "instant": true,
+          "queryType": "instant",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Hallucination sub-categories (24h)",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "category",
+                "Value #A"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 15,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showControls": false,
+        "showFieldSelector": false,
+        "showLabels": true,
+        "showLevel": true,
+        "showLogAttributes": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "timestampResolution": "ms",
+        "unwrappedColumns": false,
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "13.1.0-24779284961",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "expr": "{namespace=\"neoncart\", container=\"svc\"} |= \"support-copilot.evaluator\" |= \"eval_event=\" |= \"\\\"result\\\": \\\"fail\\\"\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent local-eval failures (parsed)",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "evaluators",
+    "ai-observability",
+    "neoncart",
+    "sigil",
+    "ai-o11y"
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
+  "timezone": "browser",
+  "title": "AI Obs · Online Evaluators",
+  "uid": "ai-obs-evals",
+  "version": 10
+}

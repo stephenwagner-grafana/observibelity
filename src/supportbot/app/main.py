@@ -62,8 +62,40 @@ BRANDING: dict[str, str] = {
 
 # ---- OTel bootstrap --------------------------------------------------------
 def _instrument(app: FastAPI) -> None:
-    """Best-effort OTel wiring. Silently no-ops if libs aren't installed."""
+    """Best-effort OTel wiring: stand up a TracerProvider + OTLP/HTTP exporter,
+    then auto-instrument FastAPI/httpx/asyncpg.
+
+    Without an explicit TracerProvider, structured log records emit
+    ``trace_id=""`` / ``span_id=""`` and traces never reach the collector,
+    which breaks the "one continuous trace" demo storyline. Silently no-ops
+    if libs aren't installed (keeps unit tests light)."""
     try:
+        from opentelemetry import trace
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        service_name = os.environ.get("OTEL_SERVICE_NAME", "supportbot")
+        namespace = os.environ.get("OBSERVIBELITY_NAMESPACE", "observibelity")
+        if not isinstance(trace.get_tracer_provider(), TracerProvider):
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.namespace": namespace,
+                }
+            )
+            provider = TracerProvider(resource=resource)
+            endpoint = os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+            ).rstrip("/")
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+
+            exporter = OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces")
+            provider.add_span_processor(BatchSpanProcessor(exporter))
+            trace.set_tracer_provider(provider)
+
         from opentelemetry.instrumentation.asyncpg import AsyncPGInstrumentor
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
         from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
@@ -71,7 +103,7 @@ def _instrument(app: FastAPI) -> None:
         FastAPIInstrumentor.instrument_app(app)
         HTTPXClientInstrumentor().instrument()
         AsyncPGInstrumentor().instrument()
-        log.info("OTel instrumentation enabled")
+        log.info("OTel instrumentation enabled (service=%s)", service_name)
     except Exception as exc:  # noqa: BLE001
         log.warning("OTel instrumentation skipped: %s", exc)
 
@@ -139,11 +171,22 @@ async def home(
     request: Request, session: AsyncSession = Depends(db.get_session)
 ) -> HTMLResponse:
     _set_usecase_attr(persona_id=_persona_id(request))
-    kb_q = select(SupportbotKb).where(SupportbotKb.is_confidential.is_(False)).limit(6)
+    # The KB row's "confidential" flag is encoded in the tags string —
+    # the schema doesn't have a boolean column. Exclude rows whose tags
+    # include the "confidential" marker; NULL tags pass through.
+    kb_q = (
+        select(SupportbotKb)
+        .where(
+            (SupportbotKb.tags.is_(None))
+            | (~SupportbotKb.tags.ilike("%confidential%"))
+        )
+        .limit(6)
+    )
     featured = (await session.execute(kb_q)).scalars().all()
     return templates.TemplateResponse(
+        request,
         "index.html",
-        {"request": request, "featured": featured, "branding": BRANDING},
+        {"featured": featured, "branding": BRANDING},
     )
 
 
@@ -155,13 +198,17 @@ async def list_tickets(
     pid = _persona_id(request)
     _set_usecase_attr(persona_id=pid)
     stmt = select(Ticket)
-    if pid and pid.isdigit():
-        stmt = stmt.where(Ticket.persona_id == int(pid))
+    # Ticket.persona_id is the string slug (FK to personas.persona_id) per
+    # migrations/versions/0006_tickets.py. An earlier draft cast pid to int
+    # which would never match (the DB stores "u-tim-l" not 42).
+    if pid:
+        stmt = stmt.where(Ticket.persona_id == pid)
     stmt = stmt.order_by(Ticket.created_at.desc()).limit(50)
     tickets = (await session.execute(stmt)).scalars().all()
     return templates.TemplateResponse(
+        request,
         "tickets.html",
-        {"request": request, "tickets": tickets, "branding": BRANDING},
+        {"tickets": tickets, "branding": BRANDING},
     )
 
 
@@ -176,8 +223,9 @@ async def ticket_detail(
     if ticket is None:
         raise HTTPException(status_code=404, detail="ticket not found")
     return templates.TemplateResponse(
+        request,
         "ticket_detail.html",
-        {"request": request, "ticket": ticket, "branding": BRANDING},
+        {"ticket": ticket, "branding": BRANDING},
     )
 
 
@@ -188,13 +236,19 @@ async def kb_browse(
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     _set_usecase_attr(persona_id=_persona_id(request))
-    stmt = select(SupportbotKb).where(SupportbotKb.is_confidential.is_(False))
+    # tags-based exclusion mirrors the schema in 0007_supportbot_kb.
+    stmt = select(SupportbotKb).where(
+        (SupportbotKb.tags.is_(None))
+        | (~SupportbotKb.tags.ilike("%confidential%"))
+    )
     if category:
-        stmt = stmt.where(SupportbotKb.category == category)
+        # Category is a tags-prefix match (CSV tag list, ';'-separated).
+        stmt = stmt.where(SupportbotKb.tags.ilike(f"{category};%") | SupportbotKb.tags.ilike(f"%;{category};%") | SupportbotKb.tags.ilike(f"%;{category}") | (SupportbotKb.tags == category))
     articles = (await session.execute(stmt.order_by(SupportbotKb.title).limit(100))).scalars().all()
     return templates.TemplateResponse(
+        request,
         "kb.html",
-        {"request": request, "articles": articles, "branding": BRANDING, "category": category},
+        {"articles": articles, "branding": BRANDING, "category": category},
     )
 
 
@@ -202,8 +256,21 @@ async def kb_browse(
 @app.get("/api/personas")
 async def personas_list(session: AsyncSession = Depends(db.get_session)) -> JSONResponse:
     rows = (await session.execute(select(Persona).limit(200))).scalars().all()
+    # Persona schema (0001_initial): id, persona_id slug, name, email, role,
+    # archetype, offender_pattern, weight. An earlier version of this
+    # endpoint returned a non-existent ``department`` column and 500'd.
     return JSONResponse(
-        [{"id": p.id, "name": p.name, "role": p.role, "department": p.department} for p in rows]
+        [
+            {
+                "id": p.id,
+                "persona_id": p.persona_id,
+                "name": p.name,
+                "role": p.role,
+                "archetype": p.archetype,
+                "offender_pattern": p.offender_pattern,
+            }
+            for p in rows
+        ]
     )
 
 

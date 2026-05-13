@@ -51,6 +51,16 @@ class Specialist(ABC):
     def __init__(self) -> None:
         self.llm_gateway_url = os.environ.get("LLM_GATEWAY_URL", "http://llm-gateway")
         self.client = httpx.AsyncClient(timeout=30.0)
+        # Allow operators to override TOOL_ALLOWLIST via env var (chart sets
+        # this from values.yaml > specialists[].tool_allowlist). Without the
+        # override the class-level default applies — same behaviour as before.
+        env_allow = os.environ.get("TOOL_ALLOWLIST", "").strip()
+        if env_allow:
+            parsed = [t.strip() for t in env_allow.split(",") if t.strip()]
+            if parsed:
+                # Replace the class-level allowlist on this instance only —
+                # subclasses keep their class-level default for tests.
+                self.TOOL_ALLOWLIST = parsed
 
     @abstractmethod
     async def handle(self, req: SpecialistRequest) -> SpecialistResponse:
@@ -118,5 +128,32 @@ class Specialist(ABC):
             return resp.json()
 
     def _build_tool_specs(self) -> list[dict]:
-        # Phase 1: hardcoded. In Phase 2, tools self-describe via /v1/schema.
-        return [{"name": t, "type": "function"} for t in self.TOOL_ALLOWLIST]
+        """Return tool defs the gateway/provider can translate into a real
+        tool-use schema.
+
+        Each tool is emitted in OpenAI's function-tool shape with a
+        permissive ``parameters`` schema; the Anthropic provider maps that
+        onto its native ``input_schema`` shape (see
+        ``llm-gateway/providers/anthropic.py::_to_anthropic_tools``). Without
+        a ``function`` key the gateway would receive an unknown shape and
+        the LLM would never emit tool_calls — which broke every
+        tool-calling specialist in Phase 1.
+
+        Phase 2: tools self-describe via ``GET /v1/schema``; until then we
+        send a permissive open object so the model can choose its own args.
+        """
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": t,
+                    "description": f"{t} tool (see deployed schema at /v1/schema).",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": True,
+                    },
+                },
+            }
+            for t in self.TOOL_ALLOWLIST
+        ]

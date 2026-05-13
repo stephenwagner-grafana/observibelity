@@ -16,12 +16,62 @@ This module exposes the standard tool HTTP surface:
 """
 from __future__ import annotations
 
+import logging
+import os
+
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
+from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 from .tool import Tool
+
+log = logging.getLogger("tool_base")
+
+
+def _init_otel(default_service_name: str) -> None:
+    """Stand up a TracerProvider + OTLP/HTTP exporter for the tool pod.
+
+    Idempotent: if another caller already installed a real TracerProvider
+    (e.g. opentelemetry-instrument), we leave it alone. Best-effort: telemetry
+    failures must never knock a tool offline.
+    """
+    service_name = os.environ.get("OTEL_SERVICE_NAME", default_service_name)
+    namespace = os.environ.get("OBSERVIBELITY_NAMESPACE", "observibelity")
+    try:
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        if not isinstance(trace.get_tracer_provider(), TracerProvider):
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.namespace": namespace,
+                    "observibelity.role": "tool",
+                }
+            )
+            provider = TracerProvider(resource=resource)
+            endpoint = os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+            ).rstrip("/")
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+
+            exporter = OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces")
+            provider.add_span_processor(BatchSpanProcessor(exporter))
+            trace.set_tracer_provider(provider)
+        try:
+            from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+
+            HTTPXClientInstrumentor().instrument()
+        except Exception:  # noqa: BLE001
+            pass
+        log.info("OTel SDK initialized for tool %s", service_name)
+    except Exception as exc:  # noqa: BLE001 — never crash on telemetry
+        log.warning("OTel init failed for tool %s (%s)", service_name, exc)
 
 INVOCATIONS = Counter(
     "tool_invocations_total",
@@ -42,6 +92,10 @@ def build_app(tool: Tool) -> FastAPI:
         version="0.2.0",
         description=f"ObserVIBElity tool microservice: {tool.NAME}",
     )
+    # Wire up the SDK *before* FastAPIInstrumentor.instrument_app at the
+    # bottom of this function — the instrumentor only attaches handlers,
+    # it doesn't install a TracerProvider, so spans are no-op without this.
+    _init_otel(default_service_name=tool.NAME)
 
     @app.post("/v1/invoke")
     async def invoke(

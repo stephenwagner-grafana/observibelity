@@ -31,10 +31,20 @@ def test_knobs():
 @pytest.mark.asyncio
 async def test_execute_returns_rows():
     now = datetime.now(tz=timezone.utc)
-    rows = [_StubRow(id=1, subject="VPN", status="open", category="it", created_at=now)]
+    # The SELECT aliases priority -> category, so the stub row exposes
+    # whichever attribute name the SQL aliased to. Use ``category`` here.
+    rows = [
+        _StubRow(
+            id=1, ticket_number="T-1", subject="VPN",
+            status="open", category="high", created_at=now,
+        )
+    ]
     sess = _StubSession(rows)
     tool = ListTickets.__new__(ListTickets)
-    res = await tool.execute(ListTicketsArgs(persona_id="alice"), sess)
+    res = await tool.execute(ListTicketsArgs(persona_id="u-alice"), sess)
     assert isinstance(res, ListTicketsResult)
     assert len(res.tickets) == 1
     assert res.tickets[0].subject == "VPN"
+    assert res.tickets[0].ticket_number == "T-1"
+    # ``category`` field now mirrors the priority value from the DB.
+    assert res.tickets[0].category == "high"
