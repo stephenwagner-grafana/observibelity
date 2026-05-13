@@ -16,8 +16,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      has_secrets: ${{ steps.check.outputs.has_secrets }}
+    steps:
+      - id: check
+        env:
+          GRAFANA_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}
+        run: |
+          if [ -n "$GRAFANA_TOKEN" ]; then
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GRAFANA_CLOUD_API_TOKEN not set — skipping sync jobs"
+          fi
+
   dashboards:
-    if: ${{ secrets.GRAFANA_CLOUD_API_TOKEN != '' }}
+    needs: preflight
+    if: needs.preflight.outputs.has_secrets == 'true'
     runs-on: ubuntu-latest
     env:
       GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
@@ -29,7 +46,8 @@ jobs:
         run: ./tools/dashboards-sync.sh push
 
   evaluators:
-    if: ${{ secrets.GRAFANA_CLOUD_API_TOKEN != '' }}
+    needs: preflight
+    if: needs.preflight.outputs.has_secrets == 'true'
     runs-on: ubuntu-latest
     env:
       GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
@@ -45,7 +63,8 @@ jobs:
         run: ./tools/evaluators-sync.sh push
 
   alerts:
-    if: ${{ secrets.GRAFANA_CLOUD_API_TOKEN != '' }}
+    needs: preflight
+    if: needs.preflight.outputs.has_secrets == 'true'
     runs-on: ubuntu-latest
     env:
       GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
