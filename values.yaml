@@ -47,7 +47,7 @@ storage:
 # Single-replica RWO — not HA, this is a demo. Password is injected by install.sh.
 postgres:
   enabled: true
-  image: postgres:16-alpine
+  image: postgres:18-alpine
   password: ""
   resources:
     requests:
