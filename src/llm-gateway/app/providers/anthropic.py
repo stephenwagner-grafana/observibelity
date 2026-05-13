@@ -47,21 +47,89 @@ class AnthropicProvider(Provider):
     # Translation helpers
     # ------------------------------------------------------------------
     @staticmethod
-    def _split_system(messages: list[dict]) -> tuple[str | None, list[dict]]:
-        """Anthropic takes the system prompt as a top-level `system=` arg, not a message."""
+    def _to_anthropic_messages(messages: list[dict]) -> tuple[str | None, list[dict]]:
+        """Translate OpenAI-style messages -> (system prompt, Anthropic messages).
+
+        The specialist base sends us OpenAI-shaped messages because it's the
+        more permissive of the two formats. Anthropic's Messages API needs:
+
+        * System messages collapsed onto a top-level ``system=`` argument.
+        * Assistant messages that triggered tool calls expanded into content
+          blocks of ``{type: text}`` and/or ``{type: tool_use}``.
+        * Tool result messages re-emitted as a *user* message containing a
+          ``{type: tool_result, tool_use_id, content}`` block. Anthropic
+          rejects ``role: "tool"`` outright (400 from the public API).
+
+        Without this conversion the second round-trip in a tool-using
+        specialist (e.g. nc-chatbot answering "do you have mice?") 400s with
+        ``Unexpected role 'tool'``.
+        """
         system_parts: list[str] = []
-        rest: list[dict] = []
-        for m in messages:
-            if m.get("role") == "system":
-                content = m.get("content")
+        anth_messages: list[dict] = []
+
+        for msg in messages:
+            role = msg.get("role")
+
+            if role == "system":
+                content = msg.get("content")
                 if isinstance(content, str):
                     system_parts.append(content)
                 elif isinstance(content, list):
-                    system_parts.extend(p.get("text", "") for p in content if isinstance(p, dict))
-            else:
-                rest.append(m)
+                    system_parts.extend(
+                        p.get("text", "") for p in content if isinstance(p, dict)
+                    )
+                continue
+
+            if role == "tool":
+                # Tool result -> user message with a tool_result content block.
+                anth_messages.append(
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": (
+                                    msg.get("tool_call_id")
+                                    or msg.get("id")
+                                    or "toolu_unknown"
+                                ),
+                                "content": str(msg.get("content", "")),
+                            }
+                        ],
+                    }
+                )
+                continue
+
+            if role == "assistant" and msg.get("tool_calls"):
+                # Assistant turn that emitted tool_use(s) — expand to content blocks.
+                blocks: list[dict] = []
+                if msg.get("content"):
+                    blocks.append({"type": "text", "text": str(msg["content"])})
+                for tc in msg["tool_calls"]:
+                    fn = tc.get("function") or {}
+                    blocks.append(
+                        {
+                            "type": "tool_use",
+                            "id": tc.get("id") or "toolu_unknown",
+                            "name": tc.get("name") or fn.get("name") or "unknown",
+                            "input": (
+                                tc.get("input")
+                                or tc.get("args")
+                                or fn.get("arguments")
+                                or {}
+                            ),
+                        }
+                    )
+                anth_messages.append({"role": "assistant", "content": blocks})
+                continue
+
+            # Plain user / assistant message — pass through unchanged.
+            anth_messages.append(
+                {"role": role, "content": msg.get("content", "")}
+            )
+
         system = "\n\n".join(s for s in system_parts if s) or None
-        return system, rest
+        return system, anth_messages
 
     @staticmethod
     def _to_anthropic_tools(tools: list[dict] | None) -> list[dict] | None:
@@ -88,7 +156,7 @@ class AnthropicProvider(Provider):
     # ------------------------------------------------------------------
     async def complete(self, req: CompleteRequest) -> CompleteResponse:
         model = req.model_override or self.model
-        system, messages = self._split_system(req.messages)
+        system, messages = self._to_anthropic_messages(req.messages)
         tools = self._to_anthropic_tools(req.tools)
 
         kwargs: dict[str, Any] = {
