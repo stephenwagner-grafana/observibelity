@@ -66,7 +66,11 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "service.name=llm-gateway,service.namespace={{ .Values.global.namespace }}"
+              value: "service.name=llm-gateway,service.namespace={{ .Values.global.namespace }},deployment.environment={{ .Values.global.deploymentEnvironment | default "demo" }}"
+            - name: DEPLOYMENT_ENVIRONMENT
+              value: {{ .Values.global.deploymentEnvironment | default "demo" | quote }}
+            - name: OBSERVIBELITY_NAMESPACE
+              value: {{ .Values.global.namespace | quote }}
             - name: PRICING_CONFIG_PATH
               value: /etc/llm-gateway/pricing.json
             - name: ROUTING_CONFIG_PATH

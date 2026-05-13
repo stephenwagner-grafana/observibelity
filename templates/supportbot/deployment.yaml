@@ -56,7 +56,11 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "service.name=supportbot,service.namespace={{ .Values.global.namespace }}"
+              value: "service.name=supportbot,service.namespace={{ .Values.global.namespace }},deployment.environment={{ .Values.global.deploymentEnvironment | default "demo" }}"
+            - name: DEPLOYMENT_ENVIRONMENT
+              value: {{ .Values.global.deploymentEnvironment | default "demo" | quote }}
+            - name: OBSERVIBELITY_NAMESPACE
+              value: {{ .Values.global.namespace | quote }}
             - name: BRANDING_NAME
               valueFrom:
                 configMapKeyRef:

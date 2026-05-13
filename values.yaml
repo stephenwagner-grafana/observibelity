@@ -17,6 +17,11 @@ global:
   # Set to "latest" to track the rolling tag built on every push to main, or
   # pin to a specific value like "main-<sha>" for rollbacks.
   imageTag: ""
+  # deployment.environment — surfaces as an OTel resource attribute on every
+  # span/metric/log so the Grafana AI Observability plugin (and our custom
+  # dashboards) can segment "demo" vs "production" rollouts on one stack.
+  # Common values: demo (default), production, staging, dev.
+  deploymentEnvironment: demo
 
 # podDefaults — fallback values for any component that doesn't override.
 # Set podDefaults.enabled=false to ship templates without resource limits / securityContext

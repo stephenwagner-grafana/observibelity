@@ -22,6 +22,7 @@ observability, it must never take a request down.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -31,11 +32,15 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any, Iterator, Optional
 
+from opentelemetry import trace
+
 from .providers.base import CompleteRequest, CompleteResponse
 
 log = logging.getLogger(__name__)
 
 _AGENT_NAME = "observibelity-llm-gateway"
+_SERVICE_NAME = "llm-gateway"
+_SERVICE_NAMESPACE = "observibelity"
 _DEFAULT_PROVIDER = "anthropic"
 # operation_name=streamText is the magic value that makes Sigil's SDK
 # auto-emit the gen_ai.client.time_to_first_token histogram on flush —
@@ -44,8 +49,59 @@ _OPERATION = "streamText"
 _AGENT_OPERATION_TAG = "gateway.complete"
 _TOOL_OPERATION = "gateway.tool_call"
 
+# Providers whose pricing Sigil already maintains. We omit our local cost
+# estimate for these so Sigil's licensed pricing table is the sole source
+# of truth, per the "Sigil owns prod license" directive. Anything outside
+# this set (Ollama, custom local models) still carries our GPU-amortized
+# estimate so the plugin's Cost panel isn't empty.
+_SIGIL_LICENSED_PROVIDERS = frozenset(
+    {"anthropic", "openai", "google", "gemini", "cohere", "bedrock"}
+)
+
 _client: Optional[Any] = None
 _initialized = False
+
+
+def _should_emit_cost(provider: str | None) -> bool:
+    """Return True iff WE should emit cost fields for this provider.
+
+    Sigil's built-in pricing table covers Anthropic, OpenAI, Google, etc.
+    For those, omit cost from the event so Sigil computes it from the
+    canonical pricing it maintains. For Ollama / custom, emit our estimate
+    so the plugin's Cost panel still has data.
+    """
+    if not provider:
+        return True
+    return provider.strip().lower() not in _SIGIL_LICENSED_PROVIDERS
+
+
+def _derive_session_id(req: CompleteRequest) -> str:
+    """Per-conversation session id for Sigil's Conversations view.
+
+    Phase-2 implementation: derive from ``persona_id + UTC date+hour`` so
+    every chat turn from one loadgen persona within an hour groups under a
+    single conversation. Phase-3 plan: thread a real ``X-Session-Id`` header
+    through neoncart/supportbot → specialist → gateway so multi-turn UX
+    sessions correlate exactly.
+    """
+    pid = (req.ai_o11y.get("persona_id") if req.ai_o11y else None) or "u-anon"
+    bucket = datetime.now(timezone.utc).strftime("%Y%m%d%H")
+    return hashlib.sha256(f"{pid}:{bucket}".encode("utf-8")).hexdigest()[:16]
+
+
+def _active_trace_context() -> tuple[str, str]:
+    """Return (trace_id_hex, span_id_hex) from the current OTel context.
+
+    Returns ("", "") when there's no recording span — keeps callers
+    branch-free when running in tests or before SDK init.
+    """
+    span = trace.get_current_span()
+    if span is None:
+        return "", ""
+    ctx = span.get_span_context()
+    if not ctx or not ctx.is_valid:
+        return "", ""
+    return f"{ctx.trace_id:032x}", f"{ctx.span_id:016x}"
 
 
 def _agent_version() -> str:
@@ -268,28 +324,68 @@ async def emit_generation_event(
     the original Phase-1 stub — that line is what the legacy Loki dashboards
     parse.
     """
+    # Pull trace context from the active OTel span when the caller didn't
+    # pass explicit IDs — sigil events without trace_id can't be correlated
+    # back to the Tempo trace, which breaks the AI plugin's drill-down.
+    if not trace_id or not span_id:
+        active_trace, active_span = _active_trace_context()
+        trace_id = trace_id or active_trace
+        span_id = span_id or active_span
+
+    persona_id = (req.ai_o11y.get("persona_id") or "").strip()
+    session_id = _derive_session_id(req)
+
     # Always log a stdout JSON line — preserves the Phase-1 behaviour the
     # ai-obs-app-* dashboards rely on, and gives operators a paper trail
-    # whether or not Sigil ingest is reachable.
-    cost = resp.usage.get("cost_usd") or {}
-    event = {
+    # whether or not Sigil ingest is reachable. The shape is the OTel GenAI
+    # semconv superset: canonical gen_ai.* + service.* + session.* attrs
+    # the plugin reads, plus our ai_o11y.* mirrors for legacy dashboards.
+    event: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "trace_id": trace_id,
         "span_id": span_id,
+        # --- service identity (resource attrs, mirrored on every event so
+        # the plugin's namespace filter works even when ingest drops
+        # resource metadata) ---
+        "service.name": _SERVICE_NAME,
+        "service.namespace": _SERVICE_NAMESPACE,
+        "deployment.environment": os.environ.get("DEPLOYMENT_ENVIRONMENT", "demo"),
+        # --- canonical gen_ai.* (OTel semconv) ---
         "gen_ai.system": resp.provider,
+        "gen_ai.operation.name": "chat",
         "gen_ai.request.model": req.model_override or resp.model,
         "gen_ai.response.model": resp.model,
+        "gen_ai.request.max_tokens": int(req.max_tokens or 0),
         "gen_ai.usage.input_tokens": resp.usage.get("input_tokens", 0),
         "gen_ai.usage.output_tokens": resp.usage.get("output_tokens", 0),
-        "gen_ai.usage.cost.input_usd": cost.get("input_usd", 0.0),
-        "gen_ai.usage.cost.output_usd": cost.get("output_usd", 0.0),
-        "gen_ai.usage.cost.total_usd": cost.get("total_usd", 0.0),
-        "gen_ai.response.finish_reason": resp.finish_reason,
+        "gen_ai.usage.cached_input_tokens": resp.usage.get(
+            "cache_read_input_tokens", 0
+        ),
+        "gen_ai.response.finish_reasons": [resp.finish_reason]
+        if resp.finish_reason
+        else [],
+        # --- conversation grouping (Sigil's Conversations view) ---
+        "session.id": session_id,
+        "gen_ai.conversation.id": session_id,
+        # --- user attribution (canonical aliases for the persona) ---
+        "user.id": persona_id,
+        "enduser.id": persona_id,
+        # --- our demo-level fields, kept for the existing Loki dashboards ---
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
-        "ai_o11y.persona_id": req.ai_o11y.get("persona_id"),
+        "ai_o11y.persona_id": persona_id,
         "ai_o11y.specialist": req.specialist,
         "traffic_origin": req.ai_o11y.get("traffic_origin", "continuous"),
     }
+
+    # Cost: Sigil owns Anthropic/OpenAI/Google pricing — let it compute
+    # those server-side. For Ollama/custom we emit our GPU-amortized
+    # estimate so the plugin's Cost panel still has numbers for them.
+    cost = resp.usage.get("cost_usd") or {}
+    if _should_emit_cost(resp.provider):
+        event["gen_ai.usage.cost.input_usd"] = cost.get("input_usd", 0.0)
+        event["gen_ai.usage.cost.output_usd"] = cost.get("output_usd", 0.0)
+        event["gen_ai.usage.cost.total_usd"] = cost.get("total_usd", 0.0)
+
     try:
         log.info("sigil generation: %s", json.dumps(event, default=str))
     except Exception:  # noqa: BLE001 — never let logging break the request.
@@ -299,12 +395,10 @@ async def emit_generation_event(
     if client is None:
         return
 
-    # Use persona_id as the conversation_id when present so multi-turn
-    # interactions from the same loadgen persona group under one chat in
-    # the plugin's Conversations page. Fall back to a one-shot UUID so
-    # every /v1/complete still appears even without persona context.
-    persona_id = (req.ai_o11y.get("persona_id") or "").strip()
-    conversation_id = persona_id or uuid.uuid4().hex
+    # Conversation id for the Sigil SDK == session id derived above.
+    # This is what groups multi-turn chats from the same persona into a
+    # single conversation row in the plugin's Conversations page.
+    conversation_id = session_id
     conversation_title = (
         f"{req.specialist} / {req.ai_o11y.get('usecase') or 'adhoc'}"
     )
@@ -320,18 +414,35 @@ async def emit_generation_event(
 
     # Tags: anything that fits a small string→string map. The plugin
     # surfaces these on conversation-detail and supports filtering.
+    # Canonical keys (service.namespace, session.id, user.id, etc.) are
+    # included so the AI Observability plugin's filter dropdowns and
+    # default panels light up without per-deployment tweaking.
     tags: dict[str, str] = {
         "agent_operation": _AGENT_OPERATION_TAG,
         "specialist": req.specialist,
         "traffic_origin": str(req.ai_o11y.get("traffic_origin", "continuous")),
+        "service.name": _SERVICE_NAME,
+        "service.namespace": _SERVICE_NAMESPACE,
+        "deployment.environment": os.environ.get("DEPLOYMENT_ENVIRONMENT", "demo"),
+        "session.id": session_id,
+        "gen_ai.conversation.id": session_id,
     }
     if usecase := (req.ai_o11y.get("usecase") or ""):
         tags["use_case"] = str(usecase)
+        tags["ai_o11y.usecase"] = str(usecase)
     if persona_id:
         tags["persona_id"] = persona_id
+        tags["user.id"] = persona_id
+        tags["enduser.id"] = persona_id
+        tags["ai_o11y.persona_id"] = persona_id
     if trace_id:
         tags["trace_id"] = trace_id
+    if span_id:
+        tags["span_id"] = span_id
 
+    # user_id == persona_id when available (the OTel canonical user.id).
+    # Conversation id == derived session id, so the SDK's user filter and
+    # the plugin's session-aware Conversations view agree on grouping.
     start = GenerationStart(
         id=gen_id,
         model=ModelRef(provider=resp.provider or _DEFAULT_PROVIDER, name=request_model),
@@ -454,11 +565,14 @@ async def emit_tool_execution_event(
     request_model: str,
     provider: str = _DEFAULT_PROVIDER,
     conversation_id: str = "",
+    session_id: str = "",
     usecase: str = "",
     persona_id: str = "",
     result: Any = None,
     error: BaseException | None = None,
     duration_ms: float | None = None,
+    trace_id: str = "",
+    span_id: str = "",
 ) -> None:
     """Emit one Sigil tool-execution event for the AI plugin's Tools panel.
 
@@ -468,7 +582,63 @@ async def emit_tool_execution_event(
     when specialists are instrumented end-to-end. The Tools panel still
     counts invocations, segments by tool name, and shows arguments, which
     is the bulk of its value.
+
+    Carries the same canonical correlation envelope as
+    :func:`emit_generation_event` so the Tools panel and Conversations
+    view share session.id/user.id/trace_id/service identity.
     """
+    # Pull trace context from the active span if the caller didn't pass it.
+    if not trace_id or not span_id:
+        active_trace, active_span = _active_trace_context()
+        trace_id = trace_id or active_trace
+        span_id = span_id or active_span
+
+    # Always log a structured line for the stdout-based Loki dashboards so
+    # tool events are traceable even when Sigil ingest is disabled. Mirrors
+    # the canonical OTel GenAI tool-call attributes.
+    try:
+        arg_json = (
+            arguments if isinstance(arguments, str) else json.dumps(arguments, default=str)
+        )
+    except Exception:  # noqa: BLE001
+        arg_json = ""
+    try:
+        res_json = ""
+        if result is not None:
+            res_json = (
+                result if isinstance(result, str) else json.dumps(result, default=str)
+            )
+            res_json = res_json[:50_000]
+    except Exception:  # noqa: BLE001
+        res_json = ""
+    tool_event: dict[str, Any] = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "trace_id": trace_id,
+        "span_id": span_id,
+        "service.name": _SERVICE_NAME,
+        "service.namespace": _SERVICE_NAMESPACE,
+        "deployment.environment": os.environ.get("DEPLOYMENT_ENVIRONMENT", "demo"),
+        "gen_ai.operation.name": "tool_use",
+        "gen_ai.system": provider,
+        "gen_ai.request.model": request_model,
+        "gen_ai.tool.name": tool_name,
+        "gen_ai.tool.call.id": tool_call_id,
+        "gen_ai.tool.arguments": arg_json,
+        "gen_ai.tool.result": res_json,
+        "gen_ai.tool.duration_ms": duration_ms,
+        "session.id": session_id,
+        "gen_ai.conversation.id": session_id,
+        "user.id": persona_id,
+        "enduser.id": persona_id,
+        "ai_o11y.specialist": specialist,
+        "ai_o11y.usecase": usecase,
+        "ai_o11y.persona_id": persona_id,
+    }
+    try:
+        log.info("sigil tool: %s", json.dumps(tool_event, default=str))
+    except Exception:  # noqa: BLE001 — telemetry must never break the request.
+        pass
+
     client = get_client()
     if client is None:
         return
@@ -482,7 +652,7 @@ async def emit_tool_execution_event(
         tool_name=tool_name,
         tool_call_id=tool_call_id or uuid.uuid4().hex,
         tool_type="function",
-        conversation_id=conversation_id or uuid.uuid4().hex,
+        conversation_id=conversation_id or session_id or uuid.uuid4().hex,
         agent_name=_AGENT_NAME,
         agent_version=_agent_version(),
         request_model=request_model,
@@ -507,10 +677,6 @@ async def emit_tool_execution_event(
     except Exception:  # noqa: BLE001
         log.exception("sigil tool_execution context failed: tool=%s", tool_name)
 
-    _ = duration_ms  # accepted for caller symmetry; SDK derives from span time
-    _ = specialist
-    _ = usecase
-    _ = persona_id
     try:
         client.flush()
     except Exception:  # noqa: BLE001
@@ -528,29 +694,47 @@ def build_event(
 ) -> dict[str, Any]:
     """Build the legacy stdout-JSON Sigil event payload.
 
-    The dashboard-shaped fields here are still parsed by the AI o11y
-    Loki dashboards, so we keep them stable. Real Sigil ingest goes
-    through ``emit_generation_event``.
+    Used by tests and any caller that wants the event dict without
+    actually shipping it to Sigil. Mirrors the shape
+    :func:`emit_generation_event` writes to stdout: canonical OTel GenAI
+    attributes + service identity + session/user/trace correlation, with
+    cost stripped for Sigil-licensed providers so we don't shadow the
+    plugin's own pricing.
     """
-    cost = resp.usage.get("cost_usd") or {}
-    return {
+    persona_id = (req.ai_o11y.get("persona_id") or "").strip()
+    session_id = _derive_session_id(req)
+    event: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "trace_id": trace_id,
         "span_id": span_id,
+        "service.name": _SERVICE_NAME,
+        "service.namespace": _SERVICE_NAMESPACE,
+        "deployment.environment": os.environ.get("DEPLOYMENT_ENVIRONMENT", "demo"),
         "gen_ai.system": resp.provider,
+        "gen_ai.operation.name": "chat",
         "gen_ai.request.model": req.model_override or resp.model,
         "gen_ai.response.model": resp.model,
+        "gen_ai.request.max_tokens": int(req.max_tokens or 0),
         "gen_ai.usage.input_tokens": resp.usage.get("input_tokens", 0),
         "gen_ai.usage.output_tokens": resp.usage.get("output_tokens", 0),
-        "gen_ai.usage.cost.input_usd": cost.get("input_usd", 0.0),
-        "gen_ai.usage.cost.output_usd": cost.get("output_usd", 0.0),
-        "gen_ai.usage.cost.total_usd": cost.get("total_usd", 0.0),
+        "gen_ai.usage.cached_input_tokens": resp.usage.get("cache_read_input_tokens", 0),
         "gen_ai.response.finish_reason": resp.finish_reason,
+        "gen_ai.response.finish_reasons": [resp.finish_reason] if resp.finish_reason else [],
+        "session.id": session_id,
+        "gen_ai.conversation.id": session_id,
+        "user.id": persona_id,
+        "enduser.id": persona_id,
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
-        "ai_o11y.persona_id": req.ai_o11y.get("persona_id"),
+        "ai_o11y.persona_id": persona_id,
         "ai_o11y.specialist": req.specialist,
         "traffic_origin": req.ai_o11y.get("traffic_origin", "continuous"),
         "messages": req.messages[-1:],
         "completion": resp.content,
         "tool_calls": resp.tool_calls,
     }
+    cost = resp.usage.get("cost_usd") or {}
+    if _should_emit_cost(resp.provider):
+        event["gen_ai.usage.cost.input_usd"] = cost.get("input_usd", 0.0)
+        event["gen_ai.usage.cost.output_usd"] = cost.get("output_usd", 0.0)
+        event["gen_ai.usage.cost.total_usd"] = cost.get("total_usd", 0.0)
+    return event

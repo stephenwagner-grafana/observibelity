@@ -49,6 +49,11 @@ def _init_otel(default_service_name: str) -> None:
                 {
                     "service.name": service_name,
                     "service.namespace": namespace,
+                    "service.instance.id": os.environ.get("HOSTNAME", "unknown"),
+                    "deployment.environment": os.environ.get(
+                        "DEPLOYMENT_ENVIRONMENT", "demo"
+                    ),
+                    "telemetry.sdk.name": "opentelemetry",
                     "observibelity.role": "tool",
                 }
             )
