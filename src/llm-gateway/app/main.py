@@ -220,6 +220,11 @@ def _init_otel(fastapi_app: FastAPI) -> None:
                 {
                     "service.name": service_name,
                     "service.namespace": namespace,
+                    "service.instance.id": os.environ.get("HOSTNAME", "unknown"),
+                    "deployment.environment": os.environ.get(
+                        "DEPLOYMENT_ENVIRONMENT", "demo"
+                    ),
+                    "telemetry.sdk.name": "opentelemetry",
                 }
             )
             provider = TracerProvider(resource=resource)
@@ -287,6 +292,11 @@ def _init_otel_metrics() -> None:
                 {
                     "service.name": service_name,
                     "service.namespace": namespace,
+                    "service.instance.id": os.environ.get("HOSTNAME", "unknown"),
+                    "deployment.environment": os.environ.get(
+                        "DEPLOYMENT_ENVIRONMENT", "demo"
+                    ),
+                    "telemetry.sdk.name": "opentelemetry",
                 }
             ),
         )
@@ -375,12 +385,23 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
     provider_name, provider = _select_provider(request, name=req.provider_override)
 
     with tracer.start_as_current_span("llm_gateway.complete") as span:
-        # gen_ai.* span attrs follow OTel GenAI semantic conventions.
+        # gen_ai.* span attrs follow OTel GenAI semantic conventions; the
+        # canonical session.id / user.id pair lets the AI Observability
+        # plugin correlate traces with sigil generation events and Loki
+        # logs without per-deployment glue.
+        from .sigil import _derive_session_id  # local import: avoid cycle
+        _session_id = _derive_session_id(req)
         span.set_attribute("gen_ai.system", provider_name)
+        span.set_attribute("gen_ai.operation.name", "chat")
         span.set_attribute(
             "gen_ai.request.model",
             req.model_override or getattr(provider, "model", "unknown"),
         )
+        span.set_attribute("session.id", _session_id)
+        span.set_attribute("gen_ai.conversation.id", _session_id)
+        if persona := req.ai_o11y.get("persona_id"):
+            span.set_attribute("user.id", str(persona))
+            span.set_attribute("enduser.id", str(persona))
         span.set_attribute("ai_o11y.specialist", req.specialist)
         span.set_attribute("ai_o11y.usecase", req.ai_o11y.get("usecase", ""))
         span.set_attribute("ai_o11y.persona_id", req.ai_o11y.get("persona_id", ""))
@@ -431,12 +452,29 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         COST_TOTAL.labels(**labels_full).inc(cost["total_usd"])
 
         # Native OTel GenAI metrics — flow through the collector into Mimir
-        # so the ai-obs-cost dashboards can query gen_ai_client_* series.
-        gen_ai_attrs = {
+        # so the ai-obs-cost dashboards AND the Sigil plugin can query
+        # gen_ai_client_* series with a consistent label set. Canonical OTel
+        # GenAI keys (gen_ai.*, service.namespace) come first; ai_o11y.*
+        # mirrors stay so the existing custom dashboards keep working.
+        from .sigil import _derive_session_id  # local import: avoid cycle
+
+        gen_ai_attrs: dict[str, str | int | float] = {
             "gen_ai.system": provider_name,
+            "gen_ai.operation.name": "chat",
             "gen_ai.request.model": resp.model,
+            "gen_ai.response.model": resp.model,
+            "service.name": "llm-gateway",
+            "service.namespace": os.environ.get(
+                "OBSERVIBELITY_NAMESPACE", "observibelity"
+            ),
+            "deployment.environment": os.environ.get(
+                "DEPLOYMENT_ENVIRONMENT", "demo"
+            ),
+            "session.id": _derive_session_id(req),
+            "user.id": req.ai_o11y.get("persona_id", "") or "",
             "ai_o11y.usecase": req.ai_o11y.get("usecase", "") or "",
             "ai_o11y.specialist": req.specialist,
+            "ai_o11y.persona_id": req.ai_o11y.get("persona_id", "") or "",
         }
         try:
             input_tokens = int(resp.usage.get("input_tokens", 0) or 0)
@@ -482,7 +520,8 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         # their own richer tool spans later; the gateway-side emit is the
         # always-on baseline that keeps the panel populated.
         if resp.tool_calls:
-            conversation_id = req.ai_o11y.get("persona_id") or ""
+            # conversation_id == session_id so the Tools panel groups tool
+            # invocations with their parent chat in the Conversations view.
             for tc in resp.tool_calls:
                 try:
                     await emit_tool_execution_event(
@@ -492,9 +531,12 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                         arguments=tc.get("input") or tc.get("arguments") or {},
                         request_model=resp.model,
                         provider=provider_name,
-                        conversation_id=conversation_id,
+                        conversation_id=_session_id,
+                        session_id=_session_id,
                         usecase=req.ai_o11y.get("usecase", ""),
                         persona_id=req.ai_o11y.get("persona_id", ""),
+                        trace_id=trace_id_hex,
+                        span_id=span_id_hex,
                     )
                 except Exception:  # noqa: BLE001
                     log.exception("Sigil tool emit failed: tool=%s", tc.get("name"))

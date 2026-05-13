@@ -54,22 +54,26 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "service.name=neoncart,service.namespace={{ .Values.global.namespace }}"
+              value: "service.name=neoncart,service.namespace={{ .Values.global.namespace }},deployment.environment={{ .Values.global.deploymentEnvironment | default "demo" }}"
+            - name: DEPLOYMENT_ENVIRONMENT
+              value: {{ .Values.global.deploymentEnvironment | default "demo" | quote }}
+            - name: OBSERVIBELITY_NAMESPACE
+              value: {{ .Values.global.namespace | quote }}
             - name: BRANDING_NAME
               valueFrom:
                 configMapKeyRef:
                   name: neoncart-branding
                   key: BRANDING_NAME
-            - name: TAGLINE
+            - name: BRANDING_TAGLINE
               valueFrom:
                 configMapKeyRef:
                   name: neoncart-branding
-                  key: TAGLINE
-            - name: PRIMARY_COLOR
+                  key: BRANDING_TAGLINE
+            - name: BRANDING_PRIMARY_COLOR
               valueFrom:
                 configMapKeyRef:
                   name: neoncart-branding
-                  key: PRIMARY_COLOR
+                  key: BRANDING_PRIMARY_COLOR
           readinessProbe:
             httpGet:
               path: /health

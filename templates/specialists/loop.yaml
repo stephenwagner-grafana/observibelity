@@ -60,7 +60,11 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: http/protobuf
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "service.name={{ $name }},service.namespace={{ $.Values.global.namespace }},observibelity.role=specialist"
+              value: "service.name={{ $name }},service.namespace={{ $.Values.global.namespace }},deployment.environment={{ $.Values.global.deploymentEnvironment | default "demo" }},observibelity.role=specialist"
+            - name: DEPLOYMENT_ENVIRONMENT
+              value: {{ $.Values.global.deploymentEnvironment | default "demo" | quote }}
+            - name: OBSERVIBELITY_NAMESPACE
+              value: {{ $.Values.global.namespace | quote }}
           readinessProbe:
             httpGet:
               path: /health

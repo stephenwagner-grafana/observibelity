@@ -53,20 +53,99 @@ def _make_resp(with_tools: bool = False) -> CompleteResponse:
 
 
 def test_build_event_returns_canonical_payload():
-    """The legacy stdout shape stays stable so Loki dashboards keep parsing."""
+    """Stdout shape carries canonical OTel GenAI attrs + session/user.
+
+    Sigil owns Anthropic pricing — events for Sigil-licensed providers
+    must NOT carry gen_ai.usage.cost.* so the plugin doesn't double-count
+    against its own pricing table.
+    """
     req = _make_req()
     resp = _make_resp()
     event = sigil.build_event(req, resp, trace_id="abc", span_id="def")
+    # Canonical gen_ai.* attrs.
     assert event["gen_ai.system"] == "anthropic"
+    assert event["gen_ai.operation.name"] == "chat"
     assert event["gen_ai.request.model"] == "claude-haiku-4-5-20251001"
+    assert event["gen_ai.response.model"] == "claude-haiku-4-5-20251001"
     assert event["gen_ai.usage.input_tokens"] == 200
     assert event["gen_ai.usage.output_tokens"] == 50
-    assert event["gen_ai.usage.cost.total_usd"] == 0.00045
+    assert event["gen_ai.response.finish_reasons"] == ["stop"]
+    # Cost is stripped for Anthropic — Sigil computes it from its own table.
+    assert "gen_ai.usage.cost.total_usd" not in event
+    assert "gen_ai.usage.cost.input_usd" not in event
+    assert "gen_ai.usage.cost.output_usd" not in event
+    # Service identity mirrored onto every event so the plugin's namespace
+    # filter works even when ingest drops resource metadata.
+    assert event["service.name"] == "llm-gateway"
+    assert event["service.namespace"] == "observibelity"
+    assert "deployment.environment" in event
+    # Conversation grouping + user attribution.
+    assert event["session.id"] == event["gen_ai.conversation.id"]
+    assert event["session.id"]  # non-empty
+    assert event["user.id"] == "u-tim-l"
+    assert event["enduser.id"] == "u-tim-l"
+    # Legacy ai_o11y.* mirrors preserved.
     assert event["ai_o11y.usecase"] == "mice-rca"
     assert event["ai_o11y.persona_id"] == "u-tim-l"
     assert event["ai_o11y.specialist"] == "nc-chatbot"
     assert event["traffic_origin"] == "continuous"
     assert event["trace_id"] == "abc"
+
+
+def test_build_event_keeps_cost_for_ollama():
+    """Ollama isn't in Sigil's licensed pricing — we must still emit cost."""
+    req = _make_req()
+    resp = CompleteResponse(
+        content="ok",
+        tool_calls=[],
+        finish_reason="stop",
+        usage={
+            "input_tokens": 100,
+            "output_tokens": 50,
+            "cost_usd": {"input_usd": 1e-5, "output_usd": 2e-5, "total_usd": 3e-5},
+        },
+        provider="ollama",
+        model="llama3.1:8b",
+    )
+    event = sigil.build_event(req, resp)
+    assert event["gen_ai.usage.cost.total_usd"] == 3e-5
+    assert event["gen_ai.usage.cost.input_usd"] == 1e-5
+    assert event["gen_ai.usage.cost.output_usd"] == 2e-5
+
+
+def test_should_emit_cost_strips_only_licensed_providers():
+    """The cost-strip predicate must cover Anthropic + OpenAI + Google."""
+    assert sigil._should_emit_cost("ollama") is True
+    assert sigil._should_emit_cost("custom-local") is True
+    assert sigil._should_emit_cost("Anthropic") is False
+    assert sigil._should_emit_cost("ANTHROPIC") is False
+    assert sigil._should_emit_cost("openai") is False
+    assert sigil._should_emit_cost("google") is False
+    assert sigil._should_emit_cost("gemini") is False
+    assert sigil._should_emit_cost("cohere") is False
+    assert sigil._should_emit_cost(None) is True  # safety default: emit
+
+
+def test_derive_session_id_groups_persona_within_hour():
+    """Two requests from the same persona in the same UTC hour share a session."""
+    req_a = _make_req()
+    req_b = _make_req()
+    assert sigil._derive_session_id(req_a) == sigil._derive_session_id(req_b)
+    # Different persona -> different session.
+    req_c = CompleteRequest(
+        specialist="nc-chatbot",
+        messages=[{"role": "user", "content": "hi"}],
+        ai_o11y={"persona_id": "u-other"},
+    )
+    assert sigil._derive_session_id(req_a) != sigil._derive_session_id(req_c)
+    # Unknown persona -> deterministic anonymous bucket (non-empty).
+    req_anon = CompleteRequest(
+        specialist="nc-chatbot",
+        messages=[{"role": "user", "content": "hi"}],
+        ai_o11y={},
+    )
+    sid = sigil._derive_session_id(req_anon)
+    assert sid and isinstance(sid, str) and len(sid) == 16
 
 
 def test_emit_generation_event_noops_when_sigil_unconfigured(monkeypatch):

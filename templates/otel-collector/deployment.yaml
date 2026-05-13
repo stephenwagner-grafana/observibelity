@@ -59,7 +59,7 @@ spec:
                   name: otel-grafanacloud-creds
                   key: GRAFANA_CLOUD_API_TOKEN
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "service.namespace={{ .Values.global.namespace }},deployment.environment=observibelity"
+              value: "service.namespace={{ .Values.global.namespace }},deployment.environment={{ .Values.global.deploymentEnvironment | default "demo" }}"
           readinessProbe:
             httpGet:
               path: /
