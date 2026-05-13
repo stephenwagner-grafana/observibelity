@@ -70,9 +70,20 @@ llmGateway:
     anthropic:
       enabled: true
       model: claude-haiku-4-5-20251001
+      # Supplied by install.sh wizard (interactive) or values-deploy.yaml; the
+      # chart writes it into the llm-gateway-creds Secret. Leave empty here.
+      apiKey: ""
     ollama:
       enabled: false
+      # Reachable URL for an Ollama server. Examples:
+      #   in-cluster:  http://ollama.<namespace>.svc.cluster.local:11434
+      #   LAN host:    http://ollama.lan.example:11434
+      # Leave empty to disable. If you point at a Service in another
+      # namespace, NetworkPolicy must allow the traffic.
       baseUrl: ""
+      # Default model name when ollama.enabled=true and the caller does not
+      # override per-request. Must be pre-pulled on the Ollama server.
+      model: ""
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
@@ -323,3 +334,48 @@ alerts:
 slos:
   enabled: true
   format: openslo-v1
+
+# Cloudflare Tunnel — optional bundled cloudflared deployer.
+#
+# When enabled, the chart adds a cloudflared Deployment and a ConfigMap whose
+# config.yaml maps your public hostnames → in-cluster Services. This makes
+# tunnel routing declarative (git-canonical) instead of hand-clicked in the
+# Cloudflare dashboard. Leave disabled if you already have a tunnel running
+# outside the chart (e.g. token-style cloudflared in another namespace); in
+# that case configure hostnames in the Zero Trust UI and just enable the
+# per-app ingresses below.
+#
+# One-time setup before enabling (requires `cloudflared` CLI locally):
+#   cloudflared tunnel login
+#   cloudflared tunnel create <name>            # prints the tunnel UUID
+#   cloudflared tunnel route dns <name> neoncart.example.com
+#   cloudflared tunnel route dns <name> support.example.com
+#   kubectl -n observibelity create secret generic cloudflared-credentials \
+#     --from-file=credentials.json=$HOME/.cloudflared/<uuid>.json
+#
+# Then fill in tunnelId + ingress[] below and re-run `helm upgrade`.
+cloudflareTunnel:
+  enabled: false
+  # Tunnel UUID (the filename of credentials.json, minus .json). Required.
+  tunnelId: ""
+  # Secret holding credentials.json. Created out-of-band per the setup above.
+  credentialsSecret: cloudflared-credentials
+  replicas: 1
+  image: cloudflare/cloudflared:latest
+  # Hostname → in-cluster Service mapping, applied in order. The chart
+  # appends a `service: http_status:404` catch-all automatically.
+  ingress: []
+    # - hostname: neoncart.example.com
+    #   service: http://neoncart.observibelity.svc.cluster.local:80
+    # - hostname: support.example.com
+    #   service: http://supportbot.observibelity.svc.cluster.local:80
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 256Mi }
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
