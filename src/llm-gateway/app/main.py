@@ -22,6 +22,10 @@ from fastapi.responses import PlainTextResponse, Response
 from opentelemetry import metrics, trace
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.metrics.view import (
+    ExplicitBucketHistogramAggregation,
+    View,
+)
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -287,8 +291,29 @@ def _init_otel_metrics() -> None:
             OTLPMetricExporter(endpoint=f"{endpoint}/v1/metrics"),
             export_interval_millis=10000,
         )
+        # Bucket boundaries tuned for LLM call latency in SECONDS. OTel's
+        # default histogram boundaries [0, 5, 10, 25, 50, ..., 10000] assume
+        # milliseconds and produce nonsense P95s when applied to seconds
+        # (everything lands in the <=5 bucket, P95 reports as the bucket
+        # upper bound, and Sigil's Performance dashboard reads 10000s = 2.78h).
+        # Anchor at 120s ceiling (matches the 60s wait_for cap + 2x slack).
+        _DURATION_BUCKETS = [
+            0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5,
+            1.0, 2.5, 5.0, 10.0, 30.0, 60.0, 120.0,
+        ]
+        duration_views = [
+            View(
+                instrument_name="gen_ai.client.operation.duration",
+                aggregation=ExplicitBucketHistogramAggregation(_DURATION_BUCKETS),
+            ),
+            View(
+                instrument_name="gen_ai.client.time_to_first_token",
+                aggregation=ExplicitBucketHistogramAggregation(_DURATION_BUCKETS),
+            ),
+        ]
         provider = MeterProvider(
             metric_readers=[reader],
+            views=duration_views,
             resource=Resource.create(
                 {
                     "service.name": service_name,
