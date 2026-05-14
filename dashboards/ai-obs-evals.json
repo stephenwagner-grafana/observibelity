@@ -24,7 +24,7 @@
         "name": "Critical evaluator fires",
         "tagKeys": "evaluator",
         "target": {
-          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"evaluator fail\" | logfmt | severity=\"critical\"",
+          "expr": "{container=~\".+\"} |~ \"evaluator fail\" | logfmt | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -120,7 +120,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [1h]))",
           "legendFormat": "toxicity events",
           "queryType": "instant",
           "refId": "A"
@@ -200,7 +200,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_persona_id!=\"\" [24h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_persona_id!=\"\" [24h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -314,7 +314,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} !~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} !~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -386,7 +386,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [5m]))",
           "legendFormat": "toxicity",
           "queryType": "range",
           "refId": "A"
@@ -396,7 +396,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hallucinat|fabricat|made up|invent)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hallucinat|fabricat|made up|invent)\" [5m]))",
           "legendFormat": "hallucination",
           "queryType": "range",
           "refId": "B"
@@ -406,7 +406,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|credit card|password|secret key)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|credit card|password|secret key)\" [5m]))",
           "legendFormat": "pii",
           "queryType": "range",
           "refId": "C"
@@ -416,7 +416,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions)\" [5m]))",
           "legendFormat": "prompt injection",
           "queryType": "range",
           "refId": "D"
@@ -638,7 +638,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [5m]))",
           "legendFormat": "all evals fire rate",
           "queryType": "range",
           "refId": "A"
@@ -648,7 +648,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h]))",
           "legendFormat": "1h fails",
           "queryType": "instant",
           "refId": "B"
@@ -658,7 +658,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "1 - sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json [1h])) + 1)",
+          "expr": "1 - sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\"} | json [1h])) + 1)",
           "legendFormat": "pass rate",
           "queryType": "range",
           "refId": "C"
@@ -764,7 +764,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|kill yourself|hallucinat|fabricat|ssn|credit card|password|ignore previous|disregard.*instructions)\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|kill yourself|hallucinat|fabricat|ssn|credit card|password|ignore previous|disregard.*instructions)\"",
           "queryType": "range",
           "refId": "A"
         }

@@ -24,7 +24,7 @@
         "name": "NeonCart pod restarts",
         "tagKeys": "pod,container",
         "target": {
-          "expr": "{namespace=\"observibelity\",container=\"neoncart\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
+          "expr": "{container=\"neoncart\"} |~ \"(?i)(oomkilled|back-off restarting|started container|crashloopbackoff|liveness probe failed)\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -40,7 +40,7 @@
         "iconColor": "red",
         "name": "mice-rca DB schema errors",
         "target": {
-          "expr": "{namespace=\"observibelity\",container=~\"get_inventory|neoncart|nc-chatbot\"} |~ \"(?i)(column .* does not exist|UndefinedColumn|psycopg|rodent_qty)\"",
+          "expr": "{container=~\"get_inventory|neoncart|nc-chatbot\"} |~ \"(?i)(column .* does not exist|UndefinedColumn|psycopg|rodent_qty)\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -132,7 +132,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\"}[5m]))",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\"}[5m]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "req/s",
@@ -202,7 +202,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"neoncart\"}[5m])), 0.001)",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\"}[5m])), 0.001)",
           "format": "time_series",
           "instant": true,
           "legendFormat": "err rate",
@@ -272,7 +272,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\"}[5m])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "p95",
@@ -342,7 +342,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\"}[5m])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "p99",
@@ -767,7 +767,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -841,7 +841,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -1225,7 +1225,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -1300,7 +1300,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\"",
+          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -1372,7 +1372,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -1431,7 +1431,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (service, le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\", service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (service, le) (rate(traces_spanmetrics_latency_bucket{service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -1471,7 +1471,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=~\"neoncart|postgres\"} |~ \"(?i)(error|psycopg|column.*does not exist|undefinedcolumn)\"",
+          "expr": "{container=~\"neoncart|postgres\"} |~ \"(?i)(error|psycopg|column.*does not exist|undefinedcolumn)\"",
           "queryType": "range",
           "refId": "A"
         }

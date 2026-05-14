@@ -91,7 +91,7 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"neoncart\"} |~ \"POST /chat HTTP\" [1h]))",
+          "expr": "sum(count_over_time({container=\"neoncart\"} |~ \"POST /chat HTTP\" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -151,7 +151,7 @@
             "type": "prometheus",
             "uid": "grafanacloud-prom"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\",service=\"neoncart\"}[1h]))) * 1000",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\"}[1h]))) * 1000",
           "queryType": "instant",
           "refId": "A"
         }
@@ -195,7 +195,7 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"supportbot\"} |~ \"POST /chat HTTP\" [1h]))",
+          "expr": "sum(count_over_time({container=\"supportbot\"} |~ \"POST /chat HTTP\" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -255,7 +255,7 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"supportbot\"} |~ \"POST /chat HTTP/1.1\\\" 5\" [1h]))",
+          "expr": "sum(count_over_time({container=\"supportbot\"} |~ \"POST /chat HTTP/1.1\\\" 5\" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }

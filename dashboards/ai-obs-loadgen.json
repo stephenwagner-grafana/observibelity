@@ -95,7 +95,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"sigil generation\" [5m]))",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"sigil generation\" [5m]))",
           "queryType": "instant"
         }
       ],
@@ -160,7 +160,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "count(sum by (ai_o11y_usecase) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
+          "expr": "count(sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
           "queryType": "instant"
         }
       ],
@@ -229,7 +229,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
+          "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
           "queryType": "instant"
         }
       ],
@@ -376,7 +376,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(22, sum by (ai_o11y_usecase) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
+          "expr": "topk(22, sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_usecase}}"
         }
@@ -443,7 +443,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(25, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
+          "expr": "topk(25, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_persona_id}}"
         }
@@ -523,7 +523,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(12, sum by (ai_o11y_usecase) (rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
+          "expr": "topk(12, sum by (ai_o11y_usecase) (rate({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
           "queryType": "range",
           "legendFormat": "{{ai_o11y_usecase}}"
         }
@@ -586,7 +586,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(15, sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.specialist\\\": \\\"<ai_o11y_specialist>\\\"<_>` | ai_o11y_specialist!=\"\" [5m])))",
+          "expr": "topk(15, sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.specialist\\\": \\\"<ai_o11y_specialist>\\\"<_>` | ai_o11y_specialist!=\"\" [5m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_specialist}}"
         }
@@ -659,7 +659,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (gen_ai_system) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"sigil generation\" | pattern `<_>\\\"gen_ai.system\\\": \\\"<gen_ai_system>\\\"<_>` | gen_ai_system!=\"\" [5m]))",
+          "expr": "sum by (gen_ai_system) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" | pattern `<_>\\\"gen_ai.system\\\": \\\"<gen_ai_system>\\\"<_>` | gen_ai_system!=\"\" [5m]))",
           "queryType": "instant",
           "legendFormat": "{{gen_ai_system}}"
         }
@@ -722,7 +722,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(25, sum by (ai_o11y_usecase) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [30m])))",
+          "expr": "topk(25, sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [30m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_usecase}}",
           "instant": true

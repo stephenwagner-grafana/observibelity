@@ -24,7 +24,7 @@
         "name": "Hallucination events",
         "tagKeys": "category,sku",
         "target": {
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"evaluator fail hallucination\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"evaluator fail hallucination\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -124,7 +124,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [1h]))",
           "legendFormat": "hallucination signals",
           "queryType": "instant",
           "refId": "A"
@@ -192,7 +192,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m])) / (sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h])) + 0.0001)",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m])) / (sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h])) + 0.0001)",
           "legendFormat": "ratio",
           "queryType": "range",
           "refId": "A"
@@ -308,7 +308,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -395,7 +395,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m]))",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m]))",
           "legendFormat": "current 15m",
           "queryType": "range",
           "refId": "A"
@@ -405,7 +405,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h]))",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h]))",
           "legendFormat": "baseline 4h",
           "queryType": "range",
           "refId": "B"
@@ -480,7 +480,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])))",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "instant",
           "refId": "A"
@@ -602,7 +602,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h]))",
           "legendFormat": "{{ai_o11y_specialist}} fails",
           "queryType": "range",
           "refId": "A"
@@ -612,7 +612,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} !~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} !~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
           "legendFormat": "{{ai_o11y_specialist}} pass rate",
           "queryType": "range",
           "refId": "B"
@@ -672,7 +672,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_persona_id!=\"\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_persona_id!=\"\"",
           "queryType": "range",
           "refId": "A"
         }

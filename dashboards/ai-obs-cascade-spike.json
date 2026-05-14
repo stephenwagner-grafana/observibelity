@@ -24,7 +24,7 @@
         "name": "Email cascade runs",
         "tagKeys": "conv_id,employee",
         "target": {
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"\\\\[email-cascade\\\\] llm/summarize idx=1/2000\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"\\\\[email-cascade\\\\] llm/summarize idx=1/2000\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -194,7 +194,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\" [1h]))",
           "legendFormat": "runs",
           "queryType": "range",
           "refId": "A"
@@ -380,7 +380,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
           "refId": "A"
@@ -460,7 +460,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m]))",
+          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m]))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
           "refId": "A"
@@ -583,7 +583,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [10m])))",
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [10m])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
           "refId": "A"
@@ -634,7 +634,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\"",
+          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -671,7 +671,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-ticket-helper\"",
+          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-ticket-helper\"",
           "queryType": "range",
           "refId": "A"
         }

@@ -24,7 +24,7 @@
         "name": "Critical PII events",
         "tagKeys": "employee,kind",
         "target": {
-          "expr": "{namespace=~\"supportbot|neoncart\"} | json | severity=\"critical\" | event=~\"pii_echo|confidential_disclosure|sensitive_data\"",
+          "expr": "{container=~\".+\"} | json | severity=\"critical\" | event=~\"pii_echo|confidential_disclosure|sensitive_data\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -119,7 +119,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [5m]))",
           "legendFormat": "ssn",
           "queryType": "range",
           "refId": "A"
@@ -129,7 +129,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number|payment card)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number|payment card)\" [5m]))",
           "legendFormat": "credit-card",
           "queryType": "range",
           "refId": "B"
@@ -139,7 +139,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key|bearer )\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key|bearer )\" [5m]))",
           "legendFormat": "secret",
           "queryType": "range",
           "refId": "C"
@@ -210,7 +210,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(redacted|XXXX|masked)\" [5m])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m])) + 1)",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(redacted|XXXX|masked)\" [5m])) / (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m])) + 1)",
           "legendFormat": "mask rate",
           "queryType": "range",
           "refId": "A"
@@ -294,7 +294,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" | json | ai_o11y_persona_id!=\"\" [1h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -362,7 +362,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(1, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "expr": "topk(1, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -428,7 +428,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -509,7 +509,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" [1h]))",
           "legendFormat": "injection events",
           "queryType": "instant",
           "refId": "A"
@@ -573,7 +573,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [1h]))",
           "legendFormat": "pii echo events",
           "queryType": "instant",
           "refId": "A"
@@ -632,7 +632,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (rate({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" | json | ai_o11y_specialist!=\"\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}} injection",
           "queryType": "range",
           "refId": "A"
@@ -642,7 +642,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m]))",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m]))",
           "legendFormat": "pii echo",
           "queryType": "range",
           "refId": "B"
@@ -704,7 +704,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [1h]))",
           "legendFormat": "ssn",
           "queryType": "range",
           "refId": "A"
@@ -714,7 +714,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number)\" [1h]))",
           "legendFormat": "credit-card",
           "queryType": "range",
           "refId": "B"
@@ -724,7 +724,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key)\" [1h]))",
           "legendFormat": "secret",
           "queryType": "range",
           "refId": "C"
@@ -775,7 +775,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -812,7 +812,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|bearer |confidential|internal only|ignore previous|disregard.*instructions)\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|bearer |confidential|internal only|ignore previous|disregard.*instructions)\"",
           "queryType": "range",
           "refId": "A"
         }

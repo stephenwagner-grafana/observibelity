@@ -24,7 +24,7 @@
         "name": "Tool runaway alerts",
         "tagKeys": "conv_id,tool_name",
         "target": {
-          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"tool_runaway\"",
+          "expr": "{container=~\".+\"} |~ \"tool_runaway\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -127,7 +127,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "max(sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
+          "expr": "max(sum by (service) (increase(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "max",
@@ -199,7 +199,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
+          "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{service}}",
@@ -273,7 +273,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"$tool\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -334,7 +334,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])))",
+          "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{service}}",
@@ -430,7 +430,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (le) (rate(traces_spanmetrics_latency_bucket{service_namespace=\"observibelity\", service=~\"$tool\"}[5m]))",
+          "expr": "sum by (le) (rate(traces_spanmetrics_latency_bucket{service=~\"$tool\"}[5m]))",
           "format": "heatmap",
           "instant": false,
           "legendFormat": "{{le}}",
@@ -504,7 +504,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) or on(service) sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m]) * 0)) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
+          "expr": "(sum by (service) (rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_ERROR\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) or on(service) sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m]) * 0)) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])), 0.001)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -645,7 +645,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (service) (increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\", service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
+          "expr": "topk(20, sum by (service) (increase(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[10m])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{service}}",
@@ -698,7 +698,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=~\"tool|neoncart|supportbot\"} |~ \"(?i)(error|exception|fail|retry|timeout|traceback)\"",
+          "expr": "{container=~\"tool|neoncart|supportbot\"} |~ \"(?i)(error|exception|fail|retry|timeout|traceback)\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -782,7 +782,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
+        "definition": "label_values(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
         "hide": 0,
         "includeAll": true,
         "label": "Tool",
@@ -790,7 +790,7 @@
         "name": "tool",
         "options": [],
         "query": {
-          "query": "label_values(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
+          "query": "label_values(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}, service)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

@@ -23,7 +23,7 @@
         "iconColor": "yellow",
         "name": "Brand drift fires",
         "target": {
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"brand_drift\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"brand_drift\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -126,7 +126,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(refund|return|policy)\" | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) + 1)",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(refund|return|policy)\" | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) / (sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) + 1)",
           "legendFormat": "fail rate",
           "queryType": "range",
           "refId": "A"
@@ -185,7 +185,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(refund|return)\" | json | ai_o11y_specialist=\"nc-chatbot\" [5m]))",
+          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(refund|return)\" | json | ai_o11y_specialist=\"nc-chatbot\" [5m]))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "range",
           "refId": "A"
@@ -253,7 +253,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)refund\" | json | ai_o11y_specialist=\"nc-chatbot\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)refund\" | json | ai_o11y_specialist=\"nc-chatbot\" [1h]))",
           "legendFormat": "violations",
           "queryType": "instant",
           "refId": "A"
@@ -322,7 +322,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
           "legendFormat": "frustration events",
           "queryType": "range",
           "refId": "A"
@@ -332,7 +332,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
           "legendFormat": "addressed",
           "queryType": "range",
           "refId": "B"
@@ -403,7 +403,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "1 - (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
+          "expr": "1 - (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
           "legendFormat": "unaddressed rate",
           "queryType": "range",
           "refId": "A"

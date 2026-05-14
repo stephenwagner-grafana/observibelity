@@ -24,7 +24,7 @@
         "name": "Cost anomaly fires",
         "tagKeys": "employee",
         "target": {
-          "expr": "{namespace=~\"supportbot|neoncart\"} |~ \"cost_anomaly\"",
+          "expr": "{container=~\".+\"} |~ \"cost_anomaly\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -194,7 +194,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "count(sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
+          "expr": "count(sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
           "legendFormat": "count",
           "queryType": "instant",
           "refId": "A"
@@ -412,7 +412,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_persona_id!=\"\"}[1h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -518,7 +518,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"

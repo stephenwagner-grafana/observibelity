@@ -24,7 +24,7 @@
         "name": "Hiring discrimination \u2014 P0",
         "tagKeys": "employee,category",
         "target": {
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
+          "expr": "{container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -123,7 +123,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|interview|applicant|race|gender|age|disability|religion|national origin|pregnan|orientation|veteran|protected class)\" [24h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|interview|applicant|race|gender|age|disability|religion|national origin|pregnan|orientation|veteran|protected class)\" [24h]))",
           "legendFormat": "events",
           "queryType": "instant",
           "refId": "A"
@@ -185,7 +185,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|interview|applicant|race|gender|age|disability|religion)\" | json | ai_o11y_specialist!=\"\" [24h]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|interview|applicant|race|gender|age|disability|religion)\" | json | ai_o11y_specialist!=\"\" [24h]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -266,7 +266,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h]))",
           "legendFormat": "events",
           "queryType": "instant",
           "refId": "A"
@@ -334,7 +334,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(traces_spanmetrics_calls_total{service_namespace=\"observibelity\",service=\"request_access\"}[1h]))",
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"request_access\"}[1h]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "approval bypass events",
@@ -395,7 +395,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -457,7 +457,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [24h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [24h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -614,7 +614,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
+          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
           "legendFormat": "security events",
           "queryType": "range",
           "refId": "A"
@@ -624,7 +624,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_persona_id!=\"\" [24h]))",
+          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_persona_id!=\"\" [24h]))",
           "legendFormat": "hiring risk events",
           "queryType": "range",
           "refId": "B"
@@ -634,7 +634,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "100 - 10 * sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
+          "expr": "100 - 10 * sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
           "legendFormat": "compliance score",
           "queryType": "range",
           "refId": "C"
@@ -694,7 +694,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\"",
+          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\"",
           "queryType": "range",
           "refId": "A"
         }
