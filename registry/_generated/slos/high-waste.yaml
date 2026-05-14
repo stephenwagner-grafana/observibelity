@@ -1,0 +1,20 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: high-waste
+  displayName: "High-waste \u2014 corporate AI used for low-value, off-topic, or personal\
+    \ tasks"
+  labels:
+    use_case: high-waste
+    app: both
+    archetype: per-user-pattern
+spec:
+  description: per-user waste-rate <= 10% for >= 95% of users over 7d
+  service: both
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 7d
+    isRolling: true
+  objectives:
+  - displayName: per-user waste-rate <= 10% for >= 95% of users over 7d
+    target: 0.95

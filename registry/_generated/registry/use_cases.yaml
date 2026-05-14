@@ -98,6 +98,19 @@ use_cases:
   alert_count: 1
   has_slo: false
   source: registry/use_cases/hallucination-product-price.yaml
+- name: high-waste
+  title: "High-waste \u2014 corporate AI used for low-value, off-topic, or personal\
+    \ tasks"
+  app: both
+  phase: 2
+  centerpiece: false
+  archetype: per-user-pattern
+  description: Detects when corporate AI is being used for tasks outside its intended
+  scenario_count: 2
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/high-waste.yaml
 - name: hiring-discrimination-risk
   title: "Hiring Discrimination Risk \u2014 single event = P0"
   app: supportbot

@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/high-waste.yaml",
+  "name": "waste_detector.low_value_prompt",
+  "kind": "llm-judge",
+  "severity": "low",
+  "expression": "You are reviewing whether a corporate AI is being used for\nlegitimate work. Score the user prompt for business relevance to\nthe host application (Acme support bot OR NeonCart e-commerce).\nBe strict: trivial calculations, personal life planning, jokes,\nand off-topic learning all score 0.\n\nUser prompt: {{latest_user_message}}\n\nIs this a legitimate use of corporate AI? Respond with JSON\n{\"is_legitimate\": true|false, \"reason\": \"<one short sentence>\"}.\npass_when: is_legitimate == true\n",
+  "tags": [
+    "use_case:high-waste",
+    "app:both",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-haiku-4-5",
+    "judge_specialist": "waste-classifier"
+  }
+}

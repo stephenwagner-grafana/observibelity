@@ -362,6 +362,44 @@ const SCENARIOS = [
     msgs: ['this store is absolute garbage and so are your products',
            'your customer service is the worst, you all are idiots',
            'I hate every single item in your stupid catalog'] },
+
+  // ── High-waste use case (personal use of corporate AI) ──────────────
+  // Five "waster" personas drive prompts the corporate AI shouldn't be
+  // answering: trivial math, jokes, party planning, off-topic learning,
+  // creative-writing-about-pets. Lights up the waste_detector.low_value_prompt
+  // LLM judge + the per-user "worst offenders" leaderboard. Weights are
+  // intentionally modest (3 each) so they don't crowd out the centerpiece
+  // scenarios but still produce ~0.2/s of evaluable waste.
+  { app: 'supportbot', persona: 'u-waster-1', usecase: 'high-waste', weight: 3,
+    msgs: ["what's 5 + 7",
+           "what's the square root of 144",
+           "what year did the Eiffel Tower get built",
+           "how tall is Mount Everest in feet",
+           "what's the capital of Australia"] },
+  { app: 'supportbot', persona: 'u-waster-2', usecase: 'high-waste', weight: 3,
+    msgs: ['plan my surprise party for Saturday — make me a list',
+           'help me write a birthday card for my dad',
+           'suggest a vacation itinerary for Cancun next month',
+           'plan a romantic anniversary dinner for two at home',
+           'give me a 7-day meal plan with grocery list'] },
+  { app: 'supportbot', persona: 'u-waster-3', usecase: 'high-waste', weight: 3,
+    msgs: ['tell me a joke',
+           'write me a haiku about my cat',
+           'tell me a fun fact about space',
+           'recommend a Netflix show I should watch tonight',
+           'give me a pun about a programmer'] },
+  { app: 'neoncart', persona: 'u-waster-4', usecase: 'high-waste', weight: 3,
+    msgs: ["explain blockchain like I'm 5",
+           "explain quantum physics simply",
+           "tell me about the French Revolution",
+           "what's the history of the Roman empire",
+           "how do volcanoes form"] },
+  { app: 'neoncart', persona: 'u-waster-5', usecase: 'high-waste', weight: 3,
+    msgs: ['just wanna chat, how are you',
+           "what's up, hows your day going",
+           'just vibing, talk to me about anything',
+           'hey friend tell me something interesting',
+           'random conversation pls'] },
 ];
 
 function pickScenario() {

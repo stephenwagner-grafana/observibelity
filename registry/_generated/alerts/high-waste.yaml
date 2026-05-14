@@ -1,0 +1,17 @@
+groups:
+- name: high-waste
+  rules:
+  - alert: high-waste.user_burst
+    expr: "sum by (user_id) (\n  rate(sigil_eval_executions_total{evaluator=\"waste_detector.low_value_prompt\"\
+      ,status=\"fail\"}[15m])\n) > 0.1\n"
+    for: 10m
+    labels:
+      severity: medium
+      use_case: high-waste
+      app: both
+      route: ai-ops@acme.local
+    annotations:
+      summary: "High-waste \u2014 corporate AI used for low-value, off-topic, or personal\
+        \ tasks: high-waste.user_burst firing"
+      description: Detects when corporate AI is being used for tasks outside its intended
+      runbook: registry/use_cases/high-waste.yaml

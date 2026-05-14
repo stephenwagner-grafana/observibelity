@@ -1,0 +1,83 @@
+name: high-waste
+title: "High-waste — corporate AI used for low-value, off-topic, or personal tasks"
+app: both
+phase: 2
+centerpiece: false
+archetype: per-user-pattern
+description: |
+  Detects when corporate AI is being used for tasks outside its intended
+  scope: trivial math/Q&A, personal life planning (parties, vacations,
+  recipes), jokes/haikus/chit-chat, off-topic learning, or "vibing"
+  without a task. Five sticky waster personas (u-waster-1..u-waster-5)
+  send prompts that have no business relevance to either Acme support or
+  the NeonCart e-commerce assistant. An LLM-judge evaluator scores each
+  generation's user prompt for legitimacy and flags low-value ones. The
+  Per-User Insights dashboard surfaces a "worst offenders" leaderboard
+  combining waste rate with cost and overall eval-fail rate.
+
+scenarios:
+  - name: high-waste-trivia
+    k6_template: sticky-persona
+    persona: u-waster-1
+    weight: 3
+    rate: "10/m"
+    params:
+      description: "u-waster-1 asks trivial calculator/encyclopedia questions"
+      capability: governance
+      fixture: TRIVIA_FIXTURES
+  - name: high-waste-personal
+    k6_template: sticky-persona
+    persona: u-waster-2
+    weight: 3
+    rate: "10/m"
+    params:
+      description: "u-waster-2 asks for personal life planning help"
+      capability: governance
+      fixture: PERSONAL_PLANNING_FIXTURES
+
+evaluators:
+  - name: waste_detector.low_value_prompt
+    kind: llm-judge
+    severity: low
+    spec: |
+      You are reviewing whether a corporate AI is being used for
+      legitimate work. Score the user prompt for business relevance to
+      the host application (Acme support bot OR NeonCart e-commerce).
+      Be strict: trivial calculations, personal life planning, jokes,
+      and off-topic learning all score 0.
+
+      User prompt: {{latest_user_message}}
+
+      Is this a legitimate use of corporate AI? Respond with JSON
+      {"is_legitimate": true|false, "reason": "<one short sentence>"}.
+      pass_when: is_legitimate == true
+    params:
+      model: claude-haiku-4-5
+      judge_specialist: waste-classifier
+
+dashboard:
+  uid: ai-obs-per-user
+  title: "Per-User Insights — cost, tokens, waste, eval failures"
+  panels_from_template: per-user-pattern
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: high-waste.user_burst
+    condition: |
+      sum by (user_id) (
+        rate(sigil_eval_executions_total{evaluator="waste_detector.low_value_prompt",status="fail"}[15m])
+      ) > 0.1
+    severity: medium
+    route: ai-ops@acme.local
+    duration: 10m
+
+slo:
+  objective: "per-user waste-rate <= 10% for >= 95% of users over 7d"
+  error_budget: 0.05
+  window: 7d
+
+demo:
+  do: "Wait for the waster personas (u-waster-1..5) — trivia, personal planning, jokes, off-topic learning, vibing. Each fires at ~weight 3 in baseline.js."
+  signal: "sigil_eval_executions_total{evaluator=\"waste_detector.low_value_prompt\",status=\"fail\"} > 0; the waster personas dominate the worst-offenders leaderboard on ai-obs-per-user."
+  sell: "AI governance: surface employees using corporate AI for trivial / personal / off-topic tasks — cost-and-policy attribution in one panel."
