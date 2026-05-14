@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Hiring discrimination \u2014 zero-tolerance",
+      "title": "\ud83d\udea8 Hiring discrimination \u2014 has ANY event fired? (zero tolerance)",
       "type": "row"
     },
     {
@@ -70,7 +70,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Hiring discrimination critical events in the last 30 days. ANY non-zero value is a P0 violation.",
+      "description": "Counts log lines mentioning hiring/protected-class terms (race, gender, age, religion, etc.) in the last 24h. The gauge sits at green when zero — anything red is a P0 violation to investigate immediately.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -129,7 +129,7 @@
           "refId": "A"
         }
       ],
-      "title": "Zero-tolerance: hiring discrimination events (30d)",
+      "title": "🚨 Hiring-discrimination events — should be ZERO (24h)",
       "type": "gauge"
     },
     {
@@ -137,7 +137,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Hiring discrimination events by protected category (age, race, religion, gender, national origin).",
+      "description": "Hiring-discrimination events broken out by which specialist agent produced them (sb-hiring-helper, etc.). Tells you which corner of the support bot is generating the risk so you can pull traces and code-review the agent.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -191,7 +191,7 @@
           "refId": "A"
         }
       ],
-      "title": "Hiring discrim events by protected category (30d)",
+      "title": "📦 Which specialist agent is producing the hiring risk? (24h)",
       "type": "bargauge"
     },
     {
@@ -204,7 +204,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "Policy circumvention",
+      "title": "🛡 Policy circumvention — who's bypassing the guardrails?",
       "type": "row"
     },
     {
@@ -212,7 +212,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Total policy-circumvention events in the last hour.",
+      "description": "Total sb-security-handler log events in the last hour — the catch-all signal for policy circumvention. >0 means the security handler had work to do.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -272,7 +272,7 @@
           "refId": "A"
         }
       ],
-      "title": "policy_circumvention events (1h)",
+      "title": "⚠ Policy-circumvention events in the last hour",
       "type": "stat"
     },
     {
@@ -280,7 +280,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Approval-bypass events specifically \u2014 most common circumvention pattern.",
+      "description": "Span count for the request_access service \u2014 these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -342,7 +342,7 @@
           "refId": "A"
         }
       ],
-      "title": "approval_bypass events (1h)",
+      "title": "🔓 Approval-bypass attempts in the last hour",
       "type": "stat"
     },
     {
@@ -350,7 +350,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Policy circumvention rate by category over time.",
+      "description": "Rate of policy/hiring guardrail events over time, split by which specialist produced them (sb-security-handler vs sb-hiring-helper). Use this to spot whether a spike is one-off or sustained.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -401,7 +401,7 @@
           "refId": "A"
         }
       ],
-      "title": "Policy circumvention by category (5m)",
+      "title": "📈 Guardrail events over time — by specialist (5m)",
       "type": "timeseries"
     },
     {
@@ -409,7 +409,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top employees by total policy-circumvention events in the last day.",
+      "description": "Ten users with the most sb-security-handler events in the last 24h. The names at the top are the people most often bumping up against your policies — start any compliance review here.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -463,7 +463,7 @@
           "refId": "A"
         }
       ],
-      "title": "Top employees by circumvention events (24h)",
+      "title": "🔥 Who's circumventing the most? Top 10 employees (24h)",
       "type": "bargauge"
     },
     {
@@ -476,7 +476,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "Per-employee compliance scorecard",
+      "title": "📋 Per-employee scorecard — which people need a compliance chat?",
       "type": "row"
     },
     {
@@ -484,7 +484,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-employee compliance score table \u2014 circumvention, hiring-discrim, total events.",
+      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 \u00d7 circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -640,7 +640,7 @@
           "refId": "C"
         }
       ],
-      "title": "Per-employee compliance scorecard",
+      "title": "📋 Per-employee compliance scorecard — circumventions, hiring risk, score",
       "transformations": [
         {
           "id": "joinByField",
@@ -662,7 +662,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Critical events stream",
+      "title": "📜 Forensics — what did each critical event actually say?",
       "type": "row"
     },
     {
@@ -670,7 +670,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "All compliance-critical events stream \u2014 hiring-discrim + policy-circumvention.",
+      "description": "Live tail of sb-security-handler and sb-hiring-helper events. This is the raw audit log: who, when, and what the prompt was. Use it to attach evidence to a compliance ticket.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -699,7 +699,7 @@
           "refId": "A"
         }
       ],
-      "title": "Critical compliance events (Loki)",
+      "title": "📜 Live audit log — every critical compliance event",
       "type": "logs"
     }
   ],

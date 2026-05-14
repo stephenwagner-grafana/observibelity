@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Cascade indicators",
+      "title": "🚨 Is an email cascade running right now?",
       "type": "row"
     },
     {
@@ -70,7 +70,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent on email cascades in the last hour. Each cascade is ~$2.80.",
+      "description": "USD spent in the last hour on the support bot's escalator and ticket-helper agents — the two specialists that drive the email-cascade runaway. Each full cascade run costs roughly $2.80.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -132,7 +132,7 @@
           "refId": "A"
         }
       ],
-      "title": "$ spent on cascades (1h)",
+      "title": "💰 How much have cascades cost us in the last hour?",
       "type": "stat"
     },
     {
@@ -140,7 +140,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Number of email-cascade runs in the last hour.",
+      "description": "Count of cascade-related log lines in the last hour from the llm-gateway. Each run produces thousands of lines, so this is a coarse 'are we burning' signal — not a literal run count.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -200,7 +200,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cascade runs (1h)",
+      "title": "📨 Cascade activity in the last hour (log events)",
       "type": "stat"
     },
     {
@@ -208,7 +208,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Total tokens consumed by the email-cascade use case (1h). Each run is ~450k.",
+      "description": "Tokens burned by the cascade-driving specialists in the last hour. A single runaway run chews through ~450k tokens — that's where the $2.80/run comes from.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -270,7 +270,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cascade tokens (1h)",
+      "title": "🔢 Tokens burned by cascade specialists (1h)",
       "type": "stat"
     },
     {
@@ -278,7 +278,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Alert state \u2014 conv_runaway, the cascade alarm.",
+      "description": "Live state of the conv_runaway alert rule. If this isn't 'normal', a cascade is firing and the dashboards below are where to dig in.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -314,7 +314,7 @@
           "refId": "A"
         }
       ],
-      "title": "conv_runaway alert state",
+      "title": "🚨 Is the conv_runaway alert firing?",
       "type": "alertlist"
     },
     {
@@ -327,7 +327,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "Per-session cascade pattern",
+      "title": "🔍 Which session is going off the rails?",
       "type": "row"
     },
     {
@@ -335,7 +335,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Emails sent per session over time. A cascade looks like one session emitting many email_sent events in quick succession.",
+      "description": "Top 10 sessions by sb-escalator log activity, 5m windows. A cascade looks like one session line shooting straight up while everything else flatlines — that vertical wall is the runaway.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -386,7 +386,7 @@
           "refId": "A"
         }
       ],
-      "title": "Emails sent per session (5m, top 10)",
+      "title": "📈 Escalator activity per session over time (top 10, 5m)",
       "type": "timeseries"
     },
     {
@@ -394,7 +394,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Distribution of emails-per-session across all sessions. A heavy right tail = runaway cascades.",
+      "description": "Heatmap of how many sessions have how much escalator activity. Healthy traffic clusters near zero; a hot stripe far to the right means one or more sessions are running away.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -466,7 +466,7 @@
           "refId": "A"
         }
       ],
-      "title": "Emails per session \u2014 distribution heatmap",
+      "title": "\ud83d\udd25 Emails-per-session distribution \u2014 look for the right-tail outliers",
       "type": "heatmap"
     },
     {
@@ -479,7 +479,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "Top runaway sessions",
+      "title": "🔥 Which sessions are the worst offenders right now?",
       "type": "row"
     },
     {
@@ -487,7 +487,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Sessions with more than 50 emails in the last 10 minutes \u2014 drill-down for incident investigation.",
+      "description": "Sessions by escalator events in the last 10 minutes. Anything above ~50 is almost certainly a runaway cascade; click the row to open the conversation in Loki and see what looped.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -589,7 +589,7 @@
           "refId": "A"
         }
       ],
-      "title": "Sessions with > 50 emails in last 10m",
+      "title": "🚨 Top 20 runaway sessions — who's blowing past 50 emails in 10m?",
       "type": "table"
     },
     {
@@ -602,7 +602,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Loki \u2014 cascade events",
+      "title": "\ud83d\udcdc Forensics \u2014 what is the cascade actually doing right now?",
       "type": "row"
     },
     {
@@ -610,7 +610,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of [email-cascade] tool/probe events.",
+      "description": "Live tail of sb-escalator events from the llm-gateway. Read this top-down to watch a cascade actually unfold — tool calls, retries, ticket creates.",
       "gridPos": {
         "h": 11,
         "w": 14,
@@ -639,7 +639,7 @@
           "refId": "A"
         }
       ],
-      "title": "Email cascade tool/probe events (Loki)",
+      "title": "📨 Live tail — escalator tool/probe events",
       "type": "logs"
     },
     {
@@ -647,7 +647,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Summarizer burst \u2014 2000 llm/summarize idx=N/2000 lines per cascade run.",
+      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines \u2014 when you see that counter ticking up, you're watching the runaway.",
       "gridPos": {
         "h": 11,
         "w": 10,
@@ -676,7 +676,7 @@
           "refId": "A"
         }
       ],
-      "title": "Summarizer burst (Loki)",
+      "title": "📜 Summarizer burst — 2000-call loop in action",
       "type": "logs"
     }
   ],

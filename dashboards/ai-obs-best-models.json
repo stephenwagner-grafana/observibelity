@@ -61,7 +61,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Headline ranking",
+      "title": "🏆 Which model is winning right now?",
       "type": "row"
     },
     {
@@ -69,7 +69,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 models by ATC events in the last hour. Real business outcome, not eval scores.",
+      "description": "Top 10 models ranked by Add-to-Cart events in the last hour, taken from the NeonCart chatbot's input token traffic. Eval scores are theory; ATC is a real business outcome.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -134,7 +134,7 @@
           "refId": "A"
         }
       ],
-      "title": "ATC events by model (top 10, 1h)",
+      "title": "🤖 Which models drove the most Add-to-Carts? (1h)",
       "type": "barchart"
     },
     {
@@ -142,7 +142,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "ATC bargauge ranking by model \u2014 leaderboard view.",
+      "description": "Same data as the bar chart on the left, laid out as a horizontal leaderboard. Use whichever shape your eye prefers.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -206,7 +206,7 @@
           "refId": "A"
         }
       ],
-      "title": "Bargauge ranking by ATC event count",
+      "title": "🔥 ATC leaderboard — same data, leaderboard view (1h)",
       "type": "bargauge"
     },
     {
@@ -219,7 +219,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "Trends",
+      "title": "📈 How is each model trending — and which is cheapest per ATC?",
       "type": "row"
     },
     {
@@ -227,7 +227,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "ATC event rate per model over time.",
+      "description": "Add-to-Cart rate per model over time (5m sliding window). Use this to see model rotations or rollouts taking effect — one model rising as another falls.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -281,7 +281,7 @@
           "refId": "A"
         }
       ],
-      "title": "ATC rate per model (5m)",
+      "title": "ATC rate per model over time (5m sliding)",
       "type": "timeseries"
     },
     {
@@ -289,7 +289,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cheapest performant model \u2014 minimum cost-per-ATC over the last hour. Lower is better.",
+      "description": "USD spent per ATC event for each model, last hour. The lowest number is the model giving you the most conversions for your dollar. Green is good.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -351,7 +351,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cheapest performant model (USD / ATC)",
+      "title": "💸 Cheapest model per ATC (lower is better, 1h)",
       "type": "stat"
     },
     {
@@ -364,7 +364,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "Full leaderboard",
+      "title": "📋 The full scorecard — every metric, every model",
       "type": "row"
     },
     {
@@ -372,7 +372,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Full leaderboard \u2014 model | total ATC | conversion rate | avg latency | cost per conversion.",
+      "description": "One row per model with every signal you need to pick a winner: ATC volume, output/input token ratio (proxy for verbosity), p50 latency, and dollars per ATC. Sort by any column. All numbers are 1h windows.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -556,7 +556,7 @@
           "refId": "D"
         }
       ],
-      "title": "Leaderboard: model | ATC | conv % | latency | $ / conv",
+      "title": "🏁 Full leaderboard — ATC, conversion, latency, $ per ATC (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -578,7 +578,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "Per-model cost + quality",
+      "title": "💰 Cost vs latency — what's each model costing and how fast is it?",
       "type": "row"
     },
     {
@@ -586,7 +586,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost per second by model.",
+      "description": "Stacked cost rate (USD/sec) per model over time. Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -643,7 +643,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost / s by model (5m)",
+      "title": "💰 Spend rate per model over time (5m sliding)",
       "type": "timeseries"
     },
     {
@@ -651,7 +651,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 latency per model.",
+      "description": "p95 of gen_ai client request duration per model — 95 out of 100 calls finish faster than this. Spikes here mean tail-latency pain that users will feel.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -704,7 +704,7 @@
           "refId": "A"
         }
       ],
-      "title": "p95 latency per model (5m)",
+      "title": "⏱ How slow is the worst 5% of requests per model? (p95, 5m)",
       "type": "timeseries"
     },
     {
@@ -717,7 +717,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Ollama vs Claude price comparison",
+      "title": "🆚 Ollama vs Claude — the case for routing to local models",
       "type": "row"
     },
     {
@@ -725,7 +725,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 5 most expensive models by spend per token processed (USD / token, output side). Higher = more expensive per unit of work. Claude rows dominate the top; Ollama lives near the bottom.",
+      "description": "USD spent per token processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom — which is exactly why routing decisions matter.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -837,7 +837,7 @@
           "refId": "A"
         }
       ],
-      "title": "Most expensive models per dollar of tokens (top 10, 24h)",
+      "title": "💵 Which models cost the most per token? (top 10, 24h)",
       "type": "table"
     },
     {
@@ -845,7 +845,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Side-by-side: total spend over 24h by provider (anthropic = Claude, ollama = local). The dramatic gap is the ROI of the Ollama-first routing strategy.",
+      "description": "24h total spend split by provider: anthropic (Claude, red) vs ollama (local, green). The gap between the two bars is the ROI of the Ollama-first routing strategy in a single picture.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -937,7 +937,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total spend by provider (24h) \u2014 Claude vs Ollama",
+      "title": "\ud83c\udd9a Claude vs Ollama \u2014 total spend side by side (24h)",
       "type": "barchart"
     },
     {
@@ -950,7 +950,7 @@
       },
       "id": 15,
       "panels": [],
-      "title": "Ollama lockstep rotation",
+      "title": "🔄 Is the Ollama lockstep rotation actually rotating?",
       "type": "row"
     },
     {
@@ -958,7 +958,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per the original ObserVIBElity design, every Ollama-bound specialist in the cluster flips to the SAME model in 5-minute lockstep windows (epoch_seconds // 300 % len(pool)). The stacked timeseries below should show one model dominant per ~5-minute slice; clean transitions every 5 min mean rotation is firing across all pods.",
+      "description": "Every Ollama-bound specialist in the cluster flips to the SAME model every 5 minutes (epoch_seconds // 300 % len(pool)). You should see one model band dominant per ~5-minute slice with clean handoffs. If colors mix mid-slice, rotation is broken on some pod.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1023,7 +1023,7 @@
           "refId": "A"
         }
       ],
-      "title": "Ollama lockstep rotation timeline (1m bars, stacked by model)",
+      "title": "🔄 Lockstep rotation timeline — one model per 5-minute slice",
       "type": "timeseries"
     }
   ],

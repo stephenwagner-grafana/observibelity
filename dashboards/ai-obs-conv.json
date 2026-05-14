@@ -61,7 +61,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Refund policy compliance",
+      "title": "💸 Refund policy — are we offering refunds we shouldn't?",
       "type": "row"
     },
     {
@@ -69,7 +69,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Refund policy compliance failure rate \u2014 fraction of refund offers that violate policy.",
+      "description": "Fraction of nc-chatbot log lines (last 15m) that mention refund/return/policy. A noisy proxy for refund-policy chatter \u2014 yellow above 1%, red above 2%. Treat as a heads-up, not a verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -132,7 +132,7 @@
           "refId": "A"
         }
       ],
-      "title": "refund_policy_compliance fail rate",
+      "title": "💸 Refund-policy noise rate (15m)",
       "type": "gauge"
     },
     {
@@ -140,7 +140,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Refund policy violations over time, broken down by reason (window vs category).",
+      "description": "Refund/return mentions per nc-chatbot session over time (5m windows). One line shooting upward = a single shopper whose conversation has drifted into heavy refund-policy territory.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -191,7 +191,7 @@
           "refId": "A"
         }
       ],
-      "title": "Refund policy violations by reason (5m)",
+      "title": "💬 Refund/return mentions per session over time (5m)",
       "type": "timeseries"
     },
     {
@@ -199,7 +199,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Total refund policy violations in the last hour.",
+      "description": "Total nc-chatbot log lines mentioning 'refund' in the last hour. Use this as a single-number heads-up to compare to the per-session breakdown on the right.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -259,7 +259,7 @@
           "refId": "A"
         }
       ],
-      "title": "Violations (1h)",
+      "title": "🔢 Refund mentions in the last hour",
       "type": "stat"
     },
     {
@@ -272,7 +272,7 @@
       },
       "id": 5,
       "panels": [],
-      "title": "Customer frustration",
+      "title": "😤 Are we leaving frustrated customers hanging?",
       "type": "row"
     },
     {
@@ -280,7 +280,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Customer frustration unaddressed events \u2014 bot failed to acknowledge or escalate.",
+      "description": "Two lines: total mentions of frustration words (angry / disappointed / terrible / ...) vs the subset where the bot also said something empathetic (apologize, sorry, understand). The gap between them = frustration the bot didn't acknowledge.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -338,7 +338,7 @@
           "refId": "B"
         }
       ],
-      "title": "Customer frustration \u2014 addressed vs unaddressed (5m)",
+      "title": "\ud83d\ude24 Frustration mentions vs empathetic responses (1h)",
       "type": "timeseries"
     },
     {
@@ -346,7 +346,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Unaddressed fraction \u2014 > 10% fires the customer_frustration alert.",
+      "description": "Of all frustration mentions in the last hour, the share where the bot did NOT respond with empathy language. Above 10% (red) fires the customer_frustration alert. Lower is better.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -409,7 +409,7 @@
           "refId": "A"
         }
       ],
-      "title": "Unaddressed frustration rate (15m)",
+      "title": "⚠ % of frustrated customers the bot ignored (1h)",
       "type": "gauge"
     },
     {
@@ -422,7 +422,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "Brand voice drift",
+      "title": "📈 Brand voice drift — is the bot suddenly chattier than usual?",
       "type": "row"
     },
     {
@@ -430,7 +430,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Rolling 30-minute average brand-voice score (NeonCart rubric, 0-10). Higher is better.",
+      "description": "nc-chatbot output token rate as a proxy for brand-voice drift: current 30m rolling avg (blue), 6h baseline (green), and the -2σ lower bound (red dashed). Current dropping under the dashed red line = the bot suddenly got terser than its baseline — that's drift worth investigating.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -562,7 +562,7 @@
           "refId": "C"
         }
       ],
-      "title": "Brand voice drift \u2014 rolling vs baseline \u00b1 2\u03c3",
+      "title": "\ud83d\udcc8 Output rate vs 6h baseline \u2014 drift fires below -2\u03c3",
       "type": "timeseries"
     },
     {
@@ -570,7 +570,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "2-sigma drift indicator. Red when current is below baseline - 2 sigma.",
+      "description": "Single-number version of the chart on the left: current 30m output rate minus the -2σ lower bound. Negative (red) = drift is active right now. Positive (green) = within normal range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -632,7 +632,7 @@
           "refId": "A"
         }
       ],
-      "title": "Brand drift indicator (current - 2\u03c3 lower bound)",
+      "title": "\ud83d\udea8 Brand drift right now (negative = drifting)",
       "type": "stat"
     },
     {
@@ -645,7 +645,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Per-specialist conversation quality",
+      "title": "📦 Per-specialist scorecard — which agent's conversations look healthy?",
       "type": "row"
     },
     {
@@ -653,7 +653,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-specialist conversation quality scores \u2014 pass-rate across all conversational evaluators.",
+      "description": "One row per nc-/sb- specialist with three signals from the last hour: cost rate (USD/sec), p95 request latency, and avg output token rate. Column headers in the field overrides still reference 'compliance/frustration/brand score' \u2014 those labels are misleading; trust the underlying numeric columns.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -812,7 +812,7 @@
           "refId": "C"
         }
       ],
-      "title": "Conversation quality by specialist (1h)",
+      "title": "📦 Per-specialist signals — cost rate, p95 latency, output rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
