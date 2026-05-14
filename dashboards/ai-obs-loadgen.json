@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-loadgen",
-  "title": "AI o11y — Loadgen Activity (what k6 is driving right now)",
+  "title": "AI o11y \u2014 Loadgen Activity (what k6 is driving right now)",
   "tags": [
     "ai-observability",
     "loadgen",
@@ -19,9 +19,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -37,9 +37,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -62,8 +62,13 @@
     {
       "id": 1,
       "type": "row",
-      "title": "Loadgen activity — overview",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "title": "Loadgen activity \u2014 overview",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "collapsed": false,
       "panels": []
     },
@@ -72,18 +77,35 @@
       "type": "stat",
       "title": "Loadgen requests / sec (5m)",
       "description": "Rate of LLM gateway sigil-generation log lines (one per chat). Proxy for live k6 throughput.",
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 1},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "sum(rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"sigil generation\" [5m]))",
           "queryType": "instant"
         }
       ],
       "options": {
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "orientation": "auto",
         "textMode": "auto",
         "colorMode": "value",
@@ -97,9 +119,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "red", "value": null},
-              {"color": "yellow", "value": 0.1},
-              {"color": "green", "value": 0.5}
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "green",
+                "value": 0.5
+              }
             ]
           }
         },
@@ -111,18 +142,35 @@
       "type": "stat",
       "title": "Active use cases (5m)",
       "description": "Count of distinct ai_o11y.usecase values seen in LLM gateway logs.",
-      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 1},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "count(sum by (ai_o11y_usecase) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
           "queryType": "instant"
         }
       ],
       "options": {
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "orientation": "auto",
         "textMode": "auto",
         "colorMode": "value",
@@ -136,10 +184,22 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "red", "value": null},
-              {"color": "orange", "value": 5},
-              {"color": "yellow", "value": 10},
-              {"color": "green", "value": 18}
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 5
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "green",
+                "value": 18
+              }
             ]
           }
         },
@@ -151,18 +211,35 @@
       "type": "stat",
       "title": "Active personas (5m)",
       "description": "Count of distinct ai_o11y.persona_id values seen in LLM gateway logs.",
-      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 1},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
           "queryType": "instant"
         }
       ],
       "options": {
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "orientation": "auto",
         "textMode": "auto",
         "colorMode": "value",
@@ -176,10 +253,22 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "red", "value": null},
-              {"color": "orange", "value": 5},
-              {"color": "yellow", "value": 12},
-              {"color": "green", "value": 20}
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 5
+              },
+              {
+                "color": "yellow",
+                "value": 12
+              },
+              {
+                "color": "green",
+                "value": 20
+              }
             ]
           }
         },
@@ -191,18 +280,35 @@
       "type": "stat",
       "title": "k6 spend rate (5m)",
       "description": "Live USD/hr being burned on Claude calls from k6.",
-      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 1},
-      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
           "expr": "sum(rate(gen_ai_client_cost_USD_total[5m])) * 3600",
           "queryType": "instant"
         }
       ],
       "options": {
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "orientation": "auto",
         "textMode": "auto",
         "colorMode": "value",
@@ -216,9 +322,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 5},
-              {"color": "red", "value": 25}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
             ]
           }
         },
@@ -229,7 +344,12 @@
       "id": 6,
       "type": "row",
       "title": "Per-use-case + per-persona traffic (last 5m)",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "collapsed": false,
       "panels": []
     },
@@ -238,12 +358,23 @@
       "type": "barchart",
       "title": "Loadgen rate by use case (5m)",
       "description": "Total chats per use case in the last 5m. Reflects baseline.js weights * traffic rate.",
-      "gridPos": {"h": 11, "w": 12, "x": 0, "y": 7},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "topk(22, sum by (ai_o11y_usecase) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_usecase}}"
@@ -259,14 +390,32 @@
         "barWidth": 0.97,
         "barRadius": 0,
         "fullHighlight": false,
-        "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom", "calcs": []},
-        "tooltip": {"mode": "single", "sort": "none"}
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "color": {"mode": "palette-classic"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
         "overrides": []
       }
@@ -276,12 +425,23 @@
       "type": "barchart",
       "title": "Loadgen rate by persona (5m)",
       "description": "Total chats per persona in the last 5m. Centerpiece personas (Tim/Mara/Jordan/Priya/Eric) should dominate.",
-      "gridPos": {"h": 11, "w": 12, "x": 12, "y": 7},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "topk(25, sum by (ai_o11y_persona_id) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_persona_id}}"
@@ -297,14 +457,32 @@
         "barWidth": 0.97,
         "barRadius": 0,
         "fullHighlight": false,
-        "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom", "calcs": []},
-        "tooltip": {"mode": "single", "sort": "none"}
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "color": {"mode": "palette-classic"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
         "overrides": []
       }
@@ -313,7 +491,12 @@
       "id": 9,
       "type": "row",
       "title": "Time series + specialists",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
       "collapsed": false,
       "panels": []
     },
@@ -322,32 +505,59 @@
       "type": "timeseries",
       "title": "Use-case traffic over time (top 12)",
       "description": "Watch which use cases ramp / dip / die out as you tweak baseline.js.",
-      "gridPos": {"h": 11, "w": 16, "x": 0, "y": 19},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 11,
+        "w": 16,
+        "x": 0,
+        "y": 19
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "topk(12, sum by (ai_o11y_usecase) (rate({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
           "queryType": "range",
           "legendFormat": "{{ai_o11y_usecase}}"
         }
       ],
       "options": {
-        "tooltip": {"mode": "multi", "sort": "desc"},
-        "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["mean", "lastNotNull"]}
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ]
+        }
       },
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "drawStyle": "line",
             "lineInterpolation": "smooth",
             "fillOpacity": 10,
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": {"mode": "none", "group": "A"}
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
           }
         },
         "overrides": []
@@ -358,28 +568,57 @@
       "type": "piechart",
       "title": "Specialist mix (5m)",
       "description": "Which downstream specialists are being hit. Sanity-check that sb-router is fanning out correctly.",
-      "gridPos": {"h": 11, "w": 8, "x": 16, "y": 19},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 11,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "topk(15, sum by (ai_o11y_specialist) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.specialist\\\": \\\"<ai_o11y_specialist>\\\"<_>` | ai_o11y_specialist!=\"\" [5m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_specialist}}"
         }
       ],
       "options": {
-        "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
         "pieType": "donut",
-        "tooltip": {"mode": "single", "sort": "desc"},
-        "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "values": []},
-        "displayLabels": ["percent"]
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "values": []
+        },
+        "displayLabels": [
+          "percent"
+        ]
       },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "color": {"mode": "palette-classic"}
+          "color": {
+            "mode": "palette-classic"
+          }
         },
         "overrides": []
       }
@@ -388,37 +627,74 @@
       "id": 12,
       "type": "row",
       "title": "Model routing + freshness",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
       "collapsed": false,
       "panels": []
     },
     {
       "id": 13,
       "type": "piechart",
-      "title": "Provider mix (5m) — should be ~90/10 Ollama/Claude",
+      "title": "Provider mix (5m) \u2014 should be ~90/10 Ollama/Claude",
       "description": "Configured by CLAUDE_FRACTION in baseline.js (default 0.10).",
-      "gridPos": {"h": 9, "w": 8, "x": 0, "y": 31},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 31
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "sum by (gen_ai_system) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"sigil generation\" | pattern `<_>\\\"gen_ai.system\\\": \\\"<gen_ai_system>\\\"<_>` | gen_ai_system!=\"\" [5m]))",
           "queryType": "instant",
           "legendFormat": "{{gen_ai_system}}"
         }
       ],
       "options": {
-        "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
         "pieType": "donut",
-        "tooltip": {"mode": "single", "sort": "desc"},
-        "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "values": ["value", "percent"]},
-        "displayLabels": ["percent"]
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "displayLabels": [
+          "percent"
+        ]
       },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "color": {"mode": "palette-classic"}
+          "color": {
+            "mode": "palette-classic"
+          }
         },
         "overrides": []
       }
@@ -426,14 +702,25 @@
     {
       "id": 14,
       "type": "table",
-      "title": "Use-case freshness — time since last hit",
+      "title": "Use-case freshness \u2014 time since last hit",
       "description": "If a use case has gone cold (red), check baseline.js weight, k6 pod health, or routing keywords in sb-router.",
-      "gridPos": {"h": 9, "w": 16, "x": 8, "y": 31},
-      "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 8,
+        "y": 31
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
       "targets": [
         {
           "refId": "A",
-          "datasource": {"type": "loki", "uid": "${datasource_loki}"},
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
           "expr": "topk(25, sum by (ai_o11y_usecase) (count_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [30m])))",
           "queryType": "instant",
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -443,51 +730,93 @@
       "transformations": [
         {
           "id": "labelsToFields",
-          "options": {"mode": "columns"}
+          "options": {
+            "mode": "columns"
+          }
         },
         {
           "id": "organize",
           "options": {
-            "excludeByName": {"Time": true},
-            "renameByName": {"Value": "Hits (30m)", "ai_o11y_usecase": "Use case"}
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "Hits (30m)",
+              "ai_o11y_usecase": "Use case"
+            }
           }
         },
         {
           "id": "sortBy",
-          "options": {"fields": {}, "sort": [{"field": "Hits (30m)", "desc": true}]}
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Hits (30m)",
+                "desc": true
+              }
+            ]
+          }
         }
       ],
       "options": {
         "showHeader": true,
         "cellHeight": "sm",
-        "footer": {"show": false, "reducer": ["sum"], "countRows": false, "fields": ""}
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
       },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
           "custom": {
             "align": "auto",
-            "cellOptions": {"type": "auto"},
+            "cellOptions": {
+              "type": "auto"
+            },
             "inspect": false
           }
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "Hits (30m)"},
+            "matcher": {
+              "id": "byName",
+              "options": "Hits (30m)"
+            },
             "properties": [
               {
                 "id": "custom.cellOptions",
-                "value": {"type": "color-background", "mode": "gradient"}
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
               },
               {
                 "id": "thresholds",
                 "value": {
                   "mode": "absolute",
                   "steps": [
-                    {"color": "red", "value": null},
-                    {"color": "orange", "value": 1},
-                    {"color": "yellow", "value": 10},
-                    {"color": "green", "value": 30}
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 10
+                    },
+                    {
+                      "color": "green",
+                      "value": 30
+                    }
                   ]
                 }
               }
@@ -500,7 +829,12 @@
       "id": 15,
       "type": "row",
       "title": "Scenario config snapshot (from baseline.js)",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 40},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
       "collapsed": false,
       "panels": []
     },
@@ -508,12 +842,20 @@
       "id": 16,
       "type": "text",
       "title": "",
-      "gridPos": {"h": 22, "w": 24, "x": 0, "y": 41},
+      "gridPos": {
+        "h": 22,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
       "options": {
         "mode": "markdown",
-        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios — the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude — uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) — total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) — per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) — per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) — full demo agenda\n"
+        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios \u2014 the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude \u2014 uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) \u2014 total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) \u2014 per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) \u2014 per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) \u2014 full demo agenda\n"
       },
-      "fieldConfig": {"defaults": {}, "overrides": []}
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
     }
   ]
 }

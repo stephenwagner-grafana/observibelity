@@ -21,18 +21,18 @@
         "enable": true,
         "hide": false,
         "iconColor": "red",
-        "name": "Hiring discrimination — P0",
+        "name": "Hiring discrimination \u2014 P0",
         "tagKeys": "employee,category",
         "target": {
           "expr": "{namespace=\"observibelity\",container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "hiring discrim — {{ employee }}"
+        "textFormat": "hiring discrim \u2014 {{ employee }}"
       }
     ]
   },
-  "description": "Compliance signals — policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
+  "description": "Compliance signals \u2014 policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -63,7 +63,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Hiring discrimination — zero-tolerance",
+      "title": "Hiring discrimination \u2014 zero-tolerance",
       "type": "row"
     },
     {
@@ -281,7 +281,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Approval-bypass events specifically — most common circumvention pattern.",
+      "description": "Approval-bypass events specifically \u2014 most common circumvention pattern.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -485,7 +485,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-employee compliance score table — circumvention, hiring-discrim, total events.",
+      "description": "Per-employee compliance score table \u2014 circumvention, hiring-discrim, total events.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -671,7 +671,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "All compliance-critical events stream — hiring-discrim + policy-circumvention.",
+      "description": "All compliance-critical events stream \u2014 hiring-discrim + policy-circumvention.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -716,9 +716,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -734,9 +734,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -752,9 +752,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -812,7 +812,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Compliance",
+  "title": "AI o11y \u2014 Compliance",
   "uid": "ai-obs-compliance",
   "weekStart": ""
 }

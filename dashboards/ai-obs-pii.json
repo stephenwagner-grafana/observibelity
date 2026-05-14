@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ event }} — {{ employee }}"
+        "textFormat": "{{ event }} \u2014 {{ employee }}"
       }
     ]
   },
@@ -154,7 +154,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Redactor mask rate — fraction of detected PII values that were masked to last-4.",
+      "description": "Redactor mask rate \u2014 fraction of detected PII values that were masked to last-4.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -309,7 +309,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top-1 employee by confidential disclosure events — Jordan from Finance lights up first.",
+      "description": "Top-1 employee by confidential disclosure events \u2014 Jordan from Finance lights up first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -456,7 +456,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Prompt-injection-detector counter — total events, 1h.",
+      "description": "Prompt-injection-detector counter \u2014 total events, 1h.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -524,7 +524,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "pii_echo events — bot repeats user PII back. Single event = P0.",
+      "description": "pii_echo events \u2014 bot repeats user PII back. Single event = P0.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -580,7 +580,7 @@
           "refId": "A"
         }
       ],
-      "title": "pii_echo events (1h) — P0 if > 0",
+      "title": "pii_echo events (1h) \u2014 P0 if > 0",
       "type": "stat"
     },
     {
@@ -744,7 +744,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "Loki — PII + critical events",
+      "title": "Loki \u2014 PII + critical events",
       "type": "row"
     },
     {
@@ -752,7 +752,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "PII detection log lines — credit cards, SSNs, API keys, redacted to last-4.",
+      "description": "PII detection log lines \u2014 credit cards, SSNs, API keys, redacted to last-4.",
       "gridPos": {
         "h": 11,
         "w": 14,
@@ -789,7 +789,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Critical-severity events stream — single-event P0 alarms.",
+      "description": "Critical-severity events stream \u2014 single-event P0 alarms.",
       "gridPos": {
         "h": 11,
         "w": 10,
@@ -834,9 +834,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -852,9 +852,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -870,9 +870,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -930,7 +930,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — PII, Injection, Disclosure",
+  "title": "AI o11y \u2014 PII, Injection, Disclosure",
   "uid": "ai-obs-pii",
   "weekStart": ""
 }

@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "runaway — {{ conv_id }} / {{ tool_name }}"
+        "textFormat": "runaway \u2014 {{ conv_id }} / {{ tool_name }}"
       }
     ]
   },
-  "description": "Tool call analytics — agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
+  "description": "Tool call analytics \u2014 agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -290,7 +290,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-conversation tool-call counter — how many tool calls a session has accumulated.",
+      "description": "Per-conversation tool-call counter \u2014 how many tool calls a session has accumulated.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -447,7 +447,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tool error rate by tool — fraction of tool invocations with status=error.",
+      "description": "Tool error rate by tool \u2014 fraction of tool invocations with status=error.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -534,7 +534,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Sessions with most tool calls in last 10m — investigation list.",
+      "description": "Sessions with most tool calls in last 10m \u2014 investigation list.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -667,7 +667,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Loki — tool errors",
+      "title": "Loki \u2014 tool errors",
       "type": "row"
     },
     {
@@ -720,9 +720,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -738,9 +738,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -756,9 +756,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -816,7 +816,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Tools (Runaway loops)",
+  "title": "AI o11y \u2014 Tools (Runaway loops)",
   "uid": "ai-obs-tools",
   "weekStart": ""
 }

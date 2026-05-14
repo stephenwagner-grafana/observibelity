@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "halluc — {{ category }}"
+        "textFormat": "halluc \u2014 {{ category }}"
       }
     ]
   },
-  "description": "Groundedness / hallucination detection — bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
+  "description": "Groundedness / hallucination detection \u2014 bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -433,7 +433,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top hallucinated topics — categories with most evaluator fails.",
+      "description": "Top hallucinated topics \u2014 categories with most evaluator fails.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -495,7 +495,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-category table — fail count + recent rate.",
+      "description": "Per-category table \u2014 fail count + recent rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -619,7 +619,7 @@
           "refId": "B"
         }
       ],
-      "title": "Per-category — fails + pass-rate (1h)",
+      "title": "Per-category \u2014 fails + pass-rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -641,7 +641,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Loki — hallucination events",
+      "title": "Loki \u2014 hallucination events",
       "type": "row"
     },
     {
@@ -694,9 +694,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -712,9 +712,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -730,9 +730,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -790,7 +790,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Groundedness (Hallucinations)",
+  "title": "AI o11y \u2014 Groundedness (Hallucinations)",
   "uid": "ai-obs-ground",
   "weekStart": ""
 }

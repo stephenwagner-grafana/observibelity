@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Evaluator overview — pass/fail rates across all evaluators, with toxicity panels surfaced. Covers the toxicity use case and the all-evaluators status table.",
+  "description": "Evaluator overview \u2014 pass/fail rates across all evaluators, with toxicity panels surfaced. Covers the toxicity use case and the all-evaluators status table.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -71,7 +71,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity evaluator fails — hateful content. ANY single fail opens a ticket.",
+      "description": "Toxicity evaluator fails \u2014 hateful content. ANY single fail opens a ticket.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -135,7 +135,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity events broken down by reason — hateful, harassment, threat, slur.",
+      "description": "Toxicity events broken down by reason \u2014 hateful, harassment, threat, slur.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -215,7 +215,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Toxicity alert state — fires on any toxicity fail in 5m.",
+      "description": "Toxicity alert state \u2014 fires on any toxicity fail in 5m.",
       "gridPos": {
         "h": 9,
         "w": 6,
@@ -334,7 +334,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "All evaluators — overview",
+      "title": "All evaluators \u2014 overview",
       "type": "row"
     },
     {
@@ -444,7 +444,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Status of every evaluator — fire rate, fails (1h), pass rate, severity.",
+      "description": "Status of every evaluator \u2014 fire rate, fails (1h), pass rate, severity.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -665,7 +665,7 @@
           "refId": "C"
         }
       ],
-      "title": "All evaluators — fire rate | fails | pass rate | severity",
+      "title": "All evaluators \u2014 fire rate | fails | pass rate | severity",
       "transformations": [
         {
           "id": "joinByField",
@@ -695,7 +695,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "All currently firing evaluator alerts — critical first.",
+      "description": "All currently firing evaluator alerts \u2014 critical first.",
       "gridPos": {
         "h": 10,
         "w": 10,
@@ -741,7 +741,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Critical evaluator fail events — toxicity, pii_echo, hiring_discrimination_risk, data_theft.",
+      "description": "Critical evaluator fail events \u2014 toxicity, pii_echo, hiring_discrimination_risk, data_theft.",
       "gridPos": {
         "h": 10,
         "w": 14,
@@ -786,9 +786,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -804,9 +804,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -822,9 +822,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -909,7 +909,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Evaluators (Toxicity + Overview)",
+  "title": "AI o11y \u2014 Evaluators (Toxicity + Overview)",
   "uid": "ai-obs-evals",
   "weekStart": ""
 }

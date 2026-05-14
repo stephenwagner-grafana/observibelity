@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cost anomaly — {{ employee }}"
+        "textFormat": "cost anomaly \u2014 {{ employee }}"
       }
     ]
   },
@@ -525,7 +525,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost anomalies — users > 100k tokens / 1h",
+      "title": "Cost anomalies \u2014 users > 100k tokens / 1h",
       "type": "table"
     },
     {
@@ -546,7 +546,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost rate by provider — anthropic (Claude) vs ollama side-by-side. The dramatic gap is the point of the demo: local models are ~10-100x cheaper per token.",
+      "description": "Cost rate by provider \u2014 anthropic (Claude) vs ollama side-by-side. The dramatic gap is the point of the demo: local models are ~10-100x cheaper per token.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -635,7 +635,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost rate by provider (5m) — Claude vs Ollama",
+      "title": "Cost rate by provider (5m) \u2014 Claude vs Ollama",
       "type": "timeseries"
     },
     {
@@ -713,7 +713,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-model cost over 24h — Claude and Ollama models side-by-side. Watch Claude rows dominate spend even though Ollama serves most traffic.",
+      "description": "Per-model cost over 24h \u2014 Claude and Ollama models side-by-side. Watch Claude rows dominate spend even though Ollama serves most traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -894,7 +894,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost by model breakdown — fraction of total.",
+      "description": "Cost by model breakdown \u2014 fraction of total.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1050,9 +1050,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -1068,9 +1068,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -1086,9 +1086,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -1146,7 +1146,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Cost (per-user attribution)",
+  "title": "AI o11y \u2014 Cost (per-user attribution)",
   "uid": "ai-obs-cost",
   "weekStart": ""
 }

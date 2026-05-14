@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} — {{ container }}"
+        "textFormat": "{{ pod }} \u2014 {{ container }}"
       },
       {
         "datasource": {
@@ -446,7 +446,7 @@
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "Pivot here to inspect the latest mice-rca error trace end-to-end. The mice-rca use case raises an UndefinedColumn error in the pg.query tool span — this panel surfaces those traces so you can walk the span tree from the user request down to the failing SQL.",
+      "description": "Pivot here to inspect the latest mice-rca error trace end-to-end. The mice-rca use case raises an UndefinedColumn error in the pg.query tool span \u2014 this panel surfaces those traces so you can walk the span tree from the user request down to the failing SQL.",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -468,7 +468,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "Show me mice — trace pivot",
+      "title": "Show me mice \u2014 trace pivot",
       "type": "traces"
     },
     {
@@ -1448,7 +1448,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Postgres query errors from NeonCart. The mice-rca use case will surface column-does-not-exist errors here — pivot to the matching trace to walk the span tree.",
+      "description": "Live tail of Postgres query errors from NeonCart. The mice-rca use case will surface column-does-not-exist errors here \u2014 pivot to the matching trace to walk the span tree.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -1493,9 +1493,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -1511,9 +1511,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -1529,9 +1529,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -1616,7 +1616,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — NeonCart",
+  "title": "AI o11y \u2014 NeonCart",
   "uid": "ai-obs-app-neoncart",
   "weekStart": ""
 }

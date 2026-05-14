@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cc_paste — {{ employee }} last4={{ last4 }}"
+        "textFormat": "cc_paste \u2014 {{ employee }} last4={{ last4 }}"
       }
     ]
   },
@@ -549,7 +549,7 @@
           "refId": "B"
         }
       ],
-      "title": "$persona_id — exfil score + events",
+      "title": "$persona_id \u2014 exfil score + events",
       "type": "timeseries"
     },
     {
@@ -617,7 +617,7 @@
           "refId": "A"
         }
       ],
-      "title": "$persona_id — exfil events (last 10m)",
+      "title": "$persona_id \u2014 exfil events (last 10m)",
       "type": "stat"
     },
     {
@@ -787,7 +787,7 @@
           "refId": "C"
         }
       ],
-      "title": "Top exfilters — last 1h (with score + cc_paste)",
+      "title": "Top exfilters \u2014 last 1h (with score + cc_paste)",
       "transformations": [
         {
           "id": "joinByField",
@@ -809,7 +809,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "Loki — cc_paste with employee context",
+      "title": "Loki \u2014 cc_paste with employee context",
       "type": "row"
     },
     {
@@ -862,9 +862,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -880,9 +880,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -898,9 +898,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -955,7 +955,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Data Theft (per-employee exfil)",
+  "title": "AI o11y \u2014 Data Theft (per-employee exfil)",
   "uid": "ai-obs-data-theft",
   "weekStart": ""
 }

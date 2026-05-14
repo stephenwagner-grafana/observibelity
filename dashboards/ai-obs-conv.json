@@ -31,7 +31,7 @@
       }
     ]
   },
-  "description": "Conversational quality — refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
+  "description": "Conversational quality \u2014 refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -70,7 +70,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Refund policy compliance failure rate — fraction of refund offers that violate policy.",
+      "description": "Refund policy compliance failure rate \u2014 fraction of refund offers that violate policy.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -281,7 +281,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Customer frustration unaddressed events — bot failed to acknowledge or escalate.",
+      "description": "Customer frustration unaddressed events \u2014 bot failed to acknowledge or escalate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -339,7 +339,7 @@
           "refId": "B"
         }
       ],
-      "title": "Customer frustration — addressed vs unaddressed (5m)",
+      "title": "Customer frustration \u2014 addressed vs unaddressed (5m)",
       "type": "timeseries"
     },
     {
@@ -347,7 +347,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Unaddressed fraction — > 10% fires the customer_frustration alert.",
+      "description": "Unaddressed fraction \u2014 > 10% fires the customer_frustration alert.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -483,7 +483,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "2σ lower bound"
+              "options": "2\u03c3 lower bound"
             },
             "properties": [
               {
@@ -558,12 +558,12 @@
           "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "-2σ",
+          "legendFormat": "-2\u03c3",
           "range": true,
           "refId": "C"
         }
       ],
-      "title": "Brand voice drift — rolling vs baseline ± 2σ",
+      "title": "Brand voice drift \u2014 rolling vs baseline \u00b1 2\u03c3",
       "type": "timeseries"
     },
     {
@@ -633,7 +633,7 @@
           "refId": "A"
         }
       ],
-      "title": "Brand drift indicator (current - 2σ lower bound)",
+      "title": "Brand drift indicator (current - 2\u03c3 lower bound)",
       "type": "stat"
     },
     {
@@ -654,7 +654,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-specialist conversation quality scores — pass-rate across all conversational evaluators.",
+      "description": "Per-specialist conversation quality scores \u2014 pass-rate across all conversational evaluators.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -837,9 +837,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -855,9 +855,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -873,9 +873,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -933,7 +933,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Conversations (Refund, Frustration, Brand)",
+  "title": "AI o11y \u2014 Conversations (Refund, Frustration, Brand)",
   "uid": "ai-obs-conv",
   "weekStart": ""
 }

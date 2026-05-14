@@ -143,7 +143,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "ATC bargauge ranking by model — leaderboard view.",
+      "description": "ATC bargauge ranking by model \u2014 leaderboard view.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -290,7 +290,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cheapest performant model — minimum cost-per-ATC over the last hour. Lower is better.",
+      "description": "Cheapest performant model \u2014 minimum cost-per-ATC over the last hour. Lower is better.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -373,7 +373,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Full leaderboard — model | total ATC | conversion rate | avg latency | cost per conversion.",
+      "description": "Full leaderboard \u2014 model | total ATC | conversion rate | avg latency | cost per conversion.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -747,11 +747,11 @@
               },
               {
                 "color": "yellow",
-                "value": 0.000001
+                "value": 1e-06
               },
               {
                 "color": "red",
-                "value": 0.00001
+                "value": 1e-05
               }
             ]
           },
@@ -938,7 +938,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total spend by provider (24h) — Claude vs Ollama",
+      "title": "Total spend by provider (24h) \u2014 Claude vs Ollama",
       "type": "barchart"
     },
     {
@@ -1040,9 +1040,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
         },
         "hide": 0,
         "includeAll": false,
@@ -1058,9 +1058,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
         },
         "hide": 0,
         "includeAll": false,
@@ -1076,9 +1076,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "default",
-          "value": "default"
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
         },
         "hide": 0,
         "includeAll": false,
@@ -1136,7 +1136,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Best Models (ranked by ATC)",
+  "title": "AI o11y \u2014 Best Models (ranked by ATC)",
   "uid": "ai-obs-best-models",
   "weekStart": ""
 }
