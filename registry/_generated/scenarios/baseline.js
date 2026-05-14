@@ -363,43 +363,43 @@ const SCENARIOS = [
            'your customer service is the worst, you all are idiots',
            'I hate every single item in your stupid catalog'] },
 
-  // ── High-waste use case (personal use of corporate AI) ──────────────
-  // Five "waster" personas drive prompts the corporate AI shouldn't be
-  // answering: trivial math, jokes, party planning, off-topic learning,
-  // creative-writing-about-pets. Lights up the waste_detector.low_value_prompt
-  // LLM judge + the per-user "worst offenders" leaderboard. Weights are
-  // intentionally modest (3 each) so they don't crowd out the centerpiece
-  // scenarios but still produce ~0.2/s of evaluable waste.
-  { app: 'supportbot', persona: 'u-waster-1', usecase: 'high-waste', weight: 3,
-    msgs: ["what's 5 + 7",
-           "what's the square root of 144",
-           "what year did the Eiffel Tower get built",
+  // ── High-waste use case — REALISTIC sprinkled mix ──────────────────
+  // Earlier this section had five dedicated "waster" personas who ONLY
+  // sent off-topic prompts (100% waste rate). That made the Per-User
+  // dashboard look like a witch hunt — three made-up names always pinned
+  // at 100% waste while every real employee was at 0%. Real life is
+  // messier: a normal employee occasionally drifts off-task. So now we
+  // sprinkle a small high-waste scenario into a handful of EXISTING
+  // SupportBot personas, plus one mostly-but-not-always wasteful
+  // archetype (u-emp-trivia) for the demo's "obvious culprit" story.
+  //
+  // Resulting expected mix per persona:
+  //   * Normal employees (u-emp-norm-1, -2, -3): ~5-10% waste
+  //   * Heavy normal users (u-hr-recruiter, u-eric-bad): ~3-8% waste
+  //   * u-emp-trivia: ~50% waste — clearly an outlier but still does work
+  //   * Everyone else: 0% waste (which is also realistic)
+  { app: 'supportbot', persona: 'u-emp-norm-1', usecase: 'high-waste', weight: 1,
+    msgs: ["what's 5 + 7", "tell me a joke", "what's the capital of Australia"] },
+  { app: 'supportbot', persona: 'u-emp-norm-2', usecase: 'high-waste', weight: 1,
+    msgs: ["explain blockchain like I'm 5", "what year did the Eiffel Tower get built"] },
+  { app: 'supportbot', persona: 'u-emp-norm-3', usecase: 'high-waste', weight: 1,
+    msgs: ['write me a haiku about my cat', 'plan a vacation itinerary for Cancun'] },
+  { app: 'supportbot', persona: 'u-hr-recruiter', usecase: 'high-waste', weight: 1,
+    msgs: ["help me write a birthday card for my dad",
+           "give me a 7-day meal plan with grocery list"] },
+  { app: 'supportbot', persona: 'u-emp-trivia', usecase: 'high-waste', weight: 5,
+    msgs: ["what's the square root of 144",
            "how tall is Mount Everest in feet",
-           "what's the capital of Australia"] },
-  { app: 'supportbot', persona: 'u-waster-2', usecase: 'high-waste', weight: 3,
-    msgs: ['plan my surprise party for Saturday — make me a list',
-           'help me write a birthday card for my dad',
-           'suggest a vacation itinerary for Cancun next month',
-           'plan a romantic anniversary dinner for two at home',
-           'give me a 7-day meal plan with grocery list'] },
-  { app: 'supportbot', persona: 'u-waster-3', usecase: 'high-waste', weight: 3,
-    msgs: ['tell me a joke',
-           'write me a haiku about my cat',
-           'tell me a fun fact about space',
-           'recommend a Netflix show I should watch tonight',
-           'give me a pun about a programmer'] },
-  { app: 'neoncart', persona: 'u-waster-4', usecase: 'high-waste', weight: 3,
-    msgs: ["explain blockchain like I'm 5",
-           "explain quantum physics simply",
-           "tell me about the French Revolution",
-           "what's the history of the Roman empire",
-           "how do volcanoes form"] },
-  { app: 'neoncart', persona: 'u-waster-5', usecase: 'high-waste', weight: 3,
-    msgs: ['just wanna chat, how are you',
-           "what's up, hows your day going",
-           'just vibing, talk to me about anything',
-           'hey friend tell me something interesting',
-           'random conversation pls'] },
+           "tell me a fun fact about space",
+           "recommend a Netflix show I should watch tonight",
+           "give me a pun about a programmer",
+           "what's 5 + 7"] },
+  // u-emp-trivia ALSO does real work some of the time, so they're not 100% waste.
+  { app: 'supportbot', persona: 'u-emp-trivia', usecase: 'normal-support', weight: 4,
+    msgs: ['how do I request vacation',
+           'reset my password please',
+           'I need help with my expense report',
+           'whats our benefits package'] },
 ];
 
 function pickScenario() {
