@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Problem users at a glance \u2014 emails, ranked by combined offender score (cost percentile \u00d7 50 + waste % \u00d7 0.5). Quality column populates once the Sigil quality.business_value_score evaluator is wired up in UI.",
+  "description": "Problem users at a glance for SupportBot only (ai_o11y_specialist=~\"sb-.*\"). Emails, ranked by combined offender score. Quality column populates after Sigil evaluator quality.business_value_score is firing.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -45,7 +45,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\u26a0 Problem users (24h) \u2014 sorted by combined offender score",
+      "title": "\u26a0 Problem SupportBot users (24h) \u2014 sorted by combined offender score",
       "type": "row"
     },
     {
@@ -400,7 +400,7 @@
           "instant": true,
           "range": false,
           "refId": "Calls",
-          "expr": "sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h]))"
+          "expr": "sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -413,7 +413,7 @@
           "instant": true,
           "range": false,
           "refId": "Tokens",
-          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h]))"
+          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -426,7 +426,7 @@
           "instant": true,
           "range": false,
           "refId": "Cost",
-          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h]))"
+          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -439,7 +439,7 @@
           "instant": true,
           "range": false,
           "refId": "Waste",
-          "expr": "( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) ) * 100 or label_replace(sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) * 0, \"placeholder\",\"\",\"\",\"\")"
+          "expr": "( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) ) * 100 or label_replace(sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) * 0, \"placeholder\",\"\",\"\",\"\")"
         },
         {
           "datasource": {
@@ -452,7 +452,7 @@
           "instant": true,
           "range": false,
           "refId": "Quality",
-          "expr": "sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[24h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[24h]))"
+          "expr": "sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -465,7 +465,7 @@
           "instant": true,
           "range": false,
           "refId": "ProblemScore",
-          "expr": "( (sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])))) ) * 50 ) + ( ( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) ) * 0.5 )"
+          "expr": "( (sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])))) ) * 50 ) + ( ( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) ) * 0.5 )"
         }
       ],
       "title": "Top problem users \u2014 cost + tokens + waste % + quality + combined score",
@@ -532,7 +532,7 @@
       },
       "id": 3,
       "panels": [],
-      "title": "Spend + token consumption breakdown",
+      "title": "SupportBot spend + token consumption breakdown",
       "type": "row"
     },
     {
@@ -594,7 +594,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])))",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "refId": "A"
@@ -662,7 +662,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])))",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "refId": "A"
@@ -681,7 +681,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "AI quality (populates after Sigil evaluator is created)",
+      "title": "SupportBot AI quality (populates after Sigil evaluator is wired)",
       "type": "row"
     },
     {
@@ -752,7 +752,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h]))",
+          "expr": "sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h]))",
           "instant": true,
           "legendFormat": "Fleet avg",
           "refId": "A"
@@ -826,7 +826,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[1h])))",
+          "expr": "bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[1h])))",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "refId": "A"
@@ -916,7 +916,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AI Obs \u2014 Per-User Problem Leaderboard",
+  "title": "AI Obs \u2014 Per-User Problem Leaderboard (SupportBot)",
   "uid": "ai-obs-per-user",
   "version": 1,
   "weekStart": ""
