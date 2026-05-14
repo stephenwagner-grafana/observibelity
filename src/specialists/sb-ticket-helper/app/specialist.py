@@ -27,14 +27,14 @@ class SbTicketHelper(Specialist):
     )
 
     async def handle(self, req: SpecialistRequest) -> SpecialistResponse:
+        system_with_context = (
+            f"{self.SYSTEM_PROMPT}\n\n"
+            f"The current user's persona_id is {req.persona_id}. "
+            "Always pass this persona_id to tool calls that require it."
+        )
         messages = [
-            {"role": "system", "content": self.SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": (
-                    f"Persona id: {req.persona_id}. Message: {req.message}"
-                ),
-            },
+            {"role": "system", "content": system_with_context},
+            {"role": "user", "content": req.message},
         ]
         result = await self.call_gateway(messages, req)
         if result.get("tool_calls"):
