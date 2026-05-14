@@ -15,7 +15,7 @@
         "y": 0
       },
       "id": 100,
-      "title": "Overview",
+      "title": "📊 At a glance — is NeonCart healthy right now?",
       "type": "row"
     },
     {
@@ -23,7 +23,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Total /chat invocations across all categories \u2014 drives request-volume signal in RCA.",
+      "description": "Total /chat invocations the storefront has handled over the selected time range. This is the volume baseline \u2014 every other number here should be read against it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -67,7 +67,7 @@
           }
         }
       ],
-      "title": "Chat requests (last $__range)",
+      "title": "How many chats? (last $__range)",
       "type": "stat"
     },
     {
@@ -75,7 +75,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Chat turns that surfaced a tool failure to the shopper. Should track the mice-query rate.",
+      "description": "Chat turns where the shopper actually saw an error (a tool failed under the hood). Tracks the mice-query rate during the RCA demo — should climb when 'show me mice' is typed.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -119,7 +119,7 @@
           }
         }
       ],
-      "title": "Surfaced failures",
+      "title": "🚨 How many chats failed?",
       "type": "stat"
     },
     {
@@ -127,7 +127,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "errors / total tool invocations (last 5m).",
+      "description": "Error fraction across all NeonCart tools in the last 5 minutes (errors ÷ total invocations). Yellow at 2%, red at 10%. Filters to the selected tool variable above.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -179,7 +179,7 @@
           }
         }
       ],
-      "title": "Tool error rate",
+      "title": "What % of tool calls are failing? (5m)",
       "type": "stat"
     },
     {
@@ -187,6 +187,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
+      "description": "95th-percentile end-to-end chat latency over the last 5 minutes — the slowest 1-in-20 shopper experience. Yellow at 2s, red at 4s.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -238,7 +239,7 @@
           }
         }
       ],
-      "title": "p95 e2e chat latency",
+      "title": "How slow is chat for the worst 5%? (p95)",
       "type": "stat"
     },
     {
@@ -246,7 +247,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Tool-level p95. Spike to \u22651.5s on mice queries is the RCA signal.",
+      "description": "p95 latency of the product-search tool specifically. A spike to \u22651.5s is the smoking gun for the 'show me mice' RCA \u2014 that's the Postgres query timing out before throwing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -298,7 +299,7 @@
           }
         }
       ],
-      "title": "p95 search_products latency",
+      "title": "Is product search slow? (p95, mice-RCA signal)",
       "type": "stat"
     },
     {
@@ -306,6 +307,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
+      "description": "Errors on the get_inventory tool in the last 5 minutes — the Postgres '42703 column does not exist' error from the mice query. Any non-zero value here = the demo is firing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -353,7 +355,7 @@
           }
         }
       ],
-      "title": "mice-rca DB errors (5m)",
+      "title": "🐭 mice-RCA Postgres errors (5m)",
       "type": "stat"
     },
     {
@@ -365,7 +367,7 @@
         "y": 6
       },
       "id": 200,
-      "title": "Latency",
+      "title": "⏱ Where is the time going?",
       "type": "row"
     },
     {
@@ -373,7 +375,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "histogram_quantile(0.95) of traces_spanmetrics_latency_bucket, grouped by tool. The mice failure shows as a step up to \u22651.5s on the search_products series.",
+      "description": "p95 latency over time, one line per tool. The mice failure is visible as a step up to \u22651.5s on the search_products series \u2014 every other tool stays flat, which is why the line graph is the give-away.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -409,7 +411,7 @@
           }
         }
       ],
-      "title": "p95 latency by tool.name",
+      "title": "Which tool is slow? (p95 per tool over time)",
       "type": "timeseries"
     },
     {
@@ -417,6 +419,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
+      "description": "End-to-end chat latency split by outcome (OK vs ERROR). The p50 line is the typical shopper experience; the p95 line is the tail. Failed chats are usually slower than successful ones — the gap tells you how painful errors feel.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -460,7 +463,7 @@
           }
         }
       ],
-      "title": "p95 + p50 chat latency by status_code",
+      "title": "Chat latency — typical vs tail, OK vs failed (p50 & p95)",
       "type": "timeseries"
     },
     {
@@ -472,7 +475,7 @@
         "y": 15
       },
       "id": 300,
-      "title": "Errors",
+      "title": "🚨 What's failing and where?",
       "type": "row"
     },
     {
@@ -480,7 +483,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Per-tool error fraction over 5-minute windows.",
+      "description": "Error fraction (errors ÷ total) per tool, over time. One line per tool — easy way to see which tool is the bad apple.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -515,7 +518,7 @@
           }
         }
       ],
-      "title": "Error rate by tool.service",
+      "title": "Which tool is failing? (error rate per tool)",
       "type": "timeseries"
     },
     {
@@ -523,7 +526,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Errors split by the user-intent category (set on the chat.request span and tool.search_products span). Filter to category=mice to isolate the demo failure.",
+      "description": "Token throughput broken down by use case (mice-RCA, gift finder, refund, etc.). Use this to see which conversation type is driving the load — and during the mice demo, where the spike is concentrated.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -557,7 +560,7 @@
           }
         }
       ],
-      "title": "Token rate by use case",
+      "title": "Which use case is burning tokens? (rate per use case)",
       "type": "timeseries"
     },
     {
@@ -565,6 +568,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
+      "description": "Requests per second handled by each tool (server-side spans). Use this to compare load — search_products usually dominates because it's the gift finder's go-to call.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -598,10 +602,11 @@
           }
         }
       ],
-      "title": "Tool requests per second",
+      "title": "Which tool is busiest? (requests/sec per tool)",
       "type": "timeseries"
     },
     {
+      "description": "Stacked bars of errors per minute, broken down by span_name (which specific operation failed). Use to spot exactly which span — db.postgres.query, http.search-service, etc. — is the source of the failure cluster.",
       "datasource": {
         "type": "prometheus",
         "uid": "${prom}"
@@ -642,7 +647,7 @@
           }
         }
       ],
-      "title": "Errors by span_name",
+      "title": "Which span keeps failing? (errors by span name)",
       "type": "timeseries"
     },
     {
@@ -654,7 +659,7 @@
         "y": 31
       },
       "id": 400,
-      "title": "Traces \u2014 failing requests (Tempo)",
+      "title": "\ud83d\udd0e Pick a failed trace \u2014 drop into the waterfall",
       "type": "row"
     },
     {
@@ -662,7 +667,7 @@
         "type": "tempo",
         "uid": "${tempo}"
       },
-      "description": "TraceQL: spans named tool.search_products with error.type=DatabaseError. Click the trace ID to drop into the full waterfall (chat.request \u2192 agent.turn \u2192 tool.search_products \u2192 http.search-service \u2192 db.postgres.query).",
+      "description": "Most recent failing traces on the get_inventory tool \u2014 the mice-RCA smoking gun. Click any trace ID to land in the Tempo waterfall (chat.request \u2192 agent.turn \u2192 tool \u2192 http \u2192 db.postgres.query) and see exactly where it broke.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -687,7 +692,7 @@
           }
         }
       ],
-      "title": "Latest failing traces \u2014 get_inventory (mice-rca)",
+      "title": "\ud83d\udc2d Recent mice-RCA failures \u2014 click to open the trace",
       "type": "table"
     },
     {
@@ -695,7 +700,7 @@
         "type": "tempo",
         "uid": "${tempo}"
       },
-      "description": "TraceQL filter on the category attribute. Use the dashboard variable to flip categories.",
+      "description": "Most recent NeonCart-wide failing traces (any tool, any use case). Broader than the mice-RCA table above — use this when you don't yet know which tool broke.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -720,7 +725,7 @@
           }
         }
       ],
-      "title": "Latest failing traces \u2014 NeonCart errors",
+      "title": "All recent NeonCart failures \u2014 click to open the trace",
       "type": "table"
     },
     {
@@ -732,7 +737,7 @@
         "y": 50
       },
       "id": 500,
-      "title": "Logs",
+      "title": "📜 What did the gateway just log?",
       "type": "row"
     },
     {
@@ -740,7 +745,7 @@
         "type": "loki",
         "uid": "${loki}"
       },
-      "description": "Logs include trace_id and span_id \u2014 use 'Inspect \u2192 Trace' to jump to the corresponding Tempo trace.",
+      "description": "Warning + error lines from the llm-gateway container. Every line carries trace_id and span_id \u2014 click Inspect \u2192 Trace on any log to jump straight to the matching Tempo trace.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -765,7 +770,7 @@
           "refId": "A"
         }
       ],
-      "title": "llm-gateway warnings & errors",
+      "title": "llm-gateway warnings + errors (click → trace)",
       "type": "logs"
     }
   ],
