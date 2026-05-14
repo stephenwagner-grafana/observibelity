@@ -37,7 +37,7 @@ push_one() {
 
   log "  push $uid ($title)"
   local payload
-  payload=$(jq -n --slurpfile d "$f" '{dashboard: $d[0], overwrite: true, message: "synced via observibelity dashboards-sync.sh", folderUid: "ai-observability"}')
+  payload=$(jq -n --slurpfile d "$f" '{dashboard: $d[0], overwrite: true, message: "synced via observibelity dashboards-sync.sh", folderUid: "observibelity"}')
 
   if command -v gcx >/dev/null 2>&1; then
     gcx dashboards push "$f" 2>&1 | sed 's/^/    /'
