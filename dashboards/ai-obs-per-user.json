@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Per-user insights \u2014 who's spending the most, consuming the most tokens, failing the most evaluators, and most often using AI for low-value off-topic tasks. Combines cost/token attribution (gen_ai_* metrics with user_id) and waste-rate signals (sigil eval + Sigil generation logs).",
+  "description": "Problem users at a glance \u2014 emails, ranked by combined offender score (cost percentile \u00d7 50 + waste % \u00d7 0.5). Quality column populates once the Sigil quality.business_value_score evaluator is wired up in UI.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -45,7 +45,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Top offenders \u2014 last 24h",
+      "title": "\u26a0 Problem users (24h) \u2014 sorted by combined offender score",
       "type": "row"
     },
     {
@@ -53,451 +53,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 users by total cost over the last 24 hours. Source: gen_ai_client_cost_USD_total emitted by llm-gateway, labeled with user_id from X-Persona-Id.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 0.5
-              },
-              {
-                "color": "red",
-                "value": 2
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 0,
-        "y": 1
-      },
-      "id": 2,
-      "options": {
-        "displayMode": "gradient",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h])))",
-          "instant": true,
-          "legendFormat": "{{user_id}}",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Top spenders (cost, 24h)",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "Top 10 users by total tokens (input + output) over the last 24 hours. Source: gen_ai_client_token_usage_total \u2014 note the _total suffix (the _count form is from Vercel AI SDK auto-instrumentation and has NO user_id).",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 50000
-              },
-              {
-                "color": "red",
-                "value": 200000
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 12,
-        "y": 1
-      },
-      "id": 3,
-      "options": {
-        "displayMode": "gradient",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[24h])))",
-          "instant": true,
-          "legendFormat": "{{user_id}}",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Top token consumers (24h)",
-      "type": "bargauge"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 11
-      },
-      "id": 4,
-      "panels": [],
-      "title": "Waste rate (per user, from loadgen tagging)",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "description": "Count of LLM generations tagged with the high-waste usecase, broken down by user_id. Source: Sigil generation logs from llm-gateway (`ai_o11y.usecase=\"high-waste\"`). This is the per-user-prompt-level breakdown \u2014 the LLM-judge evaluator `waste_detector.low_value_prompt` (when wired up via Sigil UI) will independently judge each generation regardless of usecase tag.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 20
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 0,
-        "y": 12
-      },
-      "id": 5,
-      "options": {
-        "displayMode": "gradient",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_usecase=\"high-waste\" [24h])))",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Top wasters \u2014 high-waste generations (24h)",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "Per-user waste-flag rate from the Sigil LLM-judge evaluator `waste_detector.low_value_prompt`. NOTE: until Sigil promotes user.id as a Prom label on sigil_eval_executions_total, this query returns the aggregate rate without per-user breakdown \u2014 once Sigil exposes the label, the panel will automatically split by user_id.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "ops"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"waste_detector.low_value_prompt\", status=\"fail\"}[5m]))",
-          "legendFormat": "{{user_id}}",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "sum (rate(sigil_eval_executions_total{evaluator=\"waste_detector.low_value_prompt\", status=\"fail\"}[5m]))",
-          "hide": false,
-          "legendFormat": "all users (fallback \u2014 Sigil lacks user_id label)",
-          "refId": "B"
-        }
-      ],
-      "title": "Waste-evaluator fail rate (per user, 5m)",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 22
-      },
-      "id": 7,
-      "panels": [],
-      "title": "Eval failures + worst-offenders leaderboard",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "Eval execution rate broken down by evaluator + status. System-wide (sigil_eval_executions_total does not carry user_id). Use this to see if the waste evaluator is firing at all and what fraction of generations it flags.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "ops"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 23
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "sum by (evaluator, status) (rate(sigil_eval_executions_total[5m]))",
-          "legendFormat": "{{evaluator}} ({{status}})",
-          "refId": "A"
-        }
-      ],
-      "title": "Sigil evaluator executions (system-wide, by evaluator + status)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "Combined offender score per user: normalized cost (24h) * normalized high-waste-generation rate (24h, from gen_ai labels). Higher = worse. Note: the waste term comes from gen_ai_client_cost_USD_total filtered on ai_o11y_usecase=high-waste, NOT from the Sigil judge evaluator (which doesn't carry user_id today). Once Sigil exposes user.id on sigil_eval_executions_total, swap the second term to `rate(sigil_eval_executions_total{evaluator=\"waste_detector.low_value_prompt\",status=\"fail\"}[1h])`.",
+      "description": "Combined problem score per user, sorted descending. Score = (cost percentile \u00d7 50) + (waste % \u00d7 0.5). Once the quality.business_value_score evaluator is firing, low quality scores will also add to the problem score. Red rows = users at the top of the problem list \u2014 investigate first. Email filter (`user_id=~\".*@.*\"`) ensures only the new email-shaped user IDs appear (old u-* slugs age out in 24h).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -530,7 +86,77 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 220
+                "value": 260
+              },
+              {
+                "id": "displayName",
+                "value": "User"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls (24h)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tokens (24h)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 100000
+                    },
+                    {
+                      "color": "red",
+                      "value": 500000
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -545,6 +171,14 @@
                 "value": "currencyUSD"
               },
               {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
                 "id": "custom.cellOptions",
                 "value": {
                   "type": "color-background"
@@ -561,11 +195,11 @@
                     },
                     {
                       "color": "yellow",
-                      "value": 0.25
+                      "value": 0.5
                     },
                     {
                       "color": "red",
-                      "value": 1
+                      "value": 2
                     }
                   ]
                 }
@@ -575,12 +209,20 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Waste calls (24h)"
+              "options": "Waste %"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "short"
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 110
               },
               {
                 "id": "custom.cellOptions",
@@ -599,11 +241,11 @@
                     },
                     {
                       "color": "yellow",
-                      "value": 50
+                      "value": 10
                     },
                     {
                       "color": "red",
-                      "value": 200
+                      "value": 50
                     }
                   ]
                 }
@@ -613,7 +255,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Offender score"
+              "options": "Quality score"
             },
             "properties": [
               {
@@ -622,7 +264,69 @@
               },
               {
                 "id": "decimals",
-                "value": 2
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 30
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 50
+                    },
+                    {
+                      "color": "green",
+                      "value": 70
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Problem score"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 140
               },
               {
                 "id": "custom.cellOptions",
@@ -641,11 +345,15 @@
                     },
                     {
                       "color": "yellow",
-                      "value": 5
+                      "value": 25
+                    },
+                    {
+                      "color": "orange",
+                      "value": 50
                     },
                     {
                       "color": "red",
-                      "value": 25
+                      "value": 75
                     }
                   ]
                 }
@@ -655,14 +363,14 @@
         ]
       },
       "gridPos": {
-        "h": 12,
+        "h": 16,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 1
       },
-      "id": 9,
+      "id": 2,
       "options": {
-        "cellHeight": "sm",
+        "cellHeight": "md",
         "footer": {
           "countRows": false,
           "fields": "",
@@ -675,7 +383,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Offender score"
+            "displayName": "Problem score"
           }
         ]
       },
@@ -688,12 +396,11 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h]))",
           "format": "table",
           "instant": true,
-          "legendFormat": "__auto",
           "range": false,
-          "refId": "Cost"
+          "refId": "Calls",
+          "expr": "sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -702,13 +409,11 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[24h]))",
           "format": "table",
-          "hide": false,
           "instant": true,
-          "legendFormat": "__auto",
           "range": false,
-          "refId": "Tokens"
+          "refId": "Tokens",
+          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -717,13 +422,11 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h])) > 0 or on() vector(0)",
           "format": "table",
-          "hide": false,
           "instant": true,
-          "legendFormat": "__auto",
           "range": false,
-          "refId": "Waste"
+          "refId": "Cost",
+          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h]))"
         },
         {
           "datasource": {
@@ -732,16 +435,40 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "( sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h])))) * 100 ) + ( sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h]))) or vector(1)) * 100 )",
           "format": "table",
-          "hide": false,
           "instant": true,
-          "legendFormat": "__auto",
           "range": false,
-          "refId": "Score"
+          "refId": "Waste",
+          "expr": "( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) ) * 100 or label_replace(sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) * 0, \"placeholder\",\"\",\"\",\"\")"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "Quality",
+          "expr": "sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[24h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[24h]))"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "ProblemScore",
+          "expr": "( (sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])))) ) * 50 ) + ( ( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])) ) * 0.5 )"
         }
       ],
-      "title": "Worst-offenders leaderboard (cost + waste, 24h)",
+      "title": "Top problem users \u2014 cost + tokens + waste % + quality + combined score",
       "transformations": [
         {
           "id": "joinByField",
@@ -757,20 +484,26 @@
               "Time 1": true,
               "Time 2": true,
               "Time 3": true,
-              "Time 4": true
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true
             },
             "indexByName": {
               "user_id": 0,
-              "Value #Cost": 1,
+              "Value #Calls": 1,
               "Value #Tokens": 2,
-              "Value #Waste": 3,
-              "Value #Score": 4
+              "Value #Cost": 3,
+              "Value #Waste": 4,
+              "Value #Quality": 5,
+              "Value #ProblemScore": 6
             },
             "renameByName": {
-              "Value #Cost": "Cost (24h, USD)",
+              "Value #Calls": "Calls (24h)",
               "Value #Tokens": "Tokens (24h)",
-              "Value #Waste": "Waste calls (24h)",
-              "Value #Score": "Offender score"
+              "Value #Cost": "Cost (24h, USD)",
+              "Value #Waste": "Waste %",
+              "Value #Quality": "Quality score",
+              "Value #ProblemScore": "Problem score"
             }
           }
         },
@@ -781,7 +514,7 @@
             "sort": [
               {
                 "desc": true,
-                "field": "Offender score"
+                "field": "Problem score"
               }
             ]
           }
@@ -795,11 +528,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 17
       },
-      "id": 100,
+      "id": 3,
       "panels": [],
-      "title": "AI quality score (0-100, scored LLM judge)",
+      "title": "Spend + token consumption breakdown",
       "type": "row"
     },
     {
@@ -807,7 +540,156 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Fleet-wide average AI quality score (0-100). LLM-judge `quality.business_value_score` scores every sampled prompt 0=trivial, 50=ambiguous, 100=clearly productive work. Sigil emits sigil_eval_scores_total (running sum) and sigil_eval_executions_total (count); avg = sum / count.",
+      "description": "Top 10 users by 24h cost. Email-shaped IDs only \u2014 old u-* IDs filtered out.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])))",
+          "instant": true,
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top spenders (24h)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Top 10 users by 24h token consumption (input+output combined).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 100000
+              },
+              {
+                "color": "red",
+                "value": 500000
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\"}[24h])))",
+          "instant": true,
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top token consumers (24h)",
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 6,
+      "panels": [],
+      "title": "AI quality (populates after Sigil evaluator is created)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Fleet-wide average AI quality score (0-100) from the quality.business_value_score LLM judge. Empty until you create the evaluator in Sigil UI and add it to a rule.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -844,9 +726,9 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 46
+        "y": 29
       },
-      "id": 101,
+      "id": 7,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -863,7 +745,6 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -871,13 +752,13 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "( sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h])) ) or vector(0)",
+          "expr": "sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h]))",
           "instant": true,
           "legendFormat": "Fleet avg",
           "refId": "A"
         }
       ],
-      "title": "Fleet AI quality score (1h avg)",
+      "title": "Fleet AI quality score (1h avg, 0-100)",
       "type": "stat"
     },
     {
@@ -885,7 +766,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-user average AI quality score (0-100), sorted ascending \u2014 lowest scorers (worst offenders) on top. A user persistently below 30 is using the AI for trivia / personal / off-topic content. Empty if sampling hasn't kicked in yet OR if the Sigil evaluator isn't wired up (Sigil v0.17 needs UI creation).",
+      "description": "Lowest-scoring users on the quality LLM judge. Lower = worse use of corporate AI. Empty until the Sigil evaluator is firing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -922,14 +803,11 @@
         "h": 12,
         "w": 16,
         "x": 8,
-        "y": 46
+        "y": 29
       },
-      "id": 102,
+      "id": 8,
       "options": {
         "displayMode": "gradient",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -939,10 +817,8 @@
           "values": false
         },
         "showUnfilled": true,
-        "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -950,7 +826,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id!=\"\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id!=\"\"}[1h])))",
+          "expr": "bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\"}[1h])))",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "refId": "A"
@@ -1040,7 +916,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AI Obs \u2014 Per-User Insights",
+  "title": "AI Obs \u2014 Per-User Problem Leaderboard",
   "uid": "ai-obs-per-user",
   "version": 1,
   "weekStart": ""
