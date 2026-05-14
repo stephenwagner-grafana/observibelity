@@ -71,6 +71,12 @@ BRANDING: dict[str, str] = {
     "logo_url": os.getenv("BRANDING_LOGO_URL", ""),
 }
 
+# Base URL of the Grafana stack hosting Sigil. The chat widget builds an
+# "Open conversation in Sigil" deep-link from this + the session_id so demo
+# users can jump from a turn in the storefront to the full conversation in
+# Sigil. Empty string disables the link.
+GRAFANA_BASE_URL = os.getenv("GRAFANA_BASE_URL", "").rstrip("/")
+
 
 # ---- OTel bootstrap --------------------------------------------------------
 def _instrument(app: FastAPI) -> None:

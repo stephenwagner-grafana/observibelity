@@ -51,6 +51,12 @@ class SearchProducts(Tool):
         session: AsyncSession | None = None,
     ) -> SearchProductsResult:
         assert session is not None, "search_products requires a DB session"
+        # The catalog stores singular product names ("Keyboard", "Headphone");
+        # callers often pass plural queries ("keyboards", "headphones"). Strip
+        # a trailing "s" so the chatbot doesn't have to second-guess the LLM.
+        q = args.query.strip()
+        if len(q) > 3 and q.lower().endswith("s") and not q.lower().endswith("ss"):
+            q = q[:-1]
         stmt = text(
             """
             SELECT id, sku, name, price_usd
@@ -61,7 +67,7 @@ class SearchProducts(Tool):
             """
         )
         rows = (
-            await session.execute(stmt, {"q": f"%{args.query}%", "lim": args.limit})
+            await session.execute(stmt, {"q": f"%{q}%", "lim": args.limit})
         ).all()
         items = [
             ProductRef(id=r.id, sku=r.sku, name=r.name, price_usd=float(r.price_usd))

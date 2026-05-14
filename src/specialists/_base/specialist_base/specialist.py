@@ -44,6 +44,23 @@ class SpecialistResponse(BaseModel):
     tool_calls: list[dict] = Field(default_factory=list)
     cost_usd: float = 0.0
     span_id: str | None = None
+    # Concrete model the gateway routed to (e.g. "claude-sonnet-4-6",
+    # "llama3.1:8b"). Surfaced on the chat widget so demo users can SEE which
+    # model answered them — critical for the "live → Claude, loadgen → Ollama"
+    # narrative.
+    model: str | None = None
+    # Provider name ("anthropic", "ollama"). Pairs with `model` on the badge.
+    provider: str | None = None
+    # Structured UI directives the front-end should honour. Today we emit
+    # {"type": "navigate", "target": "category"|"search"|"product"|"cart",
+    #  "value": "<slug or id>"} when the bot determined the user wants to go
+    # somewhere. The web widget runs them after the bubble lands; loadgen
+    # ignores them.
+    actions: list[dict] = Field(default_factory=list)
+    # Product hits (from search_products / get_product tool calls) the widget
+    # can render as clickable cards under the bot reply. Each item is the raw
+    # search result dict so the front-end controls presentation.
+    products: list[dict] = Field(default_factory=list)
 
 
 class Specialist(ABC):
