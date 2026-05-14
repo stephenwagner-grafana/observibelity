@@ -483,4 +483,123 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 6px 16px rgba(34, 211, 238, 0.35);
 }
 .nc-chat__spinner { display: none; align-self: center; color: var(--text-muted); }
-.nc-chat__spinner.htmx-request { display: inline; }
+
+/* ---- Rich chat rendering (badge / products / nav / sigil) ---------- */
+/* Bot bubble lays out top-to-bottom:
+     1. .chat-msg__badge   -- small dim "nc-chatbot · model · provider"
+     2. .chat-msg__body    -- the reply text (markdown -> html)
+     3. .chat-products     -- 2-col grid of clickable product cards
+     4. .chat-nav-btn      -- single "→ Browse <Category>" pill
+     5. .chat-msg__sigil   -- bottom-right "Open in Sigil" deep-link
+   Each row is rendered only when its source field is present. */
+.chat-msg__body { white-space: normal; }
+.chat-list { margin: 0.35rem 0 0.1rem; padding-left: 1.1rem; }
+.chat-list li { margin: 0.1rem 0; }
+
+/* 1) Model + provider badge — small dim header at the TOP of the bubble. */
+.chat-msg__badge {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.35rem;
+  opacity: 0.85;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.chat-products {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem; margin-top: 0.7rem;
+}
+.chat-product {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  padding: 0.5rem;
+  background: var(--surface-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text);
+  transition: transform .12s ease, border-color .12s ease, box-shadow .15s ease;
+}
+.chat-product:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: 0 6px 18px rgba(34, 211, 238, 0.18);
+  text-decoration: none;
+}
+.chat-product__img {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(236, 72, 153, 0.15));
+  background-size: cover; background-position: center;
+}
+.chat-product__name {
+  font-size: 0.78rem; font-weight: 600; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+.chat-product__row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 0.4rem;
+}
+.chat-product__price {
+  font-size: 0.75rem; font-weight: 700; color: var(--primary-color);
+}
+.chat-product__sku {
+  font-size: 0.68rem; color: var(--text-dim);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Single "Browse <category>" / "View product" navigate CTA under reply */
+.chat-nav-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem; font-weight: 600;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-color) 0%, #db2777 100%);
+  color: #fff !important;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.28);
+  transition: transform .12s ease, box-shadow .15s ease;
+}
+.chat-nav-btn:hover {
+  transform: translateY(-1px);
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4);
+}
+
+/* 5) Sigil deep-link — bottom-right of the bot bubble. Tiny + dim so it
+   doesn't pull focus from the actual reply / products. */
+.chat-msg__sigil {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.55rem;
+}
+.chat-sigil-link {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.7rem; font-weight: 600;
+  color: var(--text-dim);
+  border-bottom: 1px dashed transparent;
+  letter-spacing: 0.02em;
+}
+.chat-sigil-link:hover {
+  text-decoration: none;
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color-soft);
+}
+
+/* Typing indicator (3 dots) while the bot is thinking */
+.chat-typing { display: inline-flex; gap: 4px; padding: 0.1rem 0; }
+.chat-typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text-muted);
+  animation: chat-typing 1.1s infinite ease-in-out;
+}
+.chat-typing span:nth-child(2) { animation-delay: 0.18s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes chat-typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}

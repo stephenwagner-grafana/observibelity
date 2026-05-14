@@ -133,6 +133,24 @@ def _instrument(app: FastAPI) -> None:
         log.warning("OTel instrumentation skipped: %s", exc)
 
 
+def _build_sigil_url(session_id: str | None) -> str | None:
+    """Build a deep-link into the Sigil Conversations view for ``session_id``.
+
+    Falls back to a generic Conversations filter when GRAFANA_BASE_URL is
+    set but the route shape can't be locked in until we ship — Sigil's
+    conversation URL pattern has changed twice this quarter. Returning a
+    list-with-filter URL still gets the demo viewer onto the right page.
+    """
+    if not GRAFANA_BASE_URL or not session_id:
+        return None
+    # Sigil hangs off the Grafana plugin route. The conversation list page
+    # accepts a free-text filter param that matches session_id.
+    return (
+        f"{GRAFANA_BASE_URL}/a/grafana-sigil-app/conversations"
+        f"?conversation_id={session_id}"
+    )
+
+
 def _set_usecase_attr(usecase: str = DEFAULT_USECASE) -> None:
     """Attach `ai_o11y.usecase` to the current span if tracing is active."""
     try:
@@ -211,6 +229,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 templates.env.globals["branding"] = BRANDING
+templates.env.globals["grafana_base_url"] = GRAFANA_BASE_URL
 
 
 # ---- Schemas ---------------------------------------------------------------
@@ -240,9 +259,20 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
+    """Wire shape the widget renders. Mirrors fields the specialist forwards
+    plus a couple of UI-only conveniences (sigil_url, session_id echo)."""
+
     reply: str
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
     usecase: str
+    model: str | None = None
+    provider: str | None = None
+    actions: list[dict[str, Any]] = Field(default_factory=list)
+    products: list[dict[str, Any]] = Field(default_factory=list)
+    cost_usd: float = 0.0
+    session_id: str | None = None
+    span_id: str | None = None
+    sigil_url: str | None = None
 
 
 class PersonaSelectRequest(BaseModel):
@@ -285,12 +315,24 @@ async def catalog(
     request: Request,
     page: int = Query(1, ge=1),
     per_page: int = Query(24, ge=1, le=100),
+    category: str | None = Query(None, min_length=1, max_length=64),
     persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
+    """Catalog grid. ``?category=<slug>`` filters by joining categories.slug.
+
+    The chat widget routes the page here when the bot emits a navigate
+    action, so the grid filters to match the conversation (e.g. "show me
+    keyboards" → /catalog?category=peripherals).
+    """
     _set_usecase_attr()
     offset = (page - 1) * per_page
-    items_q = select(CatalogItem).offset(offset).limit(per_page)
+    items_q = select(CatalogItem)
+    if category:
+        items_q = items_q.join(Category, CatalogItem.category_id == Category.id).where(
+            Category.slug == category
+        )
+    items_q = items_q.offset(offset).limit(per_page)
     cats_q = select(Category)
     items = (await session.execute(items_q)).scalars().all()
     categories = (await session.execute(cats_q)).scalars().all()
@@ -299,7 +341,12 @@ async def catalog(
         request,
         session,
         persona_id,
-        {"items": items, "categories": categories, "page": page},
+        {
+            "items": items,
+            "categories": categories,
+            "page": page,
+            "active_category": category,
+        },
     )
 
 
@@ -384,30 +431,45 @@ async def chat(
         resp = await client.post(CHATBOT_URL, json=body)
     except httpx.RequestError as exc:
         log.warning("chatbot unreachable: %s", exc)
-        # HTMX-friendly: return an HTML fragment so the chat widget keeps working
-        return HTMLResponse(
-            f'<div class="chat-msg chat-msg--bot">Chatbot unreachable: {exc}</div>',
+        return JSONResponse(
+            {
+                "reply": f"Chatbot unreachable: {exc}",
+                "tool_calls": [],
+                "usecase": usecase,
+                "session_id": payload.session_id,
+                "error": "unreachable",
+            },
             status_code=503,
         )
 
     if resp.status_code >= 400:
-        return HTMLResponse(
-            f'<div class="chat-msg chat-msg--bot chat-msg--err">'
-            f"Chatbot error {resp.status_code}</div>",
+        return JSONResponse(
+            {
+                "reply": f"Chatbot error {resp.status_code}",
+                "tool_calls": [],
+                "usecase": usecase,
+                "session_id": payload.session_id,
+                "error": f"http_{resp.status_code}",
+            },
             status_code=resp.status_code,
         )
 
-    # HTMX expects an HTML fragment; JSON consumers still get a parseable body.
-    accept = request.headers.get("accept", "")
-    if "application/json" in accept:
-        return JSONResponse(resp.json())
-
     data = resp.json()
-    reply = data.get("reply") or data.get("message") or ""
-    # Client-side JS echoes the user message into the panel before submit, so
-    # we return only the bot reply here. This prevents the user message from
-    # disappearing if the server response is delayed, errors, or fails to swap.
-    return HTMLResponse(f'<div class="chat-msg chat-msg--bot">{reply}</div>')
+    sigil_url = _build_sigil_url(payload.session_id) if payload.session_id else None
+    out = ChatResponse(
+        reply=data.get("reply") or data.get("message") or "",
+        tool_calls=data.get("tool_calls") or [],
+        usecase=usecase,
+        model=data.get("model"),
+        provider=data.get("provider"),
+        actions=data.get("actions") or [],
+        products=data.get("products") or [],
+        cost_usd=float(data.get("cost_usd") or 0.0),
+        session_id=payload.session_id,
+        span_id=data.get("span_id"),
+        sigil_url=sigil_url,
+    )
+    return JSONResponse(out.model_dump())
 
 
 # ---- Persona API -----------------------------------------------------------

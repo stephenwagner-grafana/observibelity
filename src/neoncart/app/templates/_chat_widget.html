@@ -46,51 +46,26 @@
       <button type="button" class="nc-chat__chip" data-suggestion="show me keyboards">
         show me keyboards
       </button>
-      <button type="button" class="nc-chat__chip" data-suggestion="what's on sale?">
-        what's on sale?
+      <button type="button" class="nc-chat__chip" data-suggestion="find me a gift under $200">
+        gift under $200
       </button>
       <button type="button" class="nc-chat__chip" data-suggestion="recommend something for my desk">
-        recommend something for my desk
+        for my desk
       </button>
     </div>
 
     <form
       id="nc-chat-form"
       class="nc-chat__form"
-      hx-post="/chat"
-      hx-target="#chat-messages"
-      hx-swap="beforeend"
-      hx-ext="json-enc"
-      hx-indicator="#nc-chat-spinner"
+      data-persona="{{ current_persona }}"
+      data-email="{{ current_persona_email or '' }}"
+      data-grafana-base-url="{{ grafana_base_url or '' }}"
     >
-      <input
-        type="hidden"
-        name="persona_id"
-        id="nc-chat-persona"
-        value="{{ current_persona }}"
-      />
-      <input
-        type="hidden"
-        name="email"
-        id="nc-chat-email"
-        value="{{ current_persona_email or '' }}"
-      />
-      <input
-        type="hidden"
-        name="session_id"
-        id="nc-chat-session"
-        value=""
-      />
-      <input
-        type="hidden"
-        name="provider_override"
-        value="anthropic"
-      />
-      <input
-        type="hidden"
-        name="traffic_origin"
-        value="interactive"
-      />
+      <input type="hidden" name="persona_id" id="nc-chat-persona" value="{{ current_persona }}" />
+      <input type="hidden" name="email" id="nc-chat-email" value="{{ current_persona_email or '' }}" />
+      <input type="hidden" name="session_id" id="nc-chat-session" value="" />
+      <input type="hidden" name="provider_override" value="anthropic" />
+      <input type="hidden" name="traffic_origin" value="interactive" />
       <input
         type="text"
         name="message"
