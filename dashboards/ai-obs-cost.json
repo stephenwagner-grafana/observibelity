@@ -137,8 +137,8 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
       "description": "Number of users currently above the 100k/hr cost anomaly threshold.",
       "fieldConfig": {
@@ -191,10 +191,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "count(sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_input_tokens [1h])) > 10000)",
+          "expr": "count(sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
           "legendFormat": "count",
           "queryType": "instant",
           "refId": "A"
@@ -353,8 +353,8 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
       "description": "Top spenders by 1h token sum across both apps. > 100k fires the cost anomaly alert.",
       "fieldConfig": {
@@ -409,10 +409,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_input_tokens [1h])) + sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_output_tokens [1h])))",
+          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_persona_id!=\"\"}[1h])))",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -423,8 +423,8 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
       "description": "Users currently above the 100k tokens/1h cost-anomaly threshold.",
       "fieldConfig": {
@@ -515,10 +515,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (sum_over_time({namespace=\"observibelity\",container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | unwrap gen_ai_usage_input_tokens [1h])) > 10000)",
+          "expr": "topk(20, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
           "legendFormat": "{{ai_o11y_persona_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -893,7 +893,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost by model breakdown \u2014 fraction of total.",
+      "description": "Cost by model breakdown \u2014 fraction of total. Window widened to 24h so claude-opus-4-7 (which fires on ~1% of conversations) is captured.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -951,7 +951,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total[1h]))",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total[24h]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -959,7 +959,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost share by model (1h)",
+      "title": "Cost share by model (24h)",
       "type": "piechart"
     },
     {
