@@ -1,0 +1,393 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Top 10 internal SupportBot users — calls, tokens, primary agent (specialist), cost, and waste %. Filters on ai_o11y_specialist=~\"sb-.*\" so only Support Bot traffic is counted. Use the user_id template var to drill into a single employee.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["ai-observability"],
+      "title": "ObserVIBElity dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "panels": [],
+      "title": "SupportBot — top 10 internal users (24h)",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Top 10 internal SupportBot users by 24h cost. Columns: calls (gen_ai operation count), input+output tokens, total USD cost, waste % (high-waste calls / total calls). Sorted by cost desc.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        },
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "user_id"}, "properties": [{"id": "custom.width", "value": 220}, {"id": "displayName", "value": "User"}]},
+          {"matcher": {"id": "byName", "options": "Calls (24h)"}, "properties": [{"id": "unit", "value": "short"}, {"id": "decimals", "value": 0}, {"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 200}, {"color": "red", "value": 1000}]}}]},
+          {"matcher": {"id": "byName", "options": "Tokens (24h)"}, "properties": [{"id": "unit", "value": "short"}, {"id": "decimals", "value": 0}, {"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 100000}, {"color": "red", "value": 500000}]}}]},
+          {"matcher": {"id": "byName", "options": "Cost (24h, USD)"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}, {"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]}}]},
+          {"matcher": {"id": "byName", "options": "Waste %"}, "properties": [{"id": "unit", "value": "percent"}, {"id": "decimals", "value": 1}, {"id": "custom.cellOptions", "value": {"type": "color-background"}}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 25}]}}]}
+        ]
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "Cost (24h, USD)"}]
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[24h])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "Cost"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[24h]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "Calls"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[24h]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "Tokens"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=\"high-waste\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[24h])) ) * 100",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "Waste"
+        }
+      ],
+      "title": "Top 10 SupportBot users — calls, tokens, cost, waste %",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {"byField": "user_id", "mode": "outer"}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {"Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true},
+            "indexByName": {"user_id": 0, "Value #Calls": 1, "Value #Tokens": 2, "Value #Cost": 3, "Value #Waste": 4},
+            "renameByName": {
+              "Value #Calls": "Calls (24h)",
+              "Value #Tokens": "Tokens (24h)",
+              "Value #Cost": "Cost (24h, USD)",
+              "Value #Waste": "Waste %"
+            }
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {"config": {"id": "isNotNull", "options": {}}, "fieldName": "Cost (24h, USD)"}
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {"fields": {}, "sort": [{"desc": true, "field": "Cost (24h, USD)"}]}
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13},
+      "id": 3,
+      "panels": [],
+      "title": "Per-user agent (specialist) breakdown",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Which sb-* specialists each user is hitting, by token consumption (24h). Stacked so each bar's total height = that user's overall token spend across SupportBot agents. sb-router is the intent classifier (always present); the rest are downstream specialists.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineWidth": 1,
+            "scaleDistribution": {"type": "linear"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 14},
+      "id": 4,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.85,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {"calcs": [], "displayMode": "table", "placement": "right", "showLegend": true},
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {"mode": "multi", "sort": "desc"},
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id, ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[24h])) and on (user_id) topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[24h])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens by user × specialist (top 10 users, stacked)",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "ai_o11y_specialist",
+            "rowField": "user_id",
+            "valueField": "Value"
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 26},
+      "id": 5,
+      "panels": [],
+      "title": "Time trends",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Cost rate per user for the top-10 internal SupportBot spenders. Spikes here usually correlate with paste-bombs (Priya), repeated injection probes (Eric), or exfil attempts (Tim).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {"type": "linear"},
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 27},
+      "id": 6,
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[5m])))",
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost/sec by user (top 10 SupportBot users)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Call rate per user for the top-10 internal SupportBot users. Multi-step routing means each chat counts as 2+ calls (sb-router classifies, then a downstream specialist responds).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {"type": "linear"},
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 27},
+      "id": 7,
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "editorMode": "code",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_specialist=~\"sb-.*\"}[5m])))",
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Calls/sec by user (top 10 SupportBot users)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "per-user", "supportbot"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": true, "text": "grafanacloud-stephenwagner-prom", "value": "grafanacloud-prom"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": true, "text": "grafanacloud-stephenwagner-logs", "value": "grafanacloud-logs"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {"selected": false, "text": "All", "value": "$__all"},
+        "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+        "definition": "label_values(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", ai_o11y_specialist=~\"sb-.*\"}, user_id)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "User",
+        "multi": true,
+        "name": "user_id",
+        "options": [],
+        "query": {
+          "query": "label_values(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", ai_o11y_specialist=~\"sb-.*\"}, user_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-24h", "to": "now"},
+  "timepicker": {},
+  "timezone": "",
+  "title": "AI Obs — SupportBot Top Users",
+  "uid": "ai-obs-supportbot-top-users",
+  "version": 1,
+  "weekStart": ""
+}
