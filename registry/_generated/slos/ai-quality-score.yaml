@@ -1,0 +1,20 @@
+apiVersion: openslo/v1
+kind: SLO
+metadata:
+  name: ai-quality-score
+  displayName: "AI quality score \u2014 per-prompt business-value rating (0\u2013\
+    100)"
+  labels:
+    use_case: ai-quality-score
+    app: both
+    archetype: per-user-pattern
+spec:
+  description: average per-user quality score >= 60 for >= 90% of users over 7d
+  service: both
+  budgetingMethod: Occurrences
+  timeWindow:
+  - duration: 7d
+    isRolling: true
+  objectives:
+  - displayName: average per-user quality score >= 60 for >= 90% of users over 7d
+    target: 0.9

@@ -370,6 +370,11 @@ async def emit_generation_event(
     # generation under one agent. Now each specialist (nc-chatbot,
     # sb-router, sb-policy-finder, ...) shows up as its own row.
     agent_name = (req.specialist or "").strip() or _AGENT_NAME_FALLBACK
+    # Email-shaped user identity for OTel user.id / enduser.id. Internal
+    # persona_id stays as "u-*" everywhere else; only the outbound user
+    # label gets the demo-realistic email so dashboards read like prod.
+    from .persona_email import persona_to_email
+    user_email = persona_to_email(persona_id, agent_name)
 
     # Always log a stdout JSON line — preserves the Phase-1 behaviour the
     # ai-obs-app-* dashboards rely on, and gives operators a paper trail
@@ -408,14 +413,16 @@ async def emit_generation_event(
         "session.id": session_id,
         "gen_ai.conversation.id": session_id,
         # --- user attribution (canonical aliases for the persona) ---
-        "user.id": persona_id,
-        "enduser.id": persona_id,
-        # Email is opt-in from the caller — NeonCart looks it up at render
-        # time and threads it through ai_o11y.email so Sigil's Conversations
-        # view can show the real shopper, not just the persona slug.
+        # user.id is the demo-realistic email (acme employees / consumer
+        # domains); ai_o11y.persona_id below stays as the internal slug.
+        "user.id": user_email,
+        "enduser.id": user_email,
+        # Caller-supplied email (NeonCart shopper) overrides the derived
+        # one — preserved here so explicit shopper emails still take
+        # precedence over our persona→email map.
         **({"user.email": req.ai_o11y["email"]}
            if isinstance(req.ai_o11y.get("email"), str) and req.ai_o11y["email"]
-           else {}),
+           else {"user.email": user_email} if user_email else {}),
         # --- our demo-level fields, kept for the existing Loki dashboards ---
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
         "ai_o11y.persona_id": persona_id,
@@ -482,12 +489,16 @@ async def emit_generation_event(
         tags["ai_o11y.usecase"] = str(usecase)
     if persona_id:
         tags["persona_id"] = persona_id
-        tags["user.id"] = persona_id
-        tags["enduser.id"] = persona_id
+        # user.id / enduser.id are the demo-realistic email; persona_id slug
+        # stays in ai_o11y.persona_id for internal joins.
+        tags["user.id"] = user_email or persona_id
+        tags["enduser.id"] = user_email or persona_id
         tags["ai_o11y.persona_id"] = persona_id
     email_tag = req.ai_o11y.get("email") if req.ai_o11y else None
     if isinstance(email_tag, str) and email_tag.strip():
         tags["user.email"] = email_tag.strip()
+    elif user_email:
+        tags["user.email"] = user_email
     if trace_id:
         tags["trace_id"] = trace_id
     if span_id:
@@ -504,7 +515,7 @@ async def emit_generation_event(
         model=ModelRef(provider=resp.provider or _DEFAULT_PROVIDER, name=request_model),
         conversation_id=conversation_id,
         conversation_title=conversation_title[:120],
-        user_id=persona_id,
+        user_id=user_email or persona_id,
         agent_name=agent_name,
         agent_version=_agent_version(),
         # SYNC because the gateway proxies non-streaming Anthropic / Ollama
@@ -673,6 +684,8 @@ async def emit_tool_execution_event(
     # gen_ai.agent.parent so per-specialist breakdowns are still possible.
     tool_agent_name = (tool_name or "").strip() or "unknown-tool"
     parent_specialist = (specialist or "").strip() or _AGENT_NAME_FALLBACK
+    from .persona_email import persona_to_email
+    tool_user_email = persona_to_email(persona_id, parent_specialist)
     tool_event: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "trace_id": trace_id,
@@ -699,8 +712,8 @@ async def emit_tool_execution_event(
         "gen_ai.tool.duration_ms": duration_ms,
         "session.id": session_id,
         "gen_ai.conversation.id": session_id,
-        "user.id": persona_id,
-        "enduser.id": persona_id,
+        "user.id": tool_user_email or persona_id,
+        "enduser.id": tool_user_email or persona_id,
         "ai_o11y.specialist": parent_specialist,
         "ai_o11y.usecase": usecase,
         "ai_o11y.persona_id": persona_id,
@@ -779,6 +792,8 @@ def build_event(
     persona_id = (req.ai_o11y.get("persona_id") or "").strip()
     session_id = _derive_session_id(req)
     agent_name = (req.specialist or "").strip() or _AGENT_NAME_FALLBACK
+    from .persona_email import persona_to_email
+    user_email = persona_to_email(persona_id, agent_name)
     event: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "trace_id": trace_id,
@@ -801,8 +816,8 @@ def build_event(
         "gen_ai.response.finish_reasons": [resp.finish_reason] if resp.finish_reason else [],
         "session.id": session_id,
         "gen_ai.conversation.id": session_id,
-        "user.id": persona_id,
-        "enduser.id": persona_id,
+        "user.id": user_email or persona_id,
+        "enduser.id": user_email or persona_id,
         "ai_o11y.usecase": req.ai_o11y.get("usecase"),
         "ai_o11y.persona_id": persona_id,
         "ai_o11y.specialist": agent_name,

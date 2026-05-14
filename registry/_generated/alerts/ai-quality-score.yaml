@@ -1,0 +1,19 @@
+groups:
+- name: ai-quality-score
+  rules:
+  - alert: ai-quality-score.user_low_score
+    expr: "( sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"\
+      }[1h]))\n  /\n  sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"\
+      quality.business_value_score\"}[1h]))\n) < 30\n"
+    for: 30m
+    labels:
+      severity: medium
+      use_case: ai-quality-score
+      app: both
+      route: ai-ops@acme.local
+    annotations:
+      summary: "AI quality score \u2014 per-prompt business-value rating (0\u2013\
+        100): ai-quality-score.user_low_score firing"
+      description: Companion to high-waste. Where waste_detector.low_value_prompt
+        is a
+      runbook: registry/use_cases/ai-quality-score.yaml

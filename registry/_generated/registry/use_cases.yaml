@@ -12,6 +12,18 @@ use_cases:
   alert_count: 1
   has_slo: true
   source: registry/use_cases/mice-rca.yaml
+- name: ai-quality-score
+  title: "AI quality score \u2014 per-prompt business-value rating (0\u2013100)"
+  app: both
+  phase: 2
+  centerpiece: false
+  archetype: per-user-pattern
+  description: Companion to high-waste. Where waste_detector.low_value_prompt is a
+  scenario_count: 1
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: true
+  source: registry/use_cases/ai-quality-score.yaml
 - name: bad-question-askers
   title: "Bad Question Askers \u2014 refusal + escalation leaderboard"
   app: supportbot

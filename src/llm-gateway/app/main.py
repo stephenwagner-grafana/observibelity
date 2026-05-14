@@ -432,8 +432,11 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         span.set_attribute("session.id", _session_id)
         span.set_attribute("gen_ai.conversation.id", _session_id)
         if persona := req.ai_o11y.get("persona_id"):
-            span.set_attribute("user.id", str(persona))
-            span.set_attribute("enduser.id", str(persona))
+            from .persona_email import persona_to_email  # local import: avoid cycle
+            _persona_email = persona_to_email(str(persona), req.specialist or "")
+            span.set_attribute("user.id", _persona_email)
+            span.set_attribute("enduser.id", _persona_email)
+            span.set_attribute("ai_o11y.persona_email", _persona_email)
         span.set_attribute("ai_o11y.specialist", req.specialist)
         span.set_attribute("ai_o11y.usecase", req.ai_o11y.get("usecase", ""))
         span.set_attribute("ai_o11y.persona_id", req.ai_o11y.get("persona_id", ""))
@@ -508,6 +511,7 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         # GenAI keys (gen_ai.*, service.namespace) come first; ai_o11y.*
         # mirrors stay so the existing custom dashboards keep working.
         from .sigil import _derive_session_id  # local import: avoid cycle
+        from .persona_email import persona_to_email  # email-stamp user.id
 
         # Default agent.name to "llm-gateway" when the caller didn't pass a
         # specialist (direct curl, eval-judge replay, etc.) so the OTel meter
@@ -528,7 +532,9 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 "DEPLOYMENT_ENVIRONMENT", "demo"
             ),
             "session.id": _derive_session_id(req),
-            "user.id": req.ai_o11y.get("persona_id", "") or "",
+            "user.id": persona_to_email(
+                req.ai_o11y.get("persona_id", "") or "", agent_name
+            ),
             "ai_o11y.usecase": req.ai_o11y.get("usecase", "") or "",
             "ai_o11y.specialist": agent_name,
             "ai_o11y.persona_id": req.ai_o11y.get("persona_id", "") or "",

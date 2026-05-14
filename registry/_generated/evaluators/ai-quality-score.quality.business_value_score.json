@@ -1,0 +1,18 @@
+{
+  "_source": "registry/use_cases/ai-quality-score.yaml",
+  "name": "quality.business_value_score",
+  "kind": "llm-judge",
+  "severity": "medium",
+  "expression": "You are reviewing whether a corporate AI is being used productively.\nScore the user's prompt 0-100 for business value to the host\napplication (Acme support bot OR NeonCart e-commerce assistant).\n\nAnchors:\n  0   = trivial calculator/encyclopedia (\"what's 1+2\", \"capital of X\")\n  15  = jokes, haikus, idle chit-chat\n  25  = personal life planning (parties, vacations, recipes)\n  40  = off-topic learning (\"explain quantum physics\")\n  50  = ambiguous / borderline\n  65  = routine internal Q&A (vacation policy, expense form)\n  80  = real shopping or support ticket\n  100 = clearly productive deep work (root-causing, drafting,\n        synthesizing customer data, complex troubleshooting)\n\nPrompt: {{latest_user_message}}\n\nReturn JSON: {\"score\": <0-100 integer>, \"reason\": \"<one sentence>\"}\n",
+  "tags": [
+    "use_case:ai-quality-score",
+    "app:both",
+    "archetype:per-user-pattern",
+    "phase:2"
+  ],
+  "params": {
+    "model": "claude-haiku-4-5",
+    "judge_specialist": "ai-quality-scorer",
+    "sampling_rate": 0.25
+  }
+}

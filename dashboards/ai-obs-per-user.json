@@ -113,7 +113,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\"}[24h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h])))",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "range": false,
@@ -188,7 +188,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id!=\"\"}[24h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[24h])))",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "range": false,
@@ -276,7 +276,7 @@
             "uid": "${datasource_loki}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (count_over_time({namespace=\"observibelity\", container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_usecase=\"high-waste\" [24h])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_usecase=\"high-waste\" [24h])))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -688,7 +688,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\"}[24h]))",
+          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h]))",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -702,7 +702,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id!=\"\"}[24h]))",
+          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[24h]))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -717,7 +717,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h])) > 0 or on() vector(0)",
+          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h])) > 0 or on() vector(0)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -732,7 +732,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "( sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\"}[24h])))) * 100 ) + ( sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h]))) or vector(1)) * 100 )",
+          "expr": "( sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\"}[24h])))) * 100 ) + ( sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_usecase=\"high-waste\"}[24h]))) or vector(1)) * 100 )",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -788,6 +788,176 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 100,
+      "panels": [],
+      "title": "AI quality score (0-100, scored LLM judge)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Fleet-wide average AI quality score (0-100). LLM-judge `quality.business_value_score` scores every sampled prompt 0=trivial, 50=ambiguous, 100=clearly productive work. Sigil emits sigil_eval_scores_total (running sum) and sigil_eval_executions_total (count); avg = sum / count.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 46
+      },
+      "id": 101,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "( sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h])) ) or vector(0)",
+          "instant": true,
+          "legendFormat": "Fleet avg",
+          "refId": "A"
+        }
+      ],
+      "title": "Fleet AI quality score (1h avg)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Per-user average AI quality score (0-100), sorted ascending \u2014 lowest scorers (worst offenders) on top. A user persistently below 30 is using the AI for trivia / personal / off-topic content. Empty if sampling hasn't kicked in yet OR if the Sigil evaluator isn't wired up (Sigil v0.17 needs UI creation).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 16,
+        "x": 8,
+        "y": 46
+      },
+      "id": 102,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id!=\"\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id!=\"\"}[1h])))",
+          "instant": true,
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Worst quality scores (bottom 10 users, 1h avg)",
+      "type": "bargauge"
     }
   ],
   "refresh": "30s",
@@ -845,7 +1015,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}, user_id)",
+        "definition": "label_values(gen_ai_client_cost_USD_total, user_id)",
         "hide": 0,
         "includeAll": true,
         "label": "User",
@@ -853,7 +1023,7 @@
         "name": "user_id",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}, user_id)",
+          "query": "label_values(gen_ai_client_cost_USD_total, user_id)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

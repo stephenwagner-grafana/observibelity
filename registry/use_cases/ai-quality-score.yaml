@@ -1,0 +1,82 @@
+name: ai-quality-score
+title: "AI quality score — per-prompt business-value rating (0–100)"
+app: both
+phase: 2
+centerpiece: false
+archetype: per-user-pattern
+description: |
+  Companion to high-waste. Where waste_detector.low_value_prompt is a
+  cheap boolean ("is this prompt legitimate?"), this evaluator scores
+  every interaction 0–100 for actual business value to a corporate
+  assistant. Continuous score lets us rank users by how productively
+  they're using AI: 0 = trivial ("what's 1+2"), 25 = personal-life,
+  50 = ambiguous, 75 = routine work, 100 = clearly productive.
+  Sigil emits `sigil_eval_scores_total` so per-user averages roll up
+  into a single headline "Quality use of AI score" panel.
+
+scenarios:
+  - name: ai-quality-score-baseline
+    k6_template: sticky-persona
+    persona: u-emp-norm-1
+    weight: 1
+    rate: "1/m"
+    params:
+      description: "Baseline scenario so the scenario list isn't empty — actual coverage comes from the existing baseline.js mix."
+      capability: governance
+      fixture: BASELINE_FIXTURES
+
+evaluators:
+  - name: quality.business_value_score
+    kind: llm-judge
+    severity: medium
+    spec: |
+      You are reviewing whether a corporate AI is being used productively.
+      Score the user's prompt 0-100 for business value to the host
+      application (Acme support bot OR NeonCart e-commerce assistant).
+
+      Anchors:
+        0   = trivial calculator/encyclopedia ("what's 1+2", "capital of X")
+        15  = jokes, haikus, idle chit-chat
+        25  = personal life planning (parties, vacations, recipes)
+        40  = off-topic learning ("explain quantum physics")
+        50  = ambiguous / borderline
+        65  = routine internal Q&A (vacation policy, expense form)
+        80  = real shopping or support ticket
+        100 = clearly productive deep work (root-causing, drafting,
+              synthesizing customer data, complex troubleshooting)
+
+      Prompt: {{latest_user_message}}
+
+      Return JSON: {"score": <0-100 integer>, "reason": "<one sentence>"}
+    params:
+      model: claude-haiku-4-5
+      judge_specialist: ai-quality-scorer
+      sampling_rate: 0.25
+
+dashboard:
+  uid: ai-obs-per-user
+  title: "Per-User Insights — quality score"
+  panels_from_template: per-user-pattern
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: ai-quality-score.user_low_score
+    condition: |
+      ( sum by (user_id) (rate(sigil_eval_scores_total{evaluator="quality.business_value_score"}[1h]))
+        /
+        sum by (user_id) (rate(sigil_eval_executions_total{evaluator="quality.business_value_score"}[1h]))
+      ) < 30
+    severity: medium
+    route: ai-ops@acme.local
+    duration: 30m
+
+slo:
+  objective: "average per-user quality score >= 60 for >= 90% of users over 7d"
+  error_budget: 0.10
+  window: 7d
+
+demo:
+  do: "Wait for ~25% of generations to be sampled by the quality LLM judge. The waster personas (u-waster-1..5) bottom out around score 10-20; normal employees average 55-70; centerpiece-personas like Priya (research synthesis) score 75+."
+  signal: "sigil_eval_scores_total{evaluator=\"quality.business_value_score\"} firing; avg-per-user score visible on ai-obs-per-user; waster personas bottom of leaderboard."
+  sell: "AI ROI: a single 0-100 score per user that captures how much of their corporate-AI spend is actually productive work."
