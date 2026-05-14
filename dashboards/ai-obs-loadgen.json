@@ -5,7 +5,8 @@
     "ai-observability",
     "loadgen",
     "k6",
-    "operations"
+    "operations",
+    "observibelity"
   ],
   "timezone": "",
   "schemaVersion": 39,

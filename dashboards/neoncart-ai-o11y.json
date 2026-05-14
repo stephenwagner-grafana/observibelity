@@ -775,7 +775,8 @@
     "neoncart",
     "ai-observability",
     "rca",
-    "demo"
+    "demo",
+    "observibelity"
   ],
   "templating": {
     "list": [

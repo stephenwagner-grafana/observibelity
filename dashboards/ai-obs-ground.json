@@ -44,8 +44,7 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "ai-observability",
-        "phase-2"
+        "observibelity"
       ],
       "title": "AI Observability dashboards",
       "type": "dashboards"
@@ -688,7 +687,8 @@
     "ai-observability",
     "phase-2",
     "groundedness",
-    "hallucination"
+    "hallucination",
+    "observibelity"
   ],
   "templating": {
     "list": [

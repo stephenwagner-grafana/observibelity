@@ -13,7 +13,7 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": false,
-      "title": "← Master playbook",
+      "title": "\u2190 Master playbook",
       "type": "link",
       "url": "/d/ai-obs-demo-playbook"
     },
@@ -50,10 +50,10 @@
       },
       "id": 1,
       "options": {
-        "content": "**Retail e-commerce.** 25 specialists · live = Claude Sonnet 4.6 · loadgen = `neoncart-ollama-pool` (8 models, dwell 30m, independent rotation) · storefront [https://claude.wombatwags.com/](https://claude.wombatwags.com/)\n\n[← Master playbook](/d/ai-obs-demo-playbook) · [App health](/d/ai-obs-app-neoncart) · [Source](https://github.com/stephenwagner-grafana/ai-o11y-demo-pack/tree/main/src/neoncart)",
+        "content": "**Retail e-commerce.** 25 specialists \u00b7 live = Claude Sonnet 4.6 \u00b7 loadgen = `neoncart-ollama-pool` (8 models, dwell 30m, independent rotation) \u00b7 storefront [https://claude.wombatwags.com/](https://claude.wombatwags.com/)\n\n[\u2190 Master playbook](/d/ai-obs-demo-playbook) \u00b7 [App health](/d/ai-obs-app-neoncart) \u00b7 [Source](https://github.com/stephenwagner-grafana/ai-o11y-demo-pack/tree/main/src/neoncart)",
         "mode": "markdown"
       },
-      "title": "NeonCart — Use Cases Playbook",
+      "title": "NeonCart \u2014 Use Cases Playbook",
       "type": "text"
     },
     {
@@ -65,10 +65,10 @@
       },
       "id": 2,
       "options": {
-        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 1 | **mice RCA** | Type `show me mice` in NeonCart chat | Postgres `ERROR: column ... does not exist` (sqlstate `42703`) in Loki; `db.postgres.query` span red end-to-end | [`/d/ai-obs-app-neoncart`](/d/ai-obs-app-neoncart) · [`/d/ai-obs-traces`](/d/ai-obs-traces) | _\"one trace ID, one fix\"_ |\n| 2 | **Model Winner** | Type `I'm shopping for my 10-year-old nephew, budget $50` → click ATC on a recommendation | `atc_event source=live product=... model=...` line in [Live ATC feed](/d/ai-obs-best-models?viewPanel=10) within ~5s; bargauges populate | [`/d/ai-obs-best-models`](/d/ai-obs-best-models) | _\"rank by ATC + purchase, not eval scores\"_ |\n| 3 | **Quality Trend** | Wait ≥5m for loadgen | `specialist_eval_result_total{specialist=\"gift-finder\",reason=~\"missing_*\\|relevant_products\\|no_products\"}` increments → trend lines move | [`/d/ai-obs-app-neoncart`](/d/ai-obs-app-neoncart) | _\"API green, trend tells truth\"_ |",
+        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 1 | **mice RCA** | Type `show me mice` in NeonCart chat | Postgres `ERROR: column ... does not exist` (sqlstate `42703`) in Loki; `db.postgres.query` span red end-to-end | [`/d/ai-obs-app-neoncart`](/d/ai-obs-app-neoncart) \u00b7 [`/d/ai-obs-traces`](/d/ai-obs-traces) | _\"one trace ID, one fix\"_ |\n| 2 | **Model Winner** | Type `I'm shopping for my 10-year-old nephew, budget $50` \u2192 click ATC on a recommendation | `atc_event source=live product=... model=...` line in [Live ATC feed](/d/ai-obs-best-models?viewPanel=10) within ~5s; bargauges populate | [`/d/ai-obs-best-models`](/d/ai-obs-best-models) | _\"rank by ATC + purchase, not eval scores\"_ |\n| 3 | **Quality Trend** | Wait \u22655m for loadgen | `specialist_eval_result_total{specialist=\"gift-finder\",reason=~\"missing_*\\|relevant_products\\|no_products\"}` increments \u2192 trend lines move | [`/d/ai-obs-app-neoncart`](/d/ai-obs-app-neoncart) | _\"API green, trend tells truth\"_ |",
         "mode": "markdown"
       },
-      "title": "Live · do this → get this signal",
+      "title": "Live \u00b7 do this \u2192 get this signal",
       "type": "text"
     },
     {
@@ -80,10 +80,10 @@
       },
       "id": 3,
       "options": {
-        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 4 | `hallucination_product_price` | Loadgen plants 4/h fake-SKU + unlisted-discount prompts | `evaluator fail hallucination: product` + `: price` events; rate-regression alert at >2× of 4h baseline | [`/d/ai-obs-ground`](/d/ai-obs-ground) | _\"regression by category\"_ |\n| 5 | `refund_policy_compliance` | Loadgen plants 4/h \"refund 90-day item\" prompts | `evaluator fail refund_policy_compliance: window_violation` events; alert at >2% of refund convs | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"every refund audited against policy\"_ |\n| 6 | `customer_frustration` | Loadgen plants 5/h caps-rage scenarios | `evaluator fail customer_frustration: unaddressed_frustration` events; alert at >10% of frustration convs | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"detect-and-route signal\"_ |\n| 7 | `brand_voice_drift` | Loadgen plants 4/h dry-tone-prone prompts | Rolling tone-deviation >2σ from 6h baseline → `ai-o11y-brand-drift` FIRES | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"brand voice as SLO\"_ |",
+        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 4 | `hallucination_product_price` | Loadgen plants 4/h fake-SKU + unlisted-discount prompts | `evaluator fail hallucination: product` + `: price` events; rate-regression alert at >2\u00d7 of 4h baseline | [`/d/ai-obs-ground`](/d/ai-obs-ground) | _\"regression by category\"_ |\n| 5 | `refund_policy_compliance` | Loadgen plants 4/h \"refund 90-day item\" prompts | `evaluator fail refund_policy_compliance: window_violation` events; alert at >2% of refund convs | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"every refund audited against policy\"_ |\n| 6 | `customer_frustration` | Loadgen plants 5/h caps-rage scenarios | `evaluator fail customer_frustration: unaddressed_frustration` events; alert at >10% of frustration convs | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"detect-and-route signal\"_ |\n| 7 | `brand_voice_drift` | Loadgen plants 4/h dry-tone-prone prompts | Rolling tone-deviation >2\u03c3 from 6h baseline \u2192 `ai-o11y-brand-drift` FIRES | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"brand voice as SLO\"_ |",
         "mode": "markdown"
       },
-      "title": "Eval-driven · NeonCart-specific (data flows after deploy)",
+      "title": "Eval-driven \u00b7 NeonCart-specific (data flows after deploy)",
       "type": "text"
     },
     {
@@ -95,7 +95,7 @@
       },
       "id": 4,
       "options": {
-        "content": "| Use Case | Status | Where it surfaces in NC | How it sells |\n|----------|--------|-------------------------|--------------|\n| `toxicity` | 🟢 awaiting deploy | [`/d/ai-obs-evals`](/d/ai-obs-evals) | _\"before it becomes a screenshot\"_ |\n| `pii_echo` | 🟢 awaiting deploy | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"P0 — single event triggers\"_ |\n| `prompt_injection` | ✅ live (~138/h baseline) | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"OWASP LLM01 attributed per user\"_ |\n| `tool_call_runaway` | 🟢 awaiting deploy | [`/d/ai-obs-tools`](/d/ai-obs-tools) | _\"per-session, not average\"_ |\n| `cost_anomaly_per_user` | 🟢 awaiting deploy | [`/d/ai-obs-cost`](/d/ai-obs-cost) | _\"anomaly attribution\"_ |\n\n**Sample panels SEs land on for NC**: 🏆 [ATC rate by model](/d/ai-obs-best-models?viewPanel=8) · 💰 [Purchase rate by model](/d/ai-obs-best-models?viewPanel=9) · 📊 [Live ATC feed](/d/ai-obs-best-models?viewPanel=10) · [Model leaderboard](/d/ai-obs-best-models?viewPanel=13)",
+        "content": "| Use Case | Status | Where it surfaces in NC | How it sells |\n|----------|--------|-------------------------|--------------|\n| `toxicity` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-evals`](/d/ai-obs-evals) | _\"before it becomes a screenshot\"_ |\n| `pii_echo` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"P0 \u2014 single event triggers\"_ |\n| `prompt_injection` | \u2705 live (~138/h baseline) | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"OWASP LLM01 attributed per user\"_ |\n| `tool_call_runaway` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-tools`](/d/ai-obs-tools) | _\"per-session, not average\"_ |\n| `cost_anomaly_per_user` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-cost`](/d/ai-obs-cost) | _\"anomaly attribution\"_ |\n\n**Sample panels SEs land on for NC**: \ud83c\udfc6 [ATC rate by model](/d/ai-obs-best-models?viewPanel=8) \u00b7 \ud83d\udcb0 [Purchase rate by model](/d/ai-obs-best-models?viewPanel=9) \u00b7 \ud83d\udcca [Live ATC feed](/d/ai-obs-best-models?viewPanel=10) \u00b7 [Model leaderboard](/d/ai-obs-best-models?viewPanel=13)",
         "mode": "markdown"
       },
       "title": "Cross-cutting evals (apply to NeonCart too)",
@@ -110,7 +110,7 @@
       },
       "id": 5,
       "options": {
-        "content": "1. **Storefront tour** — 1m — [storefront](https://claude.wombatwags.com/), point at chat\n2. **mice RCA** ⭐ — 3m — chat → Conversations → Tempo → Loki Postgres-style trio → AI explain\n3. **Gift Finder behavioral** — 1m — [model winner bargauges](/d/ai-obs-best-models?viewPanel=8) + [quality trend](/d/ai-obs-app-neoncart)\n\nFor a fuller arc, swap step 2 with a Group B eval (`refund_policy_compliance` is the most landable customer story — \"every refund the bot promises, audited\").",
+        "content": "1. **Storefront tour** \u2014 1m \u2014 [storefront](https://claude.wombatwags.com/), point at chat\n2. **mice RCA** \u2b50 \u2014 3m \u2014 chat \u2192 Conversations \u2192 Tempo \u2192 Loki Postgres-style trio \u2192 AI explain\n3. **Gift Finder behavioral** \u2014 1m \u2014 [model winner bargauges](/d/ai-obs-best-models?viewPanel=8) + [quality trend](/d/ai-obs-app-neoncart)\n\nFor a fuller arc, swap step 2 with a Group B eval (`refund_policy_compliance` is the most landable customer story \u2014 \"every refund the bot promises, audited\").",
         "mode": "markdown"
       },
       "title": "Recommended NeonCart demo flow (~5 min)",
@@ -125,7 +125,7 @@
       },
       "id": 6,
       "options": {
-        "content": "| Symptom | Fix |\n|---------|-----|\n| `show me mice` → no trace | `kubectl -n neoncart rollout restart deploy/search-service` |\n| Best Models bargauges empty | `kubectl -n neoncart logs deploy/ai-loadgen \\| grep atc-sim` |\n| Quality trend flat | `kubectl -n neoncart rollout restart deploy/ai-loadgen` then wait 5m |\n| Group B (eval) panels empty | rebuild + push images, `kubectl apply -f manifests/neoncart`, restart loadgen |\n\n**Adding a new NeonCart use case**: invoke `/add-use-case` with `app_id: neoncart`. The skill auto-fills the model pool, namespace, primary dashboard from `registry/apps.yaml`.",
+        "content": "| Symptom | Fix |\n|---------|-----|\n| `show me mice` \u2192 no trace | `kubectl -n neoncart rollout restart deploy/search-service` |\n| Best Models bargauges empty | `kubectl -n neoncart logs deploy/ai-loadgen \\| grep atc-sim` |\n| Quality trend flat | `kubectl -n neoncart rollout restart deploy/ai-loadgen` then wait 5m |\n| Group B (eval) panels empty | rebuild + push images, `kubectl apply -f manifests/neoncart`, restart loadgen |\n\n**Adding a new NeonCart use case**: invoke `/add-use-case` with `app_id: neoncart`. The skill auto-fills the model pool, namespace, primary dashboard from `registry/apps.yaml`.",
         "mode": "markdown"
       },
       "title": "NeonCart failure recovery",
@@ -139,7 +139,8 @@
     "playbook",
     "demo",
     "neoncart",
-    "app"
+    "app",
+    "observibelity"
   ],
   "templating": {
     "list": []
@@ -149,6 +150,6 @@
     "to": "now"
   },
   "timepicker": {},
-  "title": "AI Observability — NeonCart Playbook",
+  "title": "AI Observability \u2014 NeonCart Playbook",
   "uid": "ai-obs-playbook-neoncart"
 }

@@ -303,7 +303,8 @@
     "ai-observability",
     "apps",
     "neoncart",
-    "supportbot"
+    "supportbot",
+    "observibelity"
   ],
   "templating": {
     "list": []

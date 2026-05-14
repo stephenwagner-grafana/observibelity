@@ -44,8 +44,7 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "ai-observability",
-        "phase-2"
+        "observibelity"
       ],
       "title": "AI Observability dashboards",
       "type": "dashboards"
@@ -1044,7 +1043,8 @@
     "ai-observability",
     "phase-2",
     "cost",
-    "finops"
+    "finops",
+    "observibelity"
   ],
   "templating": {
     "list": [

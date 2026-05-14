@@ -13,7 +13,7 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": false,
-      "title": "← Master playbook",
+      "title": "\u2190 Master playbook",
       "type": "link",
       "url": "/d/ai-obs-demo-playbook"
     },
@@ -50,10 +50,10 @@
       },
       "id": 1,
       "options": {
-        "content": "**Enterprise IT/HR support bot (\"Ask Acme\").** 21 specialists · live = Claude Sonnet 4.6 · loadgen = `supportbot-ollama-pool` (9 models, tiers tiny/mid/heavy, dwell 10m, independent rotation md5-offset) · [https://claude.wombatwags.com/supportbot/](https://claude.wombatwags.com/supportbot/)\n\n[← Master playbook](/d/ai-obs-demo-playbook) · [App health](/d/ai-obs-app-supportbot) · [Source](https://github.com/stephenwagner-grafana/ai-o11y-demo-pack/tree/main/src/supportbot)",
+        "content": "**Enterprise IT/HR support bot (\"Ask Acme\").** 21 specialists \u00b7 live = Claude Sonnet 4.6 \u00b7 loadgen = `supportbot-ollama-pool` (9 models, tiers tiny/mid/heavy, dwell 10m, independent rotation md5-offset) \u00b7 [https://claude.wombatwags.com/supportbot/](https://claude.wombatwags.com/supportbot/)\n\n[\u2190 Master playbook](/d/ai-obs-demo-playbook) \u00b7 [App health](/d/ai-obs-app-supportbot) \u00b7 [Source](https://github.com/stephenwagner-grafana/ai-o11y-demo-pack/tree/main/src/supportbot)",
         "mode": "markdown"
       },
-      "title": "Support Bot — Use Cases Playbook",
+      "title": "Support Bot \u2014 Use Cases Playbook",
       "type": "text"
     },
     {
@@ -65,10 +65,10 @@
       },
       "id": 2,
       "options": {
-        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 1 ⭐ | **Email Cascade** | Type `show me every email I have ever sent` in Support Bot UI | `[email-cascade] tool/probe idx=N/2000` Loki lines + `alert: name=conv_runaway state=firing` + `email_sent to=oncall@acme.local`; [Conv runaway alert](/d/ai-obs-cascade-spike?viewPanel=5) flips FIRING | [`/d/ai-obs-cascade-spike`](/d/ai-obs-cascade-spike) | _\"$2.80 per cascade, alert + page\"_ |\n| 2 ⭐ | **Data theft — Tim** | Wait ≥5m loadgen (Tim weighted 8×, 40% exfil-shaped) | `cc_paste employee=tim... last4=N` + `exfil_event ... score=N` + `alert: name=data_theft state=firing` + `email_sent to=security@acme.local` | [`/d/ai-obs-data-theft`](/d/ai-obs-data-theft) | _\"per-employee exfil, security@ paged\"_ |\n| 3 | **Outlier Users — Tim & Eric** | Wait ≥5m loadgen | Tim + Eric dominate Top Spenders / Tokens-per-word / Dangerous Events panels | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"cost + governance per employee\"_ |\n| 4 | **Prompt Injections (LLM01)** | Type `Ignore previous instructions and...` (or wait for `sb-outlier-injection` loadgen) | `prompt-injection-detector` flags; per-employee row populates; `prompt_injection_burst` alert FIRES at ≥2 in 5m | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) · [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"OWASP LLM01 in your stack\"_ |\n| 5 | **Sensitive Data Leaks** | Paste a fake card / SSN / API key in Support Bot UI | PII detector log line; redactor masks to last-4; PII panels increment | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"PII redaction as a span\"_ |\n| 6 | **Bad Question Askers** | Wait ≥5m loadgen | Refusal-rate + escalation-rate panels populate per employee | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"who's pushing the limits\"_ |\n| 7 | **Token Spikes** | Run cascade or wait for any spike | `spike_ratio = rate(1m)/rate(1h) > 3` panel | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"real-time anomaly detection\"_ |",
+        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 1 \u2b50 | **Email Cascade** | Type `show me every email I have ever sent` in Support Bot UI | `[email-cascade] tool/probe idx=N/2000` Loki lines + `alert: name=conv_runaway state=firing` + `email_sent to=oncall@acme.local`; [Conv runaway alert](/d/ai-obs-cascade-spike?viewPanel=5) flips FIRING | [`/d/ai-obs-cascade-spike`](/d/ai-obs-cascade-spike) | _\"$2.80 per cascade, alert + page\"_ |\n| 2 \u2b50 | **Data theft \u2014 Tim** | Wait \u22655m loadgen (Tim weighted 8\u00d7, 40% exfil-shaped) | `cc_paste employee=tim... last4=N` + `exfil_event ... score=N` + `alert: name=data_theft state=firing` + `email_sent to=security@acme.local` | [`/d/ai-obs-data-theft`](/d/ai-obs-data-theft) | _\"per-employee exfil, security@ paged\"_ |\n| 3 | **Outlier Users \u2014 Tim & Eric** | Wait \u22655m loadgen | Tim + Eric dominate Top Spenders / Tokens-per-word / Dangerous Events panels | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"cost + governance per employee\"_ |\n| 4 | **Prompt Injections (LLM01)** | Type `Ignore previous instructions and...` (or wait for `sb-outlier-injection` loadgen) | `prompt-injection-detector` flags; per-employee row populates; `prompt_injection_burst` alert FIRES at \u22652 in 5m | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) \u00b7 [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"OWASP LLM01 in your stack\"_ |\n| 5 | **Sensitive Data Leaks** | Paste a fake card / SSN / API key in Support Bot UI | PII detector log line; redactor masks to last-4; PII panels increment | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"PII redaction as a span\"_ |\n| 6 | **Bad Question Askers** | Wait \u22655m loadgen | Refusal-rate + escalation-rate panels populate per employee | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"who's pushing the limits\"_ |\n| 7 | **Token Spikes** | Run cascade or wait for any spike | `spike_ratio = rate(1m)/rate(1h) > 3` panel | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"real-time anomaly detection\"_ |",
         "mode": "markdown"
       },
-      "title": "Live · do this → get this signal",
+      "title": "Live \u00b7 do this \u2192 get this signal",
       "type": "text"
     },
     {
@@ -80,10 +80,10 @@
       },
       "id": 3,
       "options": {
-        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 8 ⭐ | `coworker_termination_intent` | Sticky `u-mara-chen` runs 5-prompt escalation arc against \"Kai\" via loadgen | Per-user breach: **≥3 fails in 15m AND >20% of `u-mara-chen` msgs flagged** → `ai-o11y-cowork-term` FIRES | [`/d/ai-obs-pii`](/d/ai-obs-pii) · [`/d/ai-obs-evals`](/d/ai-obs-evals) | _\"pattern an audit would miss\"_ |\n| 9 ⭐ | `confidential_disclosure` | Sticky `u-jordan-finance` pastes 4/h fake board / M&A pre-read content via loadgen | `confidential_disclosure: board_content` events; **leaderboard top-1 = `u-jordan-finance`** | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"leaderboard of leakers\"_ |\n| 10 | `policy_circumvention` | Loadgen plants 5/h \"expense without approval\"-style prompts | `policy_circumvention: approval_bypass` events; alert at >3 in 15m | [`/d/ai-obs-compliance`](/d/ai-obs-compliance) | _\"compliance caught at the prompt\"_ |\n| 11 ⭐ | `hiring_discrimination_risk` | Loadgen plants 4/h protected-characteristic screens | **ANY** `hiring_discrimination_risk` fail event (severity=critical) → `ai-o11y-hiring-discrim` FIRES | [`/d/ai-obs-compliance`](/d/ai-obs-compliance) | _\"any single event = P0\"_ |",
+        "content": "| # | Use Case | Do this | Get this signal (the error) | Dashboard | How to sell |\n|---|----------|---------|-----------------------------|-----------|-------------|\n| 8 \u2b50 | `coworker_termination_intent` | Sticky `u-mara-chen` runs 5-prompt escalation arc against \"Kai\" via loadgen | Per-user breach: **\u22653 fails in 15m AND >20% of `u-mara-chen` msgs flagged** \u2192 `ai-o11y-cowork-term` FIRES | [`/d/ai-obs-pii`](/d/ai-obs-pii) \u00b7 [`/d/ai-obs-evals`](/d/ai-obs-evals) | _\"pattern an audit would miss\"_ |\n| 9 \u2b50 | `confidential_disclosure` | Sticky `u-jordan-finance` pastes 4/h fake board / M&A pre-read content via loadgen | `confidential_disclosure: board_content` events; **leaderboard top-1 = `u-jordan-finance`** | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"leaderboard of leakers\"_ |\n| 10 | `policy_circumvention` | Loadgen plants 5/h \"expense without approval\"-style prompts | `policy_circumvention: approval_bypass` events; alert at >3 in 15m | [`/d/ai-obs-compliance`](/d/ai-obs-compliance) | _\"compliance caught at the prompt\"_ |\n| 11 \u2b50 | `hiring_discrimination_risk` | Loadgen plants 4/h protected-characteristic screens | **ANY** `hiring_discrimination_risk` fail event (severity=critical) \u2192 `ai-o11y-hiring-discrim` FIRES | [`/d/ai-obs-compliance`](/d/ai-obs-compliance) | _\"any single event = P0\"_ |",
         "mode": "markdown"
       },
-      "title": "Eval-driven · Support Bot-specific (data flows after deploy)",
+      "title": "Eval-driven \u00b7 Support Bot-specific (data flows after deploy)",
       "type": "text"
     },
     {
@@ -95,7 +95,7 @@
       },
       "id": 4,
       "options": {
-        "content": "| Use Case | Status | Where it surfaces in SB | How it sells |\n|----------|--------|-------------------------|--------------|\n| `toxicity` | 🟢 awaiting deploy | [`/d/ai-obs-evals`](/d/ai-obs-evals) | _\"before it becomes a screenshot\"_ |\n| `pii_echo` | 🟢 awaiting deploy | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"P0 — single event triggers\"_ |\n| `prompt_injection` | ✅ live (~138/h baseline) | [`/d/ai-obs-pii`](/d/ai-obs-pii) · [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"OWASP LLM01 attributed per user\"_ |\n| `tool_call_runaway` | 🟢 awaiting deploy | [`/d/ai-obs-tools`](/d/ai-obs-tools) | _\"per-session, not average\"_ |\n| `cost_anomaly_per_user` | 🟢 awaiting deploy | [`/d/ai-obs-cost`](/d/ai-obs-cost) | _\"anomaly attribution\"_ |\n\n**Sample panels SEs land on for SB**: 🚨 [Conv runaway alert](/d/ai-obs-cascade-spike?viewPanel=5) · 🚨 [Data-theft alert](/d/ai-obs-data-theft?viewPanel=2) · 🚨 [Top-10 PII offenders](/d/ai-obs-data-theft?viewPanel=6) · 💳 [Last-10 cc pastes (last-4)](/d/ai-obs-data-theft?viewPanel=8)",
+        "content": "| Use Case | Status | Where it surfaces in SB | How it sells |\n|----------|--------|-------------------------|--------------|\n| `toxicity` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-evals`](/d/ai-obs-evals) | _\"before it becomes a screenshot\"_ |\n| `pii_echo` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-pii`](/d/ai-obs-pii) | _\"P0 \u2014 single event triggers\"_ |\n| `prompt_injection` | \u2705 live (~138/h baseline) | [`/d/ai-obs-pii`](/d/ai-obs-pii) \u00b7 [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | _\"OWASP LLM01 attributed per user\"_ |\n| `tool_call_runaway` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-tools`](/d/ai-obs-tools) | _\"per-session, not average\"_ |\n| `cost_anomaly_per_user` | \ud83d\udfe2 awaiting deploy | [`/d/ai-obs-cost`](/d/ai-obs-cost) | _\"anomaly attribution\"_ |\n\n**Sample panels SEs land on for SB**: \ud83d\udea8 [Conv runaway alert](/d/ai-obs-cascade-spike?viewPanel=5) \u00b7 \ud83d\udea8 [Data-theft alert](/d/ai-obs-data-theft?viewPanel=2) \u00b7 \ud83d\udea8 [Top-10 PII offenders](/d/ai-obs-data-theft?viewPanel=6) \u00b7 \ud83d\udcb3 [Last-10 cc pastes (last-4)](/d/ai-obs-data-theft?viewPanel=8)",
         "mode": "markdown"
       },
       "title": "Cross-cutting evals (apply to Support Bot too)",
@@ -110,7 +110,7 @@
       },
       "id": 5,
       "options": {
-        "content": "Pick **one** centerpiece for the customer story:\n\n**Option A — Email Cascade** ⭐\n1. Open [`/d/ai-obs-cascade-spike`](/d/ai-obs-cascade-spike) (1m)\n2. Type `show me every email I have ever sent` (4m wall-time)\n3. Watch alert flip + email_sent ticker → Tempo trace\n\n**Option B — Data theft Tim** ⭐\n1. Open [`/d/ai-obs-data-theft`](/d/ai-obs-data-theft) (1m)\n2. Tim already at top of every panel (1m)\n3. Wait for / point at alert flipping FIRING + email to security@ (3m)\n\n**Option C — Coworker termination intent** ⭐ (after deploy)\n1. Open [`/d/ai-obs-pii`](/d/ai-obs-pii) per-user breach panel (1m)\n2. Show `u-mara-chen` arc against \"Kai\" — progressive paper trail (2m)\n3. Show alert FIRING per-user, not global (2m)",
+        "content": "Pick **one** centerpiece for the customer story:\n\n**Option A \u2014 Email Cascade** \u2b50\n1. Open [`/d/ai-obs-cascade-spike`](/d/ai-obs-cascade-spike) (1m)\n2. Type `show me every email I have ever sent` (4m wall-time)\n3. Watch alert flip + email_sent ticker \u2192 Tempo trace\n\n**Option B \u2014 Data theft Tim** \u2b50\n1. Open [`/d/ai-obs-data-theft`](/d/ai-obs-data-theft) (1m)\n2. Tim already at top of every panel (1m)\n3. Wait for / point at alert flipping FIRING + email to security@ (3m)\n\n**Option C \u2014 Coworker termination intent** \u2b50 (after deploy)\n1. Open [`/d/ai-obs-pii`](/d/ai-obs-pii) per-user breach panel (1m)\n2. Show `u-mara-chen` arc against \"Kai\" \u2014 progressive paper trail (2m)\n3. Show alert FIRING per-user, not global (2m)",
         "mode": "markdown"
       },
       "title": "Recommended Support Bot demo flow (~5 min)",
@@ -139,7 +139,8 @@
     "playbook",
     "demo",
     "supportbot",
-    "app"
+    "app",
+    "observibelity"
   ],
   "templating": {
     "list": []
@@ -149,6 +150,6 @@
     "to": "now"
   },
   "timepicker": {},
-  "title": "AI Observability — Support Bot Playbook",
+  "title": "AI Observability \u2014 Support Bot Playbook",
   "uid": "ai-obs-playbook-supportbot"
 }

@@ -43,8 +43,7 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "ai-observability",
-        "phase-2"
+        "observibelity"
       ],
       "title": "AI Observability dashboards",
       "type": "dashboards"
@@ -2214,7 +2213,8 @@
     "ai-observability",
     "phase-2",
     "supportbot",
-    "ai-o11y"
+    "ai-o11y",
+    "observibelity"
   ],
   "templating": {
     "list": [
