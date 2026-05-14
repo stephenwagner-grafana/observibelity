@@ -74,9 +74,9 @@ Every evaluator emits **one event per invocation**. Dashboards & alerts read tho
 | Phase | Scope | When | Count | Time |
 |---|---|---|---:|---:|
 | **A — P0** | 3 baseline + 6 centerpiece use cases | First sit-down | 15 | ~30 min |
-| **B — high-value** | All other `single-event-severity` + `cascade` evals | Second sit-down | 13 | ~45 min |
-| **C — quality** | All `rubric` + `llm-judge` evals | When you have judge specialists deployed | 7 (already counted in A/B) | ~30 min |
-| **D — long tail** | All remaining `leaderboard` rule/regex | When dashboards must be 100% real | ~13 | ~30 min |
+| **B — high-value** | All other `single-event-severity` + `cascade` evals | Second sit-down | 14 | ~45 min |
+| **C — quality** | All `rubric` + `llm-judge` evals | When you have judge specialists deployed | 6 (already counted in A/B) | ~30 min |
+| **D — long tail** | All remaining `leaderboard` rule/regex | When dashboards must be 100% real | 9 | ~30 min |
 
 Phase counts overlap: an llm-judge evaluator that's in a centerpiece (e.g. `confidential_disclosure.judge_classification`) is created during Phase A. The Phase C reminder is to verify judge specialists exist before saving those.
 
@@ -669,8 +669,8 @@ and event.attributes["employee"] in ["u-tim-l", "u-eric-w"]
 | 44 | `toxicity.regex_slur_screen` | regex | high | toxicity | `ai-obs-evals` | $0 | B |
 
 **Counts:**
-- By kind: **22 rules**, **15 regex**, **1 rubric**, **8 llm-judge** = 46 total. (44 unique names — `base.pii_in_output` semantically overlaps `sensitive_data.*` but is created separately.)
-- By severity: **15 critical**, **18 high**, **9 medium**, **2 low** = 44.
+- By kind: **20 rules**, **15 regex**, **1 rubric**, **8 llm-judge** = 44 total.
+- By severity: **15 critical**, **18 high**, **8 medium**, **3 low** = 44.
 
 ---
 
