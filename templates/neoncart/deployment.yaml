@@ -74,6 +74,8 @@ spec:
                 configMapKeyRef:
                   name: neoncart-branding
                   key: BRANDING_PRIMARY_COLOR
+            - name: GRAFANA_BASE_URL
+              value: {{ .Values.neoncart.grafanaBaseUrl | default "" | quote }}
           readinessProbe:
             httpGet:
               path: /health

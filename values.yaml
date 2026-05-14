@@ -148,6 +148,11 @@ neoncart:
     enabled: false
     host: ""
     className: ""
+  # Public Grafana URL the chat widget uses to deep-link from a turn into the
+  # Sigil Conversations view ("Open conversation in Sigil"). Empty disables
+  # the link — set to e.g. "https://<org>.grafana.net" for cloud, or your
+  # self-hosted host.
+  grafanaBaseUrl: ""
   branding:
     name: "NeonCart"
     tagline: "Glow on. Shop on."

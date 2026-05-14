@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Evaluator overview \u2014 pass/fail rates across all evaluators, with toxicity panels surfaced. Covers the toxicity use case and the all-evaluators status table.",
+  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the \u2139 icon on any panel for what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Toxicity",
+      "title": "🎯 Toxicity — any fail is a P0",
       "type": "row"
     },
     {
@@ -70,7 +70,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity evaluator fails \u2014 hateful content. ANY single fail opens a ticket.",
+      "description": "Count of gateway log lines in the last hour matching hateful/abusive keywords (hate, kill yourself, slurs, etc.). Any non-zero value opens a ticket \u2014 the threshold is one.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -126,7 +126,7 @@
           "refId": "A"
         }
       ],
-      "title": "toxicity: hateful events (1h)",
+      "title": "🚨 Hateful content events (1h)",
       "type": "stat"
     },
     {
@@ -134,7 +134,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity events broken down by reason \u2014 hateful, harassment, threat, slur.",
+      "description": "Top 10 employees ranked by hateful/abusive content events in the last 24h. Bars at the right edge = repeat offenders worth a chat with HR.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -206,7 +206,7 @@
           "refId": "A"
         }
       ],
-      "title": "Toxicity events by reason (24h)",
+      "title": "🔥 Top 10 employees by toxic events (24h)",
       "type": "barchart"
     },
     {
@@ -214,7 +214,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Toxicity alert state \u2014 fires on any toxicity fail in 5m.",
+      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes \u2014 there is no quiet threshold for this one.",
       "gridPos": {
         "h": 9,
         "w": 6,
@@ -250,7 +250,7 @@
           "refId": "A"
         }
       ],
-      "title": "Toxicity alert state",
+      "title": "⚠ Toxicity alert — is it firing?",
       "type": "alertlist"
     },
     {
@@ -258,7 +258,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Toxicity pass-rate per app.",
+      "description": "Per-specialist pass rate over the last hour — fraction of gateway events that did NOT match a toxic keyword. Green band starts at 99.9%; anything below ~99% means that specialist is fielding abusive traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -320,7 +320,7 @@
           "refId": "A"
         }
       ],
-      "title": "Toxicity pass-rate by app (1h)",
+      "title": "📈 Toxicity pass rate by specialist (1h)",
       "type": "stat"
     },
     {
@@ -333,7 +333,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "All evaluators \u2014 overview",
+      "title": "\ud83d\udcca All evaluators \u2014 which one is firing most?",
       "type": "row"
     },
     {
@@ -341,7 +341,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Evaluator firing rate by use case + evaluator.",
+      "description": "Four lines, one per evaluator family — toxicity, hallucination, PII, prompt injection — counting matching gateway log lines in rolling 5m windows. Stacked spikes show when multiple categories light up at once (often the same conversation).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -422,7 +422,7 @@
           "refId": "D"
         }
       ],
-      "title": "Evaluator firings by evaluator (5m)",
+      "title": "📈 Evaluator firings by category over time (5m)",
       "type": "timeseries"
     },
     {
@@ -435,7 +435,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "All evaluators status table",
+      "title": "📋 Status table — fire rate, fails, pass rate per evaluator",
       "type": "row"
     },
     {
@@ -443,7 +443,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Status of every evaluator \u2014 fire rate, fails (1h), pass rate, severity.",
+      "description": "One-glance evaluator scoreboard for the all-evaluators regex (toxicity + hallucination + PII + prompt-injection bundled): current fire rate (5m), total fails (1h), and pass rate. Sorted by fails descending.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -664,7 +664,7 @@
           "refId": "C"
         }
       ],
-      "title": "All evaluators \u2014 fire rate | fails | pass rate | severity",
+      "title": "\ud83d\udccb Evaluator scoreboard \u2014 fire rate \u00b7 fails \u00b7 pass rate",
       "transformations": [
         {
           "id": "joinByField",
@@ -686,7 +686,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "Critical evaluator events",
+      "title": "🚨 Critical events — alerts firing + raw log stream",
       "type": "row"
     },
     {
@@ -694,7 +694,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "All currently firing evaluator alerts \u2014 critical first.",
+      "description": "Every Grafana alert in firing or pending state, grouped by severity. Critical alerts surface first; click an entry to jump to its rule.",
       "gridPos": {
         "h": 10,
         "w": 10,
@@ -732,7 +732,7 @@
           "refId": "A"
         }
       ],
-      "title": "Firing evaluator alerts",
+      "title": "⚠ Firing evaluator alerts (grouped by severity)",
       "type": "alertlist"
     },
     {
@@ -740,7 +740,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Critical evaluator fail events \u2014 toxicity, pii_echo, hiring_discrimination_risk, data_theft.",
+      "description": "Live Loki tail of every gateway line matching any critical evaluator pattern (toxicity, hallucination, PII, prompt injection). Use this to read the actual user prompt / model reply that tripped the alert.",
       "gridPos": {
         "h": 10,
         "w": 14,
@@ -769,7 +769,7 @@
           "refId": "A"
         }
       ],
-      "title": "Critical evaluator fails (Loki)",
+      "title": "📜 Critical evaluator fails — raw log stream (Loki)",
       "type": "logs"
     }
   ],

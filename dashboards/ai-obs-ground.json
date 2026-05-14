@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Groundedness / hallucination detection \u2014 bot fabricates SKUs, prices, or policies that do not exist. Rate-regression alert at 2x the 4h baseline.",
+  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is \u22652\u00d7 the trailing 4h baseline. Hover the \u2139 icon on any panel for what each number means.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Headline",
+      "title": "🚨 Headline — is the bot hallucinating right now?",
       "type": "row"
     },
     {
@@ -70,7 +70,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Total hallucination fails in the last hour.",
+      "description": "Count of gateway log lines in the last hour matching hallucination signals (hedging phrases, \"fabricated\", \"cannot find\", \"made up\"). Yellow ≥3, red ≥10 — a sustained climb means the bot is bluffing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -130,7 +130,7 @@
           "refId": "A"
         }
       ],
-      "title": "Hallucination fails (1h)",
+      "title": "🚨 Hallucination signals — last 1h",
       "type": "stat"
     },
     {
@@ -138,7 +138,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Hallucination fail rate vs. trailing 4h baseline. > 2x triggers the rate-regression alert.",
+      "description": "Current 15m hallucination rate divided by the trailing 4h baseline. 1.0 = normal noise; ≥2.0 = the alert fires. Use to tell \"things are degrading\" from \"things are noisier than usual\".",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -198,7 +198,7 @@
           "refId": "A"
         }
       ],
-      "title": "Regression vs 4h baseline (ratio)",
+      "title": "📈 Are we worse than baseline? (15m ÷ 4h ratio)",
       "type": "stat"
     },
     {
@@ -206,7 +206,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Hallucination rate-regression alert state.",
+      "description": "Current state of the hallucination alert rule. Fires when the 15m hallucination rate climbs to ≥2× the 4h baseline.",
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -242,7 +242,7 @@
           "refId": "A"
         }
       ],
-      "title": "Hallucination alert state",
+      "title": "⚠ Hallucination alert — is it firing?",
       "type": "alertlist"
     },
     {
@@ -255,7 +255,7 @@
       },
       "id": 5,
       "panels": [],
-      "title": "Rate + baseline comparison",
+      "title": "📈 Rate over time — current vs baseline",
       "type": "row"
     },
     {
@@ -263,7 +263,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Hallucination eval failures by category (product, price, policy).",
+      "description": "Hallucination-signal events broken out by the specialist that produced them (sb-router, nc-chatbot, etc.). Use to localise which agent is bluffing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -314,7 +314,7 @@
           "refId": "A"
         }
       ],
-      "title": "Hallucination eval failures by category (5m)",
+      "title": "📦 Hallucinations per specialist over time (5m)",
       "type": "timeseries"
     },
     {
@@ -322,7 +322,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Current 15-minute hallucination rate vs trailing 4-hour baseline.",
+      "description": "Two lines: the current 15-minute hallucination rate (red) vs the trailing 4-hour baseline (blue). When red pulls away from blue, the alert is about to fire.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -411,7 +411,7 @@
           "refId": "B"
         }
       ],
-      "title": "Current 15m vs baseline 4h",
+      "title": "📈 Current 15m rate vs 4h baseline",
       "type": "timeseries"
     },
     {
@@ -424,7 +424,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "Per-category drill-down",
+      "title": "📦 Which specialist is bluffing? — per-specialist breakdown",
       "type": "row"
     },
     {
@@ -432,7 +432,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top hallucinated topics \u2014 categories with most evaluator fails.",
+      "description": "Specialists ranked by hallucination-signal count in the last hour. The bar at the top is your worst bluffer right now.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -486,7 +486,7 @@
           "refId": "A"
         }
       ],
-      "title": "Top hallucinated categories (1h)",
+      "title": "🔥 Top hallucinating specialists (1h)",
       "type": "bargauge"
     },
     {
@@ -494,7 +494,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-category table \u2014 fail count + recent rate.",
+      "description": "Per-specialist scoreboard: hallucination fails in the last hour and the matching pass rate. Sort by fails to find your worst offender.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -618,7 +618,7 @@
           "refId": "B"
         }
       ],
-      "title": "Per-category \u2014 fails + pass-rate (1h)",
+      "title": "\ud83d\udccb Per-specialist scoreboard \u2014 fails + pass rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -640,7 +640,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "Loki \u2014 hallucination events",
+      "title": "\ud83d\udcdc Show me the actual log lines",
       "type": "row"
     },
     {
@@ -648,7 +648,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live hallucination evaluator fail events.",
+      "description": "Live Loki tail of every gateway line that matched a hallucination signal. Read the raw prompt and reply — sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -677,7 +677,7 @@
           "refId": "A"
         }
       ],
-      "title": "Hallucination evaluator events (Loki)",
+      "title": "📜 Hallucination event log stream (Loki)",
       "type": "logs"
     }
   ],

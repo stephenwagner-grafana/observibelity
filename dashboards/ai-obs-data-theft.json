@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Per-employee data exfiltration: Tim Heidecker's 8x malicious-insider archetype. cc_paste + exfil_event Loki lines, rolling 10m exfil score, data_theft alert.",
+  "description": "Is anyone trying to walk off with customer data? Read top-to-bottom: headline counts → leaderboard of likely exfilters → drill into one person → live Loki stream of the offending lines. Hover the ℹ icon on any panel for details.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Headline",
+      "title": "🚨 Headline — is anyone exfiltrating right now?",
       "type": "row"
     },
     {
@@ -70,7 +70,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Total exfil events across all employees in the last 24 hours.",
+      "description": "Count of LLM-gateway log lines in the last 24h that mention exfil-flavoured keywords (export, dump, customer list, SSN, etc.) across every employee. Treat as a noise-floor sanity check — leaderboard panel below tells you WHO.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -130,7 +130,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total exfil events (24h)",
+      "title": "🚨 Total exfil-keyword events — last 24h",
       "type": "stat"
     },
     {
@@ -138,7 +138,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Number of distinct employees with at least one exfil event in the last hour.",
+      "description": "Distinct employees who triggered at least one exfil-keyword event in the last hour. 0 = nobody is currently fishing; >1 = open the leaderboard and find them.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -198,7 +198,7 @@
           "refId": "A"
         }
       ],
-      "title": "Employees with exfil (1h)",
+      "title": "👤 How many employees are exfiltrating? (1h)",
       "type": "stat"
     },
     {
@@ -206,7 +206,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Credit-card paste events in the last hour.",
+      "description": "Hits on credit-card-number regex (cc_paste) in the LLM gateway in the last hour. Any non-zero value is worth a look — somebody pasted a card.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -266,7 +266,7 @@
           "refId": "A"
         }
       ],
-      "title": "cc_paste events (1h)",
+      "title": "🔒 Credit-card pastes detected (1h)",
       "type": "stat"
     },
     {
@@ -274,7 +274,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "data_theft alert state. Fires at >=5 events / 10m for any employee.",
+      "description": "Current state of the data_theft alert rule. Fires when any single employee triggers ≥5 exfil events in a 10-minute window.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -310,7 +310,7 @@
           "refId": "A"
         }
       ],
-      "title": "data_theft alert state",
+      "title": "⚠ data_theft alert — is it firing?",
       "type": "alertlist"
     },
     {
@@ -323,7 +323,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "Per-employee leaderboard",
+      "title": "🔥 Who's exfiltrating? — per-employee leaderboard",
       "type": "row"
     },
     {
@@ -331,7 +331,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 employees ranked by rolling exfil score over the last 10 minutes.",
+      "description": "Top 10 employees ranked by exfil-keyword event count over the last 10 minutes. The bar at the top is the current prime suspect — Tim Heidecker's malicious-insider archetype usually parks here.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -393,7 +393,7 @@
           "refId": "A"
         }
       ],
-      "title": "Top 10 employees by exfil score (10m rolling)",
+      "title": "🔥 Top 10 likely exfilters right now (10m rolling)",
       "type": "bargauge"
     },
     {
@@ -401,7 +401,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Exfil events per employee over time.",
+      "description": "Time series of exfil-keyword events per employee (top 10, 5m window). Use this to spot whether someone spiked once or is steadily grazing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -452,7 +452,7 @@
           "refId": "A"
         }
       ],
-      "title": "Exfil events per employee (5m, top 10)",
+      "title": "📈 Exfil events over time — top 10 employees (5m)",
       "type": "timeseries"
     },
     {
@@ -465,7 +465,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "Single-employee drill-down",
+      "title": "🔎 Drill into one employee — what is $persona_id doing?",
       "type": "row"
     },
     {
@@ -473,7 +473,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Drill-down for the selected employee (persona_id variable). Shows exfil score over time.",
+      "description": "Two lines for the employee picked in the Employee dropdown: exfil-keyword count (10m window, red zone at ≥0.7) vs total gateway events (5m). Big gap between them = focused fishing; lines move together = chatty user.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -548,7 +548,7 @@
           "refId": "B"
         }
       ],
-      "title": "$persona_id \u2014 exfil score + events",
+      "title": "\ud83d\udcc8 $persona_id \u2014 exfil score vs total events over time",
       "type": "timeseries"
     },
     {
@@ -556,7 +556,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Recent exfil event count for the selected employee.",
+      "description": "Exfil-keyword event count for the selected employee in the last 10 minutes. Red at ≥5 — same threshold the data_theft alert uses.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -616,7 +616,7 @@
           "refId": "A"
         }
       ],
-      "title": "$persona_id \u2014 exfil events (last 10m)",
+      "title": "\ud83d\udea8 $persona_id \u2014 exfil events in last 10m",
       "type": "stat"
     },
     {
@@ -629,7 +629,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Top exfilters table",
+      "title": "🔥 Top exfilters table — exfil count + cc-paste breakdown",
       "type": "row"
     },
     {
@@ -637,7 +637,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 20 exfilters in the last hour with most-recent event count.",
+      "description": "Top 20 employees in the last hour with three columns: exfil-keyword events, total gateway events, and credit-card-paste hits. Use to sort and pick who to investigate first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -786,7 +786,7 @@
           "refId": "C"
         }
       ],
-      "title": "Top exfilters \u2014 last 1h (with score + cc_paste)",
+      "title": "\ud83d\udd25 Top 20 exfilters \u2014 exfil count + cc-paste hits (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -808,7 +808,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "Loki \u2014 cc_paste with employee context",
+      "title": "\ud83d\udcdc Show me the actual log lines \u2014 cc_paste + exfil events",
       "type": "row"
     },
     {
@@ -816,7 +816,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live cc_paste events from SupportBot, tagged with employee + last4.",
+      "description": "Live Loki tail of every exfil-keyword line from the LLM gateway, filtered to the employee dropdown. Read the raw prompt the user actually typed — this is the ground truth, not a metric.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -845,7 +845,7 @@
           "refId": "A"
         }
       ],
-      "title": "cc_paste + exfil_event Loki stream",
+      "title": "📜 Exfil-keyword log stream (Loki) — filtered to $persona_id",
       "type": "logs"
     }
   ],

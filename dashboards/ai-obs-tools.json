@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Tool call analytics \u2014 agentic loop detection, per-session tool-call counters, per-tool latency + error rate.",
+  "description": "Is the agent stuck in a tool-call loop? Top section answers \"is something runaway right now?\"; middle drills into rates and per-session counts; bottom shows tool latency, error rate, and the offending log lines. Source: Tempo span-metrics. Hover the \u2139 icon on any panel for what each number means.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Runaway detection",
+      "title": "🚨 Runaway detection — is the agent stuck in a loop?",
       "type": "row"
     },
     {
@@ -70,7 +70,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Max tool-calls-to-same-tool across all conversations in the last 10m. > 20 fires the runaway alert.",
+      "description": "Across all tools, the highest invocation count any single tool received in the last 10 minutes. ≥20 fires the runaway alert — usually means an agent is hammering the same endpoint in a loop.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -135,7 +135,7 @@
           "refId": "A"
         }
       ],
-      "title": "tool_call_runaway gauge (max calls / conv / tool, 10m)",
+      "title": "🚨 Max calls to a single tool (10m) — runaway gauge",
       "type": "gauge"
     },
     {
@@ -143,7 +143,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top conversations by tool-call count to a single tool.",
+      "description": "Top 10 tools by invocation count over the last 10 minutes. The bar at the top is your prime runaway suspect. Note: query is per-tool (service), not per-conversation — pair with the Top sessions table below to find the offending chat.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -207,7 +207,7 @@
           "refId": "A"
         }
       ],
-      "title": "Top conversations by tool-call count (10m)",
+      "title": "🔥 Top tools by call count (10m)",
       "type": "bargauge"
     },
     {
@@ -220,7 +220,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "Tool call rate + per-tool breakdown",
+      "title": "🛠 Tool call rate — by tool, by session",
       "type": "row"
     },
     {
@@ -228,7 +228,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tool invocation rate by tool.",
+      "description": "5m sliding rate (calls/sec) per tool, filtered by the Tool dropdown. Watch for a tool whose line suddenly climbs and stays climbed — that's the runaway pattern.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -281,7 +281,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tool call rate by tool (5m)",
+      "title": "📈 Tool call rate per tool (5m)",
       "type": "timeseries"
     },
     {
@@ -289,7 +289,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-conversation tool-call counter \u2014 how many tool calls a session has accumulated.",
+      "description": "Top 10 tools by accumulated invocations over the last 5 minutes, shown as a time series. The label says \"per-conversation\" but Tempo span-metrics here are aggregated per tool, not per chat \u2014 read this as \"which tool is being banged on right now\".",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -342,7 +342,7 @@
           "refId": "A"
         }
       ],
-      "title": "Per-conversation tool call counter (5m, top 10)",
+      "title": "📈 Top 10 tools by call count over time (5m)",
       "type": "timeseries"
     },
     {
@@ -355,7 +355,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "Tool latency + errors",
+      "title": "🛠 Tool health — latency + error rate",
       "type": "row"
     },
     {
@@ -363,7 +363,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tool latency distribution heatmap.",
+      "description": "Heatmap of tool latency buckets (seconds) over 5m windows, filtered by the Tool dropdown. Bright bands at the top of the chart = slow calls; a sudden shift upward means a tool just got slower.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -438,7 +438,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tool latency distribution (5m)",
+      "title": "📈 How slow are tool calls? — latency heatmap (5m)",
       "type": "heatmap"
     },
     {
@@ -446,7 +446,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tool error rate by tool \u2014 fraction of tool invocations with status=error.",
+      "description": "Per-tool error fraction (status_code=ERROR \u00f7 total calls) over 5 minutes. Yellow at 5%, red at 20%. A tool that climbs above yellow usually means a downstream dependency is failing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -512,7 +512,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tool error rate by tool (5m)",
+      "title": "⚠ Which tool is failing? — error rate per tool (5m)",
       "type": "bargauge"
     },
     {
@@ -525,7 +525,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "Top sessions table",
+      "title": "🔥 Top sessions — where should I investigate first?",
       "type": "row"
     },
     {
@@ -533,7 +533,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Sessions with most tool calls in last 10m \u2014 investigation list.",
+      "description": "Top 20 tools by invocation count in the last 10 minutes, sorted descending. Header reads \"sessions\" but the underlying Tempo metric is grouped by service (tool) \u2014 use the conv_id column override only if you pivot the query upstream. For now, treat this as the runaway-tool shortlist.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -653,7 +653,7 @@
           "refId": "A"
         }
       ],
-      "title": "Top sessions with most tool calls (10m)",
+      "title": "🔥 Top tools by call count — investigation shortlist (10m)",
       "type": "table"
     },
     {
@@ -666,7 +666,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Loki \u2014 tool errors",
+      "title": "\ud83d\udcdc Show me the actual error log lines",
       "type": "row"
     },
     {
@@ -674,7 +674,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Tool invocation errors stream.",
+      "description": "Live Loki tail of every error / exception / retry / timeout line emitted by the tool, neoncart, or supportbot containers. Pair with the latency heatmap and error-rate bar to find which tool is failing AND why.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -703,7 +703,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tool errors stream (Loki)",
+      "title": "📜 Tool error log stream (Loki)",
       "type": "logs"
     }
   ],
