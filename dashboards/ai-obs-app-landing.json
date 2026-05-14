@@ -76,6 +76,7 @@
         "y": 11
       },
       "id": 30,
+      "description": "Count of POST /chat requests hitting NeonCart in the last hour, parsed from access logs (Loki). The basic 'is anyone shopping?' pulse.",
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -96,7 +97,7 @@
           "refId": "A"
         }
       ],
-      "title": "NeonCart \u2014 chats / hr",
+      "title": "NeonCart \u2014 how busy are we? (chats / hr)",
       "type": "stat"
     },
     {
@@ -136,6 +137,7 @@
         "y": 11
       },
       "id": 31,
+      "description": "95th-percentile chat response time (ms) for NeonCart over the last hour, from OTel span metrics. Yellow above 3s, red above 8s.",
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -156,7 +158,7 @@
           "refId": "A"
         }
       ],
-      "title": "NeonCart \u2014 P95 chat ms",
+      "title": "NeonCart \u2014 how slow is the slow tail? (p95 chat ms)",
       "type": "stat"
     },
     {
@@ -180,6 +182,7 @@
         "y": 11
       },
       "id": 32,
+      "description": "Count of POST /chat requests hitting Support Bot in the last hour (Loki access logs). Pulse of internal help-desk traffic.",
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -200,7 +203,7 @@
           "refId": "A"
         }
       ],
-      "title": "Support Bot \u2014 asks / hr",
+      "title": "Support Bot \u2014 how busy are we? (asks / hr)",
       "type": "stat"
     },
     {
@@ -240,6 +243,7 @@
         "y": 11
       },
       "id": 33,
+      "description": "Count of 5xx responses from Support Bot /chat in the last hour (Loki). Yellow above 5, red above 25 \u2014 direct read on user-facing failures.",
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -260,7 +264,7 @@
           "refId": "A"
         }
       ],
-      "title": "Support Bot \u2014 incidents (1h)",
+      "title": "\ud83d\udea8 Support Bot \u2014 how many 5xx errors? (1h)",
       "type": "stat"
     },
     {

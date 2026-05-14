@@ -63,7 +63,7 @@
     {
       "id": 1,
       "type": "row",
-      "title": "Loadgen activity \u2014 overview",
+      "title": "\ud83d\udce1 Overview \u2014 is k6 actually generating traffic right now?",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -76,8 +76,8 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "Loadgen requests / sec (5m)",
-      "description": "Rate of LLM gateway sigil-generation log lines (one per chat). Proxy for live k6 throughput.",
+      "title": "How fast is k6 driving chats? (req/sec, 5m)",
+      "description": "Rate of Sigil generation log lines from llm-gateway (one per chat). Best proxy for live k6 throughput. Red below 0.1/sec means loadgen is essentially idle.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -141,8 +141,8 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Active use cases (5m)",
-      "description": "Count of distinct ai_o11y.usecase values seen in LLM gateway logs.",
+      "title": "How many use cases are firing? (5m)",
+      "description": "Distinct ai_o11y.usecase values seen in llm-gateway logs in the last 5 minutes. Green at 18+ — registry has 22 scenarios so anything well below means traffic is too thin to keep them all lit.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -210,8 +210,8 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Active personas (5m)",
-      "description": "Count of distinct ai_o11y.persona_id values seen in LLM gateway logs.",
+      "title": "How many personas are active? (5m)",
+      "description": "Distinct ai_o11y.persona_id values seen in llm-gateway logs in the last 5 minutes. Green at 20+ — the centerpiece personas (Tim/Mara/Jordan/Priya/Eric) should always be present.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -279,8 +279,8 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "k6 spend rate (5m)",
-      "description": "Live USD/hr being burned on Claude calls from k6.",
+      "title": "💰 What is loadgen burning per hour? (USD/hr)",
+      "description": "Total gen_ai cost rate × 3600. Almost all of this is Claude — the 80% Ollama traffic is essentially free. Yellow above $5/hr, red above $25/hr.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -344,7 +344,7 @@
     {
       "id": 6,
       "type": "row",
-      "title": "Per-use-case + per-persona traffic (last 5m)",
+      "title": "📊 Mix breakdown — which scenarios and personas are running?",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -357,8 +357,8 @@
     {
       "id": 7,
       "type": "barchart",
-      "title": "Loadgen rate by use case (5m)",
-      "description": "Total chats per use case in the last 5m. Reflects baseline.js weights * traffic rate.",
+      "title": "Which use cases are getting hit? (chats per use_case, 5m)",
+      "description": "Total chats per use_case in the last 5 minutes. Should mirror the baseline.js weight table at the bottom — data-theft-tim (8) and hiring-discrimination-risk (5) lead.",
       "gridPos": {
         "h": 11,
         "w": 12,
@@ -424,8 +424,8 @@
     {
       "id": 8,
       "type": "barchart",
-      "title": "Loadgen rate by persona (5m)",
-      "description": "Total chats per persona in the last 5m. Centerpiece personas (Tim/Mara/Jordan/Priya/Eric) should dominate.",
+      "title": "🔥 Which personas are driving the chats? (5m)",
+      "description": "Total chats per persona in the last 5 minutes. Centerpiece personas (Tim L, Mara, Jordan, Priya, Eric) should dominate — if they don't, baseline.js weights need a look.",
       "gridPos": {
         "h": 11,
         "w": 12,
@@ -491,7 +491,7 @@
     {
       "id": 9,
       "type": "row",
-      "title": "Time series + specialists",
+      "title": "📈 Over time — how is the mix changing, and where is traffic landing?",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -504,8 +504,8 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "Use-case traffic over time (top 12)",
-      "description": "Watch which use cases ramp / dip / die out as you tweak baseline.js.",
+      "title": "Use-case traffic over time (top 12 by rate)",
+      "description": "Per-use_case chats/sec over the dashboard window. Use this to watch a scenario ramp, dip, or die out after you tweak baseline.js weights and restart k6.",
       "gridPos": {
         "h": 11,
         "w": 16,
@@ -567,8 +567,8 @@
     {
       "id": 11,
       "type": "piechart",
-      "title": "Specialist mix (5m)",
-      "description": "Which downstream specialists are being hit. Sanity-check that sb-router is fanning out correctly.",
+      "title": "📦 Where is traffic landing? (specialist mix, 5m)",
+      "description": "Donut split of chats by destination specialist. Sanity check that sb-router and nc-chatbot are fanning out to their respective sub-specialists, not getting stuck on a single one.",
       "gridPos": {
         "h": 11,
         "w": 8,
@@ -627,7 +627,7 @@
     {
       "id": 12,
       "type": "row",
-      "title": "Model routing + freshness",
+      "title": "🤖 Model routing + freshness — are providers and scenarios alive?",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -640,8 +640,8 @@
     {
       "id": 13,
       "type": "piechart",
-      "title": "Provider mix (5m) \u2014 should be ~90/10 Ollama/Claude",
-      "description": "Configured by CLAUDE_FRACTION in baseline.js (default 0.10).",
+      "title": "\ud83e\udd16 Ollama vs Claude \u2014 is the 80/20 split holding? (5m)",
+      "description": "Donut of gen_ai.system share. Target ratio is set by LOADGEN_CLAUDE_FRACTION (default 0.10\u20130.20). If Claude is dominating, you'll see it here before the cost stat panel turns red.",
       "gridPos": {
         "h": 9,
         "w": 8,
@@ -703,8 +703,8 @@
     {
       "id": 14,
       "type": "table",
-      "title": "Use-case freshness \u2014 time since last hit",
-      "description": "If a use case has gone cold (red), check baseline.js weight, k6 pod health, or routing keywords in sb-router.",
+      "title": "\u2744 Which scenarios have gone cold? (hits in last 30m)",
+      "description": "Per-use_case hit count over the last 30 minutes, sorted high-to-low. Red row = zero hits \u2014 usually a baseline.js weight at 0, a k6 pod restart, or stale routing keywords in sb-router.",
       "gridPos": {
         "h": 9,
         "w": 16,
@@ -829,7 +829,7 @@
     {
       "id": 15,
       "type": "row",
-      "title": "Scenario config snapshot (from baseline.js)",
+      "title": "📋 Scenario config — what is baseline.js asking k6 to drive?",
       "gridPos": {
         "h": 1,
         "w": 24,

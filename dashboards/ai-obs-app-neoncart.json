@@ -78,7 +78,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Health overview",
+      "title": "🏥 Health — is NeonCart up and meeting SLOs?",
       "type": "row"
     },
     {
@@ -86,7 +86,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Total HTTP request rate to NeonCart over the last 5 minutes.",
+      "description": "Total request rate to NeonCart from OTel span metrics (5m window). The basic 'is anyone shopping?' pulse.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -140,7 +140,7 @@
           "refId": "A"
         }
       ],
-      "title": "Requests / s (5m)",
+      "title": "How much traffic is hitting NeonCart? (req/s, 5m)",
       "type": "stat"
     },
     {
@@ -148,7 +148,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Fraction of 5xx responses over total requests. Yellow above 1%, red above 5%.",
+      "description": "Share of NeonCart spans marked STATUS_CODE_ERROR over all spans (5m). Yellow above 1%, red above 5%. Anything red and you have a user-visible incident.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -210,7 +210,7 @@
           "refId": "A"
         }
       ],
-      "title": "Error rate (5m)",
+      "title": "⚠ Are requests failing? (error rate, 5m)",
       "type": "stat"
     },
     {
@@ -218,7 +218,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "95th-percentile HTTP request duration over 5m.",
+      "description": "95% of NeonCart requests finish in under this many seconds (OTel span metrics, 5m window). Yellow above 1s, red above 3s — the slow tail your users feel.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -280,7 +280,7 @@
           "refId": "A"
         }
       ],
-      "title": "p95 latency (5m)",
+      "title": "How slow is the slow tail? (p95 latency, 5m)",
       "type": "stat"
     },
     {
@@ -288,7 +288,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "99th-percentile HTTP request duration over 5m.",
+      "description": "Worst-case latency floor — 99% of requests finish under this. Same OTel span metrics, 5m. Use alongside p95 to see how bad the worst 1% is.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -350,7 +350,7 @@
           "refId": "A"
         }
       ],
-      "title": "p99 latency (5m)",
+      "title": "How bad is the worst 1%? (p99 latency, 5m)",
       "type": "stat"
     },
     {
@@ -358,7 +358,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Alerts currently firing for the NeonCart dashboard.",
+      "description": "Live list of any Grafana alerts in firing/pending/error state tied to this dashboard. If empty, nothing's on fire.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -394,7 +394,7 @@
           "refId": "A"
         }
       ],
-      "title": "Active alerts",
+      "title": "🚨 What's on fire? (active alerts)",
       "type": "alertlist"
     },
     {
@@ -407,7 +407,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "Trace explorer",
+      "title": "🔍 Trace explorer — pivot from metric to span tree",
       "type": "row"
     },
     {
@@ -415,7 +415,7 @@
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "Recent NeonCart traces filtered by the selected use case. Click a row to open the span tree.",
+      "description": "Recent NeonCart traces filtered by the use_case dropdown above. Click any row to open the full span tree in Tempo.",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -437,7 +437,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "Recent NeonCart traces (use_case=$use_case)",
+      "title": "Recent traces — pick one to inspect (use_case=$use_case)",
       "type": "traces"
     },
     {
@@ -445,7 +445,7 @@
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "Pivot here to inspect the latest mice-rca error trace end-to-end. The mice-rca use case raises an UndefinedColumn error in the pg.query tool span \u2014 this panel surfaces those traces so you can walk the span tree from the user request down to the failing SQL.",
+      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat \u2192 tool \u2192 failing SQL.",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -467,7 +467,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "Show me mice \u2014 trace pivot",
+      "title": "\ud83d\udc2d Show me mice \u2014 failing traces (the centerpiece pivot)",
       "type": "traces"
     },
     {
@@ -480,7 +480,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "Specialist performance",
+      "title": "📦 Specialists — which nc-* agents are doing the work?",
       "type": "row"
     },
     {
@@ -488,7 +488,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Specialist request rate, grouped by ai_o11y_specialist.",
+      "description": "Per-specialist call rate over time (gen_ai token usage as a proxy for invocations). One line per nc-* agent: nc-chatbot, nc-product-finder, etc. Filtered by the use_case dropdown.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -542,7 +542,7 @@
           "refId": "A"
         }
       ],
-      "title": "Requests by specialist (5m)",
+      "title": "Which specialist is taking the load? (rate by specialist, 5m)",
       "type": "timeseries"
     },
     {
@@ -550,7 +550,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 specialist call duration, grouped by ai_o11y_specialist.",
+      "description": "p95 LLM call duration per nc-* specialist (gen_ai_client_operation_duration histogram). Spot one slow agent dragging down user experience even when overall p95 looks fine.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -601,7 +601,7 @@
           "refId": "A"
         }
       ],
-      "title": "p95 latency by specialist (5m)",
+      "title": "Which specialist is slow? (p95 latency by specialist, 5m)",
       "type": "timeseries"
     },
     {
@@ -609,7 +609,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top specialists by request volume over the last hour.",
+      "description": "Ranked leaderboard of nc-* specialists by total invocations in the last hour. Bar = volume. Use to see which agent the router is leaning on hardest.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -700,7 +700,7 @@
           "refId": "A"
         }
       ],
-      "title": "Top specialists by request volume (1h)",
+      "title": "🔥 Top specialists by volume (last 1h)",
       "type": "table"
     },
     {
@@ -713,7 +713,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "Tool calls",
+      "title": "🛠 Tool calls — which functions are agents invoking?",
       "type": "row"
     },
     {
@@ -721,7 +721,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tool invocation rate, grouped by ai_o11y_tool.",
+      "description": "Per-tool invocation rate over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. — one line each.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -775,7 +775,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tool call rate by tool (5m)",
+      "title": "Which tools are being called and how often? (5m)",
       "type": "timeseries"
     },
     {
@@ -783,7 +783,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Error rate per tool over the last 5m. Yellow above 5%, red above 20%.",
+      "description": "Per-tool error ratio (failed spans / total spans) over 5m. Yellow above 5%, red above 20%. Red bars are the tools dragging down agent reliability — typically get_inventory during the mice-rca demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -849,7 +849,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tool error rate by tool (5m)",
+      "title": "⚠ Which tools are failing? (error rate by tool, 5m)",
       "type": "bargauge"
     },
     {
@@ -862,7 +862,7 @@
       },
       "id": 17,
       "panels": [],
-      "title": "LLM gateway",
+      "title": "🤖 LLM gateway — tokens and dollars going through Sigil",
       "type": "row"
     },
     {
@@ -870,7 +870,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Input + output token consumption per model, drawn from gen_ai.* OTel semconv metrics.",
+      "description": "Stacked tokens/sec per model, split into input and output. Drawn from gen_ai.client.token.usage (OTel GenAI semconv). Use to see whether reads or writes dominate, and which model is doing the talking.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -940,7 +940,7 @@
           "refId": "B"
         }
       ],
-      "title": "Token usage per model (5m)",
+      "title": "How many tokens per model, input vs output? (5m)",
       "type": "timeseries"
     },
     {
@@ -948,7 +948,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD cost per second, summed across all models.",
+      "description": "Cost rate in USD/sec — both the total line and a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1011,7 +1011,7 @@
           "refId": "B"
         }
       ],
-      "title": "Cost over time (USD / s)",
+      "title": "💰 What's the burn rate? (USD/sec, total and per model)",
       "type": "timeseries"
     },
     {
@@ -1019,7 +1019,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Total USD cost in the last hour.",
+      "description": "All-up NeonCart LLM bill for the past hour (sum of gen_ai_client_cost_USD_total across nc-* specialists). Yellow above $1/hr, red above $5/hr.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1081,7 +1081,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total cost (1h)",
+      "title": "💰 What did NeonCart cost in the last hour?",
       "type": "stat"
     },
     {
@@ -1089,7 +1089,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 specialists by attributed LLM cost in the last hour.",
+      "description": "Top 10 nc-* specialists ranked by USD attributed in the last hour (gradient gauge). Tells you which agent is most expensive to run, regardless of how busy it is.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1180,7 +1180,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost by specialist (top 10, 1h)",
+      "title": "🔥 Which specialist is most expensive? (top 10 by cost, 1h)",
       "type": "table"
     },
     {
@@ -1193,7 +1193,7 @@
       },
       "id": 22,
       "panels": [],
-      "title": "Sigil generation events",
+      "title": "📡 Sigil generation log — raw LLM calls as they happen",
       "type": "row"
     },
     {
@@ -1201,7 +1201,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Sigil generation events from the llm-gateway, filtered by the selected use case.",
+      "description": "Live tail of Sigil generation events emitted by the llm-gateway (Loki JSON logs), scoped to nc-* specialists and the use_case dropdown. One log = one LLM call with prompt/response/cost.",
       "gridPos": {
         "h": 10,
         "w": 14,
@@ -1231,7 +1231,7 @@
           "refId": "A"
         }
       ],
-      "title": "Sigil generation events (use_case=$use_case)",
+      "title": "Live generation events for this use case (use_case=$use_case)",
       "type": "logs"
     },
     {
@@ -1239,7 +1239,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Most recent 20 Sigil generation events extracted into a table.",
+      "description": "Latest Sigil events as structured fields (cost_usd, tokens, model). Easier to scan than the raw log tail when you want to spot expensive or slow calls at a glance.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1305,7 +1305,7 @@
           "refId": "A"
         }
       ],
-      "title": "Last 20 generation events",
+      "title": "Latest 20 calls as a structured table",
       "type": "logs"
     },
     {
@@ -1318,7 +1318,7 @@
       },
       "id": 25,
       "panels": [],
-      "title": "Database queries",
+      "title": "🗄 Postgres — what's happening at the database layer?",
       "type": "row"
     },
     {
@@ -1326,7 +1326,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Postgres query rate emitted from the db.postgres.query span (recorded as a counter).",
+      "description": "Per-service Postgres query rate, from traces_spanmetrics_calls_total on the DB-touching tools (get_inventory, search_products, place_order, etc.).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1380,7 +1380,7 @@
           "refId": "A"
         }
       ],
-      "title": "Postgres query rate (5m)",
+      "title": "How busy is the DB? (queries/sec by tool, 5m)",
       "type": "timeseries"
     },
     {
@@ -1388,7 +1388,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 Postgres query duration.",
+      "description": "p95 query duration per tool (OTel span latency histograms, 5m). Spikes here usually trace to DB contention or a tool firing a missing-index query.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1439,7 +1439,7 @@
           "refId": "A"
         }
       ],
-      "title": "p95 Postgres query duration (5m)",
+      "title": "Which DB-backed tool is slow? (p95 query duration, 5m)",
       "type": "timeseries"
     },
     {
@@ -1447,7 +1447,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Postgres query errors from NeonCart. The mice-rca use case will surface column-does-not-exist errors here \u2014 pivot to the matching trace to walk the span tree.",
+      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here \u2014 pivot to the matching trace above to walk the span tree.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -1476,7 +1476,7 @@
           "refId": "A"
         }
       ],
-      "title": "Postgres query errors (Loki)",
+      "title": "🚨 DB errors — the smoking gun (Loki tail)",
       "type": "logs"
     }
   ],
