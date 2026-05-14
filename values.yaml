@@ -257,7 +257,10 @@ specialists:
   # ---- Phase 1: NeonCart -------------------------------------------------
   - name: nc-chatbot
     replicas: 1
-    tool_allowlist: [search_products, get_product, get_order_history, get_inventory, place_order]
+    tool_allowlist: [search_products, get_product, get_order_history, get_inventory, place_order, add_to_cart]
+  - name: nc-gift-finder
+    replicas: 1
+    tool_allowlist: [search_products, get_product, add_to_cart]
   - name: nc-fraud-detector
     replicas: 1
     tool_allowlist: [get_order_history, geo_lookup]
@@ -321,6 +324,9 @@ tools:
   - name: place_order
     replicas: 1
     backing_tables: [orders, order_items, catalog_items]
+  - name: add_to_cart
+    replicas: 1
+    backing_tables: []
   # ---- Phase 2: Support Bot ---------------------------------------------
   - name: kb_search
     replicas: 2

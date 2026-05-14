@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "observibelity-nc-gift-finder"
+version = "0.2.0"
+description = "NeonCart gift-recommendation specialist for ObserVIBElity."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.9",
+  "httpx>=0.27",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

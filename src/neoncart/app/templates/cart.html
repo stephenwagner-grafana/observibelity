@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Cart — {{ branding.name }}{% endblock %}
+
+{% block content %}
+<section class="nc-section nc-cart-page">
+  <h1>Your cart</h1>
+
+  {% if cart_items %}
+    <div class="nc-cart-grid">
+      {% for it in cart_items %}
+      <article class="nc-cart-row" data-product-id="{{ it.id }}">
+        <div class="nc-cart-row__img">
+          {% if it.image_url %}
+            <img src="{{ it.image_url }}" alt="{{ it.name }}" />
+          {% else %}
+            <div class="nc-card__placeholder" aria-hidden="true"></div>
+          {% endif %}
+        </div>
+        <div class="nc-cart-row__body">
+          <a href="/products/{{ it.id }}" class="nc-cart-row__name">{{ it.name }}</a>
+          <div class="nc-cart-row__meta">
+            <span class="nc-cart-row__sku">{{ it.sku }}</span>
+            <span class="nc-cart-row__qty">Qty {{ it.qty }}</span>
+          </div>
+        </div>
+        <div class="nc-cart-row__price">
+          <div class="nc-cart-row__total">${{ "%.2f"|format(it.line_total) }}</div>
+          <div class="nc-cart-row__unit">${{ "%.2f"|format(it.price_usd) }} each</div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="nc-cart-summary">
+      <div class="nc-cart-summary__row">
+        <span>Subtotal</span>
+        <strong>${{ "%.2f"|format(subtotal) }}</strong>
+      </div>
+      <div class="nc-cart-summary__actions">
+        <button type="button" id="nc-cart-clear" class="nc-cart-clear">Clear cart</button>
+        <a href="/catalog" class="nc-cta">Keep shopping</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="nc-cart-empty">
+      <p>Your cart is empty.</p>
+      <p class="nc-cart-empty__hint">
+        Try asking the assistant for a gift idea — open the chat in the
+        bottom-right and say <em>"find me a gift under $200"</em>.
+      </p>
+      <a href="/catalog" class="nc-cta">Browse catalog</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

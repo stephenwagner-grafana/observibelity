@@ -18,7 +18,9 @@
     </a>
     <nav>
       <a href="/catalog">Catalog</a>
-      <a href="/cart">Cart</a>
+      <a href="/cart" class="nc-cart-link" id="nc-cart-link">
+        Cart<span class="nc-cart-count" id="nc-cart-count" aria-live="polite"></span>
+      </a>
     </nav>
     {% if personas %}
     <div class="persona-picker">

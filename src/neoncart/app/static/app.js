@@ -94,16 +94,23 @@
     return { wrap, body };
   }
 
-  // Small dim header at the top of the bot bubble showing which model+provider
-  // answered. Empty `model` hides the whole row so demo turns that came back
-  // without a model attribution don't show a half-empty badge.
+  // Small dim header at the top of the bot bubble showing which agent +
+  // model+provider answered. Empty `model` still renders the agent so the
+  // demo audience sees which specialist took the turn (gift-finder vs.
+  // chatbot routing decision).
   function renderBadges(data) {
+    const agent = data && data.agent;
     const model = data && data.model;
-    if (!model) return null;
-    const parts = ["nc-chatbot", model];
-    if (data.provider) parts.push(data.provider);
+    if (!agent && !model) return null;
+    const parts = [];
+    if (agent) {
+      parts.push(agent === "gift-finder" ? "nc-gift-finder" : "nc-chatbot");
+    }
+    if (model) parts.push(model);
+    if (data && data.provider) parts.push(data.provider);
     const row = document.createElement("div");
     row.className = "chat-msg__badge";
+    if (agent === "gift-finder") row.classList.add("chat-msg__badge--gift");
     row.textContent = parts.join(" · ");
     return row;
   }
@@ -118,19 +125,69 @@
       const price = p.price_usd != null ? p.price_usd : p.price;
       const sku = p.sku || "";
       const img = p.image_url || "";
-      const card = document.createElement("a");
+      const card = document.createElement("div");
       card.className = "chat-product";
-      card.href = id ? `/products/${id}` : "#";
+      card.dataset.productId = id || "";
+      const productLink = id ? `/products/${id}` : "#";
       card.innerHTML =
-        `<span class="chat-product__img"${img ? ` style="background-image:url('${escapeHTML(img)}')"` : ""}></span>`
-        + `<span class="chat-product__name">${escapeHTML(name)}</span>`
-        + `<span class="chat-product__row">`
-        + (price != null ? `<span class="chat-product__price">$${Number(price).toFixed(2)}</span>` : "")
-        + (sku ? `<span class="chat-product__sku">${escapeHTML(sku)}</span>` : "")
-        + `</span>`;
+        `<a class="chat-product__link" href="${productLink}">`
+        +   `<span class="chat-product__img"${img ? ` style="background-image:url('${escapeHTML(img)}')"` : ""}></span>`
+        +   `<span class="chat-product__name">${escapeHTML(name)}</span>`
+        +   `<span class="chat-product__row">`
+        +     (price != null ? `<span class="chat-product__price">$${Number(price).toFixed(2)}</span>` : "")
+        +     (sku ? `<span class="chat-product__sku">${escapeHTML(sku)}</span>` : "")
+        +   `</span>`
+        + `</a>`
+        + (id ? `<button type="button" class="chat-product__add" data-product-id="${id}" data-sku="${escapeHTML(sku)}" aria-label="Add ${escapeHTML(name)} to cart">+ Add to cart</button>` : "");
       rail.appendChild(card);
     });
     return rail;
+  }
+
+  // Cart-add button click handler: POST /api/cart/add, animate the button to
+  // confirm, bump the header cart counter, and broadcast a custom event so
+  // any other listeners (e.g. analytics) can hook in.
+  function addToCart(productId, sku) {
+    if (!productId) return;
+    return fetch("/api/cart/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ product_id: Number(productId), qty: 1 }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.ok) {
+          updateCartCounter(data.count);
+          window.dispatchEvent(new CustomEvent("nc:cart:add", { detail: { productId, sku, count: data.count } }));
+        }
+        return data;
+      });
+  }
+
+  function updateCartCounter(count) {
+    const el = document.getElementById("nc-cart-count");
+    if (!el) return;
+    if (!count) {
+      el.textContent = "";
+      el.classList.remove("nc-cart-count--has");
+      return;
+    }
+    el.textContent = String(count);
+    el.classList.add("nc-cart-count--has");
+    // Quick pop animation so the eye catches the count change.
+    el.classList.remove("nc-cart-count--pop");
+    // Force reflow so re-adding the class restarts the animation.
+    void el.offsetWidth;
+    el.classList.add("nc-cart-count--pop");
+  }
+
+  // Read the nc_cart cookie on load so the badge reflects pre-existing
+  // state (e.g. user added items, refreshed the page).
+  function initCartCounter() {
+    fetch("/api/cart", { headers: { "Accept": "application/json" } })
+      .then((r) => r.json())
+      .then((data) => updateCartCounter((data && data.count) || 0))
+      .catch(() => {});
   }
 
   // Render the first navigate action (target=category|search|product|cart) as
@@ -277,4 +334,51 @@
       sendMessage(input ? input.value : "");
     });
   }
+
+  // Delegate Add-to-cart clicks anywhere inside the chat panel so the
+  // handler survives every re-render of the bubble cards.
+  if (messages) {
+    messages.addEventListener("click", (evt) => {
+      const btn = evt.target.closest(".chat-product__add");
+      if (!btn) return;
+      evt.preventDefault();
+      const pid = btn.dataset.productId;
+      const sku = btn.dataset.sku || "";
+      if (!pid || btn.disabled) return;
+      btn.disabled = true;
+      btn.classList.add("chat-product__add--loading");
+      addToCart(pid, sku)
+        .then((data) => {
+          if (data && data.ok) {
+            btn.classList.remove("chat-product__add--loading");
+            btn.classList.add("chat-product__add--added");
+            btn.textContent = "✓ Added";
+            setTimeout(() => {
+              btn.classList.remove("chat-product__add--added");
+              btn.textContent = "+ Add to cart";
+              btn.disabled = false;
+            }, 1800);
+          } else {
+            btn.disabled = false;
+            btn.classList.remove("chat-product__add--loading");
+          }
+        })
+        .catch(() => {
+          btn.disabled = false;
+          btn.classList.remove("chat-product__add--loading");
+        });
+    });
+  }
+
+  // Cart page clear-cart button.
+  const clearBtn = document.getElementById("nc-cart-clear");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      fetch("/api/cart/clear", { method: "POST" })
+        .then(() => { window.location.reload(); })
+        .catch(() => {});
+    });
+  }
+
+  initCartCounter();
 })();

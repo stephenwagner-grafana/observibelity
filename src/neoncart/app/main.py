@@ -61,8 +61,24 @@ TEMPLATE_DIR = APP_DIR / "templates"
 STATIC_DIR = APP_DIR / "static"
 
 CHATBOT_URL = os.getenv("CHATBOT_URL", "http://nc-chatbot/v1/run")
+GIFT_FINDER_URL = os.getenv("GIFT_FINDER_URL", "http://nc-gift-finder/v1/run")
 LLM_GATEWAY_URL = os.getenv("LLM_GATEWAY_URL", "http://llm-gateway:80")
 DEFAULT_USECASE = os.getenv("AI_O11Y_DEFAULT_USECASE", "mice-rca")
+
+# Keywords that route the chat to the gift-finder specialist instead of
+# the general nc-chatbot. Single source of truth so the widget and the
+# server agree on the routing rule.
+GIFT_KEYWORDS = (
+    "gift", "present", "birthday", "anniversary", "wedding",
+    "christmas", "holiday", "graduation",
+)
+
+
+def _looks_like_gift_query(message: str) -> bool:
+    if not message:
+        return False
+    lowered = message.lower()
+    return any(kw in lowered for kw in GIFT_KEYWORDS)
 
 BRANDING: dict[str, str] = {
     "name": os.getenv("BRANDING_NAME", "NeonCart"),
@@ -256,6 +272,10 @@ class ChatRequest(BaseModel):
     # Distinguishes hand-driven sessions (interactive) from loadgen runs
     # (continuous). Drives the Sigil traffic-origin facet.
     traffic_origin: str | None = None
+    # Override the auto routing of the /chat request. "auto" (default) lets
+    # the server detect gift intent. Forcing "gift-finder" or "chatbot"
+    # exposes the routing toggle for demo purposes (the chip in the widget).
+    agent: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -273,6 +293,9 @@ class ChatResponse(BaseModel):
     session_id: str | None = None
     span_id: str | None = None
     sigil_url: str | None = None
+    # Which specialist actually answered ("chatbot" or "gift-finder"). The
+    # widget badges this so the demo audience sees the routing happen.
+    agent: str | None = None
 
 
 class PersonaSelectRequest(BaseModel):
@@ -350,20 +373,125 @@ async def catalog(
     )
 
 
+# ---- Cart (cookie-backed) --------------------------------------------------
+# The cart lives in a single ``nc_cart`` cookie containing a JSON list of
+# {"id": <product_id>, "qty": <int>} objects. Lightweight by design — the
+# demo's value is in the agent UX, not in a real checkout pipeline. If a
+# carts table ever lands, swap the cookie helpers for a DB read/write
+# without touching the chat widget contract.
+
+import json as _json
+from urllib.parse import unquote
+
+
+def _read_cart_cookie(request: Request) -> list[dict[str, int]]:
+    raw = request.cookies.get("nc_cart")
+    if not raw:
+        return []
+    try:
+        data = _json.loads(unquote(raw))
+    except Exception:  # noqa: BLE001
+        return []
+    if not isinstance(data, list):
+        return []
+    out: list[dict[str, int]] = []
+    for it in data[:50]:
+        try:
+            pid = int(it.get("id"))
+            qty = max(1, min(20, int(it.get("qty", 1))))
+        except (TypeError, ValueError):
+            continue
+        out.append({"id": pid, "qty": qty})
+    return out
+
+
+def _write_cart_cookie(response: Response, items: list[dict[str, int]]) -> None:
+    response.set_cookie(
+        key="nc_cart",
+        value=_json.dumps(items, separators=(",", ":")),
+        httponly=False,  # widget reads it client-side to badge the count
+        samesite="lax",
+        path="/",
+        max_age=60 * 60 * 24 * 14,  # 14 days; demo carts are throwaway
+    )
+
+
+class CartItemRequest(BaseModel):
+    product_id: int = Field(..., gt=0)
+    qty: int = Field(default=1, ge=1, le=20)
+
+
 @app.get("/cart", response_class=HTMLResponse)
 async def cart(
     request: Request,
     persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
-    # TODO(phase1): wire actual cart state once orders schema lands.
+    """Render the current shopper's cart from the ``nc_cart`` cookie."""
+    _set_usecase_attr()
+    raw_items = _read_cart_cookie(request)
+    cart_items: list[dict[str, Any]] = []
+    subtotal = 0.0
+    if raw_items:
+        ids = [it["id"] for it in raw_items]
+        qty_by_id = {it["id"]: it["qty"] for it in raw_items}
+        rows = (
+            await session.execute(select(CatalogItem).where(CatalogItem.id.in_(ids)))
+        ).scalars().all()
+        for r in rows:
+            qty = qty_by_id.get(r.id, 1)
+            line_total = float(r.price_usd) * qty
+            subtotal += line_total
+            cart_items.append(
+                {
+                    "id": r.id,
+                    "sku": r.sku,
+                    "name": r.name,
+                    "qty": qty,
+                    "price_usd": float(r.price_usd),
+                    "line_total": line_total,
+                    "image_url": r.image_url,
+                }
+            )
     return await _render_with_personas(
-        "base.html",
+        "cart.html",
         request,
         session,
         persona_id,
-        {"body_block": "Cart is empty."},
+        {"cart_items": cart_items, "subtotal": subtotal},
     )
+
+
+@app.post("/api/cart/add")
+async def api_cart_add(payload: CartItemRequest, request: Request) -> JSONResponse:
+    """Append (or bump qty for) one product. Returns the new cart count."""
+    items = _read_cart_cookie(request)
+    found = False
+    for it in items:
+        if it["id"] == payload.product_id:
+            it["qty"] = min(20, it["qty"] + payload.qty)
+            found = True
+            break
+    if not found:
+        items.append({"id": payload.product_id, "qty": payload.qty})
+    resp = JSONResponse(
+        {"ok": True, "count": sum(it["qty"] for it in items), "items": items}
+    )
+    _write_cart_cookie(resp, items)
+    return resp
+
+
+@app.post("/api/cart/clear")
+async def api_cart_clear() -> JSONResponse:
+    resp = JSONResponse({"ok": True, "count": 0, "items": []})
+    resp.delete_cookie("nc_cart", path="/")
+    return resp
+
+
+@app.get("/api/cart")
+async def api_cart_view(request: Request) -> JSONResponse:
+    items = _read_cart_cookie(request)
+    return JSONResponse({"count": sum(it["qty"] for it in items), "items": items})
 
 
 # ---- API routes ------------------------------------------------------------
@@ -427,17 +555,25 @@ async def chat(
         context["traffic_origin"] = payload.traffic_origin
     if context:
         body["context"] = context
+    # Route: explicit override > gift-keyword auto-detect > nc-chatbot default.
+    chosen_agent = (payload.agent or "auto").lower()
+    if chosen_agent == "auto":
+        chosen_agent = (
+            "gift-finder" if _looks_like_gift_query(payload.message) else "chatbot"
+        )
+    target_url = GIFT_FINDER_URL if chosen_agent == "gift-finder" else CHATBOT_URL
     try:
-        resp = await client.post(CHATBOT_URL, json=body)
+        resp = await client.post(target_url, json=body)
     except httpx.RequestError as exc:
-        log.warning("chatbot unreachable: %s", exc)
+        log.warning("specialist %s unreachable: %s", chosen_agent, exc)
         return JSONResponse(
             {
-                "reply": f"Chatbot unreachable: {exc}",
+                "reply": f"{chosen_agent} unreachable: {exc}",
                 "tool_calls": [],
                 "usecase": usecase,
                 "session_id": payload.session_id,
                 "error": "unreachable",
+                "agent": chosen_agent,
             },
             status_code=503,
         )
@@ -445,11 +581,12 @@ async def chat(
     if resp.status_code >= 400:
         return JSONResponse(
             {
-                "reply": f"Chatbot error {resp.status_code}",
+                "reply": f"{chosen_agent} error {resp.status_code}",
                 "tool_calls": [],
                 "usecase": usecase,
                 "session_id": payload.session_id,
                 "error": f"http_{resp.status_code}",
+                "agent": chosen_agent,
             },
             status_code=resp.status_code,
         )
@@ -468,6 +605,7 @@ async def chat(
         session_id=payload.session_id,
         span_id=data.get("span_id"),
         sigil_url=sigil_url,
+        agent=chosen_agent,
     )
     return JSONResponse(out.model_dump())
 

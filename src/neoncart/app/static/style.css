@@ -512,12 +512,11 @@ a:hover { text-decoration: underline; }
   gap: 0.5rem; margin-top: 0.7rem;
 }
 .chat-product {
-  display: flex; flex-direction: column; gap: 0.3rem;
+  display: flex; flex-direction: column; gap: 0.4rem;
   padding: 0.5rem;
   background: var(--surface-elev-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  text-decoration: none;
   color: var(--text);
   transition: transform .12s ease, border-color .12s ease, box-shadow .15s ease;
 }
@@ -525,7 +524,39 @@ a:hover { text-decoration: underline; }
   transform: translateY(-2px);
   border-color: var(--primary-color);
   box-shadow: 0 6px 18px rgba(34, 211, 238, 0.18);
+}
+.chat-product__link {
+  display: flex; flex-direction: column; gap: 0.3rem;
   text-decoration: none;
+  color: inherit;
+}
+.chat-product__link:hover { text-decoration: none; }
+.chat-product__add {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
+  border: 1px solid var(--primary-color-soft);
+  background: rgba(34, 211, 238, 0.12);
+  color: var(--primary-color);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, transform .12s ease;
+}
+.chat-product__add:hover {
+  background: var(--primary-color);
+  color: var(--bg);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+.chat-product__add:disabled { cursor: default; transform: none; }
+.chat-product__add--loading { opacity: 0.6; }
+.chat-product__add--added {
+  background: #16a34a !important;
+  color: #fff !important;
+  border-color: #16a34a !important;
 }
 .chat-product__img {
   display: block;
@@ -599,6 +630,113 @@ a:hover { text-decoration: underline; }
 }
 .chat-typing span:nth-child(2) { animation-delay: 0.18s; }
 .chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+
+/* Gift-finder variant of the badge — magenta tint so the demo audience
+   sees the routing decision at a glance ("gift query → gift-finder agent"). */
+.chat-msg__badge--gift {
+  color: var(--accent-color);
+}
+
+/* "🎁 gift" suggestion chip — magenta to telegraph the gift-finder route. */
+.nc-chat__chip--gift {
+  color: var(--accent-color);
+  border-color: var(--accent-color-soft);
+}
+.nc-chat__chip--gift:hover {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+}
+
+/* Header cart badge: small bubble that appears next to the Cart nav link. */
+.nc-cart-link { position: relative; display: inline-flex; align-items: center; gap: 0.3rem; }
+.nc-cart-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1.25rem; height: 1.25rem; padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 0.7rem; font-weight: 700;
+  line-height: 1;
+  visibility: hidden;
+  transform: scale(0.85);
+  transition: transform .12s ease;
+}
+.nc-cart-count--has { visibility: visible; transform: scale(1); }
+.nc-cart-count--pop { animation: nc-cart-pop .35s ease-out; }
+@keyframes nc-cart-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
+/* ---- Cart page ---------------------------------------------------- */
+.nc-cart-page h1 { margin: 0 0 1.5rem; letter-spacing: -0.01em; font-size: 2rem; }
+.nc-cart-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+.nc-cart-row {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.nc-cart-row:hover { border-color: var(--border-strong); }
+.nc-cart-row__img {
+  width: 96px; height: 72px;
+  border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--surface-elev-2);
+}
+.nc-cart-row__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nc-cart-row__body { display: flex; flex-direction: column; gap: 0.3rem; }
+.nc-cart-row__name { font-weight: 600; color: var(--text); }
+.nc-cart-row__name:hover { color: var(--primary-color); text-decoration: none; }
+.nc-cart-row__meta {
+  display: flex; gap: 0.75rem;
+  font-size: 0.78rem; color: var(--text-dim);
+}
+.nc-cart-row__sku { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.nc-cart-row__price { text-align: right; }
+.nc-cart-row__total { font-weight: 700; font-size: 1.1rem; color: var(--primary-color); }
+.nc-cart-row__unit { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+.nc-cart-summary {
+  display: flex; flex-direction: column; gap: 1rem;
+  margin-top: 1.5rem; padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, var(--surface-elev) 0%, var(--surface) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+.nc-cart-summary__row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 1.1rem;
+}
+.nc-cart-summary__row strong { font-size: 1.5rem; color: var(--primary-color); }
+.nc-cart-summary__actions {
+  display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center;
+}
+.nc-cart-clear {
+  padding: 0.55rem 1rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600;
+  transition: border-color .15s ease, color .15s ease;
+}
+.nc-cart-clear:hover { color: var(--danger); border-color: var(--danger); }
+
+.nc-cart-empty {
+  text-align: center; padding: 4rem 1rem;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius);
+}
+.nc-cart-empty p { margin: 0 0 0.6rem; color: var(--text-muted); }
+.nc-cart-empty__hint { color: var(--text-dim); font-size: 0.9rem; }
+.nc-cart-empty .nc-cta { margin-top: 1.25rem; }
+
 @keyframes chat-typing {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30% { opacity: 1; transform: translateY(-2px); }
