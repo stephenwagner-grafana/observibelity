@@ -9,6 +9,7 @@ that's how the dashboard joins "this expensive call" to "this slow tool".
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -328,6 +329,12 @@ GEN_AI_COST_USD = _meter.create_counter(
     description="Cumulative cost in USD of GenAI client operations.",
     unit="USD",
 )
+GEN_AI_TTFT = _meter.create_histogram(
+    name="gen_ai.client.time_to_first_token",
+    description="Time from request start to first token (approximated as 60% "
+                "of total response time for non-streaming upstreams).",
+    unit="s",
+)
 
 
 tracer = trace.get_tracer("llm_gateway")
@@ -409,6 +416,12 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
             "traffic_origin", req.ai_o11y.get("traffic_origin", "continuous")
         )
 
+        # Hard-cap per-call latency so a stuck upstream can't smear a 10000s
+        # outlier across the latency histogram (which is what was making the
+        # Sigil Performance panel's P95 read as 2.78 hours). 60s is more than
+        # any healthy gen completion needs; Anthropic SDK's own default is
+        # 600s, Ollama's is 120s — this is the tightest of the three.
+        _PROVIDER_TIMEOUT_S = float(os.environ.get("LLM_GATEWAY_PROVIDER_TIMEOUT_S", "60"))
         start_time = time.monotonic()
         with REQ_LATENCY.labels(
             provider=provider_name,
@@ -416,7 +429,20 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
             specialist=req.specialist,
         ).time():
             try:
-                resp = await provider.complete(req)
+                resp = await asyncio.wait_for(
+                    provider.complete(req), timeout=_PROVIDER_TIMEOUT_S
+                )
+            except asyncio.TimeoutError as exc:
+                span.record_exception(exc)
+                span.set_attribute("error", True)
+                span.set_attribute("error.kind", "provider_timeout")
+                log.warning(
+                    "provider %s timed out after %.1fs", provider_name, _PROVIDER_TIMEOUT_S
+                )
+                raise HTTPException(
+                    status_code=504,
+                    detail=f"{provider_name}: timed out after {_PROVIDER_TIMEOUT_S:.0f}s",
+                )
             except Exception as exc:  # noqa: BLE001 — translate to HTTP 502 for caller.
                 span.record_exception(exc)
                 span.set_attribute("error", True)
@@ -458,9 +484,15 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         # mirrors stay so the existing custom dashboards keep working.
         from .sigil import _derive_session_id  # local import: avoid cycle
 
+        # Default agent.name to "llm-gateway" when the caller didn't pass a
+        # specialist (direct curl, eval-judge replay, etc.) so the OTel meter
+        # never emits an empty/"unknown" label — Sigil's Performance dashboard
+        # buckets unattributed traffic into "unknown" otherwise.
+        agent_name = (req.specialist or "").strip() or "llm-gateway"
         gen_ai_attrs: dict[str, str | int | float] = {
             "gen_ai.system": provider_name,
             "gen_ai.operation.name": "chat",
+            "gen_ai.agent.name": agent_name,
             "gen_ai.request.model": resp.model,
             "gen_ai.response.model": resp.model,
             "service.name": "llm-gateway",
@@ -473,7 +505,7 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
             "session.id": _derive_session_id(req),
             "user.id": req.ai_o11y.get("persona_id", "") or "",
             "ai_o11y.usecase": req.ai_o11y.get("usecase", "") or "",
-            "ai_o11y.specialist": req.specialist,
+            "ai_o11y.specialist": agent_name,
             "ai_o11y.persona_id": req.ai_o11y.get("persona_id", "") or "",
         }
         try:
@@ -486,6 +518,11 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 output_tokens, {**gen_ai_attrs, "gen_ai.token.type": "output"}
             )
             GEN_AI_OPERATION_DURATION.record(duration_seconds, gen_ai_attrs)
+            # TTFT approximated as 60% of total response duration since our
+            # upstreams are non-streaming. Mirrors the same heuristic the
+            # Sigil exporter uses (see sigil.py:_approx_ttft_s). The Sigil
+            # Performance dashboard's TTFT P95 panel reads this histogram.
+            GEN_AI_TTFT.record(max(duration_seconds * 0.6, 0.001), gen_ai_attrs)
             GEN_AI_COST_USD.add(
                 float(cost["input_usd"]),
                 {**gen_ai_attrs, "gen_ai.cost.type": "input"},
