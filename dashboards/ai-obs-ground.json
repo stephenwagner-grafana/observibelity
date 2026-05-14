@@ -756,7 +756,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(sigil_eval_result_total{evaluator=\"hallucination.product_in_catalog\"}, category)",
+        "definition": "label_values(sigil_eval_executions_total{evaluator=\"hallucination.product_in_catalog\"}, category)",
         "hide": 0,
         "includeAll": true,
         "label": "Category",
@@ -764,7 +764,7 @@
         "name": "category",
         "options": [],
         "query": {
-          "query": "label_values(sigil_eval_result_total{evaluator=\"hallucination.product_in_catalog\"}, category)",
+          "query": "label_values(sigil_eval_executions_total{evaluator=\"hallucination.product_in_catalog\"}, category)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

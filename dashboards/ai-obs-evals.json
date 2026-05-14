@@ -848,7 +848,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(sigil_eval_result_total, evaluator)",
+        "definition": "label_values(sigil_eval_executions_total, evaluator)",
         "hide": 0,
         "includeAll": true,
         "label": "Evaluator",
@@ -856,7 +856,7 @@
         "name": "evaluator",
         "options": [],
         "query": {
-          "query": "label_values(sigil_eval_result_total, evaluator)",
+          "query": "label_values(sigil_eval_executions_total, evaluator)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -875,7 +875,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(sigil_eval_result_total, ai_o11y_usecase)",
+        "definition": "label_values(sigil_eval_executions_total, rule)",
         "hide": 0,
         "includeAll": true,
         "label": "Use case",
@@ -883,7 +883,7 @@
         "name": "use_case",
         "options": [],
         "query": {
-          "query": "label_values(sigil_eval_result_total, ai_o11y_usecase)",
+          "query": "label_values(sigil_eval_executions_total, rule)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

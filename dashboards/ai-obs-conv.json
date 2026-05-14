@@ -899,7 +899,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(sigil_eval_result_total, ai_o11y_specialist)",
+        "definition": "label_values(sigil_eval_executions_total, gen_ai_agent_name)",
         "hide": 0,
         "includeAll": true,
         "label": "Specialist",
@@ -907,7 +907,7 @@
         "name": "specialist",
         "options": [],
         "query": {
-          "query": "label_values(sigil_eval_result_total, ai_o11y_specialist)",
+          "query": "label_values(sigil_eval_executions_total, gen_ai_agent_name)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
