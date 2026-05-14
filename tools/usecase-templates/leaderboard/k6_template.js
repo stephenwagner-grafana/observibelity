@@ -12,7 +12,7 @@ import { check, sleep } from 'k6/check';
 
 export const options = {
   scenarios: {
-    {{ name }}_leaderboard: {
+    '{{ name }}_leaderboard': {
       executor: 'constant-arrival-rate',
       rate: {{ baseline_rate }},
       timeUnit: '1m',

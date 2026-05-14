@@ -8,35 +8,33 @@ metadata:
     observibelity.io/scenario: toxicity-probe
 data:
   toxicity.toxicity-probe.js: "// k6 scenario template: single-event-severity archetype\n\
-    // Generated for use case: {{ name }}\n// App target:           {{ app }}\n//\
-    \ Event pattern:        {{ event_pattern }}\n// Severity signal:      {{ severity_signal\
-    \ }}\n//\n// Three streams:\n//  - critical: ~{{ critical_rate_per_hour }}/hr\
-    \ - should fire the alert\n//  - near_miss: ~{{ near_miss_rate_per_hour }}/hr\
-    \ - visible, no alert\n//  - innocent: filler so the dashboard timeline has shape\n\
-    \nimport http from 'k6/http';\nimport { check, sleep } from 'k6/check';\n\nexport\
-    \ const options = {\n  scenarios: {\n    {{ name }}_critical: {\n      executor:\
-    \ 'constant-arrival-rate',\n      rate: {{ critical_rate_per_hour }},\n      timeUnit:\
+    // Generated for use case: toxicity\n// App target:           both\n// Event pattern:\
+    \        default\n// Severity signal:      default\n//\n// Three streams:\n//\
+    \  - critical: ~1/hr - should fire the alert\n//  - near_miss: ~3/hr - visible,\
+    \ no alert\n//  - innocent: filler so the dashboard timeline has shape\n\nimport\
+    \ http from 'k6/http';\nimport { check, sleep } from 'k6/check';\n\nexport const\
+    \ options = {\n  scenarios: {\n    'toxicity_critical': {\n      executor: 'constant-arrival-rate',\n\
+    \      rate: 1,\n      timeUnit: '1h',\n      duration: '24h',\n      preAllocatedVUs:\
+    \ 1,\n      maxVUs: 2,\n      exec: 'fireCritical',\n    },\n    'toxicity_near_miss':\
+    \ {\n      executor: 'constant-arrival-rate',\n      rate: 3,\n      timeUnit:\
     \ '1h',\n      duration: '24h',\n      preAllocatedVUs: 1,\n      maxVUs: 2,\n\
-    \      exec: 'fireCritical',\n    },\n    {{ name }}_near_miss: {\n      executor:\
-    \ 'constant-arrival-rate',\n      rate: {{ near_miss_rate_per_hour }},\n     \
-    \ timeUnit: '1h',\n      duration: '24h',\n      preAllocatedVUs: 1,\n      maxVUs:\
-    \ 2,\n      exec: 'fireNearMiss',\n    },\n    {{ name }}_innocent: {\n      executor:\
+    \      exec: 'fireNearMiss',\n    },\n    'toxicity_innocent': {\n      executor:\
     \ 'constant-arrival-rate',\n      rate: 6,\n      timeUnit: '1m',\n      duration:\
     \ '24h',\n      preAllocatedVUs: 2,\n      maxVUs: 4,\n      exec: 'fireInnocent',\n\
-    \    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster.local';\n\
+    \    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL || 'http://both.observibelity.svc.cluster.local';\n\
     const INNOCENT_MESSAGES = [\n  'how do I reset my password',\n  'what is your\
     \ support hours',\n  'where do I find my order history',\n];\n\nfunction post(message,\
     \ severity, kind) {\n  const payload = JSON.stringify({\n    message: message,\n\
-    \    user_id: `u-{{ name }}-${Math.floor(Math.random() * 100)}`,\n    session_id:\
+    \    user_id: `u-toxicity-${Math.floor(Math.random() * 100)}`,\n    session_id:\
     \ `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,\n    metadata:\
-    \ {\n      usecase: '{{ name }}',\n      archetype: 'single-event-severity',\n\
-    \      severity: severity,\n      kind: kind,\n    },\n  });\n  const headers\
-    \ = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase': '{{ name\
-    \ }}',\n    'ai_o11y-archetype': 'single-event-severity',\n    'ai_o11y-severity':\
-    \ severity,\n    'ai_o11y-kind': kind,\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
+    \ {\n      usecase: 'toxicity',\n      archetype: 'single-event-severity',\n \
+    \     severity: severity,\n      kind: kind,\n    },\n  });\n  const headers =\
+    \ {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase': 'toxicity',\n\
+    \    'ai_o11y-archetype': 'single-event-severity',\n    'ai_o11y-severity': severity,\n\
+    \    'ai_o11y-kind': kind,\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
     \ payload, { headers });\n  check(res, { 'request accepted': (r) => r.status <\
     \ 500 });\n  sleep(1);\n}\n\nexport function fireCritical() {\n  post('TRIGGER_CRITICAL:\
-    \ {{ event_pattern }}', 'critical', 'critical');\n}\n\nexport function fireNearMiss()\
-    \ {\n  post('TRIGGER_NEAR_MISS: looks like {{ event_pattern }} but is benign',\
-    \ 'low', 'near_miss');\n}\n\nexport function fireInnocent() {\n  const msg = INNOCENT_MESSAGES[Math.floor(Math.random()\
-    \ * INNOCENT_MESSAGES.length)];\n  post(msg, 'info', 'innocent');\n}\n"
+    \ default', 'critical', 'critical');\n}\n\nexport function fireNearMiss() {\n\
+    \  post('TRIGGER_NEAR_MISS: looks like default but is benign', 'low', 'near_miss');\n\
+    }\n\nexport function fireInnocent() {\n  const msg = INNOCENT_MESSAGES[Math.floor(Math.random()\
+    \ * INNOCENT_MESSAGES.length)];\n  post(msg, 'info', 'innocent');\n}"

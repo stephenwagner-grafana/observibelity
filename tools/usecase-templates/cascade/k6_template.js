@@ -14,7 +14,7 @@ import { check, sleep } from 'k6/check';
 
 export const options = {
   scenarios: {
-    {{ name }}_cascade_arc: {
+    '{{ name }}_cascade_arc': {
       executor: 'constant-arrival-rate',
       rate: 1,
       timeUnit: '10m',

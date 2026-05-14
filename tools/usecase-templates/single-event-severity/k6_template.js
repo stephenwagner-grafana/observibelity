@@ -14,7 +14,7 @@ import { check, sleep } from 'k6/check';
 
 export const options = {
   scenarios: {
-    {{ name }}_critical: {
+    '{{ name }}_critical': {
       executor: 'constant-arrival-rate',
       rate: {{ critical_rate_per_hour }},
       timeUnit: '1h',
@@ -23,7 +23,7 @@ export const options = {
       maxVUs: 2,
       exec: 'fireCritical',
     },
-    {{ name }}_near_miss: {
+    '{{ name }}_near_miss': {
       executor: 'constant-arrival-rate',
       rate: {{ near_miss_rate_per_hour }},
       timeUnit: '1h',
@@ -32,7 +32,7 @@ export const options = {
       maxVUs: 2,
       exec: 'fireNearMiss',
     },
-    {{ name }}_innocent: {
+    '{{ name }}_innocent': {
       executor: 'constant-arrival-rate',
       rate: 6,
       timeUnit: '1m',

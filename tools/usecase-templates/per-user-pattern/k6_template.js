@@ -13,7 +13,7 @@ import { check, sleep } from 'k6/check';
 
 export const options = {
   scenarios: {
-    {{ name }}_offender: {
+    '{{ name }}_offender': {
       executor: 'constant-arrival-rate',
       rate: {{ weight }},
       timeUnit: '1m',
@@ -22,7 +22,7 @@ export const options = {
       maxVUs: 4,
       exec: 'fireOffender',
     },
-    {{ name }}_baseline: {
+    '{{ name }}_baseline': {
       executor: 'constant-arrival-rate',
       rate: 1,
       timeUnit: '1m',
