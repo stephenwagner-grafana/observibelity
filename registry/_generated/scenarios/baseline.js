@@ -71,17 +71,41 @@ const CLAUDE_MODELS = [
 ];
 const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.10');
 
-function pickModelRouting() {
-  if (Math.random() < CLAUDE_FRACTION) {
-    // ~10% — Claude, weighted Haiku/Sonnet/Opus per the array above.
+// Sigil groups Sigil generation events into a "conversation" by
+// hash(persona_id + UTC_hour) — see llm-gateway/app/sigil.py:_derive_session_id.
+// To make each Sigil Conversations row use ONE model end-to-end (instead of
+// 6+ different models per conversation), we hash the same bucket key and
+// derive Claude-vs-Ollama + which Claude model from it. That way every
+// loadgen iteration that lands in the same conversation picks the same
+// model. The next hour boundary creates a fresh conversation with a fresh
+// (re-randomized) model assignment.
+function _hash(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0; // force int32
+  }
+  return Math.abs(h);
+}
+
+function pickModelRouting(persona) {
+  const now = new Date();
+  const bucket = persona + ':' + now.getUTCFullYear() + '-' +
+                 (now.getUTCMonth() + 1) + '-' + now.getUTCDate() + '-' +
+                 now.getUTCHours();
+  const h = _hash(bucket);
+  // Deterministic 0..1 from the bucket hash.
+  const r01 = (h % 10000) / 10000;
+  if (r01 < CLAUDE_FRACTION) {
+    // Same persona+hour → same Claude model (one model per conversation).
     return {
       provider_override: 'anthropic',
-      model_override: CLAUDE_MODELS[Math.floor(Math.random() * CLAUDE_MODELS.length)],
+      model_override: CLAUDE_MODELS[h % CLAUDE_MODELS.length],
     };
   }
-  // ~90% — Ollama with the gateway's configured default model
-  // (chart-supplied). Leaving model_override null lets us swap the local
-  // model fleet at deploy time without redeploying the loadgen.
+  // Ollama path: gateway picks the locally-rotated default. Lockstep
+  // rotation across pods keeps the Best Models leaderboard populated;
+  // single-conversation model stability is enforced only for Claude.
   return { provider_override: 'ollama', model_override: null };
 }
 
@@ -322,9 +346,9 @@ const SCENARIOS = [
 
   // NC: cost-anomaly-per-user (shopper triggering long-context cost spikes)
   { app: 'neoncart', persona: 'u-priya-research', usecase: 'cost-anomaly-per-user', weight: 3,
-    msgs: ['analyze every product in this huge catalog dump: ' + 'item '.repeat(180),
-           'summarize this 5000-word review thread: ' + 'lorem ipsum '.repeat(90),
-           'compare all of these long product descriptions: ' + 'foo bar '.repeat(220)] },
+    msgs: ['compare these gaming laptops feature-by-feature for my nephew: ' + 'CPU GHz, RAM GB, GPU model, screen Hz, weight lbs, battery hr, price USD; '.repeat(20),
+           'paste my long product review thread and find the most-mentioned complaints: ' + 'item arrived damaged, packaging was crushed, return process was slow, '.repeat(20),
+           'rank every laptop in your catalog by value-for-money in this huge spec dump: ' + 'model SKU, price, CPU, RAM, GPU, screen, battery, weight; '.repeat(20)] },
 
   // NC: tool-call-runaway (shopper asking chatbot to keep searching)
   { app: 'neoncart', persona: 'u-shopper-loopy', usecase: 'tool-call-runaway', weight: 2,
@@ -360,7 +384,7 @@ export default function () {
     : sc.app;
   const url = (app === 'supportbot' ? SUPPORTBOT_URL : NEONCART_URL) + '/chat';
 
-  const routing = pickModelRouting();
+  const routing = pickModelRouting(sc.persona);
   const payloadObj = {
     message: msg,
     usecase: sc.usecase,
