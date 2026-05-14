@@ -39,7 +39,7 @@ fall back to the manual UI flow in **`docs/EVALUATORS.md`**.
 | `llm-gateway` pod | Emits one Sigil generation record per `/v1/complete` via the `sigil_sdk` gRPC client (`SIGIL_GENERATION_EXPORT_ENDPOINT`). Already wired in #34. | Unchanged. |
 | `registry/use_cases/*.yaml` evaluator blocks | 42 specs declared (20 rule, 13 regex, 9 llm-judge). Several still reference `source: loki` with old AI o11y demo stream selectors. | All 42 + 3 baselines = 44 specs. Sigil-native sources only. |
 | `registry/_generated/evaluators/*.json` | 32 compiled — most reference stale Loki streams. Regenerated on `make build-usecases`. | 44 compiled. |
-| `tools/evaluators-sync.sh push` | Implemented. POSTs to `/api/plugins/grafana-aiobservability-app/resources/evaluators`. **Returns 404 on Sigil < v0.18** — the plugin's evaluator CRUD endpoint isn't shipped everywhere yet. | When plugin supports CRUD: `make evaluators-push` is one command. Until then: manual UI flow per `docs/EVALUATORS.md`. |
+| `tools/evaluators-sync.sh push` | Implemented. POSTs to `/api/plugins/grafana-sigil-app/resources/evaluators`. **Returns 404 on Sigil < v0.18** — the plugin's evaluator CRUD endpoint isn't shipped everywhere yet. | When plugin supports CRUD: `make evaluators-push` is one command. Until then: manual UI flow per `docs/EVALUATORS.md`. |
 | Grafana Cloud — AI Observability plugin | Plugin **installed**. **Zero evaluators configured.** | 3 baseline + 41 per-use-case = 44 live. |
 | Grafana Cloud — alert rules | Wired in chart via `tools/alerts-sync.sh`. **Some alerts reference evaluators that don't exist yet** → they read 0 and never fire. | All alerts paired with a live evaluator. |
 
@@ -53,7 +53,7 @@ fall back to the manual UI flow in **`docs/EVALUATORS.md`**.
 You need:
 
 1. **A Grafana Cloud stack** with the AI Observability plugin enabled.
-   - Verify at `https://<stack>.grafana.net/a/grafana-aiobservability-app` — if
+   - Verify at `https://<stack>.grafana.net/a/grafana-sigil-app` — if
      you see the plugin landing page, you're good.
    - If 404: install via *Apps → Connections → Add new connection → AI
      Observability*.
@@ -105,7 +105,7 @@ Should show `enabled: true` and a non-empty `endpoint`.
 
 ## Step 2 — Install the AI Observability plugin
 
-(Skip if `https://<stack>.grafana.net/a/grafana-aiobservability-app` already
+(Skip if `https://<stack>.grafana.net/a/grafana-sigil-app` already
 loads a landing page.)
 
 1. Open `https://<stack>.grafana.net`.
@@ -211,7 +211,7 @@ make evaluators-push
 ```
 
 Behind the scenes: `./tools/evaluators-sync.sh push` POSTs every JSON to
-`$GRAFANA_URL/api/plugins/grafana-aiobservability-app/resources/evaluators`.
+`$GRAFANA_URL/api/plugins/grafana-sigil-app/resources/evaluators`.
 
 Expected output:
 ```
@@ -230,7 +230,7 @@ The AI Observability plugin's evaluator CRUD endpoint isn't shipped in every
 plugin version. If `evaluators-push` fails with 404 or "Sigil v0.17.0 does not
 yet expose evaluator CRUD", drop to the UI:
 
-1. Open `https://<stack>.grafana.net/a/grafana-aiobservability-app/evaluators`.
+1. Open `https://<stack>.grafana.net/a/grafana-sigil-app/evaluators`.
 2. Click **+ New evaluator** (top-right).
 3. Walk through `docs/EVALUATORS.md` — it has the exact field values for all 44
    evaluators with copy-pasteable specs.
