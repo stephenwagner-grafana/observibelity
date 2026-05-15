@@ -93,7 +93,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -167,12 +167,86 @@
       }
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Average spend per conversation across NeonCart + SupportBot in the last hour. Hourly USD spend divided by the count of distinct session_ids active on the cost metric. Reality: ~$0.0023 avg today.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 0.01
+              },
+              {
+                "color": "#F472B6",
+                "value": 0.05
+              }
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 4
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 102,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h]))\n/\nclamp_min(\n  count(count by (session_id) (gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\"})),\n  1\n)",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "USD / conversation",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "💬 $ per conversation (last 1h)",
+      "type": "stat",
+      "transparent": false
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 13
       },
       "id": 1,
       "panels": [],
@@ -217,7 +291,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 9
+        "y": 14
       },
       "id": 2,
       "options": {
@@ -565,7 +639,7 @@
         "h": 9,
         "w": 18,
         "x": 6,
-        "y": 9
+        "y": 14
       },
       "id": 3,
       "options": {
@@ -609,6 +683,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -634,7 +709,7 @@
         "h": 3,
         "w": 6,
         "x": 0,
-        "y": 15
+        "y": 20
       },
       "id": 4,
       "options": {
@@ -677,7 +752,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 23
       },
       "id": 5,
       "panels": [],
@@ -998,7 +1073,7 @@
         "h": 9,
         "w": 16,
         "x": 0,
-        "y": 19
+        "y": 24
       },
       "id": 6,
       "options": {
@@ -1034,7 +1109,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\ude24 Frustration mentions vs empathetic responses (1h)",
+      "title": "\ud83d\ude24 Frustration mentions vs empathetic responses",
       "type": "timeseries",
       "transparent": false
     },
@@ -1076,7 +1151,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 19
+        "y": 24
       },
       "id": 7,
       "options": {
@@ -1106,7 +1181,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 % of frustrated customers the bot ignored (1h)",
+      "title": "\u26a0 % of frustrated customers the bot ignored",
       "type": "gauge",
       "transparent": false
     },
@@ -1116,7 +1191,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 33
       },
       "id": 8,
       "panels": [],
@@ -1494,7 +1569,7 @@
         "h": 10,
         "w": 16,
         "x": 0,
-        "y": 29
+        "y": 34
       },
       "id": 9,
       "options": {
@@ -1514,7 +1589,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "current",
@@ -1526,7 +1601,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "baseline",
@@ -1538,7 +1613,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "-2\u03c3",
@@ -1561,6 +1636,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1586,7 +1662,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 29
+        "y": 34
       },
       "id": 10,
       "options": {
@@ -1611,7 +1687,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]))",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "drift",
@@ -1629,7 +1705,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 44
       },
       "id": 11,
       "panels": [],
@@ -1641,7 +1717,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per nc-/sb- specialist with three signals from the last hour: cost rate (USD/sec), p95 request latency, and avg output token rate. Column headers in the field overrides still reference 'compliance/frustration/brand score' \u2014 those labels are misleading; trust the underlying numeric columns.",
+      "description": "One row per nc-/sb- specialist with three signals from the last hour: cost (USD/hour), p95 request latency (seconds), and avg output token rate (tokens/min).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1662,7 +1738,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "short"
         },
         "overrides": [
           {
@@ -1689,7 +1765,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Refund compliance %"
+                "value": "Cost (USD/hour)"
+              },
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
               },
               {
                 "id": "custom.cellOptions",
@@ -1708,7 +1792,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Frustration addressed %"
+                "value": "p95 latency"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 2
               },
               {
                 "id": "custom.cellOptions",
@@ -1727,11 +1819,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Avg brand score"
+                "value": "Output (tokens/min)"
               },
               {
                 "id": "unit",
                 "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
               }
             ]
           },
@@ -2026,7 +2122,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 45
       },
       "id": 12,
       "options": {
@@ -2043,7 +2139,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Avg brand score"
+            "displayName": "Cost (USD/hour)"
           }
         ]
       },
@@ -2053,7 +2149,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h]))",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} cost rate",
@@ -2065,7 +2161,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket[1h])))",
+          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} p95 latency",
@@ -2077,7 +2173,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h]))",
+          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} avg output rate",
@@ -2085,7 +2181,7 @@
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udce6 Per-specialist signals \u2014 cost rate, p95 latency, output rate (1h)",
+      "title": "\ud83d\udce6 Per-specialist signals \u2014 cost, latency, output rate (last 1h)",
       "transformations": [
         {
           "id": "joinByField",

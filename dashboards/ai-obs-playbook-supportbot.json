@@ -137,11 +137,260 @@
       }
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Live USD/hour rate for all Support Bot specialists combined.",
+      "type": "stat",
+      "title": "\ud83d\udcb8 Support Bot spend right now",
+      "id": 101,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 3
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\"}[5m])) * 3600",
+          "legendFormat": "$/hr",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 5}
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "showPercentChange": false,
+        "wideLayout": true,
+        "percentChangeColorMode": "standard"
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Live calls per minute across all Support Bot chat/tool calls.",
+      "type": "stat",
+      "title": "\ud83d\udcc8 Support Bot calls/min",
+      "id": 102,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\"}[5m])) * 60",
+          "legendFormat": "calls/min",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#8AB8FF", "value": null}
+            ]
+          },
+          "unit": "short",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "showPercentChange": false,
+        "wideLayout": true,
+        "percentChangeColorMode": "standard"
+      }
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Support Bot errors/minute from Loki (fallback: traefik_service_requests_total is not collected in this stack, so we match ERROR-level lines from supportbot/acme-bot-api containers over the last 5m).",
+      "type": "stat",
+      "title": "\ud83d\udd25 Support Bot errors/min",
+      "id": 103,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 3
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(rate({service_namespace=\"observibelity\",container=~\"supportbot.*|acme-bot-api\"} |~ \"ERROR\" [5m])) * 60",
+          "legendFormat": "errors/min",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 5}
+            ]
+          },
+          "unit": "short",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "showPercentChange": false,
+        "wideLayout": true,
+        "percentChangeColorMode": "standard"
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "5-minute p95 of GenAI client operation duration across all Support Bot specialists.",
+      "type": "stat",
+      "title": "\u23f1 Support Bot p95 latency",
+      "id": 104,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 3
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\"}[5m])))",
+          "legendFormat": "p95",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 15}
+            ]
+          },
+          "unit": "s",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "showPercentChange": false,
+        "wideLayout": true,
+        "percentChangeColorMode": "standard"
+      }
+    },
+    {
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 7
       },
       "id": 1,
       "options": {
@@ -158,7 +407,7 @@
         "h": 18,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 11
       },
       "id": 2,
       "options": {
@@ -175,7 +424,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 29
       },
       "id": 3,
       "options": {
@@ -192,7 +441,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 41
       },
       "id": 4,
       "options": {
@@ -209,7 +458,7 @@
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 47
+        "y": 51
       },
       "id": 5,
       "options": {
@@ -226,7 +475,7 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 47
+        "y": 51
       },
       "id": 6,
       "options": {

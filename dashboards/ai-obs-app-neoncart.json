@@ -90,7 +90,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -598,7 +598,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-specialist call rate over time (gen_ai token usage as a proxy for invocations). One line per nc-* agent: nc-chatbot, nc-product-finder, etc. Filtered by the use_case dropdown.",
+      "description": "Per-specialist call rate (calls/min) over time, using gen_ai token usage as the per-call signal. One line per nc-* agent: nc-chatbot, nc-product-finder, etc. Filtered by the use_case dropdown.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -614,7 +614,7 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": [
           {
@@ -931,7 +931,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\"}[5m]))",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -939,7 +939,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which specialist is taking the load? (rate by specialist)",
+      "title": "Which specialist is taking the load? (calls/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -1663,7 +1663,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\"}[1h])))",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -1693,7 +1693,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-tool invocation rate over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. \u2014 one line each.",
+      "description": "Per-tool invocation rate (calls/min) over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. \u2014 one line each.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1709,7 +1709,7 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": [
           {
@@ -2026,7 +2026,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|geo_lookup|create_ticket|request_access|reset_password|update_ticket\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -2034,7 +2034,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which tools are being called and how often?",
+      "title": "Which tools are being called and how often? (calls/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2131,7 +2131,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Stacked tokens/sec per model, split into input and output. Drawn from gen_ai.client.token.usage (OTel GenAI semconv). Use to see whether reads or writes dominate, and which model is doing the talking.",
+      "description": "Stacked tokens/min per model, split into input and output. Drawn from gen_ai.client.token.usage (OTel GenAI semconv). Use to see whether reads or writes dominate, and which model is doing the talking.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2468,7 +2468,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\"}[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}} input",
@@ -2480,7 +2480,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\"}[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}} output",
@@ -2488,7 +2488,7 @@
           "refId": "B"
         }
       ],
-      "title": "How many tokens per model, input vs output?",
+      "title": "How many tokens per model, input vs output? (tokens/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2497,7 +2497,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "NeonCart spend rate projected to **USD per hour** (5m rate \u00d7 3600) \u2014 total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
+      "description": "NeonCart spend rate projected to **USD per hour** \u2014 total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2814,6 +2814,11 @@
       "id": 19,
       "options": {
         "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -2829,7 +2834,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "total",
@@ -2841,7 +2846,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2858,7 +2863,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "All-up NeonCart LLM bill for the past hour (sum of gen_ai_client_cost_USD_total across nc-* specialists). Yellow above $1/hr, red above $5/hr.",
+      "description": "All-up NeonCart LLM bill for the past hour (sum of gen_ai_client_cost_USD_total across nc-* specialists). Yellow above $1, red above $10.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2877,11 +2882,12 @@
               },
               {
                 "color": "#F472B6",
-                "value": 5
+                "value": 10
               }
             ]
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -2914,7 +2920,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[1h]))",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[1h]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "USD",
@@ -2970,7 +2976,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "USD / hr"
+                "value": "USD (1h)"
               },
               {
                 "id": "custom.cellOptions",
@@ -2978,6 +2984,26 @@
                   "mode": "gradient",
                   "type": "gauge"
                 }
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Projected 30d (USD)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
               }
             ]
           },
@@ -3289,17 +3315,32 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "USD / hr"
+            "displayName": "USD (1h)"
           }
         ]
       },
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": {
+              "left": "Value",
+              "operator": "*",
+              "right": "720"
+            },
+            "alias": "Projected 30d (USD)",
+            "replaceFields": false
+          }
+        }
+      ],
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\"}[1h])))",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -3456,7 +3497,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-service Postgres query rate, from traces_spanmetrics_calls_total on the DB-touching tools (get_inventory, search_products, place_order, etc.).",
+      "description": "Per-service Postgres query rate (queries/min), from traces_spanmetrics_calls_total on the DB-touching tools (get_inventory, search_products, place_order, etc.).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3472,7 +3513,7 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": [
           {
@@ -3789,7 +3830,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"create_expense|get_inventory|get_order_history|get_product|search_products\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -3797,7 +3838,7 @@
           "refId": "A"
         }
       ],
-      "title": "How busy is the DB? (queries/sec by tool)",
+      "title": "How busy is the DB? (queries/min by tool)",
       "type": "timeseries",
       "transparent": false
     },
@@ -4262,7 +4303,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_total, ai_o11y_usecase)",
+        "definition": "label_values(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}, ai_o11y_usecase)",
         "hide": 0,
         "includeAll": true,
         "label": "Use case",
@@ -4270,7 +4311,7 @@
         "name": "use_case",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_total, ai_o11y_usecase)",
+          "query": "label_values(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}, ai_o11y_usecase)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -4289,7 +4330,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\"}, ai_o11y_specialist)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
         "hide": 0,
         "includeAll": true,
         "label": "Specialist",
@@ -4297,7 +4338,7 @@
         "name": "specialist",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\"}, ai_o11y_specialist)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

@@ -74,7 +74,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -162,15 +162,16 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Count of gateway log lines in the last hour matching hateful/abusive keywords (hate, kill yourself, slurs, etc.). Any non-zero value opens a ticket \u2014 the threshold is one.",
+      "description": "Count of Sigil toxicity/hate evaluator runs that came back `status=\"failed\"` in the last hour. Any non-zero value opens a ticket \u2014 the threshold is one.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -214,27 +215,27 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [1h]))",
-          "legendFormat": "toxicity events",
+          "expr": "sum(increase(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",status=\"failed\"}[1h]))",
+          "legendFormat": "toxicity / hate failures",
           "refId": "A",
           "instant": false,
           "range": true,
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udea8 Hateful content events (1h)",
+      "title": "Toxicity / hate failures (1h)",
       "type": "stat",
       "transparent": false
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Top 10 employees ranked by hateful/abusive content events in the last 24h. Bars at the right edge = repeat offenders worth a chat with HR.",
+      "description": "Top 10 Sigil evaluators ranked by `status=\"failed\"` runs in the last 24h. The longest bars are the evaluators tripping most often — investigate those first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -595,16 +596,17 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [24h])))",
-          "legendFormat": "{{user_id}}",
-          "queryType": "instant",
+          "expr": "topk(10, sum by (evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\",status=\"failed\"}[24h])))",
+          "legendFormat": "{{evaluator}}",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top 10 employees by toxic events (24h)",
+      "title": "Top evaluators by failures (24h)",
       "type": "barchart",
       "transparent": false
     },
@@ -655,15 +657,16 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Per-specialist pass rate over the last hour \u2014 fraction of gateway events that did NOT match a toxic keyword. Green band starts at 99.9%; anything below ~99% means that specialist is fielding abusive traffic.",
+      "description": "Per-agent pass rate over the last hour \u2014 `status=\"success\"` toxicity runs divided by all toxicity runs, grouped by routed specialist (`gen_ai_agent_name`). Green band starts at 99.9%; anything below ~99% means that agent is fielding abusive traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 1,
           "max": 1,
           "min": 0.95,
           "thresholds": {
@@ -713,16 +716,16 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} !~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_specialist!=\"\" [1h])) / (sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [1h])) + 1)",
-          "legendFormat": "{{ai_o11y_specialist}}",
-          "queryType": "range",
+          "expr": "sum by (gen_ai_agent_name) (\n  rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\",status=\"success\"}[1h])\n)\n/\nclamp_min(\n  sum by (gen_ai_agent_name) (\n    rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\"}[1h])\n  ), 0.0001\n)",
+          "legendFormat": "{{gen_ai_agent_name}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Toxicity pass rate by specialist (1h)",
+      "title": "Toxicity pass rate by agent (1h)",
       "type": "stat",
       "transparent": false
     },
@@ -741,10 +744,10 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "Four lines, one per evaluator family \u2014 toxicity, hallucination, PII, prompt injection \u2014 counting matching gateway log lines in rolling 5m windows. Stacked spikes show when multiple categories light up at once (often the same conversation).",
+      "description": "Four lines, one per evaluator family \u2014 toxicity, hallucination, PII, prompt injection \u2014 Sigil failure rate per 5m. Stacked spikes show when multiple categories light up at once (often the same conversation).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1058,9 +1061,7 @@
       "id": 7,
       "options": {
         "legend": {
-          "calcs": [
-            "sum"
-          ],
+          "calcs": [],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1073,46 +1074,46 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [5m]))",
+          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",status=\"failed\"}[5m]))",
           "legendFormat": "toxicity",
-          "queryType": "range",
+          "range": true,
           "refId": "A"
         },
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hallucinat|fabricat|made up|invent)\" [5m]))",
+          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*hallucinat.*|.*ground.*|.*factual.*\",status=\"failed\"}[5m]))",
           "legendFormat": "hallucination",
-          "queryType": "range",
+          "range": true,
           "refId": "B"
         },
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|credit card|password|secret key)\" [5m]))",
+          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*pii.*|.*secret.*|.*leak.*\",status=\"failed\"}[5m]))",
           "legendFormat": "pii",
-          "queryType": "range",
+          "range": true,
           "refId": "C"
         },
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions)\" [5m]))",
+          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*injection.*|.*jailbreak.*|.*prompt.*\",status=\"failed\"}[5m]))",
           "legendFormat": "prompt injection",
-          "queryType": "range",
+          "range": true,
           "refId": "D"
         }
       ],
-      "title": "\ud83d\udcc8 Evaluator firings by category over time",
+      "title": "Evaluator failures by category over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -1126,15 +1127,15 @@
       },
       "id": 8,
       "panels": [],
-      "title": "\ud83d\udccb Status table \u2014 fire rate, fails, pass rate per evaluator",
+      "title": "\ud83d\udccb Evaluator status table \u2014 runs, failures, failure rate (1h)",
       "type": "row"
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "description": "One-glance evaluator scoreboard for the all-evaluators regex (toxicity + hallucination + PII + prompt-injection bundled): current fire rate (5m), total fails (1h), and pass rate. Sorted by fails descending.",
+      "description": "One-glance evaluator scoreboard from `sigil_eval_executions_total`: total runs in the last hour, failures in the last hour, and failure rate per evaluator. Sorted by failures descending — top rows are the evaluators tripping most often.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1246,11 +1247,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Fire rate (5m)"
+                "value": "Total runs (1h)"
               },
               {
                 "id": "unit",
                 "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
               },
               {
                 "id": "custom.cellOptions",
@@ -1269,7 +1274,31 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Fails (1h)"
+                "value": "Failures (1h)"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#8AB8FF",
+                      "value": null
+                    },
+                    {
+                      "color": "#F472B6",
+                      "value": 1
+                    }
+                  ]
+                }
               },
               {
                 "id": "custom.cellOptions",
@@ -1283,16 +1312,20 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #C"
+              "options": "Failure rate (1h)"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Pass rate (1h)"
+                "value": "Failure rate (1h)"
               },
               {
                 "id": "unit",
                 "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
               }
             ]
           },
@@ -1604,49 +1637,76 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Fails (1h)"
+            "displayName": "Failures (1h)"
           }
         ]
       },
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [5m]))",
-          "legendFormat": "all evals fire rate",
-          "queryType": "range",
+          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\"}[1h])))",
+          "legendFormat": "{{evaluator}}",
+          "instant": true,
+          "range": false,
+          "format": "table",
           "refId": "A"
         },
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h]))",
-          "legendFormat": "1h fails",
-          "queryType": "instant",
+          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\",status=\"failed\"}[1h])))",
+          "legendFormat": "{{evaluator}}",
+          "instant": true,
+          "range": false,
+          "format": "table",
           "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "1 - sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|hallucinat|ssn|credit card|ignore previous)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\"} | json [1h])) + 1)",
-          "legendFormat": "pass rate",
-          "queryType": "range",
-          "refId": "C"
         }
       ],
-      "title": "\ud83d\udccb Evaluator scoreboard \u2014 fire rate \u00b7 fails \u00b7 pass rate",
+      "title": "Evaluator scoreboard \u2014 total runs \u00b7 failures \u00b7 failure rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
           "options": {
             "byField": "evaluator",
             "mode": "outer"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Failure rate (1h)",
+            "binary": {
+              "left": "Value #B",
+              "operator": "/",
+              "right": "Value #A"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true
+            },
+            "indexByName": {
+              "evaluator": 0,
+              "Value #A": 1,
+              "Value #B": 2,
+              "Failure rate (1h)": 3
+            },
+            "renameByName": {}
           }
         }
       ],
@@ -1718,7 +1778,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway line matching any critical evaluator pattern (toxicity, hallucination, PII, prompt injection). Use this to read the actual user prompt / model reply that tripped the alert.",
+      "description": "Live drill-down: every Sigil evaluator-result log line where the evaluator reported failure. Read the actual prompt and model reply that tripped the eval. (Scoreboards above use the Prometheus counter `sigil_eval_executions_total`; this panel reads the raw events for context.)",
       "gridPos": {
         "h": 10,
         "w": 14,
@@ -1742,12 +1802,12 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|kill yourself|hallucinat|fabricat|ssn|credit card|password|ignore previous|disregard.*instructions)\"",
+          "expr": "{service_namespace=\"observibelity\"} |~ \"(?i)sigil\" | json | status=\"failed\"",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcdc Critical evaluator fails \u2014 raw log stream (Loki)",
+      "title": "Recent evaluator failures \u2014 raw event stream (Loki)",
       "type": "logs",
       "transparent": false
     }

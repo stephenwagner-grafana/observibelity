@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -191,6 +191,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -264,6 +265,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -314,13 +316,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m])) / (sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [30m])) + 0.0001)",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [15m])) / (sum(rate({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [4h])) + 0.0001)",
           "legendFormat": "ratio",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Are we worse than baseline? (15m \u00f7 30m ratio)",
+      "title": "\ud83d\udcc8 Are we worse than baseline? (15m \u00f7 4h ratio)",
       "type": "stat",
       "transparent": false
     },
@@ -1245,6 +1247,10 @@
                 "value": "Fails (1h)"
               },
               {
+                "id": "decimals",
+                "value": 0
+              },
+              {
                 "id": "custom.cellOptions",
                 "value": {
                   "mode": "gradient",
@@ -1266,6 +1272,10 @@
               {
                 "id": "unit",
                 "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
               }
             ]
           },

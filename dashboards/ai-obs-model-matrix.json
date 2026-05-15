@@ -74,7 +74,7 @@
     {
       "id": 100,
       "type": "row",
-      "title": "\ud83d\udcca Throughput \u2014 output tokens/sec per (specialist \u00d7 model)",
+      "title": "\ud83d\udcca Throughput \u2014 output tokens/min per (specialist \u00d7 model)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -87,8 +87,8 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "Output tokens/sec \u2014 by specialist \u00d7 model",
-      "description": "Output token generation rate. Higher = more throughput on this specialist+model pair.",
+      "title": "Output tokens/min \u2014 by specialist \u00d7 model",
+      "description": "Output token generation rate, per minute. Higher = more throughput on this specialist+model pair.",
       "gridPos": {
         "x": 0,
         "y": 4,
@@ -106,13 +106,14 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\"}[5m]))",
+          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[5m])) * 60",
           "legendFormat": "{{ai_o11y_specialist}} \u00b7 {{gen_ai_response_model}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "decimals": 0,
           "color": {
             "mode": "palette-classic"
           },
@@ -156,7 +157,7 @@
       "id": 3,
       "type": "table",
       "title": "Cost per 1k calls (USD) \u2014 by specialist \u00d7 model",
-      "description": "Lower is better. Computed from last 1h. Excludes pairs with no traffic.",
+      "description": "USD spent per 1000 calls, by (specialist \u00d7 model), last 1h. Lower is better. Excludes pairs with no traffic.",
       "gridPos": {
         "x": 0,
         "y": 15,
@@ -174,13 +175,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "1000 * sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_cost_USD_total[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\"}[1h]) / 60), 1)",
+          "expr": "1000 * sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[1h])), 1)",
           "instant": true,
           "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4,
           "custom": {
             "align": "auto"
           }
@@ -211,7 +214,7 @@
       "id": 4,
       "type": "table",
       "title": "Avg output tokens per call \u2014 by specialist \u00d7 model",
-      "description": "How verbose each model is per specialist. Useful to spot models that ramble or are too terse.",
+      "description": "How verbose each model is per specialist (output tokens divided by call count, last 1h). Useful to spot models that ramble or are too terse.",
       "gridPos": {
         "x": 12,
         "y": 15,
@@ -229,13 +232,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\"}[1h]) > 0) * 1, 1)",
+          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[1h])), 1)",
           "instant": true,
           "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "unit": "short",
+          "decimals": 0,
           "custom": {
             "align": "auto"
           }
@@ -278,8 +283,8 @@
     {
       "id": 5,
       "type": "table",
-      "title": "Eval pass rate \u2014 by specialist \u00d7 model",
-      "description": "Fraction of LLM-judge evaluations that passed for each pair. Combine with throughput + cost to pick a model.",
+      "title": "Eval pass rate (%) \u2014 by specialist \u00d7 model (1h)",
+      "description": "Fraction of Sigil eval executions that passed for each pair, last 1h. Combine with throughput + cost to pick a model.",
       "gridPos": {
         "x": 0,
         "y": 26,
@@ -297,13 +302,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{status=\"success\"}[1h])) / clamp_min(sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total[1h])), 0.001)",
+          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{service_namespace=\"observibelity\",status=\"success\"}[1h])) / clamp_min(sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{service_namespace=\"observibelity\"}[1h])), 0.001)",
           "instant": true,
           "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
           "custom": {
             "align": "auto"
           }
@@ -352,13 +359,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model, evaluator) (increase(sigil_eval_executions_total[1h]))",
+          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model, evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\"}[1h]))",
           "instant": true,
           "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "unit": "short",
+          "decimals": 0,
           "custom": {
             "align": "auto"
           }

@@ -724,7 +724,7 @@
       "targets": [
         {
           "expr": "histogram_quantile(0.95, sum by (le, service) (rate(traces_spanmetrics_latency_bucket{service=~\"$tool\"}[5m])))",
-          "legendFormat": "{{tool}}",
+          "legendFormat": "{{service}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -1059,7 +1059,7 @@
       "targets": [
         {
           "expr": "histogram_quantile(0.95, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
-          "legendFormat": "p95 \u2014 {{outcome}}",
+          "legendFormat": "p95 \u2014 {{status_code}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -1068,7 +1068,7 @@
         },
         {
           "expr": "histogram_quantile(0.50, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
-          "legendFormat": "p50 \u2014 {{outcome}}",
+          "legendFormat": "p50 \u2014 {{status_code}}",
           "refId": "B",
           "datasource": {
             "type": "prometheus",
@@ -1415,7 +1415,7 @@
       "targets": [
         {
           "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m])), 0.001)",
-          "legendFormat": "{{tool}}",
+          "legendFormat": "{{service}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -1432,7 +1432,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Token throughput broken down by use case (mice-RCA, gift finder, refund, etc.). Use this to see which conversation type is driving the load \u2014 and during the mice demo, where the spike is concentrated.",
+      "description": "Token throughput per minute broken down by use case (mice-RCA, gift finder, refund, etc.). Use this to see which conversation type is driving the load \u2014 and during the mice demo, where the spike is concentrated.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1443,7 +1443,8 @@
             "showPoints": "never",
             "spanNulls": true
           },
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": [
           {
@@ -1748,8 +1749,8 @@
       },
       "targets": [
         {
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_usecase!=\"\"}[1m]))",
-          "legendFormat": "{{category}}",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",ai_o11y_usecase!=\"\"}[1m])) * 60",
+          "legendFormat": "{{ai_o11y_usecase}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -1757,7 +1758,7 @@
           }
         }
       ],
-      "title": "Which use case is burning tokens? (rate per use case)",
+      "title": "Which use case is burning tokens? (tokens/min per use case)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2084,7 +2085,7 @@
       "targets": [
         {
           "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\",span_kind=\"SPAN_KIND_SERVER\"}[1m]))",
-          "legendFormat": "{{tool}}",
+          "legendFormat": "{{service}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -2421,7 +2422,7 @@
       "targets": [
         {
           "expr": "sum by (span_name) (increase(traces_spanmetrics_calls_total{service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[1m]))",
-          "legendFormat": "{{error_type}}",
+          "legendFormat": "{{span_name}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",

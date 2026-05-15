@@ -102,8 +102,8 @@
     {
       "id": 3,
       "type": "timeseries",
-      "title": "Production traffic (claude-* models)",
-      "description": "Output tokens/sec for the Claude side of the bus. This is where prod-quality replies come from.",
+      "title": "Production traffic (claude-* models) — output tokens/min",
+      "description": "Output tokens/min for the Claude side of the bus (5m rate × 60). This is where prod-quality replies come from.",
       "gridPos": {
         "x": 8,
         "y": 5,
@@ -121,19 +121,21 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", gen_ai_response_model=~\"claude.*\"}[5m]))",
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_token_type=\"output\", gen_ai_response_model=~\"claude.*\"}[5m])) * 60",
           "legendFormat": "{{gen_ai_response_model}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "decimals": 0,
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
             "fillOpacity": 0,
-            "stacking": {}
+            "stacking": {},
+            "axisLabel": "tokens / minute"
           }
         },
         "overrides": []
@@ -185,8 +187,8 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Dev traffic (ollama rotation)",
-      "description": "Output tokens/sec across the 10 Ollama rotation slots. Each spike is a 5-min slot lighting up.",
+      "title": "Dev traffic (ollama rotation) — output tokens/min",
+      "description": "Output tokens/min across the 10 Ollama rotation slots (5m rate × 60). Each spike is a 5-min slot lighting up.",
       "gridPos": {
         "x": 8,
         "y": 14,
@@ -204,19 +206,21 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", gen_ai_system=\"ollama\"}[5m]))",
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_token_type=\"output\", gen_ai_system=\"ollama\"}[5m])) * 60",
           "legendFormat": "{{gen_ai_response_model}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "decimals": 0,
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
             "fillOpacity": 0,
-            "stacking": {}
+            "stacking": {},
+            "axisLabel": "tokens / minute"
           }
         },
         "overrides": []
@@ -272,13 +276,14 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
           "legendFormat": "{{ai_o11y_usecase}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
+          "decimals": 2,
           "color": {
             "mode": "palette-classic"
           },
@@ -310,7 +315,7 @@
     {
       "id": 103,
       "type": "row",
-      "title": "\ud83c\udfc1 Conversations per hour, by app",
+      "title": "\ud83c\udfc1 Calls per minute, by app",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -323,8 +328,8 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "Convos/hr \u2014 NeonCart vs SupportBot",
-      "description": "Active specialist count \u00d7 per-min = rough convos/hr per app.",
+      "title": "Calls/min \u2014 NeonCart vs SupportBot",
+      "description": "Specialist calls per minute (5m rate \u00d7 60). Each conversation can produce multiple specialist calls (router \u2192 downstream), so this is upper-bound on real-user convos.",
       "gridPos": {
         "x": 0,
         "y": 34,
@@ -342,8 +347,8 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", gen_ai_token_type=\"output\"}[5m]) > 0) * 60",
-          "legendFormat": "NeonCart specialists"
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", ai_o11y_specialist=~\"nc-.*\"}[5m])) * 60",
+          "legendFormat": "NeonCart calls/min"
         },
         {
           "refId": "B",
@@ -351,19 +356,21 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", gen_ai_token_type=\"output\"}[5m]) > 0) * 60",
-          "legendFormat": "SupportBot specialists"
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", ai_o11y_specialist=~\"sb-.*\"}[5m])) * 60",
+          "legendFormat": "SupportBot calls/min"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "decimals": 1,
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
             "fillOpacity": 0,
-            "stacking": {}
+            "stacking": {},
+            "axisLabel": "calls / minute"
           }
         },
         "overrides": []

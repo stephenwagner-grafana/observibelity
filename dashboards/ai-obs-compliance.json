@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -790,7 +790,9 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -965,7 +967,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Hiring discrim events (30d)"
+                "value": "Hiring discrim events (7d)"
               },
               {
                 "id": "custom.cellOptions",
@@ -1313,7 +1315,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [1h]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h]))",
           "legendFormat": "security events",
           "queryType": "range",
           "refId": "A"
@@ -1323,7 +1325,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [7d]))",
           "legendFormat": "hiring risk events",
           "queryType": "range",
           "refId": "B"
@@ -1333,13 +1335,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "100 - 10 * sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [1h]))",
+          "expr": "100 - 10 * sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h]))",
           "legendFormat": "compliance score",
           "queryType": "range",
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udccb Per-employee compliance scorecard \u2014 circumventions, hiring (1h)",
+      "title": "\ud83d\udccb Per-employee compliance scorecard \u2014 circumventions (24h), hiring (7d)",
       "transformations": [
         {
           "id": "joinByField",

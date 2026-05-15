@@ -74,7 +74,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -308,12 +308,86 @@
       "transparent": false
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Average cost per tool invocation across all tools (1h average). Divides hourly USD spend by hourly tool-call count from Tempo span-metrics. Comparing tools across this metric reveals which ones are token-expensive vs cheap.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 0.001
+              },
+              {
+                "color": "#F472B6",
+                "value": 0.01
+              }
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 4
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 101,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600\n/\nclamp_min(\n  sum(rate(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) * 3600,\n  1\n)",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "USD / tool call",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udcb2 $ per tool call (1h average)",
+      "type": "stat",
+      "transparent": false
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 16
       },
       "id": 4,
       "panels": [],
@@ -340,7 +414,7 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": [
           {
@@ -634,13 +708,15 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 12
+        "y": 17
       },
       "id": 5,
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -657,7 +733,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{service}}",
@@ -665,7 +741,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Tool call rate per tool",
+      "title": "\ud83d\udcc8 Tool call rate per tool (calls/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -983,12 +1059,14 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 12
+        "y": 17
       },
       "id": 6,
       "options": {
         "legend": {
           "calcs": [
+            "lastNotNull",
+            "mean",
             "max"
           ],
           "displayMode": "table",
@@ -1008,9 +1086,9 @@
           },
           "expr": "topk(10, sum by (service) (increase(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "{{service}}",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1024,7 +1102,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 7,
       "panels": [],
@@ -1059,7 +1137,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 27
       },
       "id": 8,
       "options": {
@@ -1153,7 +1231,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 27
       },
       "id": 9,
       "options": {
@@ -1196,7 +1274,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 36
       },
       "id": 10,
       "panels": [],
@@ -1236,38 +1314,6 @@
           "unit": "short"
         },
         "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "conv_id"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Conversation"
-              },
-              {
-                "id": "custom.width",
-                "value": 260
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ai_o11y_tool"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Dominant tool"
-              },
-              {
-                "id": "custom.width",
-                "value": 220
-              }
-            ]
-          },
           {
             "matcher": {
               "id": "byName",
@@ -1578,7 +1624,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 37
       },
       "id": 11,
       "options": {
@@ -1623,7 +1669,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 48
       },
       "id": 12,
       "panels": [],
@@ -1640,7 +1686,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 49
       },
       "id": 13,
       "options": {

@@ -57,7 +57,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -387,12 +387,95 @@
       "transparent": false
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Current GPU power draw \u00d7 $0.12/kWh. The RTX 5090 typically draws 100-400W under load (~$0.012-$0.048/hour). DCGM_FI_DEV_POWER_USAGE is in Watts; nvidia_smi_power_draw_watts is also in Watts.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "min": 0,
+          "max": 0.1,
+          "unit": "currencyUSD",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 0.024
+              },
+              {
+                "color": "#FB923C",
+                "value": 0.048
+              },
+              {
+                "color": "#F472B6",
+                "value": 0.072
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 101,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "(sum(nvidia_smi_power_draw_watts) or sum(DCGM_FI_DEV_POWER_USAGE) or vector(0)) / 1000 * 0.12",
+          "instant": false,
+          "legendFormat": "USD/hour",
+          "refId": "A",
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "title": "\u26a1 GPU energy cost (USD/hour)",
+      "type": "stat",
+      "transparent": false
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 17
       },
       "id": 5,
       "panels": [],
@@ -455,6 +538,46 @@
           "unit": "percent"
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GPU temp °C"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GPU util %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "VRAM %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -746,7 +869,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 18
       },
       "id": 6,
       "options": {
@@ -797,7 +920,7 @@
           "refId": "C"
         }
       ],
-      "title": "GPU util / VRAM / temp \u2014 last 1h",
+      "title": "GPU util / VRAM / temp",
       "type": "timeseries",
       "transparent": false
     },
@@ -807,7 +930,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 28
       },
       "id": 7,
       "panels": [],
@@ -1151,7 +1274,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 29
       },
       "id": 8,
       "options": {
@@ -1181,7 +1304,7 @@
           "refId": "A"
         }
       ],
-      "title": "Ollama p95 latency per model (5m)",
+      "title": "Ollama p95 latency per model",
       "type": "timeseries",
       "transparent": false
     },
@@ -1228,7 +1351,7 @@
               }
             ]
           },
-          "unit": "rpm"
+          "unit": "cpm"
         },
         "overrides": [
           {
@@ -1522,7 +1645,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 39
       },
       "id": 9,
       "options": {
@@ -1552,7 +1675,7 @@
           "refId": "A"
         }
       ],
-      "title": "Ollama request rate per model (calls/min, stacked)",
+      "title": "Ollama request rate per model — stacked",
       "type": "timeseries",
       "transparent": false
     },
@@ -1562,7 +1685,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 49
       },
       "id": 10,
       "panels": [],
@@ -1579,7 +1702,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 50
       },
       "id": 11,
       "options": {

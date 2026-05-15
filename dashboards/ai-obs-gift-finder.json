@@ -66,7 +66,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -207,10 +207,9 @@
         {
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" [1h]))",
-          "instant": false,
+          "instant": true,
           "legendFormat": "ATC events",
-          "range": true,
-          "format": "time_series"
+          "format": "table"
         }
       ],
       "transparent": false
@@ -579,8 +578,8 @@
     {
       "id": 4,
       "type": "timeseries",
-      "title": "ATC rate \u2014 by source (live vs loadgen)",
-      "description": "Add-to-cart event rate split by source. `live` = interactive demo clicks; `loadgen` = continuous k6 traffic. Lets you watch your own demo clicks land in real time without being drowned out by loadgen.",
+      "title": "ATC events/min \u2014 by source (live vs loadgen)",
+      "description": "Add-to-cart events per minute split by source. `live` = interactive demo clicks; `loadgen` = continuous k6 traffic. Lets you watch your own demo clicks land in real time without being drowned out by loadgen.",
       "gridPos": {
         "h": 8,
         "w": 6,
@@ -593,7 +592,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ops",
+          "unit": "short",
+          "decimals": 1,
           "custom": {
             "drawStyle": "line",
             "lineWidth": 2,
@@ -906,7 +906,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (source) (rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" | pattern `<_>atc_event source=<source> <_>` [5m]))",
+          "expr": "sum by (source) (rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" | pattern `<_>atc_event source=<source> <_>` [5m])) * 60",
           "legendFormat": "{{source}}"
         }
       ],
@@ -1703,8 +1703,8 @@
     {
       "id": 12,
       "type": "timeseries",
-      "title": "Pass vs. fail over time (5m windows)",
-      "description": "Rolling pass/fail trend. The pitch: even when API requests are all 2xx, an LLM agent can quietly drift \u2014 this panel catches the drift before users do.",
+      "title": "Pass vs fail rate (turns/min)",
+      "description": "Rolling pass/fail trend in turns per minute. Even when API requests are all 2xx, an LLM agent can quietly drift \u2014 this panel catches the drift before users do.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -1717,7 +1717,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ops",
+          "unit": "short",
+          "decimals": 1,
           "custom": {
             "drawStyle": "line",
             "lineWidth": 2,
@@ -2032,7 +2033,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (result) (rate({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality\" | pattern `<_>nc_gift_finder_quality result=<result> <_>` [5m]))",
+          "expr": "sum by (result) (rate({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality\" | pattern `<_>nc_gift_finder_quality result=<result> <_>` [5m])) * 60",
           "legendFormat": "{{result}}"
         }
       ],

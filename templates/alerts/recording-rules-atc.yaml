@@ -1,0 +1,45 @@
+{{- /*
+Loki recording rules that project ATC log events into Prometheus metrics so
+PromQL `quantile_over_time` works over them. Without this, Loki can't
+compute p99-style baselines (Loki forbids `quantile_over_time` over a
+`count_over_time` subquery).
+
+Deploy via the Loki Ruler API:
+
+  curl -X POST -H "Authorization: Bearer $GRAFANA_SERVICE_ACCOUNT_TOKEN" \
+    -H "Content-Type: application/yaml" \
+    --data-binary @recording-rules-atc.yaml \
+    "$GRAFANA_URL/api/datasources/proxy/uid/grafanacloud-logs/loki/api/v1/rules/observibelity"
+
+Then in dashboards, replace baked baselines with:
+
+  quantile_over_time(0.99, observibelity:atc_loadgen:hourly_count[7d])
+*/ -}}
+groups:
+  - name: observibelity-atc
+    interval: 1m
+    rules:
+      # 1h sliding count of loadgen cart-adds. Drives the "baseline ATCs/hour"
+      # baseline in `ai-obs-outage-cost`. After 7d of accumulation,
+      # quantile_over_time(0.99, ...[7d]) gives a real p99.
+      - record: observibelity:atc_loadgen:hourly_count
+        expr: |
+          sum(count_over_time({service_namespace="observibelity",container="tool"} |~ "atc_event source=loadgen" [1h]))
+
+      # 1h count split by source (loadgen / live / agent) for source-attribution
+      # in revenue dashboards.
+      - record: observibelity:atc_by_source:hourly_count
+        expr: |
+          sum by (source) (
+            count_over_time({service_namespace="observibelity",container="tool"} |~ "atc_event"
+              | regexp "source=(?P<source>[^ ]+)" [1h])
+          )
+
+      # 1h count by model — feeds the per-model leaderboard once we want
+      # PromQL-native instead of LogQL.
+      - record: observibelity:atc_by_model:hourly_count
+        expr: |
+          sum by (model) (
+            count_over_time({service_namespace="observibelity",container="tool"} |~ "atc_event"
+              | regexp "model=(?P<model>[^ ]+)" [1h])
+          )

@@ -443,12 +443,86 @@
       "transparent": false
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "How much each email-cascade run cost. Divides the last hour of escalator+ticket-helper USD spend by the number of cascade-start markers in Loki ('[email-cascade] llm/summarize idx=1/2000'). Target: <$3.00. If >$5, investigate runaway.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 3
+              },
+              {
+                "color": "#F472B6",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 102,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))\n/\nclamp_min(\n  sum(count_over_time({service_namespace=\"observibelity\",container=\"acme-bot-api\"} |~ \"email-cascade.*idx=1/2000\" [1h])), 1\n)",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "USD / run",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udcb8 $ per cascade run (last 1h)",
+      "type": "stat",
+      "transparent": false
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 6,
       "panels": [],
@@ -769,7 +843,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 20
       },
       "id": 7,
       "options": {
@@ -831,7 +905,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 20
       },
       "id": 8,
       "options": {
@@ -890,7 +964,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 29
       },
       "id": 9,
       "panels": [],
@@ -1256,7 +1330,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 30
       },
       "id": 10,
       "options": {
@@ -1322,7 +1396,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 40
       },
       "id": 11,
       "panels": [],
@@ -1339,7 +1413,7 @@
         "h": 11,
         "w": 14,
         "x": 0,
-        "y": 36
+        "y": 41
       },
       "id": 12,
       "options": {
@@ -1377,7 +1451,7 @@
         "h": 11,
         "w": 10,
         "x": 14,
-        "y": 36
+        "y": 41
       },
       "id": 13,
       "options": {

@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -191,6 +191,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -264,6 +265,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -337,6 +339,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -468,6 +471,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -477,11 +481,11 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 0.4
+                "value": 3
               },
               {
                 "color": "#F472B6",
-                "value": 0.7
+                "value": 5
               }
             ]
           },
@@ -893,7 +897,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Two lines for the employee picked in the Employee dropdown: exfil-keyword count (10m window, red zone at \u22650.7) vs total gateway events (5m). Big gap between them = focused fishing; lines move together = chatty user.",
+      "description": "Two lines for the employee picked in the Employee dropdown: exfil-keyword count (10m window, red zone at \u22655) vs total gateway events (5m). Big gap between them = focused fishing; lines move together = chatty user.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -908,6 +912,7 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -917,11 +922,11 @@
               },
               {
                 "color": "yellow",
-                "value": 0.4
+                "value": 3
               },
               {
                 "color": "red",
-                "value": 0.7
+                "value": 5
               }
             ]
           },
@@ -1270,6 +1275,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1789,7 +1795,7 @@
         {
           "id": "joinByField",
           "options": {
-            "byField": "employee",
+            "byField": "user_id",
             "mode": "outer"
           }
         },

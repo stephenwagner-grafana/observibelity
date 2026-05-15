@@ -57,7 +57,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -252,15 +252,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "ATC rate (%)"
+                "value": "ATC count (24h, dup of column 1)"
               },
               {
                 "id": "unit",
-                "value": "percent"
+                "value": "short"
               },
               {
                 "id": "decimals",
-                "value": 2
+                "value": 0
               },
               {
                 "id": "thresholds",
@@ -299,7 +299,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Avg $ / conversation"
+                "value": "Avg $ / call (1h)"
               },
               {
                 "id": "unit",
@@ -307,7 +307,7 @@
               },
               {
                 "id": "decimals",
-                "value": 6
+                "value": 4
               },
               {
                 "id": "thresholds",
@@ -440,7 +440,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "\ud83c\udfc6 Composite score"
+                "value": "ATC count (24h, dup; composite TBD)"
               },
               {
                 "id": "unit",
@@ -448,7 +448,7 @@
               },
               {
                 "id": "decimals",
-                "value": 1
+                "value": 0
               },
               {
                 "id": "thresholds",
@@ -1680,7 +1680,9 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "bottom",
@@ -1705,7 +1707,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\uded2 ATC events/sec per model (5m rate)",
+      "title": "\ud83d\uded2 ATC events/sec per model",
       "type": "timeseries",
       "transparent": false
     },
@@ -1714,7 +1716,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD/sec spend per model (5m rate). Tracks how much each model is currently burning through. Multiply by 3600 to get USD/hour.",
+      "description": "USD per hour spend per model (5m rate × 3600). The widest band is currently eating your budget.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1734,7 +1736,7 @@
             "gradientMode": "opacity"
           },
           "unit": "currencyUSD",
-          "decimals": 6
+          "decimals": 2
         },
         "overrides": [
           {
@@ -2034,7 +2036,9 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "bottom",
@@ -2051,7 +2055,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2059,7 +2063,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 Cost per second per model (5m rate)",
+      "title": "\ud83d\udcb0 Spend rate per model (USD/hour)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2408,7 +2412,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u23f1 P95 latency per model (5m)",
+      "title": "\u23f1 P95 latency per model",
       "type": "timeseries",
       "transparent": false
     }

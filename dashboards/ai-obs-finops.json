@@ -75,8 +75,8 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "\ud83d\udcb8 Today: Anthropic spend rate",
-      "description": "Projected $/day at the current rate (5-min window).",
+      "title": "\ud83d\udcb8 Projected $/day \u2014 Anthropic API",
+      "description": "Projected $/day at the current Anthropic spend rate (5-min window \u00d7 86400).",
       "gridPos": {
         "x": 0,
         "y": 3,
@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(gen_ai_client_cost_USD_total{gen_ai_response_model=~\"claude.*\"}[5m]))) * 86400",
+          "expr": "(sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", gen_ai_response_model=~\"claude.*\"}[5m]))) * 86400",
           "instant": true
         }
       ],
@@ -104,6 +104,23 @@
           "decimals": 2,
           "color": {
             "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 100
+              },
+              {
+                "color": "#F472B6",
+                "value": 500
+              }
+            ]
           }
         },
         "overrides": []
@@ -122,8 +139,8 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "\ud83e\udd16 Today: Bedrock eval rate",
-      "description": "Projected $/day for Sigil's Bedrock LLM-judge calls.",
+      "title": "\ud83e\udd16 Projected $/day \u2014 Bedrock evals",
+      "description": "Projected $/day for Sigil's Bedrock LLM-judge calls (5-min window \u00d7 86400).",
       "gridPos": {
         "x": 6,
         "y": 3,
@@ -141,7 +158,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(sigil_eval_judge_tokens_total{direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 86400 / 1e6",
+          "expr": "(sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 86400 / 1e6",
           "instant": true
         }
       ],
@@ -151,6 +168,23 @@
           "decimals": 2,
           "color": {
             "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 10
+              },
+              {
+                "color": "#F472B6",
+                "value": 50
+              }
+            ]
           }
         },
         "overrides": []
@@ -169,7 +203,7 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "\u26a1 Today: Ollama electricity (5090)",
+      "title": "\u26a1 $/day \u2014 Ollama electricity (5090)",
       "description": "Whole desktop @ ~0.3 kW avg \u00d7 24h \u00d7 $0.15/kWh = ~$1.08/day. Static estimate.",
       "gridPos": {
         "x": 12,
@@ -216,8 +250,8 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "\ud83c\udfc6 If we ran it ALL on Haiku",
-      "description": "Counterfactual: your current Anthropic spend PLUS the Ollama call volume priced at Haiku rates. Shows what local saves you.",
+      "title": "\ud83c\udfc6 Projected $/day if we ran Ollama traffic on Haiku",
+      "description": "Counterfactual: every Ollama token priced at Haiku 4.5 ($1/M input + $5/M output), projected to $/day. The gap vs the Ollama electricity panel = what local routing saves.",
       "gridPos": {
         "x": 18,
         "y": 3,
@@ -235,7 +269,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(gen_ai_client_cost_USD_total{gen_ai_response_model=~\"claude.*\"}[5m])) + 0.00073 * sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", gen_ai_system=\"ollama\"}[5m]) / 60)) * 86400",
+          "expr": "(\n  sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[5m])) * 0.000001\n  + sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[5m])) * 0.000005\n) * 86400",
           "instant": true
         }
       ],
@@ -245,6 +279,23 @@
           "decimals": 2,
           "color": {
             "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 100
+              },
+              {
+                "color": "#F472B6",
+                "value": 500
+              }
+            ]
           }
         },
         "overrides": []
@@ -295,7 +346,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{gen_ai_response_model=~\"claude.*\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", gen_ai_response_model=~\"claude.*\"}[5m])) * 3600",
           "legendFormat": "Anthropic API"
         },
         {
@@ -304,7 +355,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(sigil_eval_judge_tokens_total{direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
+          "expr": "(sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
           "legendFormat": "Bedrock evals"
         },
         {
@@ -313,7 +364,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{gen_ai_response_model!~\"claude.*\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", gen_ai_response_model!~\"claude.*\"}[5m])) * 3600",
           "legendFormat": "Ollama (GPU amortized)"
         },
         {
@@ -329,6 +380,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
+          "decimals": 2,
           "color": {
             "mode": "palette-classic"
           },
@@ -392,7 +444,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total[5m])) * 3600)",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600)",
           "instant": true,
           "format": "table"
         }
@@ -403,7 +455,24 @@
             "align": "auto"
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "showHeader": true
@@ -447,7 +516,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total[5m])) * 3600)",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600)",
           "instant": true,
           "format": "table"
         }
@@ -458,7 +527,24 @@
             "align": "auto"
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "showHeader": true

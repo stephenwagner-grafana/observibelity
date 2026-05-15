@@ -73,7 +73,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -161,10 +161,10 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "Top 10 models ranked by Add-to-Cart events in the last hour, taken from the NeonCart chatbot's input token traffic. Eval scores are theory; ATC is a real business outcome.",
+      "description": "Top 10 models ranked by real Add-to-Cart events in the last hour, parsed from the `atc_event` Loki log stream emitted by the add_to_cart tool. ATC is a real business outcome — eval scores are theory.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -186,6 +186,7 @@
             "lineWidth": 1
           },
           "unit": "short",
+          "decimals": 0,
           "thresholds": {
             "mode": "percentage",
             "steps": [
@@ -525,13 +526,14 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])))",
+          "expr": "topk(10, sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [1h]\n)))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{gen_ai_request_model}}",
+          "queryType": "instant",
+          "legendFormat": "{{model}}",
           "range": false,
           "refId": "A"
         }
@@ -542,10 +544,10 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "Same data as the bar chart on the left, laid out as a horizontal leaderboard. Use whichever shape your eye prefers.",
+      "description": "Same data as the bar chart on the left, laid out as a horizontal leaderboard. Uses the real `atc_event` Loki log stream.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -568,7 +570,8 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -598,13 +601,14 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])))",
+          "expr": "topk(10, sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [1h]\n)))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{gen_ai_request_model}}",
+          "queryType": "instant",
+          "legendFormat": "{{model}}",
           "range": false,
           "refId": "A"
         }
@@ -628,10 +632,10 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "Add-to-Cart rate per model over time (5m sliding window). Use this to see model rotations or rollouts taking effect \u2014 one model rising as another falls.",
+      "description": "Real Add-to-Cart events per minute per model over time (5m sliding window), parsed from the `atc_event` Loki log stream. Watch one model rise as another falls during model rotations.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -647,7 +651,8 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
-          "unit": "short"
+          "unit": "short",
+          "decimals": 2
         },
         "overrides": [
           {
@@ -947,7 +952,9 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -961,18 +968,18 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[5m]))",
+          "expr": "sum by (model) (rate(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [5m]\n)) * 60",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}",
+          "legendFormat": "{{model}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "ATC rate per model over time",
+      "title": "ATC rate per model (events/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -981,7 +988,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent per ATC event for each model, last hour. The lowest number is the model giving you the most conversions for your dollar. Green is good.",
+      "description": "Actual USD per Add-to-Cart per model (1h). Numerator is the Prometheus cost rate for the nc-gift-finder specialist (USD/hour); denominator is real ATC events/hour from the Loki `atc_event` log stream. Lowest = best $-efficiency. Join is done in the panel via a `Binary operation` transformation (cost ÷ ATC) since the data sources are mixed.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -996,17 +1003,58 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 0.01
+                "value": 0.05
               },
               {
                 "color": "#F472B6",
-                "value": 0.1
+                "value": 0.5
               }
             ]
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Model"
+              },
+              {
+                "id": "custom.width",
+                "value": 260
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "USD per ATC (1h)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -1016,19 +1064,22 @@
       },
       "id": 6,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
           "fields": "",
-          "values": false
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "textMode": "auto",
-        "wideLayout": false,
-        "percentChangeColorMode": "inverted"
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "USD per ATC (1h)"
+          }
+        ]
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -1037,16 +1088,71 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=\"nc-chatbot\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])), 0.0001)",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}",
-          "range": true,
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=\"nc-gift-finder\"}[1h])) * 3600",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "cost_per_hour",
+          "range": false,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [1h]\n))",
+          "format": "table",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "atc_count",
+          "range": false,
+          "refId": "B"
         }
       ],
-      "title": "\ud83d\udcb8 Cheapest model per ATC (lower is better, 1h)",
-      "type": "stat",
+      "title": "\ud83d\udcb8 USD per Add-to-Cart (1h, lower is better)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "gen_ai_request_model",
+            "renamePattern": "model"
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "model",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "USD per ATC (1h)",
+            "binary": {
+              "left": "Value #A",
+              "operator": "/",
+              "right": "Value #B"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "model",
+                "USD per ATC (1h)"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table",
       "transparent": false
     },
     {
@@ -1067,7 +1173,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per model with every signal you need to pick a winner: ATC volume, output/input token ratio (proxy for verbosity), p50 latency, and dollars per ATC. Sort by any column. All numbers are 1h windows.",
+      "description": "One row per model with every signal you need to pick a winner: real Add-to-Cart events (Loki `atc_event` log stream), conversion rate (ATC ÷ LLM calls), p50 latency, and USD per ATC (cost rate ÷ ATC count). The Conversion % and USD per ATC columns are computed in the panel via `Binary operation` transformations (Prom + Loki joined by model). Sort by any column. All numbers are 1h windows.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1094,7 +1200,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "gen_ai_request_model"
+              "options": "model"
             },
             "properties": [
               {
@@ -1118,6 +1224,14 @@
                 "value": "Total ATC (1h)"
               },
               {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
                 "id": "custom.cellOptions",
                 "value": {
                   "mode": "gradient",
@@ -1129,16 +1243,27 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #B"
+              "options": "Conversion %"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Conversion %"
+                "value": "Conversion % (ATC / calls)"
               },
               {
                 "id": "unit",
                 "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           },
@@ -1150,27 +1275,42 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Avg latency"
+                "value": "p50 latency"
               },
               {
                 "id": "unit",
                 "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 2
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #D"
+              "options": "USD per ATC"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "USD / conversion"
+                "value": "USD per ATC (1h)"
               },
               {
                 "id": "unit",
                 "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           },
@@ -1489,13 +1629,14 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h]))",
+          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [1h]\n))",
           "format": "table",
           "instant": true,
-          "legendFormat": "ATC events",
+          "queryType": "instant",
+          "legendFormat": "ATC count",
           "range": false,
           "refId": "A"
         },
@@ -1504,10 +1645,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\"}[1h])), 0.001)",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[1h]))",
           "format": "table",
           "instant": true,
-          "legendFormat": "output/input token ratio",
+          "legendFormat": "calls",
           "range": false,
           "refId": "B"
         },
@@ -1516,7 +1657,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.5, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket[1h])))",
+          "expr": "histogram_quantile(0.5, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[1h])))",
           "format": "table",
           "instant": true,
           "legendFormat": "p50 latency",
@@ -1528,10 +1669,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=\"nc-chatbot\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"nc-chatbot\",gen_ai_token_type=\"input\"}[1h])), 0.0001)",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=\"nc-gift-finder\"}[1h])) * 3600",
           "format": "table",
           "instant": true,
-          "legendFormat": "$ / req",
+          "legendFormat": "cost_per_hour",
           "range": false,
           "refId": "D"
         }
@@ -1539,10 +1680,64 @@
       "title": "\ud83c\udfc1 Full leaderboard \u2014 ATC, conversion, latency, $ per ATC (1h)",
       "transformations": [
         {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "gen_ai_request_model",
+            "renamePattern": "model"
+          }
+        },
+        {
           "id": "joinByField",
           "options": {
-            "byField": "gen_ai_request_model",
+            "byField": "model",
             "mode": "outer"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Conversion %",
+            "binary": {
+              "left": "Value #A",
+              "operator": "/",
+              "right": "Value #B"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "USD per ATC",
+            "binary": {
+              "left": "Value #D",
+              "operator": "/",
+              "right": "Value #A"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value #B": true,
+              "Value #D": true
+            },
+            "indexByName": {
+              "model": 0,
+              "Value #A": 1,
+              "Conversion %": 2,
+              "Value #C": 3,
+              "USD per ATC": 4
+            },
+            "renameByName": {}
           }
         }
       ],
@@ -1888,7 +2083,9 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -1905,7 +2102,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -1913,7 +2110,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 Spend rate per model \u2014 USD per hour",
+      "title": "\ud83d\udcb0 Spend rate per model (USD/hour)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2254,7 +2451,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[5m])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2284,7 +2481,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent per token processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom \u2014 which is exactly why routing decisions matter.",
+      "description": "USD spent per 1M tokens processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom \u2014 which is exactly why routing decisions matter.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2305,15 +2502,16 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 1e-06
+                "value": 1
               },
               {
                 "color": "#F472B6",
-                "value": 1e-05
+                "value": 10
               }
             ]
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": [
           {
@@ -2340,7 +2538,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "USD per token"
+                "value": "USD per 1M tokens"
               },
               {
                 "id": "custom.cellOptions",
@@ -2351,7 +2549,7 @@
               },
               {
                 "id": "decimals",
-                "value": 8
+                "value": 2
               }
             ]
           },
@@ -2663,7 +2861,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "USD per token"
+            "displayName": "USD per 1M tokens"
           }
         ]
       },
@@ -2673,7 +2871,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total[24h])), 1))",
+          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[24h])), 1) * 1e6)",
           "format": "table",
           "instant": true,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2681,7 +2879,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb5 Which models cost the most per token? (top 10, 24h)",
+      "title": "\ud83d\udcb5 USD per 1M tokens \u2014 top 10 models (24h)",
       "type": "table",
       "transparent": false
     },
@@ -2690,7 +2888,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "24h total spend split by provider: anthropic (Claude, red) vs ollama (local, green). The gap between the two bars is the ROI of the Ollama-first routing strategy in a single picture.",
+      "description": "24h Ollama gateway-attributed spend. Anthropic/Claude is billed via Sigil and does NOT appear in this gateway counter — for the full Anthropic bill cross-reference the ai-obs-finops dashboard. The Claude bar here will read ~$0 even when Claude is generating most of the traffic; that's expected.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2710,6 +2908,7 @@
             "lineWidth": 1
           },
           "unit": "currencyUSD",
+          "decimals": 2,
           "thresholds": {
             "mode": "percentage",
             "steps": [
@@ -3050,7 +3249,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_system) (increase(gen_ai_client_cost_USD_total[24h]))",
+          "expr": "sum by (gen_ai_system) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{gen_ai_system}}",
@@ -3058,7 +3257,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83c\udd9a Claude vs Ollama \u2014 total spend side by side (24h)",
+      "title": "\ud83c\udd9a Ollama spend (24h) \u2014 Anthropic billed via Sigil; see ai-obs-finops",
       "type": "barchart",
       "transparent": false
     },
@@ -3407,7 +3606,9 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -3424,7 +3625,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\"}[1m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_system=\"ollama\"}[1m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
