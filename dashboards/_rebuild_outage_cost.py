@@ -28,10 +28,32 @@ def gridpos(x, y, w, h):
 def stat_panel(*, pid, title, expr, ds, x, y, w, h, unit="currencyUSD",
                decimals=0, color_mode="value", thresholds=None,
                description="", calc="lastNotNull", graph="area",
-               text_mode="auto", just="auto"):
+               text_mode="auto", just="auto", instant=True, no_value="$0",
+               custom_unit=None):
+    """
+    `instant=True` runs the LogQL/PromQL as an instant query → single value, no
+    range-query flicker between refreshes (which is what was happening when the
+    last 30s of the [1h] window briefly evaluated to null).
+    `no_value` is what shows when the query truly returns nothing (default
+    "$0" so the panel never goes black with "No data").
+    `custom_unit` lets us show "carts/hour" etc by using Grafana's custom-unit
+    string with prefix "suffix:".
+    """
     thresholds = thresholds or [
         {"color": "#10B981", "value": None},
     ]
+    target = {
+        "datasource": ds,
+        "refId": "A",
+        "expr": expr,
+        "legendFormat": "",
+    }
+    if instant:
+        target["instant"] = True
+        target["range"] = False
+    else:
+        target["range"] = True
+    real_unit = unit if custom_unit is None else f"suffix:{custom_unit}"
     return {
         "id": pid,
         "type": "stat",
@@ -39,19 +61,12 @@ def stat_panel(*, pid, title, expr, ds, x, y, w, h, unit="currencyUSD",
         "description": description,
         "gridPos": gridpos(x, y, w, h),
         "datasource": ds,
-        "targets": [
-            {
-                "datasource": ds,
-                "refId": "A",
-                "expr": expr,
-                "legendFormat": "",
-                "range": True,
-            }
-        ],
+        "targets": [target],
         "fieldConfig": {
             "defaults": {
-                "unit": unit,
+                "unit": real_unit,
                 "decimals": decimals,
+                "noValue": no_value,
                 "color": {"mode": "thresholds"},
                 "thresholds": {"mode": "absolute", "steps": thresholds},
             },
@@ -283,7 +298,7 @@ y = 3
 P.append(row(201, "💰 Revenue right now — what the engine is making", y))
 y += 1
 
-# HERO: revenue this hour
+# HERO: revenue this hour (instant query — no flicker)
 revenue_per_hour_loki = (
     'sum(count_over_time({service_namespace="observibelity",container="tool"} '
     '|~ "atc_event source=loadgen" [1h])) * ${avg_atc_value}'
@@ -291,7 +306,7 @@ revenue_per_hour_loki = (
 P.append(stat_panel(
     pid=202, title="Revenue per hour — right now", expr=revenue_per_hour_loki,
     ds=LOKI_DS, x=0, y=y, w=12, h=8,
-    color_mode="background", graph="area",
+    color_mode="background", graph="none", instant=True,
     description="Cart-add events in the last 1 hour × avg cart-add value. The pulse of the business.",
     thresholds=[
         {"color": "#EF4444", "value": None},
@@ -327,7 +342,7 @@ P.append(stat_panel(
     ],
 ))
 
-# Per-minute pulse + avg ATC
+# Per-minute pulse + avg ATC (instant query — no flicker)
 revenue_per_min_5m = (
     'sum(rate({service_namespace="observibelity",container="tool"} '
     '|~ "atc_event source=loadgen" [5m])) * 60 * ${avg_atc_value}'
@@ -335,7 +350,7 @@ revenue_per_min_5m = (
 P.append(stat_panel(
     pid=205, title="Per-minute pulse", expr=revenue_per_min_5m,
     ds=LOKI_DS, x=12, y=y+4, w=6, h=4,
-    color_mode="value", graph="area",
+    color_mode="value", graph="none", instant=True,
     description="Smoothed 5-minute revenue rate, expressed per minute. Zero means no carts being added.",
     unit="currencyUSD",
 ))
@@ -444,25 +459,29 @@ y += 8
 P.append(row(207, "🛑 Projected outage cost — what a future N-hour outage would cost", y))
 y += 1
 
-# Markdown explainer
-explainer = """### How we calculate
+# Markdown explainer — plain English, no math symbols
+explainer = """### What this means
 
-**Loss rate ($/hour)** = `Baseline ATC / hour` × `Avg cart-add value`
-**Outage cost** = `Loss rate` × `Outage duration`
-**Annual exposure** = `Loss rate` × `1% × 8 760` (= 87.6 hr/yr)
+When the engine is **healthy**, customers add roughly **${baseline_atc_per_hour} carts an hour**, each worth about **\\$${avg_atc_value}**.
 
-> Tune the four variables at the top of the page to drive the numbers live.
-> Default baseline (`360 / hr`) ≈ the p75 of a healthy week.
-> Even a 99 % uptime SLA still bleeds **87 hours / yr** at the loss rate shown."""
+That's the revenue you make every hour the lights are on.
+
+When the engine **stops for ${outage_hours} hours**, that hourly revenue evaporates. The orange number to the right is the bill.
+
+---
+
+Even a "great" **99 % uptime SLA** still allows **87.6 hours of downtime per year**. At this engine's rate, that's millions of dollars you'll never see.
+
+> **The four boxes at the top of the page tune the math.** Drag them to your own numbers and the whole page updates live."""
 P.append(text_panel(208, explainer, x=0, y=y, w=8, h=8))
 
-# HERO: outage cost
+# HERO: outage cost — dynamic title with var interpolation
 outage_cost_expr = "${baseline_atc_per_hour} * ${avg_atc_value} * ${outage_hours}"
 P.append(stat_panel(
-    pid=209, title="Cost of this outage", expr=outage_cost_expr,
+    pid=209, title="A ${outage_hours}-hour outage costs", expr=outage_cost_expr,
     ds=PROM_DS, x=8, y=y, w=8, h=8,
-    color_mode="background", graph="none", text_mode="value",
-    description="What a `${outage_hours}` hour outage at baseline rate costs you in cart-add revenue.",
+    color_mode="background", graph="none", text_mode="value", instant=True,
+    description="What an outage of `${outage_hours}` hours, at the healthy cart-add rate of `${baseline_atc_per_hour}/hr` and an average cart value of `\\$${avg_atc_value}`, would cost in lost cart-add revenue.",
     thresholds=[
         {"color": "#F472B6", "value": None},
         {"color": "#FB923C", "value": 50_000},
@@ -470,39 +489,46 @@ P.append(stat_panel(
     ],
 ))
 
-# Loss rate
+# Right side: 2x2 grid of human-friendly stats
+# (16, 22, 4, 4) Outage length
+P.append(stat_panel(
+    pid=211, title="Outage length", expr="vector(${outage_hours})",
+    ds=PROM_DS, x=16, y=y, w=4, h=4,
+    color_mode="none", graph="none", text_mode="value", instant=True,
+    unit="none", decimals=0, custom_unit=" hours",
+    description="Tune this with the textbox at the top of the page.",
+    no_value="—",
+))
+
+# (20, 22, 4, 4) Healthy rate (carts/hour)
+P.append(stat_panel(
+    pid=212, title="Healthy rate", expr="vector(${baseline_atc_per_hour})",
+    ds=PROM_DS, x=20, y=y, w=4, h=4,
+    color_mode="none", graph="none", text_mode="value", instant=True,
+    unit="none", decimals=0, custom_unit=" carts/hr",
+    description="What the engine adds to carts every hour when everything's working. Tune at the top.",
+    no_value="—",
+))
+
+# (16, 26, 4, 4) Bleeding rate
 loss_rate_expr = "${baseline_atc_per_hour} * ${avg_atc_value}"
 P.append(stat_panel(
-    pid=210, title="Loss rate", expr=loss_rate_expr,
-    ds=PROM_DS, x=16, y=y, w=8, h=4,
-    color_mode="value", graph="none",
-    description="How fast you bleed revenue while the engine is down.",
+    pid=210, title="Bleeding rate (per hour down)", expr=loss_rate_expr,
+    ds=PROM_DS, x=16, y=y+4, w=4, h=4,
+    color_mode="value", graph="none", instant=True,
+    description="What you lose for every hour the engine is down.",
     thresholds=[
         {"color": "#EF4444", "value": None},
     ],
 ))
 
-# Tunables row of 3
-P.append(stat_panel(
-    pid=211, title="Outage hours", expr="vector(${outage_hours})",
-    ds=PROM_DS, x=16, y=y+4, w=3, h=4,
-    color_mode="none", graph="none", text_mode="value",
-    unit="h", decimals=1,
-    description="Tune above.",
-))
-P.append(stat_panel(
-    pid=212, title="Baseline ATC/hr", expr="vector(${baseline_atc_per_hour})",
-    ds=PROM_DS, x=19, y=y+4, w=2, h=4,
-    color_mode="none", graph="none", text_mode="value",
-    unit="short", decimals=0,
-    description="Tune above.",
-))
+# (20, 26, 4, 4) Annual exposure at 99% SLA
 annual_99pct_expr = "${baseline_atc_per_hour} * ${avg_atc_value} * (${annual_hours} * 0.01)"
 P.append(stat_panel(
-    pid=213, title="Annual @ 99% SLA", expr=annual_99pct_expr,
-    ds=PROM_DS, x=21, y=y+4, w=3, h=4,
-    color_mode="value", graph="none",
-    description="What 1% downtime/yr (87.6 hr) costs at this loss rate.",
+    pid=213, title="Annual cost of a 99% SLA", expr=annual_99pct_expr,
+    ds=PROM_DS, x=20, y=y+4, w=4, h=4,
+    color_mode="value", graph="none", instant=True,
+    description="A 99 % uptime SLA still allows 87.6 hours of downtime per year. This is what those hours cost.",
     thresholds=[
         {"color": "#FB923C", "value": None},
     ],
@@ -585,113 +611,121 @@ P.append({
 
 # Row 4 header
 y += 7
-P.append(row(217, "💵 Revenue flow over time — actual vs. missed, throughout the window", y))
+P.append(row(217, "📊 Revenue per 10-minute block — what we made, what we missed", y))
 y += 1
 
-# 218: Actual revenue $/hour + dashed baseline
+# 218: Actual revenue per 10-min block, stacked by model
+# (count over a 10-min window evaluated every 10 min = non-overlapping 10-min buckets,
+#  exactly like the billing dashboard's monthly bars.)
+actual_by_model_10m = (
+    'sum by (model) ('
+    'count_over_time('
+    '{service_namespace="observibelity",container="tool"} '
+    '|~ "atc_event source=loadgen" '
+    '| regexp `model=(?P<model>[a-zA-Z0-9._:-]+)` '
+    '[10m]'
+    ')'
+    ') * ${avg_atc_value}'
+)
 P.append({
     "id": 218,
     "type": "timeseries",
-    "title": "Actual revenue — $/hour",
-    "description": "Each green bar = the previous 5 min of ATC events × avg value, scaled to $/hour. The dashed line is the baseline; gaps below it are visible as red bars in the chart underneath.",
-    "gridPos": gridpos(0, y, 24, 6),
+    "title": "What we made — per 10-minute block, stacked by model",
+    "description": (
+        "Each bar = total cart-add revenue in a 10-minute window, broken down by which model "
+        "drove the conversation. Hover a bar to see the model mix. Legend on the right shows "
+        "trailing 24 h totals."
+    ),
+    "gridPos": gridpos(0, y, 24, 9),
     "datasource": LOKI_DS,
     "targets": [
         {
             "datasource": LOKI_DS, "refId": "A",
-            "expr": (
-                'sum(rate({service_namespace="observibelity",container="tool"} '
-                '|~ "atc_event source=loadgen" [5m])) * 3600 * ${avg_atc_value}'
-            ),
-            "legendFormat": "actual $/hour", "range": True,
-        },
-        {
-            "datasource": PROM_DS, "refId": "B",
-            "expr": "${baseline_atc_per_hour} * ${avg_atc_value}",
-            "legendFormat": "baseline $/hour", "range": True,
+            "expr": actual_by_model_10m,
+            "legendFormat": "{{model}}",
+            "range": True,
+            "step": "10m",
         },
     ],
     "fieldConfig": {
         "defaults": {
             "unit": "currencyUSD",
-            "color": {"mode": "thresholds"},
+            "decimals": 0,
+            "color": {"mode": "palette-classic"},
             "custom": {
                 "drawStyle": "bars",
-                "fillOpacity": 80,
-                "gradientMode": "opacity",
-                "lineWidth": 1,
+                "fillOpacity": 95,
+                "gradientMode": "none",
+                "lineWidth": 0,
                 "barAlignment": 0,
-                "barWidthFactor": 0.92,
+                "barWidthFactor": 0.96,
                 "showPoints": "never",
+                "showValue": "auto",
                 "thresholdsStyle": {"mode": "off"},
-                "stacking": {"group": "A", "mode": "none"},
+                "stacking": {"group": "A", "mode": "normal"},
+                "scaleDistribution": {"type": "linear"},
             },
             "thresholds": {"mode": "absolute", "steps": [
                 {"color": "#10B981", "value": None},
             ]},
         },
-        "overrides": [
-            {
-                "matcher": {"id": "byName", "options": "baseline $/hour"},
-                "properties": [
-                    {"id": "color", "value": {"mode": "fixed", "fixedColor": "#9CA3AF"}},
-                    {"id": "custom.drawStyle", "value": "line"},
-                    {"id": "custom.lineStyle", "value": {"fill": "dash", "dash": [10, 10]}},
-                    {"id": "custom.lineWidth", "value": 2},
-                    {"id": "custom.fillOpacity", "value": 0},
-                ],
-            },
-            {
-                "matcher": {"id": "byName", "options": "actual $/hour"},
-                "properties": [
-                    {"id": "color", "value": {"mode": "fixed", "fixedColor": "#10B981"}},
-                ],
-            },
-        ],
+        "overrides": [],
     },
     "options": {
-        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": True},
+        "legend": {
+            "calcs": ["sum", "mean", "max"],
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": True,
+            "sortBy": "Total",
+            "sortDesc": True,
+        },
         "tooltip": {"mode": "multi", "sort": "desc"},
     },
 })
 
-# 240: Missed revenue when it happened — auto-populated outage display
-missed_per_hour_loki = (
-    '(${baseline_atc_per_hour} '
-    '- sum(rate({service_namespace="observibelity",container="tool"} '
-    '|~ "atc_event source=loadgen" [5m])) * 3600) * ${avg_atc_value}'
+# 240: Missed revenue per 10-min block (same axis as 218)
+missed_per_10m = (
+    '(${baseline_atc_per_hour} / 6 '
+    '- sum(count_over_time({service_namespace="observibelity",container="tool"} '
+    '|~ "atc_event source=loadgen" [10m]))) * ${avg_atc_value}'
 )
 P.append({
     "id": 240,
     "type": "timeseries",
-    "title": "Missed revenue — when today's outages happened",
+    "title": "What we missed — per 10-minute block",
     "description": (
-        "Auto-populated: every 5 min where the engine ran below baseline shows up as a red "
-        "bar valued at `(baseline − actual) × avg cart-add value`. Tall red bars = outage windows. "
-        "Negative values (over-performing) are hidden via threshold."
+        "Each red bar = revenue we expected to make in that 10-minute block but didn't. "
+        "Computed as `(baseline / 6 − actual) × avg cart-add value`. Bars only show when the "
+        "engine was below baseline — over-baseline blocks hide via the threshold. The legend "
+        "Total is the trailing 24-hour missed revenue."
     ),
-    "gridPos": gridpos(0, y + 6, 24, 7),
+    "gridPos": gridpos(0, y + 9, 24, 8),
     "datasource": LOKI_DS,
     "targets": [
         {
             "datasource": LOKI_DS, "refId": "A",
-            "expr": missed_per_hour_loki,
-            "legendFormat": "missed $/hour", "range": True,
+            "expr": missed_per_10m,
+            "legendFormat": "missed in 10-min block",
+            "range": True,
+            "step": "10m",
         },
     ],
     "fieldConfig": {
         "defaults": {
             "unit": "currencyUSD",
-            "color": {"mode": "thresholds"},
+            "decimals": 0,
             "min": 0,
+            "color": {"mode": "thresholds"},
             "custom": {
                 "drawStyle": "bars",
-                "fillOpacity": 90,
-                "gradientMode": "opacity",
-                "lineWidth": 1,
+                "fillOpacity": 95,
+                "gradientMode": "none",
+                "lineWidth": 0,
                 "barAlignment": 0,
-                "barWidthFactor": 0.92,
+                "barWidthFactor": 0.96,
                 "showPoints": "never",
+                "showValue": "auto",
                 "thresholdsStyle": {"mode": "off"},
                 "stacking": {"group": "A", "mode": "none"},
             },
@@ -702,7 +736,7 @@ P.append({
         },
         "overrides": [
             {
-                "matcher": {"id": "byName", "options": "missed $/hour"},
+                "matcher": {"id": "byName", "options": "missed in 10-min block"},
                 "properties": [
                     {"id": "color", "value": {"mode": "fixed", "fixedColor": "#EF4444"}},
                 ],
@@ -710,13 +744,18 @@ P.append({
         ],
     },
     "options": {
-        "legend": {"calcs": ["sum", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": True},
+        "legend": {
+            "calcs": ["sum", "max", "mean"],
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": True,
+        },
         "tooltip": {"mode": "multi", "sort": "desc"},
     },
 })
 
-# Row 5 header — bump y by the combined height of the two stacked rev charts (6 + 7 = 13)
-y += 13
+# Row 5 header — combined height: 9 (actual) + 8 (missed) = 17
+y += 17
 P.append(row(219, "🎯 Where the revenue came from", y))
 y += 1
 

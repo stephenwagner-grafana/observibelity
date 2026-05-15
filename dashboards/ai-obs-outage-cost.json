@@ -209,13 +209,15 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [1h])) * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -241,7 +243,7 @@
       },
       "options": {
         "colorMode": "background",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
@@ -281,13 +283,15 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -345,13 +349,15 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value} * 365",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -409,13 +415,15 @@
           "refId": "A",
           "expr": "sum(rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [5m])) * 60 * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -433,7 +441,7 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
@@ -473,13 +481,15 @@
           "refId": "A",
           "expr": "vector(${avg_atc_value})",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -550,13 +560,15 @@
           "refId": "A",
           "expr": "(${baseline_atc_per_hour} * 24 - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h]))) * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -622,13 +634,15 @@
           "refId": "A",
           "expr": "(${baseline_atc_per_hour} - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [1h]))) * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -694,13 +708,15 @@
           "refId": "A",
           "expr": "(sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) / (${baseline_atc_per_hour} * 24)) * 100",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
           "decimals": 1,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -766,13 +782,15 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * 24 * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -830,13 +848,15 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -901,14 +921,14 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "### How we calculate\n\n**Loss rate ($/hour)** = `Baseline ATC / hour` \u00d7 `Avg cart-add value`\n**Outage cost** = `Loss rate` \u00d7 `Outage duration`\n**Annual exposure** = `Loss rate` \u00d7 `1% \u00d7 8 760` (= 87.6 hr/yr)\n\n> Tune the four variables at the top of the page to drive the numbers live.\n> Default baseline (`360 / hr`) \u2248 the p75 of a healthy week.\n> Even a 99 % uptime SLA still bleeds **87 hours / yr** at the loss rate shown."
+        "content": "### What this means\n\nWhen the engine is **healthy**, customers add roughly **${baseline_atc_per_hour} carts an hour**, each worth about **\\$${avg_atc_value}**.\n\nThat's the revenue you make every hour the lights are on.\n\nWhen the engine **stops for ${outage_hours} hours**, that hourly revenue evaporates. The orange number to the right is the bill.\n\n---\n\nEven a \"great\" **99 % uptime SLA** still allows **87.6 hours of downtime per year**. At this engine's rate, that's millions of dollars you'll never see.\n\n> **The four boxes at the top of the page tune the math.** Drag them to your own numbers and the whole page updates live."
       }
     },
     {
       "id": 209,
       "type": "stat",
-      "title": "Cost of this outage",
-      "description": "What a `${outage_hours}` hour outage at baseline rate costs you in cart-add revenue.",
+      "title": "A ${outage_hours}-hour outage costs",
+      "description": "What an outage of `${outage_hours}` hours, at the healthy cart-add rate of `${baseline_atc_per_hour}/hr` and an average cart value of `\\$${avg_atc_value}`, would cost in lost cart-add revenue.",
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -928,13 +948,15 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * ${avg_atc_value} * ${outage_hours}",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -977,13 +999,13 @@
       }
     },
     {
-      "id": 210,
+      "id": 211,
       "type": "stat",
-      "title": "Loss rate",
-      "description": "How fast you bleed revenue while the engine is down.",
+      "title": "Outage length",
+      "description": "Tune this with the textbox at the top of the page.",
       "gridPos": {
         "h": 4,
-        "w": 8,
+        "w": 4,
         "x": 16,
         "y": 22
       },
@@ -998,79 +1020,17 @@
             "uid": "${datasource_prom}"
           },
           "refId": "A",
-          "expr": "${baseline_atc_per_hour} * ${avg_atc_value}",
-          "legendFormat": "",
-          "range": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyUSD",
-          "decimals": 0,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#EF4444",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "inverted",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": false
-      }
-    },
-    {
-      "id": 211,
-      "type": "stat",
-      "title": "Outage hours",
-      "description": "Tune above.",
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 16,
-        "y": 26
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "refId": "A",
           "expr": "vector(${outage_hours})",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "h",
-          "decimals": 1,
+          "unit": "suffix: hours",
+          "decimals": 0,
+          "noValue": "\u2014",
           "color": {
             "mode": "thresholds"
           },
@@ -1107,13 +1067,13 @@
     {
       "id": 212,
       "type": "stat",
-      "title": "Baseline ATC/hr",
-      "description": "Tune above.",
+      "title": "Healthy rate",
+      "description": "What the engine adds to carts every hour when everything's working. Tune at the top.",
       "gridPos": {
         "h": 4,
-        "w": 2,
-        "x": 19,
-        "y": 26
+        "w": 4,
+        "x": 20,
+        "y": 22
       },
       "datasource": {
         "type": "prometheus",
@@ -1128,13 +1088,15 @@
           "refId": "A",
           "expr": "vector(${baseline_atc_per_hour})",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "suffix: carts/hr",
           "decimals": 0,
+          "noValue": "\u2014",
           "color": {
             "mode": "thresholds"
           },
@@ -1169,14 +1131,80 @@
       }
     },
     {
-      "id": 213,
+      "id": 210,
       "type": "stat",
-      "title": "Annual @ 99% SLA",
-      "description": "What 1% downtime/yr (87.6 hr) costs at this loss rate.",
+      "title": "Bleeding rate (per hour down)",
+      "description": "What you lose for every hour the engine is down.",
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 21,
+        "w": 4,
+        "x": 16,
+        "y": 26
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "${baseline_atc_per_hour} * ${avg_atc_value}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "noValue": "$0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#EF4444",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      }
+    },
+    {
+      "id": 213,
+      "type": "stat",
+      "title": "Annual cost of a 99% SLA",
+      "description": "A 99 % uptime SLA still allows 87.6 hours of downtime per year. This is what those hours cost.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
         "y": 26
       },
       "datasource": {
@@ -1192,13 +1220,15 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * ${avg_atc_value} * (${annual_hours} * 0.01)",
           "legendFormat": "",
-          "range": true
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
           "decimals": 0,
+          "noValue": "$0",
           "color": {
             "mode": "thresholds"
           },
@@ -1403,7 +1433,7 @@
     {
       "id": 217,
       "type": "row",
-      "title": "\ud83d\udcb5 Revenue flow over time \u2014 actual vs. missed, throughout the window",
+      "title": "\ud83d\udcca Revenue per 10-minute block \u2014 what we made, what we missed",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1416,10 +1446,10 @@
     {
       "id": 218,
       "type": "timeseries",
-      "title": "Actual revenue \u2014 $/hour",
-      "description": "Each green bar = the previous 5 min of ATC events \u00d7 avg value, scaled to $/hour. The dashed line is the baseline; gaps below it are visible as red bars in the chart underneath.",
+      "title": "What we made \u2014 per 10-minute block, stacked by model",
+      "description": "Each bar = total cart-add revenue in a 10-minute window, broken down by which model drove the conversation. Hover a bar to see the model mix. Legend on the right shows trailing 24 h totals.",
       "gridPos": {
-        "h": 6,
+        "h": 9,
         "w": 24,
         "x": 0,
         "y": 39
@@ -1435,41 +1465,37 @@
             "uid": "${datasource_loki}"
           },
           "refId": "A",
-          "expr": "sum(rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [5m])) * 3600 * ${avg_atc_value}",
-          "legendFormat": "actual $/hour",
-          "range": true
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "refId": "B",
-          "expr": "${baseline_atc_per_hour} * ${avg_atc_value}",
-          "legendFormat": "baseline $/hour",
-          "range": true
+          "expr": "sum by (model) (count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" | regexp `model=(?P<model>[a-zA-Z0-9._:-]+)` [10m])) * ${avg_atc_value}",
+          "legendFormat": "{{model}}",
+          "range": true,
+          "step": "10m"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
+          "decimals": 0,
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "custom": {
             "drawStyle": "bars",
-            "fillOpacity": 80,
-            "gradientMode": "opacity",
-            "lineWidth": 1,
+            "fillOpacity": 95,
+            "gradientMode": "none",
+            "lineWidth": 0,
             "barAlignment": 0,
-            "barWidthFactor": 0.92,
+            "barWidthFactor": 0.96,
             "showPoints": "never",
+            "showValue": "auto",
             "thresholdsStyle": {
               "mode": "off"
             },
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
+            },
+            "scaleDistribution": {
+              "type": "linear"
             }
           },
           "thresholds": {
@@ -1482,70 +1508,20 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "baseline $/hour"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#9CA3AF"
-                }
-              },
-              {
-                "id": "custom.drawStyle",
-                "value": "line"
-              },
-              {
-                "id": "custom.lineStyle",
-                "value": {
-                  "fill": "dash",
-                  "dash": [
-                    10,
-                    10
-                  ]
-                }
-              },
-              {
-                "id": "custom.lineWidth",
-                "value": 2
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "actual $/hour"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#10B981"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "options": {
         "legend": {
           "calcs": [
+            "sum",
             "mean",
             "max"
           ],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Total",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
@@ -1556,13 +1532,13 @@
     {
       "id": 240,
       "type": "timeseries",
-      "title": "Missed revenue \u2014 when today's outages happened",
-      "description": "Auto-populated: every 5 min where the engine ran below baseline shows up as a red bar valued at `(baseline \u2212 actual) \u00d7 avg cart-add value`. Tall red bars = outage windows. Negative values (over-performing) are hidden via threshold.",
+      "title": "What we missed \u2014 per 10-minute block",
+      "description": "Each red bar = revenue we expected to make in that 10-minute block but didn't. Computed as `(baseline / 6 \u2212 actual) \u00d7 avg cart-add value`. Bars only show when the engine was below baseline \u2014 over-baseline blocks hide via the threshold. The legend Total is the trailing 24-hour missed revenue.",
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 48
       },
       "datasource": {
         "type": "loki",
@@ -1575,26 +1551,29 @@
             "uid": "${datasource_loki}"
           },
           "refId": "A",
-          "expr": "(${baseline_atc_per_hour} - sum(rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [5m])) * 3600) * ${avg_atc_value}",
-          "legendFormat": "missed $/hour",
-          "range": true
+          "expr": "(${baseline_atc_per_hour} / 6 - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [10m]))) * ${avg_atc_value}",
+          "legendFormat": "missed in 10-min block",
+          "range": true,
+          "step": "10m"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
+          "decimals": 0,
+          "min": 0,
           "color": {
             "mode": "thresholds"
           },
-          "min": 0,
           "custom": {
             "drawStyle": "bars",
-            "fillOpacity": 90,
-            "gradientMode": "opacity",
-            "lineWidth": 1,
+            "fillOpacity": 95,
+            "gradientMode": "none",
+            "lineWidth": 0,
             "barAlignment": 0,
-            "barWidthFactor": 0.92,
+            "barWidthFactor": 0.96,
             "showPoints": "never",
+            "showValue": "auto",
             "thresholdsStyle": {
               "mode": "off"
             },
@@ -1621,7 +1600,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "missed $/hour"
+              "options": "missed in 10-min block"
             },
             "properties": [
               {
@@ -1639,8 +1618,8 @@
         "legend": {
           "calcs": [
             "sum",
-            "mean",
-            "max"
+            "max",
+            "mean"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -1660,7 +1639,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 52
+        "y": 56
       },
       "collapsed": false,
       "panels": []
@@ -1674,7 +1653,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 53
+        "y": 57
       },
       "datasource": {
         "type": "loki",
@@ -1735,7 +1714,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 53
+        "y": 57
       },
       "datasource": {
         "type": "loki",
@@ -1795,7 +1774,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 61
+        "y": 65
       },
       "collapsed": false,
       "panels": []
@@ -1809,7 +1788,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 62
+        "y": 66
       },
       "options": {
         "mode": "markdown",
