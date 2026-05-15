@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} — {{ container }}"
+        "textFormat": "{{ pod }} \u2014 {{ container }}"
       },
       {
         "datasource": {
@@ -69,16 +69,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "🏥 Health — is NeonCart up and meeting SLOs?",
+      "title": "\ud83c\udfe5 Health \u2014 is NeonCart up and meeting SLOs?",
       "type": "row"
     },
     {
@@ -96,7 +191,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -109,7 +204,7 @@
         "h": 4,
         "w": 5,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -123,7 +218,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -134,14 +231,15 @@
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\"}[5m]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "req/s",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
       "title": "How much traffic is hitting NeonCart? (req/s)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -158,15 +256,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 0.01
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 0.05
               }
             ]
@@ -179,11 +277,11 @@
         "h": 4,
         "w": 5,
         "x": 5,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -193,7 +291,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -204,21 +304,22 @@
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\"}[5m])), 0.001)",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "err rate",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "⚠ Are requests failing? (error rate)",
-      "type": "stat"
+      "title": "\u26a0 Are requests failing? (error rate)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "95% of NeonCart requests finish in under this many seconds (OTel span metrics, 5m window). Yellow above 1s, red above 3s — the slow tail your users feel.",
+      "description": "95% of NeonCart requests finish in under this many seconds (OTel span metrics, 5m window). Yellow above 1s, red above 3s \u2014 the slow tail your users feel.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -228,15 +329,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 3
               }
             ]
@@ -249,7 +350,7 @@
         "h": 4,
         "w": 5,
         "x": 10,
-        "y": 1
+        "y": 4
       },
       "id": 4,
       "options": {
@@ -263,7 +364,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -274,21 +377,22 @@
           },
           "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\"}[5m])))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "p95",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
       "title": "How slow is the slow tail? (p95 latency)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Worst-case latency floor — 99% of requests finish under this. Same OTel span metrics, 5m. Use alongside p95 to see how bad the worst 1% is.",
+      "description": "Worst-case latency floor \u2014 99% of requests finish under this. Same OTel span metrics, 5m. Use alongside p95 to see how bad the worst 1% is.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -298,15 +402,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 2
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 5
               }
             ]
@@ -319,7 +423,7 @@
         "h": 4,
         "w": 5,
         "x": 15,
-        "y": 1
+        "y": 4
       },
       "id": 5,
       "options": {
@@ -333,7 +437,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -344,14 +450,15 @@
           },
           "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\"}[5m])))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "p99",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
       "title": "How bad is the worst 1%? (p99 latency)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -363,7 +470,7 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 1
+        "y": 4
       },
       "id": 6,
       "options": {
@@ -394,8 +501,9 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 What's on fire? (active alerts)",
-      "type": "alertlist"
+      "title": "\ud83d\udea8 What's on fire? (active alerts)",
+      "type": "alertlist",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -403,11 +511,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 8
       },
       "id": 7,
       "panels": [],
-      "title": "🔍 Trace explorer — pivot from metric to span tree",
+      "title": "\ud83d\udd0d Trace explorer \u2014 pivot from metric to span tree",
       "type": "row"
     },
     {
@@ -420,7 +528,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "id": 8,
       "targets": [
@@ -437,20 +545,21 @@
           "tableType": "traces"
         }
       ],
-      "title": "Recent traces — pick one to inspect (use_case=$use_case)",
-      "type": "traces"
+      "title": "Recent traces \u2014 pick one to inspect (use_case=$use_case)",
+      "type": "traces",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat → tool → failing SQL.",
+      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat \u2192 tool \u2192 failing SQL.",
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 9
       },
       "id": 9,
       "targets": [
@@ -467,8 +576,9 @@
           "tableType": "traces"
         }
       ],
-      "title": "🐭 Show me mice — failing traces (the centerpiece pivot)",
-      "type": "traces"
+      "title": "\ud83d\udc2d Show me mice \u2014 failing traces (the centerpiece pivot)",
+      "type": "traces",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -476,11 +586,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 19
       },
       "id": 10,
       "panels": [],
-      "title": "📦 Specialists — which nc-* agents are doing the work?",
+      "title": "\ud83d\udce6 Specialists \u2014 which nc-* agents are doing the work?",
       "type": "row"
     },
     {
@@ -501,17 +611,214 @@
             "lineWidth": 2,
             "pointSize": 4,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 17
+        "y": 20
       },
       "id": 11,
       "options": {
@@ -543,7 +850,8 @@
         }
       ],
       "title": "Which specialist is taking the load? (rate by specialist)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -563,17 +871,214 @@
             "lineWidth": 2,
             "pointSize": 4,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 17
+        "y": 20
       },
       "id": 12,
       "options": {
@@ -602,7 +1107,8 @@
         }
       ],
       "title": "Which specialist is slow? (p95 latency by specialist)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -658,6 +1164,201 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -665,7 +1366,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 29
       },
       "id": 13,
       "options": {
@@ -700,8 +1401,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Top specialists by volume (last 1h)",
-      "type": "table"
+      "title": "\ud83d\udd25 Top specialists by volume (last 1h)",
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -709,11 +1411,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 38
       },
       "id": 14,
       "panels": [],
-      "title": "🛠 Tool calls — which functions are agents invoking?",
+      "title": "\ud83d\udee0 Tool calls \u2014 which functions are agents invoking?",
       "type": "row"
     },
     {
@@ -721,7 +1423,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-tool invocation rate over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. — one line each.",
+      "description": "Per-tool invocation rate over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. \u2014 one line each.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -734,17 +1436,214 @@
             "lineWidth": 2,
             "pointSize": 4,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 36
+        "y": 39
       },
       "id": 15,
       "options": {
@@ -776,14 +1675,15 @@
         }
       ],
       "title": "Which tools are being called and how often?",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-tool error ratio (failed spans / total spans) over 5m. Yellow above 5%, red above 20%. Red bars are the tools dragging down agent reliability — typically get_inventory during the mice-rca demo.",
+      "description": "Per-tool error ratio (failed spans / total spans) over 5m. Yellow above 5%, red above 20%. Red bars are the tools dragging down agent reliability \u2014 typically get_inventory during the mice-rca demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -795,15 +1695,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 0.05
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 0.2
               }
             ]
@@ -816,7 +1716,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 36
+        "y": 39
       },
       "id": 16,
       "options": {
@@ -849,8 +1749,9 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Which tools are failing? (error rate by tool)",
-      "type": "bargauge"
+      "title": "\u26a0 Which tools are failing? (error rate by tool)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -858,11 +1759,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 48
       },
       "id": 17,
       "panels": [],
-      "title": "🤖 LLM gateway — tokens and dollars going through Sigil",
+      "title": "\ud83e\udd16 LLM gateway \u2014 tokens and dollars going through Sigil",
       "type": "row"
     },
     {
@@ -878,7 +1779,7 @@
           },
           "custom": {
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 40,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 4,
@@ -887,17 +1788,214 @@
             "stacking": {
               "group": "A",
               "mode": "normal"
-            }
+            },
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 46
+        "y": 49
       },
       "id": 18,
       "options": {
@@ -941,14 +2039,15 @@
         }
       ],
       "title": "How many tokens per model, input vs output?",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "NeonCart spend rate projected to **USD per hour** (5m rate × 3600) — total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
+      "description": "NeonCart spend rate projected to **USD per hour** (5m rate \u00d7 3600) \u2014 total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -962,18 +2061,215 @@
             "lineWidth": 2,
             "pointSize": 4,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "currencyUSD",
           "decimals": 2
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 46
+        "y": 49
       },
       "id": 19,
       "options": {
@@ -1013,8 +2309,9 @@
           "refId": "B"
         }
       ],
-      "title": "💰 What's the burn rate? — USD per hour, total and per model",
-      "type": "timeseries"
+      "title": "\ud83d\udcb0 What's the burn rate? \u2014 USD per hour, total and per model",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -1031,15 +2328,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 5
               }
             ]
@@ -1052,11 +2349,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 55
+        "y": 58
       },
       "id": 20,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -1066,7 +2363,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -1077,14 +2376,15 @@
           },
           "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[1h]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "USD",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "💰 What did NeonCart cost in the last hour?",
-      "type": "stat"
+      "title": "\ud83d\udcb0 What did NeonCart cost in the last hour?",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -1140,6 +2440,201 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1147,7 +2642,7 @@
         "h": 9,
         "w": 18,
         "x": 6,
-        "y": 55
+        "y": 58
       },
       "id": 21,
       "options": {
@@ -1182,8 +2677,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Which specialist is most expensive? (top 10 by cost, 1h)",
-      "type": "table"
+      "title": "\ud83d\udd25 Which specialist is most expensive? (top 10 by cost, 1h)",
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -1191,11 +2687,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 67
       },
       "id": 22,
       "panels": [],
-      "title": "📡 Sigil generation log — raw LLM calls as they happen",
+      "title": "\ud83d\udce1 Sigil generation log \u2014 raw LLM calls as they happen",
       "type": "row"
     },
     {
@@ -1208,7 +2704,7 @@
         "h": 10,
         "w": 14,
         "x": 0,
-        "y": 65
+        "y": 68
       },
       "id": 23,
       "options": {
@@ -1234,7 +2730,8 @@
         }
       ],
       "title": "Live generation events for this use case (use_case=$use_case)",
-      "type": "logs"
+      "type": "logs",
+      "transparent": true
     },
     {
       "datasource": {
@@ -1281,7 +2778,7 @@
         "h": 10,
         "w": 10,
         "x": 14,
-        "y": 65
+        "y": 68
       },
       "id": 24,
       "options": {
@@ -1308,7 +2805,8 @@
         }
       ],
       "title": "Latest 20 calls as a structured table",
-      "type": "logs"
+      "type": "logs",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -1316,11 +2814,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 75
+        "y": 78
       },
       "id": 25,
       "panels": [],
-      "title": "🗄 Postgres — what's happening at the database layer?",
+      "title": "\ud83d\uddc4 Postgres \u2014 what's happening at the database layer?",
       "type": "row"
     },
     {
@@ -1341,17 +2839,214 @@
             "lineWidth": 2,
             "pointSize": 4,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 76
+        "y": 79
       },
       "id": 26,
       "options": {
@@ -1383,7 +3078,8 @@
         }
       ],
       "title": "How busy is the DB? (queries/sec by tool)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -1403,17 +3099,214 @@
             "lineWidth": 2,
             "pointSize": 4,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 76
+        "y": 79
       },
       "id": 27,
       "options": {
@@ -1442,19 +3335,20 @@
         }
       ],
       "title": "Which DB-backed tool is slow? (p95 query duration)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here — pivot to the matching trace above to walk the span tree.",
+      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here \u2014 pivot to the matching trace above to walk the span tree.",
       "gridPos": {
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 84
+        "y": 87
       },
       "id": 28,
       "options": {
@@ -1478,8 +3372,9 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 DB errors — the smoking gun (Loki tail)",
-      "type": "logs"
+      "title": "\ud83d\udea8 DB errors \u2014 the smoking gun (Loki tail)",
+      "type": "logs",
+      "transparent": true
     }
   ],
   "refresh": "30s",
@@ -1618,7 +3513,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — NeonCart",
+  "title": "AI o11y \u2014 NeonCart",
   "uid": "ai-obs-app-neoncart",
   "weekStart": ""
 }

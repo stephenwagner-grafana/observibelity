@@ -42,11 +42,106 @@
   ],
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "options": {
@@ -55,14 +150,15 @@
       },
       "description": "Pinned context for the NeonCart pitch \u2014 what the app is, which models are routed, where loadgen sits, and where the storefront lives.",
       "title": "\ud83d\udecd Start here \u2014 what is NeonCart and what's running?",
-      "type": "text"
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 7
       },
       "id": 2,
       "options": {
@@ -71,14 +167,15 @@
       },
       "description": "The three live demos you can run right now. Each row tells you exactly what to type, the signal it produces, the dashboard to land on, and the one-line value pitch.",
       "title": "Step 1 \u2014 Live demos: type this, see this signal",
-      "type": "text"
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 19
       },
       "id": 3,
       "options": {
@@ -87,14 +184,15 @@
       },
       "description": "NeonCart's eval-driven use cases (hallucination, refund-policy, frustration, brand drift). These light up once the loadgen has been running long enough to plant the seeded prompts.",
       "title": "Step 2 \u2014 Eval-driven NeonCart use cases (light up after deploy)",
-      "type": "text"
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 31
       },
       "id": 4,
       "options": {
@@ -102,40 +200,43 @@
         "mode": "markdown"
       },
       "description": "Evals that aren't NeonCart-specific (toxicity, PII echo, prompt injection, runaway tools, cost anomalies) but still fire here. Use the Sample-panels row at the bottom to deep-link straight to the right view.",
-      "title": "Step 3 — Cross-cutting evals that also show up in NeonCart",
-      "type": "text"
+      "title": "Step 3 \u2014 Cross-cutting evals that also show up in NeonCart",
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 38
+        "y": 41
       },
       "id": 5,
       "options": {
         "content": "1. **Storefront tour** \u2014 1m \u2014 [storefront](https://claude.wombatwags.com/), point at chat\n2. **mice RCA** \u2b50 \u2014 3m \u2014 chat \u2192 Conversations \u2192 Tempo \u2192 Loki Postgres-style trio \u2192 AI explain\n3. **Gift Finder behavioral** \u2014 1m \u2014 [model winner bargauges](/d/ai-obs-best-models?viewPanel=8) + [quality trend](/d/ai-obs-app-neoncart)\n\nFor a fuller arc, swap step 2 with a Group B eval (`refund_policy_compliance` is the most landable customer story \u2014 \"every refund the bot promises, audited\").",
         "mode": "markdown"
       },
-      "description": "The 5-minute NeonCart story to run in front of a customer — three steps, no detours.",
-      "title": "🎬 Run the demo — 5-minute NeonCart flow",
-      "type": "text"
+      "description": "The 5-minute NeonCart story to run in front of a customer \u2014 three steps, no detours.",
+      "title": "\ud83c\udfac Run the demo \u2014 5-minute NeonCart flow",
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 38
+        "y": 41
       },
       "id": 6,
       "options": {
         "content": "| Symptom | Fix |\n|---------|-----|\n| `show me mice` \u2192 no trace | `kubectl -n neoncart rollout restart deploy/search-service` |\n| Best Models bargauges empty | `kubectl -n neoncart logs deploy/ai-loadgen \\| grep atc-sim` |\n| Quality trend flat | `kubectl -n neoncart rollout restart deploy/ai-loadgen` then wait 5m |\n| Group B (eval) panels empty | rebuild + push images, `kubectl apply -f manifests/neoncart`, restart loadgen |\n\n**Adding a new NeonCart use case**: invoke `/add-use-case` with `app_id: neoncart`. The skill auto-fills the model pool, namespace, primary dashboard from `registry/apps.yaml`.",
         "mode": "markdown"
       },
-      "description": "If the demo doesn't look right, this is the symptom → fix cheat sheet. Plus how to add a brand-new NeonCart use case.",
-      "title": "🛟 If something's broken — symptom → fix",
-      "type": "text"
+      "description": "If the demo doesn't look right, this is the symptom \u2192 fix cheat sheet. Plus how to add a brand-new NeonCart use case.",
+      "title": "\ud83d\udedf If something's broken \u2014 symptom \u2192 fix",
+      "type": "text",
+      "transparent": true
     }
   ],
   "refresh": "",

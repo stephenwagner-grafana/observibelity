@@ -8,11 +8,106 @@
   "links": [],
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "options": {
@@ -28,7 +123,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 7
       },
       "id": 2,
       "options": {
@@ -44,7 +139,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "id": 3,
       "options": {
@@ -63,8 +158,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
           "unit": "short"
         }
@@ -73,7 +167,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 11
+        "y": 14
       },
       "id": 30,
       "description": "Count of POST /chat requests hitting NeonCart in the last hour, parsed from access logs (Loki). The basic 'is anyone shopping?' pulse.",
@@ -84,7 +178,11 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "auto",
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "targets": [
         {
@@ -93,12 +191,15 @@
             "uid": "grafanacloud-logs"
           },
           "expr": "sum(count_over_time({container=\"neoncart\"} |~ \"POST /chat HTTP\" [1h]))",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "title": "NeonCart \u2014 how busy are we? (chats / hr)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -114,15 +215,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 3000
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 8000
               }
             ]
@@ -134,7 +235,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 11
+        "y": 14
       },
       "id": 31,
       "description": "95th-percentile chat response time (ms) for NeonCart over the last hour, from OTel span metrics. Yellow above 3s, red above 8s.",
@@ -145,7 +246,11 @@
           "calcs": [
             "max"
           ]
-        }
+        },
+        "textMode": "auto",
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "targets": [
         {
@@ -154,12 +259,15 @@
             "uid": "grafanacloud-prom"
           },
           "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\"}[1h]))) * 1000",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "title": "NeonCart \u2014 how slow is the slow tail? (p95 chat ms)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -169,8 +277,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
           "unit": "short"
         }
@@ -179,7 +286,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 11
+        "y": 14
       },
       "id": 32,
       "description": "Count of POST /chat requests hitting Support Bot in the last hour (Loki access logs). Pulse of internal help-desk traffic.",
@@ -190,7 +297,11 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "auto",
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "targets": [
         {
@@ -199,12 +310,15 @@
             "uid": "grafanacloud-logs"
           },
           "expr": "sum(count_over_time({container=\"supportbot\"} |~ \"POST /chat HTTP\" [1h]))",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "title": "Support Bot \u2014 how busy are we? (asks / hr)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -220,15 +334,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "#FB923C",
                 "value": 5
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 25
               }
             ]
@@ -240,7 +354,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 11
+        "y": 14
       },
       "id": 33,
       "description": "Count of 5xx responses from Support Bot /chat in the last hour (Loki). Yellow above 5, red above 25 \u2014 direct read on user-facing failures.",
@@ -251,7 +365,11 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "auto",
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "targets": [
         {
@@ -260,19 +378,22 @@
             "uid": "grafanacloud-logs"
           },
           "expr": "sum(count_over_time({container=\"supportbot\"} |~ \"POST /chat HTTP/1.1\\\" 5\" [1h]))",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "title": "\ud83d\udea8 Support Bot \u2014 how many 5xx errors? (1h)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 2,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 19
       },
       "id": 40,
       "options": {
@@ -288,7 +409,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "id": 41,
       "options": {

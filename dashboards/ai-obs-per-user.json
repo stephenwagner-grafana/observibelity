@@ -36,12 +36,107 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
@@ -71,7 +166,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -144,15 +239,15 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "#8AB8FF",
                       "value": null
                     },
                     {
-                      "color": "yellow",
+                      "color": "#A78BFA",
                       "value": 100000
                     },
                     {
-                      "color": "red",
+                      "color": "#F472B6",
                       "value": 500000
                     }
                   ]
@@ -190,15 +285,15 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "#8AB8FF",
                       "value": null
                     },
                     {
-                      "color": "yellow",
+                      "color": "#A78BFA",
                       "value": 0.5
                     },
                     {
-                      "color": "red",
+                      "color": "#F472B6",
                       "value": 2
                     }
                   ]
@@ -236,15 +331,15 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "#8AB8FF",
                       "value": null
                     },
                     {
-                      "color": "yellow",
+                      "color": "#A78BFA",
                       "value": 10
                     },
                     {
-                      "color": "red",
+                      "color": "#F472B6",
                       "value": 50
                     }
                   ]
@@ -290,19 +385,19 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "red",
+                      "color": "#F472B6",
                       "value": null
                     },
                     {
-                      "color": "orange",
+                      "color": "#FB923C",
                       "value": 30
                     },
                     {
-                      "color": "yellow",
+                      "color": "#A78BFA",
                       "value": 50
                     },
                     {
-                      "color": "green",
+                      "color": "#8AB8FF",
                       "value": 70
                     }
                   ]
@@ -340,22 +435,217 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "#8AB8FF",
                       "value": null
                     },
                     {
-                      "color": "yellow",
+                      "color": "#A78BFA",
                       "value": 25
                     },
                     {
-                      "color": "orange",
+                      "color": "#FB923C",
                       "value": 50
                     },
                     {
-                      "color": "red",
+                      "color": "#F472B6",
                       "value": 75
                     }
                   ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
                 }
               }
             ]
@@ -366,7 +656,7 @@
         "h": 16,
         "w": 24,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -520,7 +810,8 @@
           }
         }
       ],
-      "type": "table"
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -528,7 +819,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 20
       },
       "id": 3,
       "panels": [],
@@ -551,15 +842,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 0.5
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 2
               }
             ]
@@ -571,7 +862,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "id": 4,
       "options": {
@@ -601,7 +892,8 @@
         }
       ],
       "title": "Top spenders (24h)",
-      "type": "bargauge"
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "datasource": {
@@ -619,15 +911,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 100000
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 500000
               }
             ]
@@ -639,7 +931,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 21
       },
       "id": 5,
       "options": {
@@ -669,7 +961,8 @@
         }
       ],
       "title": "Top token consumers (24h)",
-      "type": "bargauge"
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -677,7 +970,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 31
       },
       "id": 6,
       "panels": [],
@@ -700,19 +993,19 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "#FB923C",
                 "value": 30
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 50
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 70
               }
             ]
@@ -726,13 +1019,13 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 29
+        "y": 32
       },
       "id": 7,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -742,8 +1035,9 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value_and_name",
-        "wideLayout": true
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "targets": [
         {
@@ -753,13 +1047,16 @@
           },
           "editorMode": "code",
           "expr": "(sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h]))) * 100",
-          "instant": true,
+          "instant": false,
           "legendFormat": "Fleet avg",
-          "refId": "A"
+          "refId": "A",
+          "range": true,
+          "format": "time_series"
         }
       ],
       "title": "Fleet AI quality score (1h avg, 0-100)",
-      "type": "stat"
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -777,19 +1074,19 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "#FB923C",
                 "value": 30
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 50
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 70
               }
             ]
@@ -803,7 +1100,7 @@
         "h": 12,
         "w": 16,
         "x": 8,
-        "y": 29
+        "y": 32
       },
       "id": 8,
       "options": {
@@ -833,7 +1130,8 @@
         }
       ],
       "title": "Worst quality scores (bottom 10 users, 1h avg)",
-      "type": "bargauge"
+      "type": "bargauge",
+      "transparent": true
     }
   ],
   "refresh": "30s",

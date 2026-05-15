@@ -42,11 +42,106 @@
   ],
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "gridPos": {
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "options": {
@@ -55,14 +150,15 @@
       },
       "description": "Pinned context for the Support Bot (\"Ask Acme\") pitch \u2014 what the app is, which models are routed, what the loadgen does, and where the chat UI lives.",
       "title": "\ud83e\udd16 Start here \u2014 what is Ask Acme and what's running?",
-      "type": "text"
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 18,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 7
       },
       "id": 2,
       "options": {
@@ -71,14 +167,15 @@
       },
       "description": "The seven live demos you can run right now. Each row tells you exactly what to type or wait for, the signal it produces, the dashboard to land on, and the one-line value pitch. Stars mark the centerpiece demos.",
       "title": "Step 1 \u2014 Live demos: type this, see this signal",
-      "type": "text"
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 3,
       "options": {
@@ -87,14 +184,15 @@
       },
       "description": "Support Bot's eval-driven scenarios (termination intent, confidential disclosure, policy circumvention, hiring discrimination). Each is seeded by a sticky user so the leaderboard names a specific employee.",
       "title": "Step 2 \u2014 Eval-driven Support Bot use cases (light up after deploy)",
-      "type": "text"
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 37
       },
       "id": 4,
       "options": {
@@ -102,40 +200,43 @@
         "mode": "markdown"
       },
       "description": "Evals that aren't Support Bot-specific (toxicity, PII echo, prompt injection, runaway tools, cost anomalies) but still fire here. Use the Sample-panels row at the bottom for one-click deep-links into the alert / leaderboard views.",
-      "title": "Step 3 — Cross-cutting evals that also show up in Support Bot",
-      "type": "text"
+      "title": "Step 3 \u2014 Cross-cutting evals that also show up in Support Bot",
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 44
+        "y": 47
       },
       "id": 5,
       "options": {
         "content": "Pick **one** centerpiece for the customer story:\n\n**Option A \u2014 Email Cascade** \u2b50\n1. Open [`/d/ai-obs-cascade-spike`](/d/ai-obs-cascade-spike) (1m)\n2. Type `show me every email I have ever sent` (4m wall-time)\n3. Watch alert flip + email_sent ticker \u2192 Tempo trace\n\n**Option B \u2014 Data theft Tim** \u2b50\n1. Open [`/d/ai-obs-data-theft`](/d/ai-obs-data-theft) (1m)\n2. Tim already at top of every panel (1m)\n3. Wait for / point at alert flipping FIRING + email to security@ (3m)\n\n**Option C \u2014 Coworker termination intent** \u2b50 (after deploy)\n1. Open [`/d/ai-obs-pii`](/d/ai-obs-pii) per-user breach panel (1m)\n2. Show `u-mara-chen` arc against \"Kai\" \u2014 progressive paper trail (2m)\n3. Show alert FIRING per-user, not global (2m)",
         "mode": "markdown"
       },
-      "description": "The 5-minute Support Bot story to run in front of a customer — pick ONE of the three options (A: email cascade, B: Tim data-theft, C: coworker termination intent) and stick to that arc.",
-      "title": "🎬 Run the demo — 5-minute Support Bot flow (pick one)",
-      "type": "text"
+      "description": "The 5-minute Support Bot story to run in front of a customer \u2014 pick ONE of the three options (A: email cascade, B: Tim data-theft, C: coworker termination intent) and stick to that arc.",
+      "title": "\ud83c\udfac Run the demo \u2014 5-minute Support Bot flow (pick one)",
+      "type": "text",
+      "transparent": true
     },
     {
       "gridPos": {
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 44
+        "y": 47
       },
       "id": 6,
       "options": {
         "content": "| Symptom | Fix |\n|---------|-----|\n| Email cascade times out | env-set `EMAIL_CASCADE_HOURLY_CHUNKS=500` on `acme-bot-api` |\n| Tim hasn't tripped data-theft alert | wait 5m or `kubectl -n supportbot rollout restart deploy/supportbot-loadgen` |\n| Operator identity wrong | env-set `DEMO_OPERATOR_NAME` / `DEMO_OPERATOR_EMAIL` on `supportbot-frontend` |\n| Group B (eval) panels empty | rebuild + push images, `kubectl apply -f manifests/supportbot`, restart loadgen |\n| `coworker_termination_intent` not breaching | check `u-mara-chen` is OUTSIDE `FAKE_USERS` list (sticky) |\n\n**Adding a new SB use case**: invoke `/add-use-case` with `app_id: supportbot`. Auto-fills 9-model pool, 21-specialist namespace, primary dashboard from `registry/apps.yaml`.",
         "mode": "markdown"
       },
-      "description": "If the demo doesn't look right, this is the symptom → fix cheat sheet. Plus how to add a brand-new Support Bot use case.",
-      "title": "🛟 If something's broken — symptom → fix",
-      "type": "text"
+      "description": "If the demo doesn't look right, this is the symptom \u2192 fix cheat sheet. Plus how to add a brand-new Support Bot use case.",
+      "title": "\ud83d\udedf If something's broken \u2014 symptom \u2192 fix",
+      "type": "text",
+      "transparent": true
     }
   ],
   "refresh": "",

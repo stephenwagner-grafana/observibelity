@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-loadgen",
-  "title": "AI o11y — Loadgen Activity (what k6 is driving right now)",
+  "title": "AI o11y \u2014 Loadgen Activity (what k6 is driving right now)",
   "tags": [
     "ai-observability",
     "loadgen",
@@ -61,14 +61,109 @@
   },
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "id": 1,
       "type": "row",
-      "title": "📡 Overview — is k6 actually generating traffic right now?",
+      "title": "\ud83d\udce1 Overview \u2014 is k6 actually generating traffic right now?",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "collapsed": false,
       "panels": []
@@ -82,7 +177,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "datasource": {
         "type": "loki",
@@ -96,7 +191,9 @@
             "uid": "${datasource_loki}"
           },
           "expr": "sum(rate({container=\"llm-gateway\"} |~ \"sigil generation\" [5m]))",
-          "queryType": "instant"
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "options": {
@@ -111,7 +208,9 @@
         "textMode": "auto",
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto"
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "fieldConfig": {
         "defaults": {
@@ -121,33 +220,37 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 0.1
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 0.5
               }
             ]
+          },
+          "color": {
+            "mode": "thresholds"
           }
         },
         "overrides": []
-      }
+      },
+      "transparent": true
     },
     {
       "id": 3,
       "type": "stat",
       "title": "How many use cases are firing?",
-      "description": "Distinct ai_o11y.usecase values seen in llm-gateway logs in the last 5 minutes. Green at 18+ — registry has 22 scenarios so anything well below means traffic is too thin to keep them all lit.",
+      "description": "Distinct ai_o11y.usecase values seen in llm-gateway logs in the last 5 minutes. Green at 18+ \u2014 registry has 22 scenarios so anything well below means traffic is too thin to keep them all lit.",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 1
+        "y": 4
       },
       "datasource": {
         "type": "loki",
@@ -161,7 +264,9 @@
             "uid": "${datasource_loki}"
           },
           "expr": "count(sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
-          "queryType": "instant"
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "options": {
@@ -176,7 +281,9 @@
         "textMode": "auto",
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto"
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "fieldConfig": {
         "defaults": {
@@ -186,37 +293,41 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "#FB923C",
                 "value": 5
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 10
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 18
               }
             ]
+          },
+          "color": {
+            "mode": "thresholds"
           }
         },
         "overrides": []
-      }
+      },
+      "transparent": true
     },
     {
       "id": 4,
       "type": "stat",
       "title": "How many users are active?",
-      "description": "Distinct user_id (email) values seen in llm-gateway logs in the last 5 minutes. Green at 20+ — the centerpiece users (Tim/Mara/Jordan/Priya/Eric) should always be present.",
+      "description": "Distinct user_id (email) values seen in llm-gateway logs in the last 5 minutes. Green at 20+ \u2014 the centerpiece users (Tim/Mara/Jordan/Priya/Eric) should always be present.",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 1
+        "y": 4
       },
       "datasource": {
         "type": "loki",
@@ -230,7 +341,9 @@
             "uid": "${datasource_loki}"
           },
           "expr": "count(sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".*@.*\" [5m])))",
-          "queryType": "instant"
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "options": {
@@ -245,7 +358,9 @@
         "textMode": "auto",
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto"
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "fieldConfig": {
         "defaults": {
@@ -255,37 +370,41 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "#FB923C",
                 "value": 5
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 12
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 20
               }
             ]
+          },
+          "color": {
+            "mode": "thresholds"
           }
         },
         "overrides": []
-      }
+      },
+      "transparent": true
     },
     {
       "id": 5,
       "type": "stat",
-      "title": "💰 What is loadgen burning per hour? (USD/hr)",
-      "description": "Total gen_ai cost rate × 3600. Almost all of this is Claude — the 80% Ollama traffic is essentially free. Yellow above $5/hr, red above $25/hr.",
+      "title": "\ud83d\udcb0 What is loadgen burning per hour? (USD/hr)",
+      "description": "Total gen_ai cost rate \u00d7 3600. Almost all of this is Claude \u2014 the 80% Ollama traffic is essentially free. Yellow above $5/hr, red above $25/hr.",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 1
+        "y": 4
       },
       "datasource": {
         "type": "prometheus",
@@ -299,7 +418,9 @@
             "uid": "${datasource_prom}"
           },
           "expr": "sum(rate(gen_ai_client_cost_USD_total[5m])) * 3600",
-          "queryType": "instant"
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
       "options": {
@@ -314,7 +435,9 @@
         "textMode": "auto",
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto"
+        "justifyMode": "center",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "fieldConfig": {
         "defaults": {
@@ -324,32 +447,36 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 5
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 25
               }
             ]
+          },
+          "color": {
+            "mode": "thresholds"
           }
         },
         "overrides": []
-      }
+      },
+      "transparent": true
     },
     {
       "id": 6,
       "type": "row",
-      "title": "📊 Mix breakdown — which scenarios and personas are running?",
+      "title": "\ud83d\udcca Mix breakdown \u2014 which scenarios and personas are running?",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "collapsed": false,
       "panels": []
@@ -358,12 +485,12 @@
       "id": 7,
       "type": "barchart",
       "title": "Which use cases are getting hit? (chats per use_case)",
-      "description": "Total chats per use_case in the last 5 minutes. Should mirror the baseline.js weight table at the bottom — data-theft-tim (8) and hiring-discrimination-risk (5) lead.",
+      "description": "Total chats per use_case in the last 5 minutes. Should mirror the baseline.js weight table at the bottom \u2014 data-theft-tim (8) and hiring-discrimination-risk (5) lead.",
       "gridPos": {
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "datasource": {
         "type": "loki",
@@ -406,31 +533,233 @@
         "defaults": {
           "unit": "short",
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
+          },
+          "custom": {
+            "gradientMode": "scheme",
+            "fillOpacity": 90,
+            "lineWidth": 0
           }
         },
-        "overrides": []
-      }
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "transparent": true
     },
     {
       "id": 8,
       "type": "barchart",
-      "title": "🔥 Which personas are driving the chats?",
-      "description": "Total chats per persona in the last 5 minutes. Centerpiece personas (Tim L, Mara, Jordan, Priya, Eric) should dominate — if they don't, baseline.js weights need a look.",
+      "title": "\ud83d\udd25 Which personas are driving the chats?",
+      "description": "Total chats per persona in the last 5 minutes. Centerpiece personas (Tim L, Mara, Jordan, Priya, Eric) should dominate \u2014 if they don't, baseline.js weights need a look.",
       "gridPos": {
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 10
       },
       "datasource": {
         "type": "loki",
@@ -473,30 +802,232 @@
         "defaults": {
           "unit": "short",
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
+          },
+          "custom": {
+            "gradientMode": "scheme",
+            "fillOpacity": 90,
+            "lineWidth": 0
           }
         },
-        "overrides": []
-      }
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "transparent": true
     },
     {
       "id": 9,
       "type": "row",
-      "title": "📈 Over time — how is the mix changing, and where is traffic landing?",
+      "title": "\ud83d\udcc8 Over time \u2014 how is the mix changing, and where is traffic landing?",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "collapsed": false,
       "panels": []
@@ -510,7 +1041,7 @@
         "h": 11,
         "w": 16,
         "x": 0,
-        "y": 19
+        "y": 22
       },
       "datasource": {
         "type": "loki",
@@ -558,22 +1089,221 @@
             "stacking": {
               "mode": "none",
               "group": "A"
-            }
+            },
+            "lineWidth": 2,
+            "gradientMode": "opacity"
           }
         },
-        "overrides": []
-      }
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "transparent": true
     },
     {
       "id": 11,
       "type": "piechart",
-      "title": "📦 Where is traffic landing? (specialist mix)",
+      "title": "\ud83d\udce6 Where is traffic landing? (specialist mix)",
       "description": "Donut split of chats by destination specialist. Sanity check that sb-router and nc-chatbot are fanning out to their respective sub-specialists, not getting stuck on a single one.",
       "gridPos": {
         "h": 11,
         "w": 8,
         "x": 16,
-        "y": 19
+        "y": 22
       },
       "datasource": {
         "type": "loki",
@@ -619,20 +1349,224 @@
           "unit": "short",
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
           }
         },
-        "overrides": []
-      }
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "transparent": true
     },
     {
       "id": 12,
       "type": "row",
-      "title": "🤖 Model routing + freshness — are providers and scenarios alive?",
+      "title": "\ud83e\udd16 Model routing + freshness \u2014 are providers and scenarios alive?",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 33
       },
       "collapsed": false,
       "panels": []
@@ -640,13 +1574,13 @@
     {
       "id": 13,
       "type": "piechart",
-      "title": "🤖 Ollama vs Claude — is the 80/20 split holding?",
-      "description": "Donut of gen_ai.system share. Target ratio is set by LOADGEN_CLAUDE_FRACTION (default 0.10–0.20). If Claude is dominating, you'll see it here before the cost stat panel turns red.",
+      "title": "\ud83e\udd16 Ollama vs Claude \u2014 is the 80/20 split holding?",
+      "description": "Donut of gen_ai.system share. Target ratio is set by LOADGEN_CLAUDE_FRACTION (default 0.10\u20130.20). If Claude is dominating, you'll see it here before the cost stat panel turns red.",
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 31
+        "y": 34
       },
       "datasource": {
         "type": "loki",
@@ -695,21 +1629,225 @@
           "unit": "short",
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
           }
         },
-        "overrides": []
-      }
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "transparent": true
     },
     {
       "id": 14,
       "type": "table",
-      "title": "❄ Which scenarios have gone cold? (hits in last 30m)",
-      "description": "Per-use_case hit count over the last 30 minutes, sorted high-to-low. Red row = zero hits — usually a baseline.js weight at 0, a k6 pod restart, or stale routing keywords in sb-router.",
+      "title": "\u2744 Which scenarios have gone cold? (hits in last 30m)",
+      "description": "Per-use_case hit count over the last 30 minutes, sorted high-to-low. Red row = zero hits \u2014 usually a baseline.js weight at 0, a k6 pod restart, or stale routing keywords in sb-router.",
       "gridPos": {
         "h": 9,
         "w": 16,
         "x": 8,
-        "y": 31
+        "y": 34
       },
       "datasource": {
         "type": "loki",
@@ -803,38 +1941,234 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "red",
+                      "color": "#F472B6",
                       "value": null
                     },
                     {
-                      "color": "orange",
+                      "color": "#FB923C",
                       "value": 1
                     },
                     {
-                      "color": "yellow",
+                      "color": "#A78BFA",
                       "value": 10
                     },
                     {
-                      "color": "green",
+                      "color": "#8AB8FF",
                       "value": 30
                     }
                   ]
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
-      }
+      },
+      "transparent": true
     },
     {
       "id": 15,
       "type": "row",
-      "title": "📋 Scenario config — what is baseline.js asking k6 to drive?",
+      "title": "\ud83d\udccb Scenario config \u2014 what is baseline.js asking k6 to drive?",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 43
       },
       "collapsed": false,
       "panels": []
@@ -847,16 +2181,17 @@
         "h": 22,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 44
       },
       "options": {
         "mode": "markdown",
-        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios — the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude — uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) — total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) — per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) — per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) — full demo agenda\n"
+        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios \u2014 the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude \u2014 uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) \u2014 total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) \u2014 per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) \u2014 per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) \u2014 full demo agenda\n"
       },
       "fieldConfig": {
         "defaults": {},
         "overrides": []
-      }
+      },
+      "transparent": true
     }
   ]
 }
