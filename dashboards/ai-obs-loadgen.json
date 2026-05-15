@@ -61,6 +61,26 @@
   },
   "panels": [
     {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y \u2014 Loadgen Activity\n\n**Story:** What is k6 actually driving? This dashboard surfaces traffic volume, use-case mix, persona mix, and the Ollama/Claude 80/20 routing split. Use it as a sanity check before any demo \u2014 confirm the heavy scenarios (data-theft-tim, mice-rca, email-cascade, confidential-disclosure) are firing.\n\n**Look for:** **chats/sec** > 0, **active users** > 5, and the **\u2744 cold scenarios** table near the bottom should be empty for the scenarios you're about to demo."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -74,7 +94,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -163,7 +183,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 8
       },
       "collapsed": false,
       "panels": []
@@ -177,7 +197,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 9
       },
       "datasource": {
         "type": "loki",
@@ -250,7 +270,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 4
+        "y": 9
       },
       "datasource": {
         "type": "loki",
@@ -327,7 +347,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 4
+        "y": 9
       },
       "datasource": {
         "type": "loki",
@@ -404,7 +424,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 9
       },
       "datasource": {
         "type": "prometheus",
@@ -476,7 +496,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 14
       },
       "collapsed": false,
       "panels": []
@@ -490,7 +510,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 15
       },
       "datasource": {
         "type": "loki",
@@ -861,7 +881,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 15
       },
       "datasource": {
         "type": "loki",
@@ -1231,7 +1251,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "collapsed": false,
       "panels": []
@@ -1245,7 +1265,7 @@
         "h": 11,
         "w": 16,
         "x": 0,
-        "y": 22
+        "y": 27
       },
       "datasource": {
         "type": "loki",
@@ -1280,7 +1300,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps",
+          "unit": "short",
           "color": {
             "mode": "palette-classic"
           },
@@ -1597,7 +1617,7 @@
         "h": 11,
         "w": 8,
         "x": 16,
-        "y": 22
+        "y": 27
       },
       "datasource": {
         "type": "loki",
@@ -1950,7 +1970,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 38
       },
       "collapsed": false,
       "panels": []
@@ -1964,7 +1984,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 34
+        "y": 39
       },
       "datasource": {
         "type": "loki",
@@ -2321,7 +2341,7 @@
         "h": 9,
         "w": 16,
         "x": 8,
-        "y": 34
+        "y": 39
       },
       "datasource": {
         "type": "loki",
@@ -2732,7 +2752,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 48
       },
       "collapsed": false,
       "panels": []
@@ -2745,7 +2765,7 @@
         "h": 22,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 49
       },
       "options": {
         "mode": "markdown",

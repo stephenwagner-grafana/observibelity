@@ -53,6 +53,26 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y \u2014 Data Theft (per-employee exfil)\n\n**Story:** Is anyone trying to walk off with customer data? Read top-to-bottom: headline counts (24h) -> top-10 likely exfilters (10m rolling) -> drill into one person -> live Loki stream of the actual log lines.\n\n**Look for:** any non-zero value in the **\ud83d\udea8 Total exfil-keyword events** or **\ud83d\udd12 Credit-card pastes** stat. If you see >1 employee in the leaderboard pulling away from the pack, that's your prime suspect."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -66,7 +86,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -153,7 +173,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 8
       },
       "id": 1,
       "panels": [],
@@ -165,7 +185,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of LLM-gateway log lines in the last 24h that mention exfil-flavoured keywords (export, dump, customer list, SSN, etc.) across every employee. Treat as a noise-floor sanity check \u2014 leaderboard panel below tells you WHO.",
+      "description": "Count of LLM-gateway log lines in the last hour mentioning exfil-flavoured keywords (export, dump, customer list, SSN, etc.). Treat as a noise-floor sanity check \u2014 leaderboard below tells you WHO. Populates within ~5 min after probes fire keyword-matching traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -196,7 +216,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 9
       },
       "id": 2,
       "options": {
@@ -221,7 +241,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" [24h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" [1h]))",
           "legendFormat": "events",
           "refId": "A",
           "instant": false,
@@ -229,7 +249,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udea8 Total exfil-keyword events \u2014 last 24h",
+      "title": "\ud83d\udea8 Total exfil-keyword events \u2014 last 1h",
       "type": "stat",
       "transparent": false
     },
@@ -269,7 +289,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 4
+        "y": 9
       },
       "id": 3,
       "options": {
@@ -342,7 +362,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 4
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -389,7 +409,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -430,7 +450,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 14
       },
       "id": 6,
       "panels": [],
@@ -473,7 +493,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 15
       },
       "id": 7,
       "options": {
@@ -822,7 +842,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 15
       },
       "id": 8,
       "options": {
@@ -861,7 +881,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 9,
       "panels": [],
@@ -1199,7 +1219,7 @@
         "h": 9,
         "w": 16,
         "x": 0,
-        "y": 22
+        "y": 27
       },
       "id": 10,
       "options": {
@@ -1275,7 +1295,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 22
+        "y": 27
       },
       "id": 11,
       "options": {
@@ -1318,7 +1338,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 36
       },
       "id": 12,
       "panels": [],
@@ -1711,7 +1731,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 37
       },
       "id": 13,
       "options": {
@@ -1772,6 +1792,27 @@
             "byField": "employee",
             "mode": "outer"
           }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "service_name": true,
+              "service_namespace": true,
+              "deployment_environment": true,
+              "container": true,
+              "pod": true,
+              "namespace": true,
+              "cluster": true,
+              "service_instance_id": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
         }
       ],
       "type": "table",
@@ -1783,7 +1824,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 49
       },
       "id": 14,
       "panels": [],
@@ -1800,7 +1841,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 50
       },
       "id": 15,
       "options": {

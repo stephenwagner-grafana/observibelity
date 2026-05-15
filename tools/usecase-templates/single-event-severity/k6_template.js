@@ -50,6 +50,12 @@ const INNOCENT_MESSAGES = [
   'what is your support hours',
   'where do I find my order history',
 ];
+// CRITICAL_MESSAGES / NEAR_MISS_MESSAGES are JSON arrays rendered from the
+// scenario `params` keys `critical_messages` / `near_miss_messages`. Override
+// these in the use-case YAML with keyword-rich phrases so dashboard Loki
+// regex panels match the critical and near-miss streams.
+const CRITICAL_MESSAGES = {{ critical_messages }};
+const NEAR_MISS_MESSAGES = {{ near_miss_messages }};
 
 function post(message, severity, kind) {
   const payload = JSON.stringify({
@@ -76,11 +82,13 @@ function post(message, severity, kind) {
 }
 
 export function fireCritical() {
-  post('TRIGGER_CRITICAL: {{ event_pattern }}', 'critical', 'critical');
+  const msg = CRITICAL_MESSAGES[Math.floor(Math.random() * CRITICAL_MESSAGES.length)];
+  post(msg, 'critical', 'critical');
 }
 
 export function fireNearMiss() {
-  post('TRIGGER_NEAR_MISS: looks like {{ event_pattern }} but is benign', 'low', 'near_miss');
+  const msg = NEAR_MISS_MESSAGES[Math.floor(Math.random() * NEAR_MISS_MESSAGES.length)];
+  post(msg, 'low', 'near_miss');
 }
 
 export function fireInnocent() {

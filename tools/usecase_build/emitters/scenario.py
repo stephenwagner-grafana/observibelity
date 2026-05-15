@@ -34,6 +34,7 @@ _TEMPLATE_DEFAULTS: dict[str, object] = {
     "pattern_signature": "default",
     "message_count": 1,
     "message_template": "help me with my order please",
+    "message_templates": ["help me with my order please"],
     # trace-and-fix archetype
     "trace_filter": "default",
     "trigger_phrase": "trigger this trace",
@@ -42,6 +43,8 @@ _TEMPLATE_DEFAULTS: dict[str, object] = {
     "severity_signal": "default",
     "critical_rate_per_hour": 1,
     "near_miss_rate_per_hour": 3,
+    "critical_messages": ["TRIGGER_CRITICAL: default"],
+    "near_miss_messages": ["TRIGGER_NEAR_MISS: looks like default but is benign"],
     # cascade archetype
     "counter_metric": "events_total",
     "threshold": 5,

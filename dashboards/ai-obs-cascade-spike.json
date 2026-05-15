@@ -53,6 +53,26 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y \u2014 Email Cascade\n\n**Story:** A single misbehaving session can drive a runaway loop \u2014 the escalator specialist sends thousands of emails in minutes. The cost stat (top-left) is your immediate damage gauge.\n\n**Look for:** any session in the **\ud83d\udea8 Top 20 runaway sessions** table over **50 emails/10m**, and the live tail at the bottom \u2014 you'll see the tool-call loop in real time."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -66,7 +86,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -153,7 +173,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 8
       },
       "id": 1,
       "panels": [],
@@ -196,7 +216,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 9
       },
       "id": 2,
       "options": {
@@ -269,7 +289,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 4
+        "y": 9
       },
       "id": 3,
       "options": {
@@ -340,7 +360,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 4
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -387,7 +407,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -428,7 +448,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 14
       },
       "id": 6,
       "panels": [],
@@ -749,7 +769,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 10
+        "y": 15
       },
       "id": 7,
       "options": {
@@ -802,7 +822,8 @@
             "scaleDistribution": {
               "type": "linear"
             }
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -810,7 +831,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 15
       },
       "id": 8,
       "options": {
@@ -869,7 +890,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 24
       },
       "id": 9,
       "panels": [],
@@ -1235,7 +1256,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 25
       },
       "id": 10,
       "options": {
@@ -1270,7 +1291,30 @@
       ],
       "title": "\ud83d\udea8 Top 20 runaway sessions \u2014 who's blowing past 50 emails in 10m?",
       "type": "table",
-      "transparent": false
+      "transparent": false,
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "service_name": true,
+              "service_namespace": true,
+              "deployment_environment": true,
+              "container": true,
+              "pod": true,
+              "namespace": true,
+              "cluster": true,
+              "service_instance_id": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
     },
     {
       "collapsed": false,
@@ -1278,7 +1322,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 35
       },
       "id": 11,
       "panels": [],
@@ -1295,7 +1339,7 @@
         "h": 11,
         "w": 14,
         "x": 0,
-        "y": 31
+        "y": 36
       },
       "id": 12,
       "options": {
@@ -1333,7 +1377,7 @@
         "h": 11,
         "w": 10,
         "x": 14,
-        "y": 31
+        "y": 36
       },
       "id": 13,
       "options": {

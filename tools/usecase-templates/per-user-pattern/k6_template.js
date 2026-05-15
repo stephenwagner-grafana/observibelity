@@ -35,9 +35,12 @@ export const options = {
 };
 
 const BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster.local';
-const PATTERN_MESSAGES = [
-  '{{ message_template }}',
-];
+// PATTERN_MESSAGES is a JSON array literal rendered from `message_templates`
+// (a list) when the YAML supplies one, falling back to a single-element list
+// containing `{{ message_template }}`. Use-case authors should override
+// `message_templates` in scenario `params` with keyword-rich phrases so
+// dashboard Loki regex panels can match the offender stream.
+const PATTERN_MESSAGES = {{ message_templates }};
 const BASELINE_PERSONAS = ['u-base-a', 'u-base-b', 'u-base-c', 'u-base-d'];
 
 export function fireOffender() {

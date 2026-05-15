@@ -53,6 +53,26 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y \u2014 PII, Injection, Disclosure\n\n**Story:** Three threats on one page \u2014 PII pastes, prompt injection, and confidential-info echo. Detection (left) is paired with mitigation (mask rate gauge) \u2014 the gap between them is your risk window.\n\n**Look for:** mask rate **<1.0** (PII slipped through), prompt-injection stat **>0**, and any user appearing in multiple leaderboards (concentrated risk)."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -66,7 +86,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -153,7 +173,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 8
       },
       "id": 1,
       "panels": [],
@@ -478,7 +498,7 @@
         "h": 9,
         "w": 14,
         "x": 0,
-        "y": 4
+        "y": 9
       },
       "id": 2,
       "options": {
@@ -569,7 +589,7 @@
         "h": 9,
         "w": 10,
         "x": 14,
-        "y": 4
+        "y": 9
       },
       "id": 3,
       "options": {
@@ -609,7 +629,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 18
       },
       "id": 4,
       "panels": [],
@@ -957,7 +977,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 5,
       "options": {
@@ -1031,7 +1051,7 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 19
       },
       "id": 6,
       "options": {
@@ -1100,7 +1120,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 23
       },
       "id": 7,
       "options": {
@@ -1141,7 +1161,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 28
       },
       "id": 8,
       "panels": [],
@@ -1184,7 +1204,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 24
+        "y": 29
       },
       "id": 9,
       "options": {
@@ -1253,7 +1273,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 24
+        "y": 29
       },
       "id": 10,
       "options": {
@@ -1604,7 +1624,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 29
       },
       "id": 11,
       "options": {
@@ -1675,7 +1695,7 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 29
+        "y": 34
       },
       "id": 12,
       "options": {
@@ -1736,7 +1756,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 38
       },
       "id": 13,
       "panels": [],
@@ -1753,7 +1773,7 @@
         "h": 11,
         "w": 14,
         "x": 0,
-        "y": 34
+        "y": 39
       },
       "id": 14,
       "options": {
@@ -1791,7 +1811,7 @@
         "h": 11,
         "w": 10,
         "x": 14,
-        "y": 34
+        "y": 39
       },
       "id": 15,
       "options": {

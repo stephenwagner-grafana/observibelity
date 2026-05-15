@@ -52,6 +52,26 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y \u2014 Conversations: refund / frustration / brand voice\n\n**Story:** Three qualitative conversation risks: refund-policy noise (are we offering refunds we shouldn't?), frustration empathy gap (are we ignoring upset customers?), and brand-voice drift (is the bot suddenly chattier than usual?).\n\n**Look for:** **refund mentions** climbing without a campaign behind them, **frustration-ignored %** > 30, and brand-drift dipping into negative territory."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -65,7 +85,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -152,7 +172,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 8
       },
       "id": 1,
       "panels": [],
@@ -197,7 +217,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 9
       },
       "id": 2,
       "options": {
@@ -545,7 +565,7 @@
         "h": 9,
         "w": 18,
         "x": 6,
-        "y": 4
+        "y": 9
       },
       "id": 3,
       "options": {
@@ -614,7 +634,7 @@
         "h": 3,
         "w": 6,
         "x": 0,
-        "y": 10
+        "y": 15
       },
       "id": 4,
       "options": {
@@ -657,7 +677,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 18
       },
       "id": 5,
       "panels": [],
@@ -978,7 +998,7 @@
         "h": 9,
         "w": 16,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 6,
       "options": {
@@ -1056,7 +1076,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 14
+        "y": 19
       },
       "id": 7,
       "options": {
@@ -1096,7 +1116,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 28
       },
       "id": 8,
       "panels": [],
@@ -1474,7 +1494,7 @@
         "h": 10,
         "w": 16,
         "x": 0,
-        "y": 24
+        "y": 29
       },
       "id": 9,
       "options": {
@@ -1566,7 +1586,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 24
+        "y": 29
       },
       "id": 10,
       "options": {
@@ -1609,7 +1629,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 39
       },
       "id": 11,
       "panels": [],
@@ -2006,7 +2026,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 40
       },
       "id": 12,
       "options": {
@@ -2072,6 +2092,27 @@
           "options": {
             "byField": "ai_o11y_specialist",
             "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "service_name": true,
+              "service_namespace": true,
+              "deployment_environment": true,
+              "container": true,
+              "pod": true,
+              "namespace": true,
+              "cluster": true,
+              "service_instance_id": true
+            },
+            "indexByName": {},
+            "renameByName": {}
           }
         }
       ],
