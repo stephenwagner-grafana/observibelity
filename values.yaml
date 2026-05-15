@@ -76,6 +76,13 @@ llmGateway:
   # latency — anything slower than that is a real problem to investigate,
   # not normal behaviour.
   providerTimeoutSeconds: 15
+  # Specialists that don't explicitly request a provider hit this one by
+  # default. ``ollama`` keeps the LLM bill in check (Anthropic was the
+  # default before — every chat reply rode Haiku, projecting ~$96/day
+  # and dwarfing the loadgen-controlled claudeFraction). Loadgen's
+  # claudeFraction (in k6.*) is now the ONLY thing routing traffic to
+  # Anthropic, which is what makes the $20/day cap meaningful.
+  defaultProvider: ollama
   providers:
     anthropic:
       enabled: true
@@ -123,6 +130,12 @@ llmGateway:
         #     emit chain-of-thought before every reply (slow + noisy).
         #   - llava:7b, qwen3-vl:30b — vision-only, not relevant to chat.
         models:
+          # With defaultProvider=ollama, ~97% of traffic now lands here.
+          # That puts each rotation slot under serious load — the 14B and
+          # 30B dense models couldn't sustain it (queue depth × per-tok
+          # time blew the 15s gateway timeout). They've been dropped.
+          # Keep the rotation to ≤9B for high steady-state throughput.
+          # The qwen3:30b MoE (3B active params) IS fast enough — kept.
           - tinyllama:1.1b                            # 1.1B Llama
           - llama3.2:1b                               # 1.2B Llama
           - gemma2:2b                                 # 2B Gemma
@@ -132,9 +145,8 @@ llmGateway:
           - qwen2.5:7b                                # 7B Qwen2
           - llama3.1:8b                               # 8B Llama
           - gemma2:9b                                 # 9B Gemma
-          - phi3:medium-128k                          # 14B Phi
-          - qwen2.5:14b                               # 14B Qwen2 (replaces command-r at the 14B+ slot)
-          - qwen3:30b-a3b-instruct-2507-q4_K_M        # 30B Qwen3 MoE (fast — 3B active params)
+          - qwen3:30b-a3b-instruct-2507-q4_K_M        # 30B Qwen3 MoE (3B active — fast)
+          # phi3:medium-128k (14B dense) + qwen2.5:14b dropped — see header.
           # command-r:latest deliberately excluded — 32B dense at ~86 tok/s
           # warm produced ~370 timeouts/min during its slot. qwen2.5:14b
           # takes the 12th seat instead — fast enough to sustain VU pressure.

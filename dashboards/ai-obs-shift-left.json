@@ -1,0 +1,388 @@
+{
+  "uid": "ai-obs-shift-left",
+  "title": "AI o11y \u2014 Shift-Left Demo Agenda",
+  "tags": [
+    "ai-o11y",
+    "demo"
+  ],
+  "schemaVersion": 39,
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource_prom",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      },
+      {
+        "name": "datasource_loki",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# \ud83d\udd04 Shift-Left \u2014 the demo agenda\n\nProduction on the right (deterministic, monitored, Claude-quality). Dev/test on the left (stochastic, exploratory, local Ollama). Each row maps a use case to where it lives on that axis."
+      }
+    },
+    {
+      "id": 100,
+      "type": "row",
+      "title": "\ud83c\udfaf PROD \u2014 deterministic, observable, automated RCA",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "text",
+      "title": "Use case anchors (prod)",
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**\ud83d\udc2d mice-rca** \u2014 \"show me mice\" classic. NeonCart query \u2192 fan-out to specialists \u2192 OTel trace tells the whole story. **Start the demo here**: it's the deterministic, production-quality flow and the OTel stack reads like a debugger.\n\n**\ud83d\udce8 email-cascade** \u2014 cascade pattern, easy to spot on the trace fan-out.\n\n**\ud83d\udcb0 cost-anomaly-per-user** \u2014 Priya's verbose pastes. Lights up the per-user cost panel."
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Production traffic (claude-* models)",
+      "description": "Output tokens/sec for the Claude side of the bus. This is where prod-quality replies come from.",
+      "gridPos": {
+        "x": 8,
+        "y": 5,
+        "w": 16,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", gen_ai_response_model=~\"claude.*\"}[5m]))",
+          "legendFormat": "{{gen_ai_response_model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 0,
+            "stacking": {}
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "\ud83e\uddea DEV \u2014 stochastic, model-quality probing, AI FinOps",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 4,
+      "type": "text",
+      "title": "Use case anchors (dev/test)",
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**\ud83c\udfaf model-winner** \u2014 every Ollama model in the rotation gets the same gift-finder prompt. Quality vs cost head-to-head on the leaderboard.\n\n**\ud83d\udcca ai-quality-score / quality-trend** \u2014 eval judges over time.\n\n**\ud83e\udd16 hallucination-product-price** \u2014 does the model just make up prices?\n\n**\ud83c\udfa8 brand-voice-drift** \u2014 tone integrity.\n\n**\ud83d\udd10 pii-echo / sensitive-data-leaks** \u2014 what gets through guardrails?"
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Dev traffic (ollama rotation)",
+      "description": "Output tokens/sec across the 10 Ollama rotation slots. Each spike is a 5-min slot lighting up.",
+      "gridPos": {
+        "x": 8,
+        "y": 14,
+        "w": 16,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", gen_ai_system=\"ollama\"}[5m]))",
+          "legendFormat": "{{gen_ai_response_model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 0,
+            "stacking": {}
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "\ud83d\udce6 Use-case traffic right now",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Use case spend velocity (USD/hr)",
+      "description": "Which use case is most expensive to run continuously. Use this to pick which ones survive into prod and which stay in the local-only dev tier.",
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
+          "legendFormat": "{{ai_o11y_usecase}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 30,
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 103,
+      "type": "row",
+      "title": "\ud83c\udfc1 Conversations per hour, by app",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Convos/hr \u2014 NeonCart vs SupportBot",
+      "description": "Active specialist count \u00d7 per-min = rough convos/hr per app.",
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", gen_ai_token_type=\"output\"}[5m]) > 0) * 60",
+          "legendFormat": "NeonCart specialists"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", gen_ai_token_type=\"output\"}[5m]) > 0) * 60",
+          "legendFormat": "SupportBot specialists"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 0,
+            "stacking": {}
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    }
+  ]
+}
