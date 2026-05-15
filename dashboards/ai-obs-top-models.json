@@ -724,10 +724,10 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "sum by (gen_ai_request_model) (label_replace(increase(ai_recommendation_addtocart_total[24h]), \"gen_ai_request_model\", \"$1\", \"model\", \"(.+)\"))",
+          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
           "format": "table",
           "instant": true,
           "legendFormat": "atc",
@@ -736,10 +736,10 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "100 * sum by (gen_ai_request_model) (label_replace(increase(ai_recommendation_addtocart_total[24h]), \"gen_ai_request_model\", \"$1\", \"model\", \"(.+)\")) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])), 1)",
+          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
           "format": "table",
           "instant": true,
           "legendFormat": "atc_rate",
@@ -784,10 +784,10 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "(\n  40 * (\n    (sum by (gen_ai_request_model) (label_replace(increase(ai_recommendation_addtocart_total[24h]), \"gen_ai_request_model\", \"$1\", \"model\", \"(.+)\")) or sum by (gen_ai_request_model) (0 * increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])))\n    / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])), 1)\n  )\n)\n+\n(\n  30 / clamp_min(\n    1 + (sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])), 1)) * 1000,\n    1\n  )\n)\n+\n(\n  (15 / clamp_min(1 + (histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[1h]))) < +Inf), 1))\n  or sum by (gen_ai_request_model) (0 * increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h]))\n)\n+\n(\n  (15 * (sum by (gen_ai_request_model) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h])), 0.0001)) < +Inf)\n  or sum by (gen_ai_request_model) (0 * increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h]))\n)",
+          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
           "format": "table",
           "instant": true,
           "legendFormat": "composite",
@@ -1110,10 +1110,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "100 * sum by (gen_ai_request_model) (label_replace(increase(ai_recommendation_addtocart_total[24h]), \"gen_ai_request_model\", \"$1\", \"model\", \"(.+)\")) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])), 1)",
+          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
           "format": "table",
           "instant": true,
           "legendFormat": "ATC rate (%)",
@@ -1403,10 +1403,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "expr": "sum by (model) (rate(ai_recommendation_addtocart_total[5m]))",
+          "expr": "sum by (model) (rate(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [5m]\n))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{model}}",

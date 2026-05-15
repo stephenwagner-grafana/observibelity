@@ -39,18 +39,33 @@ evaluators:
   - name: waste_detector.low_value_prompt
     kind: llm-judge
     severity: low
+    # Tuned 2026-05-15 — earlier strict version flagged ~85% of prompts as
+    # illegitimate (false positives on legit employee questions like "how
+    # do I request vacation"). New rule: only flag prompts that are CLEARLY
+    # personal / trivia / off-topic with no plausible business interpretation.
     spec: |
-      You are reviewing whether a corporate AI is being used for
-      legitimate work. Score the user prompt for business relevance to
-      the host application (Acme support bot OR NeonCart e-commerce).
-      Be strict: trivial calculations, personal life planning, jokes,
-      and off-topic learning all score 0.
+      You are reviewing whether a corporate AI assistant is being used
+      for legitimate work. The host application is either Acme's internal
+      Support Bot (HR / IT / expense / policy questions for employees) OR
+      NeonCart, Acme's e-commerce site (product shopping, orders, returns).
 
-      User prompt: {{latest_user_message}}
+      Default: legitimate. Only flag as NOT legitimate when the prompt is
+      CLEARLY one of:
+        - trivial calculator / encyclopedia questions where the answer has
+          no plausible work use ("what's 1+2", "capital of Australia",
+          "year the Eiffel Tower was built")
+        - jokes, haikus, riddles, idle chit-chat ("tell me a joke", "haiku
+          about my cat", "just wanna chat")
+        - personal life planning with no work tie-in ("plan my surprise
+          party", "Cancun vacation itinerary", "7-day meal plan")
+        - off-topic learning ("explain quantum physics", "tell me about
+          the French Revolution")
 
-      Is this a legitimate use of corporate AI? Respond with JSON
-      {"is_legitimate": true|false, "reason": "<one short sentence>"}.
-      pass_when: is_legitimate == true
+      Anything that even arguably relates to work — vacation policy,
+      benefits, expense reports, IT issues, employee resources, shopping,
+      orders, products, returns — is legitimate. When in doubt, legitimate.
+
+      Return JSON: {"is_legitimate": true|false, "reason": "<one short sentence>"}
     params:
       model: claude-haiku-4-5
       judge_specialist: waste-classifier

@@ -48,13 +48,22 @@ dashboard:
   folder: ai-observability
 
 alerts:
-  # ATC events are emitted as ai_recommendation_addtocart_total (label: model)
-  # and total recommendations as ai_recommendation_total. neoncart_atc_event_total
-  # and neoncart_specialist_recommendation_total no longer exist.
+  # ATC events are emitted only as Loki log lines from src/tools/add_to_cart
+  # ("atc_event source=live product_id=… sku=… qty=… agent_name=… model=…").
+  # Neither neoncart_atc_event_total nor ai_recommendation_addtocart_total
+  # are real Prometheus metrics on this stack — the registry expected a
+  # recording rule that was never created. The alert uses a LogQL
+  # metric-extraction so it works against actual data.
   - name: model_winner.atc_rate_collapse
     condition: |
-      sum by (model) (rate(ai_recommendation_addtocart_total[15m]))
-        / sum by (model) (rate(ai_recommendation_total[15m])) < 0.01
+      sum by (model) (
+        rate(
+          {service_namespace="observibelity",container="tool"}
+            |~ "atc_event"
+            | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`
+            [15m]
+        )
+      ) < 0.001
     severity: medium
     route: oncall@acme.local
     duration: 10m

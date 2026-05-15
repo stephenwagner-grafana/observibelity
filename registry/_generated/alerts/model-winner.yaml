@@ -2,8 +2,10 @@ groups:
 - name: model-winner
   rules:
   - alert: model_winner.atc_rate_collapse
-    expr: "sum by (model) (rate(ai_recommendation_addtocart_total[15m]))\n  / sum\
-      \ by (model) (rate(ai_recommendation_total[15m])) < 0.01\n"
+    expr: "sum by (model) (\n  rate(\n    {service_namespace=\"observibelity\",container=\"\
+      tool\"}\n      |~ \"atc_event\"\n      | pattern `<_>atc_event source=<source>\
+      \ product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n\
+      \      [15m]\n  )\n) < 0.001\n"
     for: 10m
     labels:
       severity: medium
