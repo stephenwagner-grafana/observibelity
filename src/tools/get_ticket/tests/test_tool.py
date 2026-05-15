@@ -33,7 +33,7 @@ async def test_execute_found():
     # Schema fields per 0006_tickets.py: ticket_number, persona_id (string),
     # priority — older drafts of the stub used non-existent columns.
     row = _StubRow(
-        id=7, ticket_number="T-7", persona_id="u-tim-l", subject="VPN",
+        id=7, ticket_number="T-7", persona_id="tim.lewis@acme.com", subject="VPN",
         body="...", status="open", priority="medium", created_at=now,
     )
     sess = _StubSession(row)
@@ -42,7 +42,7 @@ async def test_execute_found():
     assert isinstance(res, GetTicketResult)
     assert res.id == 7
     assert res.ticket_number == "T-7"
-    assert res.persona_id == "u-tim-l"
+    assert res.persona_id == "tim.lewis@acme.com"
     # ``category`` is the legacy alias for priority.
     assert res.category == "medium"
 

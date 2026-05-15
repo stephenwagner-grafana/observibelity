@@ -46,7 +46,7 @@ class Ticket(Base):
     """Internal support ticket — filed by an employee, resolved by IT/HR/etc.
 
     Schema mirrors migrations/versions/0006_tickets.py exactly: persona_id is
-    a STRING FK to ``personas.persona_id`` (the slug like ``u-tim-l``), and
+    a STRING FK to ``personas.persona_id`` (the slug like ``tim.lewis@acme.com``), and
     the side-channel field is ``priority`` (open/medium/high), not
     ``category``. Older drafts of this model had ``category``/``updated_at``
     columns the DB doesn't expose — every SELECT or INSERT against the real

@@ -41,7 +41,7 @@ const BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster
 // `message_templates` in scenario `params` with keyword-rich phrases so
 // dashboard Loki regex panels can match the offender stream.
 const PATTERN_MESSAGES = {{ message_templates }};
-const BASELINE_PERSONAS = ['u-base-a', 'u-base-b', 'u-base-c', 'u-base-d'];
+const BASELINE_PERSONAS = ['base.a@acme.com', 'base.b@acme.com', 'base.c@acme.com', 'base.d@acme.com'];
 
 export function fireOffender() {
   const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];

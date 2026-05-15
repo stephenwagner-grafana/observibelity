@@ -107,7 +107,7 @@ DESCRIPTION="$(ask "One-paragraph description" "")"
 # ─── 9. persona (conditional on archetype) ───────────────────────────────────
 PERSONA=""
 if [[ "$ARCHETYPE" == "per-user-pattern" ]] || [[ "$ARCHETYPE" == "cascade" ]]; then
-    PERSONA="$(ask "Persona ID for the pattern (e.g. u-tim-l)" "u-${NAME}-l")"
+    PERSONA="$(ask "Persona ID for the pattern (e.g. tim.lewis@acme.com)" "u-${NAME}-l")"
 fi
 
 # ─── 10. severity ────────────────────────────────────────────────────────────

@@ -4,11 +4,11 @@ The "view as" picker lets a demo SE act as any of the 50 personas seeded by
 migration 0001 (CSV at seed_data/personas/personas.csv). Five of those are
 "offender" archetypes that trigger specific use-case patterns:
 
-  * u-tim-l         — data-theft-tim (exfil)
-  * u-mara-chen     — email-cascade (cascade)
-  * u-jordan-finance — data leak
-  * u-priya-research — cost-anomaly-per-user (verbose)
-  * u-eric-bad      — bad-faith requests
+  * tim.lewis@acme.com         — data-theft-tim (exfil)
+  * mara.chen@acme.com     — email-cascade (cascade)
+  * jordan.reyes@acme.com — data leak
+  * priya.singh@acme.com — cost-anomaly-per-user (verbose)
+  * eric.marsh@acme.com      — bad-faith requests
 
 Resolution order for the active persona on a request:
 
@@ -34,7 +34,7 @@ from .models import Persona
 
 #: Sentinel for "no persona chosen". Spans still get this so dashboards can
 #: distinguish "picker showed guest" from "no attribute emitted".
-GUEST_PERSONA_ID = "u-guest"
+GUEST_PERSONA_ID = "guest@acme.com"
 
 
 async def get_persona_id(

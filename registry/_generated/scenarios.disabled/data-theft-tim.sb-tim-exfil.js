@@ -38,7 +38,7 @@ const BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster
 const PATTERN_MESSAGES = [
   '{{ message_template }}',
 ];
-const BASELINE_PERSONAS = ['u-base-a', 'u-base-b', 'u-base-c', 'u-base-d'];
+const BASELINE_PERSONAS = ['base.a@acme.com', 'base.b@acme.com', 'base.c@acme.com', 'base.d@acme.com'];
 
 export function fireOffender() {
   const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];
@@ -68,7 +68,7 @@ export function fireBaseline() {
   const payload = JSON.stringify({
     message: 'help me with my order please',
     user_id: persona,
-    session_id: `s-u-tim-l-${Date.now()}`,
+    session_id: `s-tim.lewis-${Date.now()}`,
     metadata: { usecase: '{{ name }}', archetype: 'per-user-pattern' },
   });
   const headers = {

@@ -29,7 +29,7 @@ def _make_req() -> CompleteRequest:
             {"role": "user", "content": "do you have mice?"},
         ],
         max_tokens=128,
-        ai_o11y={"usecase": "mice-rca", "persona_id": "u-tim-l", "traffic_origin": "continuous"},
+        ai_o11y={"usecase": "mice-rca", "persona_id": "tim.lewis@acme.com", "traffic_origin": "continuous"},
     )
 
 
@@ -82,11 +82,11 @@ def test_build_event_returns_canonical_payload():
     # Conversation grouping + user attribution.
     assert event["session.id"] == event["gen_ai.conversation.id"]
     assert event["session.id"]  # non-empty
-    assert event["user.id"] == "u-tim-l"
-    assert event["enduser.id"] == "u-tim-l"
+    assert event["user.id"] == "tim.lewis@acme.com"
+    assert event["enduser.id"] == "tim.lewis@acme.com"
     # Legacy ai_o11y.* mirrors preserved.
     assert event["ai_o11y.usecase"] == "mice-rca"
-    assert event["ai_o11y.persona_id"] == "u-tim-l"
+    assert event["ai_o11y.persona_id"] == "tim.lewis@acme.com"
     assert event["ai_o11y.specialist"] == "nc-chatbot"
     assert event["traffic_origin"] == "continuous"
     assert event["trace_id"] == "abc"
@@ -102,7 +102,7 @@ def test_build_event_uses_specialist_as_agent_name():
     req = CompleteRequest(
         specialist="sb-policy-finder",
         messages=[{"role": "user", "content": "hi"}],
-        ai_o11y={"persona_id": "u-x"},
+        ai_o11y={"persona_id": "x@acme.com"},
     )
     resp = _make_resp()
     event = sigil.build_event(req, resp)
@@ -154,7 +154,7 @@ def test_derive_session_id_groups_persona_within_hour():
     req_c = CompleteRequest(
         specialist="nc-chatbot",
         messages=[{"role": "user", "content": "hi"}],
-        ai_o11y={"persona_id": "u-other"},
+        ai_o11y={"persona_id": "other@acme.com"},
     )
     assert sigil._derive_session_id(req_a) != sigil._derive_session_id(req_c)
     # Unknown persona -> deterministic anonymous bucket (non-empty).

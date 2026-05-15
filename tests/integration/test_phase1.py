@@ -143,7 +143,7 @@ class TestMiceRca:
             time.sleep(3)
             payload = json.dumps({
                 "message": "check inventory for mice-001",
-                "persona_id": "u-demo",
+                "persona_id": "demo@acme.com",
                 "usecase": "mice-rca",
             })
             result = subprocess.run(

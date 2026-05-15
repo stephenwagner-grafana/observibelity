@@ -65,7 +65,7 @@ class Persona(Base):
     span attributes as `ai_o11y.persona_id` for cardinality-bounded slicing.
 
     Schema mirrors migrations/versions/0001_initial.py — the canonical
-    persona_id is the string slug (e.g. ``u-tim-l``), and ``id`` is just the
+    persona_id is the string slug (e.g. ``tim.lewis@acme.com``), and ``id`` is just the
     surrogate PK for FK joins.
     """
 

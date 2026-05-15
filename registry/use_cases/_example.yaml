@@ -18,7 +18,7 @@ description: |
 scenarios:
   - name: example_scenario
     k6_template: sticky-persona    # archetype-specific; see tools/usecase-templates/<archetype>/
-    persona: u-example-user
+    persona: example.user@acme.com
     weight: 4
     rate: "5m"
     params:
@@ -30,7 +30,7 @@ evaluators:
     kind: rule                     # rule | rubric | regex | llm-judge
     severity: critical             # low | medium | high | critical
     spec: |
-      gen_ai.request.user == "u-example-user"
+      gen_ai.request.user == "example.user@acme.com"
       and ai_o11y.message.contains("board pre-read")
 
 dashboard:

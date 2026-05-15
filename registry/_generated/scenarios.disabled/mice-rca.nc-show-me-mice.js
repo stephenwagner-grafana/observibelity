@@ -35,7 +35,7 @@ const BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster
 export function fire() {
   const payload = JSON.stringify({
     message: '{{ trigger_phrase }}',
-    user_id: 'u-trace-fix-{{ name }}',
+    user_id: 'trace.fix.{{ name }}',
     session_id: `s-${Date.now()}`,
     metadata: {
       usecase: '{{ name }}',

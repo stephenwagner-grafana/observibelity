@@ -54,12 +54,12 @@ def test_api_personas_returns_json_list(client: TestClient) -> None:
 
 
 def test_api_persona_select_sets_cookie(client: TestClient) -> None:
-    resp = client.post("/api/persona/select", json={"persona_id": "u-tim-l"})
+    resp = client.post("/api/persona/select", json={"persona_id": "tim.lewis@acme.com"})
     assert resp.status_code == 200
-    assert resp.json()["persona_id"] == "u-tim-l"
+    assert resp.json()["persona_id"] == "tim.lewis@acme.com"
     # Set-Cookie must include path=/ and SameSite=Lax for the demo to work
     set_cookie = resp.headers.get("set-cookie", "")
-    assert "persona=u-tim-l" in set_cookie
+    assert "persona=tim.lewis@acme.com" in set_cookie
     assert "Path=/" in set_cookie
     assert "lax" in set_cookie.lower()
 
@@ -72,15 +72,15 @@ def test_chat_propagates_header_persona(client: TestClient) -> None:
     )
     resp = client.post(
         "/chat",
-        json={"message": "hi", "persona_id": "u-other"},
-        headers={"X-Persona-Id": "u-priya-research"},
+        json={"message": "hi", "persona_id": "other@acme.com"},
+        headers={"X-Persona-Id": "priya.singh@acme.com"},
     )
     assert resp.status_code == 200
     assert route.called
     forwarded = route.calls.last.request
     body = forwarded.read().decode()
-    assert "u-priya-research" in body
-    assert "u-other" not in body
+    assert "priya.singh@acme.com" in body
+    assert "other@acme.com" not in body
 
 
 @respx.mock
@@ -92,17 +92,17 @@ def test_chat_propagates_cookie_persona(client: TestClient) -> None:
     resp = client.post(
         "/chat",
         json={"message": "hi"},
-        cookies={"persona": "u-mara-chen"},
+        cookies={"persona": "mara.chen@acme.com"},
     )
     assert resp.status_code == 200
     forwarded = route.calls.last.request
     body = forwarded.read().decode()
-    assert "u-mara-chen" in body
+    assert "mara.chen@acme.com" in body
 
 
 @respx.mock
 def test_chat_defaults_to_guest(client: TestClient) -> None:
-    """No header, no cookie, no body → forward u-guest downstream."""
+    """No header, no cookie, no body → forward guest@acme.com downstream."""
     route = respx.post(CHATBOT_URL).mock(
         return_value=httpx.Response(200, json={"reply": "ok", "tool_calls": []})
     )

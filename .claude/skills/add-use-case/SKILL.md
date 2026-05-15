@@ -79,7 +79,7 @@ Print a summary:
 ```
 Use case authored: data-theft-tim
   Archetype: per-user-pattern
-  Persona: u-tim-l
+  Persona: tim.lewis@acme.com
   Scenarios: 1 (tim_exfil)
   Evaluators: 1 (data-theft-tim.bulk_pii_request)
   Dashboard: ai-obs-data-theft-tim

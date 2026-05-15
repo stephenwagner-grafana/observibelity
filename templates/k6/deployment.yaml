@@ -72,7 +72,7 @@ spec:
             - name: DEFAULT_RATE
               value: "{{ .Values.k6.default_rate | default "5m" }}"
             - name: LOADGEN_CLAUDE_FRACTION
-              value: "{{ .Values.k6.claudeFraction | default 0.02 }}"
+              value: "{{ .Values.k6.claudeFraction | default 0.014 }}"
             # Virtual users per scenario. baseline.js + per-usecase scenarios
             # all default to 60 if unset; bump here to ramp continuous load.
             - name: K6_VUS

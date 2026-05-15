@@ -27,7 +27,7 @@ request:
 
 1. `X-Persona-Id` header (loadgen / curl / specialist-to-specialist)
 2. `supportbot_persona_id` cookie (set by `POST /api/persona/select`)
-3. `u-guest` fallback
+3. `guest@acme.com` fallback
 
 The persona flows through to `sb-router` via the `persona_id` field in the
 chat request body, which the specialist base passes to the llm-gateway in

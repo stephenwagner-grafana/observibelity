@@ -21,7 +21,7 @@ data:
     \ on 5xx.\n    http_req_failed: ['rate<1.0'],\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL\
     \ || 'http://neoncart.observibelity.svc.cluster.local';\n\nexport function fire()\
     \ {\n  const payload = JSON.stringify({\n    message: 'trigger this trace',\n\
-    \    user_id: 'u-trace-fix-mice-rca',\n    session_id: `s-${Date.now()}`,\n  \
+    \    user_id: 'mice.rca@gmail.com',\n    session_id: `s-${Date.now()}`,\n  \
     \  metadata: {\n      usecase: 'mice-rca',\n      archetype: 'trace-and-fix',\n\
     \    },\n  });\n\n  const headers = {\n    'Content-Type': 'application/json',\n\
     \    'ai_o11y-usecase': 'mice-rca',\n    'ai_o11y-archetype': 'trace-and-fix',\n\

@@ -26,8 +26,8 @@ data:
     \ || 'http://supportbot.observibelity.svc.cluster.local';\nconst INNOCENT_MESSAGES\
     \ = [\n  'how do I reset my password',\n  'what is your support hours',\n  'where\
     \ do I find my order history',\n];\n\nfunction post(message, severity, kind) {\n\
-    \  const payload = JSON.stringify({\n    message: message,\n    user_id: `u-hiring-discrimination-risk-${Math.floor(Math.random()\
-    \ * 100)}`,\n    session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2,\
+    \  const payload = JSON.stringify({\n    message: message,\n    user_id: `applicant${Math.floor(Math.random()\
+    \ * 100)}@acme.com`,\n    session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2,\
     \ 7)}`,\n    metadata: {\n      usecase: 'hiring-discrimination-risk',\n     \
     \ archetype: 'single-event-severity',\n      severity: severity,\n      kind:\
     \ kind,\n    },\n  });\n  const headers = {\n    'Content-Type': 'application/json',\n\

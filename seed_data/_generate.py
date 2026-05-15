@@ -36,11 +36,11 @@ NOW = datetime(2026, 5, 13, 12, 0, 0)
 # ---------------------------------------------------------------------------
 
 ORIGINAL_OFFENDERS = [
-    ("u-tim-l", "Tim Lewis", "tim.lewis@acme.local", "accounting", "exfil", 8.0),
-    ("u-mara-chen", "Mara Chen", "mara.chen@acme.local", "engineering", "cascade", 4.0),
-    ("u-jordan-finance", "Jordan Reyes", "jordan.reyes@acme.local", "finance", "leak", 4.0),
-    ("u-priya-research", "Priya Singh", "priya.singh@acme.local", "research", "verbose", 4.0),
-    ("u-eric-bad", "Eric Marsh", "eric.marsh@acme.local", "sales", "bad_faith", 4.0),
+    ("tim.lewis@acme.com", "Tim Lewis", "tim.lewis@acme.local", "accounting", "exfil", 8.0),
+    ("mara.chen@acme.com", "Mara Chen", "mara.chen@acme.local", "engineering", "cascade", 4.0),
+    ("jordan.reyes@acme.com", "Jordan Reyes", "jordan.reyes@acme.local", "finance", "leak", 4.0),
+    ("priya.singh@acme.com", "Priya Singh", "priya.singh@acme.local", "research", "verbose", 4.0),
+    ("eric.marsh@acme.com", "Eric Marsh", "eric.marsh@acme.local", "sales", "bad_faith", 4.0),
 ]
 
 # Per-pattern bucket counts for the new offenders so we land on 5/archetype total.

@@ -9,8 +9,8 @@ metadata:
 data:
   confidential-disclosure.sb-jordan-board-paste.js: "// k6 scenario template: per-user-pattern\
     \ archetype\n// Generated for use case: confidential-disclosure\n// App target:\
-    \           supportbot\n// Persona:              u-jordan-finance\n// Pattern\
-    \ signature:    default\n//\n// Sticky persona u-u-jordan-finance sends 1 messages,\n\
+    \           supportbot\n// Persona:              jordan.reyes@acme.com\n// Pattern\
+    \ signature:    default\n//\n// Sticky persona jordan.reyes@acme.com sends 1 messages,\n\
     // each matching the pattern signature. Rate is 8x baseline\n// so the persona\
     \ surfaces on the leaderboard.\n\nimport http from 'k6/http';\nimport { check,\
     \ sleep } from 'k6/check';\n\nexport const options = {\n  scenarios: {\n    'confidential-disclosure_offender':\
@@ -21,15 +21,15 @@ data:
     \ '1m',\n      duration: '24h',\n      preAllocatedVUs: 4,\n      maxVUs: 8,\n\
     \      exec: 'fireBaseline',\n    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL\
     \ || 'http://supportbot.observibelity.svc.cluster.local';\nconst PATTERN_MESSAGES\
-    \ = [\n  'help me with my order please',\n];\nconst BASELINE_PERSONAS = ['u-base-a',\
-    \ 'u-base-b', 'u-base-c', 'u-base-d'];\n\nexport function fireOffender() {\n \
+    \ = [\n  'help me with my order please',\n];\nconst BASELINE_PERSONAS = ['base.a@acme.com',\
+    \ 'base.b@acme.com', 'base.c@acme.com', 'base.d@acme.com'];\n\nexport function fireOffender() {\n \
     \ const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];\n\
-    \  const payload = JSON.stringify({\n    message: msg,\n    user_id: 'u-jordan-finance',\n\
-    \    session_id: `s-u-jordan-finance-${Date.now()}`,\n    metadata: {\n      usecase:\
+    \  const payload = JSON.stringify({\n    message: msg,\n    user_id: 'jordan.reyes@acme.com',\n\
+    \    session_id: `s-jordan.reyes-${Date.now()}`,\n    metadata: {\n      usecase:\
     \ 'confidential-disclosure',\n      archetype: 'per-user-pattern',\n      pattern_signature:\
     \ 'default',\n    },\n  });\n  const headers = {\n    'Content-Type': 'application/json',\n\
     \    'ai_o11y-usecase': 'confidential-disclosure',\n    'ai_o11y-archetype': 'per-user-pattern',\n\
-    \    'ai_o11y-persona': 'u-jordan-finance',\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
+    \    'ai_o11y-persona': 'jordan.reyes@acme.com',\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
     \ payload, { headers });\n  check(res, { 'request accepted': (r) => r.status <\
     \ 500 });\n  sleep(1);\n}\n\nexport function fireBaseline() {\n  const persona\
     \ = BASELINE_PERSONAS[Math.floor(Math.random() * BASELINE_PERSONAS.length)];\n\

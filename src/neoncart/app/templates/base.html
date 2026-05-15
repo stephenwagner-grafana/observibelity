@@ -44,7 +44,7 @@
         hx-swap="none"
         hx-on::after-request="window.location.reload()"
       >
-        <option value="u-guest" {% if current_persona == "u-guest" %}selected{% endif %}>
+        <option value="guest@acme.com" {% if current_persona == "guest@acme.com" %}selected{% endif %}>
           Guest (no persona)
         </option>
         {% for p in personas %}

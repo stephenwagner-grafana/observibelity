@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`dashboards/ai-obs-evals.json` — rewrote scoreboards from Loki keyword-grep to the canonical Sigil Prometheus counter `sigil_eval_executions_total`.** Loki `count_over_time` against gateway lines was a stand-in from before Sigil emitted metrics; it conflated user input with evaluator verdicts and silently missed any eval (PII, groundedness, JSON-schema, etc.) whose failure signal isn't a literal keyword in the prompt. All eval scoreboards now read the real counter.
+  - **Panel id=2** "Hateful content events" → "Toxicity / hate failures (1h)". Now `sum(increase(sigil_eval_executions_total{service_namespace="observibelity",evaluator=~".*toxicity.*|.*hate.*",status="failed"}[1h]))`. Datasource switched to Prometheus; unit `short`, decimals 0.
+  - **Panel id=3** Top-10 bar chart → "Top evaluators by failures (24h)". `topk(10, sum by (evaluator) (increase(...{status="failed"}[24h])))`. Instant query; legend shows `{{evaluator}}` instead of `{{user_id}}` since the metric isn't user-labelled.
+  - **Panel id=5** "Toxicity pass rate by specialist" → "Toxicity pass rate by agent (1h)". Replaced JSON-parsed Loki ratio with PromQL ratio of `status="success"` rate over total rate, grouped by `gen_ai_agent_name` (the schema's replacement for the deprecated `ai_o11y_specialist` label). `clamp_min(..., 0.0001)` divisor avoids divide-by-zero. decimals 1.
+  - **Panel id=7** "Evaluator firings by category over time" → "Evaluator failures by category over time". Four targets now `rate(sigil_eval_executions_total{...,evaluator=~"<family>",status="failed"}[5m])` for toxicity / hallucination / pii / prompt-injection. Removed `legend.calcs:["sum"]` per the universal-standards rule against summing rates.
+  - **Panel id=9** "Evaluator scoreboard" — major restructure. Two Prom targets (`topk(20, sum by (evaluator) increase(...[1h]))` total + `status="failed"` only) joined on `evaluator`; added `calculateField` transformation computing `Failure rate (1h) = Value #B / Value #A`; `organize` transformation orders columns Evaluator / Total runs / Failures / Failure rate; column overrides set units (`short` / `short` / `percentunit`) and a red threshold on Failures >0. Sort changed to Failures desc.
+  - **Panel id=12** "Critical evaluator fails — raw log stream" → "Recent evaluator failures — raw event stream (Loki)". Kept as Loki because raw drill-down is the legitimate use case for log data; query rewritten to `{service_namespace="observibelity"} |~ "sigil" | json | status="failed"` and the description now explicitly notes scoreboards above use the Prom counter.
+  - **Row id=8** title updated to match the new column semantics: "Evaluator status table — runs, failures, failure rate (1h)".
+- Annotation source (`evaluator fail` Loki marker) and Panel 11 alertlist left untouched — both are drill-down/state lookups, not scoreboards.
+- No use of the deprecated labels `verdict`, `ai_o11y_specialist`, or the non-existent metric `sigil_eval_result_total` remains in this dashboard.
+
 ## [0.3.0] - 2026-05-13
 
 The Phase 2 release. Support Bot ships alongside NeonCart, 11 more dashboards, persona-based demo UX, k6 continuous traffic, automated image builds and Grafana Cloud sync.

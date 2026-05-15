@@ -210,7 +210,7 @@ async def list_tickets(
     stmt = select(Ticket)
     # Ticket.persona_id is the string slug (FK to personas.persona_id) per
     # migrations/versions/0006_tickets.py. An earlier draft cast pid to int
-    # which would never match (the DB stores "u-tim-l" not 42).
+    # which would never match (the DB stores "tim.lewis@acme.com" not 42).
     if pid:
         stmt = stmt.where(Ticket.persona_id == pid)
     stmt = stmt.order_by(Ticket.created_at.desc()).limit(50)

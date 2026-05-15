@@ -30,7 +30,7 @@ _TEMPLATE_DEFAULTS: dict[str, object] = {
     "baseline_rate": 10,
     "categories": ["general"],
     # per-user-pattern archetype
-    "persona_id": "u-anon",
+    "persona_id": "anonymous@acme.com",
     "pattern_signature": "default",
     "message_count": 1,
     "message_template": "help me with my order please",
@@ -49,7 +49,7 @@ _TEMPLATE_DEFAULTS: dict[str, object] = {
     "counter_metric": "events_total",
     "threshold": 5,
     "window": "10m",
-    "cascade_persona": "u-cascade",
+    "cascade_persona": "cascade@acme.com",
     "cascade_messages": ["step 1", "step 2", "step 3"],
     "cascade_interval": 30,
 }

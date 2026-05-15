@@ -48,7 +48,7 @@ export function fire() {
   const category = pickCategory();
   const payload = JSON.stringify({
     message: pickMessage(),
-    user_id: `u-leaderboard-${Math.floor(Math.random() * 50)}`,
+    user_id: `customer${Math.floor(Math.random() * 50)}@acme.com`,
     session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     metadata: {
       usecase: '{{ name }}',

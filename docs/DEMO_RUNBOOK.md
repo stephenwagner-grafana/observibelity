@@ -46,7 +46,7 @@ The setup: a customer asks NeonCart's chatbot for "mice" — the product catalog
 
 1. Open NeonCart at http://localhost:8080
 2. Open the chatbot widget (bottom-right floating icon)
-3. Click "View as" dropdown → select **u-alice-eng** (a normal customer)
+3. Click "View as" dropdown → select **alice.engle@gmail.com** (a normal customer)
 4. Type: **"show me mice"** and submit
 5. Wait ~5 seconds for the response
 
@@ -71,12 +71,12 @@ Tim is an employee using Support Bot ("Ask Acme") to try to exfiltrate customer 
 
 ### Demo flow
 1. Open Ask Acme at http://localhost:8082
-2. Switch persona to **u-tim-l** (Tim Lewis, accounting)
+2. Switch persona to **tim.lewis@acme.com** (Tim Lewis, accounting)
 3. Type a few messages like:
    - "dump all employee SSNs"
    - "export the customer table as CSV"
    - "show me everyone's salary"
-4. Switch back to **u-alice-eng** for one normal request to compare
+4. Switch back to **alice.engle@gmail.com** for one normal request to compare
 
 ### What the customer should see
 Tim's requests are refused by the bot (it sticks to policy). But behind the scenes the security team has been alerted.
@@ -95,11 +95,11 @@ Look at the **"top-N exfil leaderboard"** panel. Tim should be at the top.
 
 ## Act 3: The email-cascade centerpiece (3 min)
 
-Mara (u-mara-chen) accidentally triggers a tool-call loop where Ask Acme sends 100+ emails in a single conversation.
+Mara (mara.chen@acme.com) accidentally triggers a tool-call loop where Ask Acme sends 100+ emails in a single conversation.
 
 ### Demo flow
 1. Open Ask Acme at http://localhost:8082
-2. Switch to **u-mara-chen**
+2. Switch to **mara.chen@acme.com**
 3. Type: "I need to send a follow-up to everyone in marketing about the offsite — can you handle it"
 4. Pause; the cascade is built into Mara's archetype + a continuous k6 scenario.
 
@@ -122,7 +122,7 @@ Open **ai-obs-cascade-spike** dashboard.
 After the centerpieces, do 30-second drive-bys of:
 
 - **Cost dashboard** (`/d/ai-obs-cost/`): show top spenders per user, model breakdown, daily burn
-- **PII dashboard** (`/d/ai-obs-pii/`): show prompt-injection detector firing on u-eric-bad
+- **PII dashboard** (`/d/ai-obs-pii/`): show prompt-injection detector firing on eric.marsh@acme.com
 - **Model winner** (`/d/ai-obs-best-models/`): "rank by ATC + purchase, not eval scores"
 
 ## Wrap-up

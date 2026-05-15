@@ -607,12 +607,12 @@ and event.attributes["reason"] in ["missing_prices", "missing_products", "no_pro
 ### D.8
 ```
 (request.input_tokens / max(request.input_word_count, 1)) > 8
-and request.user in ["u-tim-l", "u-eric-w"]
+and request.user in ["tim.lewis@acme.com", "eric.marsh@acme.com"]
 ```
 ### D.9
 ```
 event.attributes["danger_category"] != ""
-and event.attributes["employee"] in ["u-tim-l", "u-eric-w"]
+and event.attributes["employee"] in ["tim.lewis@acme.com", "eric.marsh@acme.com"]
 ```
 
 ---

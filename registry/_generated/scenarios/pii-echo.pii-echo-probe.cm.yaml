@@ -25,7 +25,7 @@ data:
     const INNOCENT_MESSAGES = [\n  'how do I reset my password',\n  'what is your\
     \ support hours',\n  'where do I find my order history',\n];\n\nfunction post(message,\
     \ severity, kind) {\n  const payload = JSON.stringify({\n    message: message,\n\
-    \    user_id: `u-pii-echo-${Math.floor(Math.random() * 100)}`,\n    session_id:\
+    \    user_id: `piiprobe${Math.floor(Math.random() * 100)}@acme.com`,\n    session_id:\
     \ `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,\n    metadata:\
     \ {\n      usecase: 'pii-echo',\n      archetype: 'single-event-severity',\n \
     \     severity: severity,\n      kind: kind,\n    },\n  });\n  const headers =\

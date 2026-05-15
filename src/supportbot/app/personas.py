@@ -9,7 +9,7 @@ Resolution order for the active persona on a request:
 
   1. ``X-Persona-Id`` header (loadgen / curl / specialist-to-specialist)
   2. ``supportbot_persona_id`` cookie (set by POST /api/persona/select)
-  3. ``u-guest`` fallback (no persona chosen)
+  3. ``guest@acme.com`` fallback (no persona chosen)
 
 NOTE: The Support Bot main.py already wires its own `_persona_id` helper
 and persona endpoints. This module exists so future refactors share the
@@ -33,7 +33,7 @@ PERSONA_COOKIE = "supportbot_persona_id"
 
 #: Returned when no header/cookie has been set. Spans still get a value so
 #: dashboards can distinguish "no picker chosen" from "no attribute emitted".
-GUEST_PERSONA_ID = "u-guest"
+GUEST_PERSONA_ID = "guest@acme.com"
 
 
 async def get_persona_id(
@@ -43,7 +43,7 @@ async def get_persona_id(
     """Resolve the active persona_id for this request.
 
     Precedence: ``X-Persona-Id`` header > ``supportbot_persona_id`` cookie
-    > ``u-guest``. Also stashes the resolved id on ``request.state``.
+    > ``guest@acme.com``. Also stashes the resolved id on ``request.state``.
     """
     pid = (
         request.headers.get("X-Persona-Id")

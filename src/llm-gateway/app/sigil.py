@@ -89,7 +89,7 @@ def _derive_session_id(req: CompleteRequest) -> str:
     explicit = (req.ai_o11y.get("session_id") if req.ai_o11y else None) or ""
     if isinstance(explicit, str) and explicit.strip():
         return explicit.strip()[:64]
-    pid = (req.ai_o11y.get("persona_id") if req.ai_o11y else None) or "u-anon"
+    pid = (req.ai_o11y.get("persona_id") if req.ai_o11y else None) or "anonymous@acme.com"
     bucket = datetime.now(timezone.utc).strftime("%Y%m%d%H")
     return hashlib.sha256(f"{pid}:{bucket}".encode("utf-8")).hexdigest()[:16]
 

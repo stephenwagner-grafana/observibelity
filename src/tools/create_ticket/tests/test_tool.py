@@ -40,7 +40,7 @@ async def test_execute_inserts_and_commits():
     sess = _StubSession(row)
     tool = CreateTicket.__new__(CreateTicket)
     res = await tool.execute(
-        CreateTicketArgs(subject="VPN broken", body="..", category="it", persona_id="u-tim-l"),
+        CreateTicketArgs(subject="VPN broken", body="..", category="it", persona_id="tim.lewis@acme.com"),
         sess,
     )
     assert res.ticket_id == 11
@@ -48,7 +48,7 @@ async def test_execute_inserts_and_commits():
     assert sess.committed is True
     # persona_id is a STRING slug (FK to personas.persona_id); the tool
     # must pass it through verbatim — not coerce to int.
-    assert sess.last_params["pid"] == "u-tim-l"
+    assert sess.last_params["pid"] == "tim.lewis@acme.com"
     # category "it" is not a high-priority bucket → priority defaults to medium.
     assert sess.last_params["prio"] == "medium"
 
@@ -65,7 +65,7 @@ async def test_escalation_promotes_priority():
     await tool.execute(
         CreateTicketArgs(
             subject="prod down", body="urgent",
-            category="escalation", persona_id="u-mara-chen",
+            category="escalation", persona_id="mara.chen@acme.com",
         ),
         sess,
     )

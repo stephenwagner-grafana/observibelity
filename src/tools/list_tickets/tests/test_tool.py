@@ -41,7 +41,7 @@ async def test_execute_returns_rows():
     ]
     sess = _StubSession(rows)
     tool = ListTickets.__new__(ListTickets)
-    res = await tool.execute(ListTicketsArgs(persona_id="u-alice"), sess)
+    res = await tool.execute(ListTicketsArgs(persona_id="alice@acme.com"), sess)
     assert isinstance(res, ListTicketsResult)
     assert len(res.tickets) == 1
     assert res.tickets[0].subject == "VPN"

@@ -24,7 +24,7 @@ data:
     \ * CATEGORIES.length)];\n}\n\nfunction pickMessage() {\n  return SAMPLE_MESSAGES[Math.floor(Math.random()\
     \ * SAMPLE_MESSAGES.length)];\n}\n\nexport function fire() {\n  const category\
     \ = pickCategory();\n  const payload = JSON.stringify({\n    message: pickMessage(),\n\
-    \    user_id: `u-leaderboard-${Math.floor(Math.random() * 50)}`,\n    session_id:\
+    \    user_id: `customer${Math.floor(Math.random() * 50)}@acme.com`,\n    session_id:\
     \ `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,\n    metadata:\
     \ {\n      usecase: 'quality-trend',\n      archetype: 'leaderboard',\n      group_by:\
     \ 'category',\n      category: category,\n    },\n  });\n  const headers = {\n\
