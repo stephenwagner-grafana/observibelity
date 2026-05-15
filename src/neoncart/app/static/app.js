@@ -226,10 +226,20 @@
     }
     if (!href) return null;
     label = label || "Open";
+    // Auto-redirect for collection-ish targets even when the keyword
+    // fallback synthesised the action — users expect "show me keyboards"
+    // to land them ON the keyboards page, not show them a button to click.
+    // Product targets stay click-only so we don't yank the user away from
+    // a multi-item summary to a single detail page.
+    const collectionTarget =
+      nav.target === "category"
+      || nav.target === "search"
+      || nav.target === "cart";
+    const shouldAutoRedirect = nav.auto || collectionTarget;
     const a = document.createElement("a");
     a.className = "chat-nav-btn";
     a.href = href;
-    if (nav.auto) {
+    if (shouldAutoRedirect) {
       a.classList.add("chat-nav-btn--auto");
       a.innerHTML =
         `<span class="chat-nav-btn__spin" aria-hidden="true">↻</span> `

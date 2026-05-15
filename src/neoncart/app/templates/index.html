@@ -2,41 +2,66 @@
 {% block title %}{{ branding.name }} — {{ branding.tagline }}{% endblock %}
 
 {% block content %}
-<section class="nc-hero">
+<section class="nc-hero nc-hero--single">
   <div class="nc-hero__main">
     <h1>{{ branding.name }}</h1>
     <p>{{ branding.tagline }}</p>
-    <a class="nc-cta" href="/catalog">Browse the full catalog</a>
-  </div>
-
-  <aside class="nc-hero__gift" aria-label="AI Gift Finder">
-    <div class="nc-hero__gift-tag"><span aria-hidden="true">🎁</span> AI Gift Finder</div>
-    <h2 class="nc-hero__gift-title">Tell me about them. I'll find the gift.</h2>
-    <p class="nc-hero__gift-sub">
-      Click a starter — or type your own. Backed by Claude + Sigil.
-    </p>
-    <div class="nc-hero__gift-chips">
-      <button type="button" class="nc-hero__gift-chip"
+    <div class="nc-hero__actions">
+      <a class="nc-cta" href="/catalog">Browse the full catalog</a>
+      <button type="button" class="nc-cta nc-cta--gift" data-gift-open="true">
+        <span aria-hidden="true">🎁</span> AI Gift Finder
+      </button>
+    </div>
+    <div class="nc-hero__starter" aria-label="Gift starters">
+      <span class="nc-hero__starter-lead">Quick start —</span>
+      <button type="button" class="nc-hero__chip"
               data-gift-prompt="birthday gift for my dad under $200, he likes audio">
         🎂 dad · $200 · audio
       </button>
-      <button type="button" class="nc-hero__gift-chip"
+      <button type="button" class="nc-hero__chip"
               data-gift-prompt="anniversary gift for my wife around $300, into wearables">
         💍 wife · $300 · wearables
       </button>
-      <button type="button" class="nc-hero__gift-chip"
+      <button type="button" class="nc-hero__chip"
               data-gift-prompt="holiday gift for my 10-year-old nephew under $50, into gaming">
         🎄 nephew · $50 · gaming
       </button>
-      <button type="button" class="nc-hero__gift-chip"
+      <button type="button" class="nc-hero__chip"
               data-gift-prompt="graduation gift for my best friend around $100, peripherals">
         🎓 friend · $100 · peripherals
       </button>
     </div>
-    <button type="button" class="nc-hero__gift-cta" data-gift-open="true">
-      Chat with the Gift Finder <span aria-hidden="true">→</span>
-    </button>
-  </aside>
+  </div>
+</section>
+
+<section class="nc-story" aria-label="How NeonCart's AI shows its work">
+  <ol class="nc-story__grid">
+    <li class="nc-story__step">
+      <span class="nc-story__num">1</span>
+      <h3>Ask the agent</h3>
+      <p>
+        Type a gift idea or a catalog query. NeonCart routes "gift for my dad"
+        to <strong>nc-gift-finder</strong>, plain queries to <strong>nc-chatbot</strong>.
+      </p>
+    </li>
+    <li class="nc-story__step nc-story__step--accent">
+      <span class="nc-story__num">2</span>
+      <h3>See the model work</h3>
+      <p>
+        Every reply shows the model + provider that answered, every tool call,
+        and a deep-link into the Sigil conversation view.
+      </p>
+    </li>
+    <li class="nc-story__step">
+      <span class="nc-story__num">3</span>
+      <h3>Add to cart, watch the dashboard</h3>
+      <p>
+        Each ATC fires <code>nc_cart_add_total</code> with model + agent labels;
+        the heuristic quality eval emits per turn. Both ride Loki — no Prom
+        scraping required.
+      </p>
+    </li>
+  </ol>
 </section>
 
 <section class="nc-section">
@@ -61,7 +86,7 @@
     </div>
   {% else %}
     <p class="nc-empty">
-      Catalog is still loading. Try the chat widget — ask for what you want.
+      Catalog is still loading. Try the AI Gift Finder — top right.
     </p>
   {% endif %}
 </section>
