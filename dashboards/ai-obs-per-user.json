@@ -452,7 +452,7 @@
           "instant": true,
           "range": false,
           "refId": "Quality",
-          "expr": "sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))"
+          "expr": "label_replace( sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h])) * 100, \"user_id\", \"$1\", \"user_id\", \"(.*)\")"
         },
         {
           "datasource": {
@@ -752,7 +752,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h]))",
+          "expr": "(sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", ai_o11y_specialist=~\"sb-.*\"}[1h]))) * 100",
           "instant": true,
           "legendFormat": "Fleet avg",
           "refId": "A"
@@ -826,7 +826,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[1h])))",
+          "expr": "(bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[1h])))) * 100",
           "instant": true,
           "legendFormat": "{{user_id}}",
           "refId": "A"
