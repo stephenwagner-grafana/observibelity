@@ -193,6 +193,20 @@ def transform_barchart(panel):
     fc = panel.setdefault("fieldConfig", {}).setdefault("defaults", {})
     if "thresholds" in fc and "steps" in fc["thresholds"]:
         fc["thresholds"]["steps"] = soften_threshold_steps(fc["thresholds"]["steps"])
+    # If the existing threshold table is only a single step (which renders
+    # every bar identical), switch to a percentage-based gradient so taller
+    # bars get visibly hotter colors.
+    existing_steps = fc.get("thresholds", {}).get("steps", [])
+    if len([s for s in existing_steps if s.get("value") is not None]) == 0:
+        fc["thresholds"] = {
+            "mode": "percentage",
+            "steps": [
+                {"color": PALETTE["blue"],   "value": None},
+                {"color": PALETTE["purple"], "value": 33},
+                {"color": PALETTE["pink"],   "value": 66},
+                {"color": PALETTE["orange"], "value": 88},
+            ],
+        }
     # Force thresholds-based coloring so the soft palette steps actually drive
     # the bar colors. Without this, panels stuck on continuous-GrYlRd keep
     # rendering yellow->red.
@@ -223,6 +237,13 @@ MODEL_COLOR_PINS = {
     "claude-sonnet-4-6":       PALETTE["blue"],
     "claude-haiku-4-5-20251001": PALETTE["cyan"],
     "claude-haiku-4-5":        PALETTE["cyan"],
+    # Common non-model series names that otherwise default to palette-classic green
+    "loadgen":                 PALETTE["cyan"],
+    "live":                    PALETTE["purple"],
+    "pass":                    PALETTE["cyan"],
+    "fail":                    PALETTE["pink"],
+    "< 80":                    PALETTE["blue"],
+    "80+":                     PALETTE["orange"],
     "gemma2:2b":               PALETTE["mint"],
     "llama3.2:1b":             PALETTE["pink"],
     "phi3:mini":               PALETTE["orange"],

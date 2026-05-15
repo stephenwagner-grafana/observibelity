@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cost anomaly — {{ employee }}"
+        "textFormat": "cost anomaly \u2014 {{ employee }}"
       }
     ]
   },
-  "description": "Where the LLM money is going. Read top-to-bottom: total spend → who's spending → which model → which specialist. Each panel description (hover the ℹ icon) explains exactly what the numbers mean.",
+  "description": "Where the LLM money is going. Read top-to-bottom: total spend \u2192 who's spending \u2192 which model \u2192 which specialist. Each panel description (hover the \u2139 icon) explains exactly what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -157,7 +157,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "💰 Headline — what are we spending overall?",
+      "title": "\ud83d\udcb0 Headline \u2014 what are we spending overall?",
       "type": "row"
     },
     {
@@ -230,7 +230,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Total LLM spend — last 24h",
+      "title": "\ud83d\udcb0 Total LLM spend \u2014 last 24h",
       "type": "stat",
       "transparent": true
     },
@@ -304,7 +304,7 @@
           "format": "time_series"
         }
       ],
-      "title": "⚠ Heavy users right now (>100k tokens in last hour)",
+      "title": "\u26a0 Heavy users right now (>100k tokens in last hour)",
       "type": "stat",
       "transparent": true
     },
@@ -313,7 +313,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by specialist (5m rate × 3600), stacked. Use to spot which specific agent (sb-router, nc-chatbot, etc.) caused a cost spike. Total stack height = current burn rate × 1h.",
+      "description": "**USD per hour** by specialist (5m rate \u00d7 3600), stacked. Use to spot which specific agent (sb-router, nc-chatbot, etc.) caused a cost spike. Total stack height = current burn rate \u00d7 1h.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -516,6 +516,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -554,7 +659,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Spend rate per specialist — USD per hour",
+      "title": "\ud83d\udcb0 Spend rate per specialist \u2014 USD per hour",
       "type": "timeseries",
       "transparent": true
     },
@@ -563,7 +668,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Naive extrapolation: current cost-per-second × 24h. NOT a forecast — just 'if nothing changes, this is what tomorrow looks like.' Useful as a sanity check against the actual 24h total above.",
+      "description": "Naive extrapolation: current cost-per-second \u00d7 24h. NOT a forecast \u2014 just 'if nothing changes, this is what tomorrow looks like.' Useful as a sanity check against the actual 24h total above.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -628,7 +733,7 @@
           "refId": "A"
         }
       ],
-      "title": "🔮 Tomorrow's bill at today's burn rate",
+      "title": "\ud83d\udd2e Tomorrow's bill at today's burn rate",
       "type": "stat",
       "transparent": true
     },
@@ -642,7 +747,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "👤 Per-user — who is doing the spending?",
+      "title": "\ud83d\udc64 Per-user \u2014 who is doing the spending?",
       "type": "row"
     },
     {
@@ -741,7 +846,7 @@
           }
         }
       ],
-      "title": "🔥 Top spenders right now (tokens per hour)",
+      "title": "\ud83d\udd25 Top spenders right now (tokens per hour)",
       "type": "bargauge",
       "transparent": true
     },
@@ -966,6 +1071,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1005,7 +1215,7 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Heavy users over time — when did each one spike?",
+      "title": "\ud83d\udea8 Heavy users over time \u2014 when did each one spike?",
       "type": "timeseries",
       "transparent": true
     },
@@ -1019,7 +1229,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "🤖 Per-model — which model is the bill coming from?",
+      "title": "\ud83e\udd16 Per-model \u2014 which model is the bill coming from?",
       "type": "row"
     },
     {
@@ -1027,7 +1237,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by provider (5m rate × 3600). Most traffic goes to Ollama (~$0/token); a small fraction to Claude. The visible gap is the entire demo's point: routing the right traffic to local models saves money. Red band is Anthropic spend; green is the rounding-error Ollama line.",
+      "description": "**USD per hour** by provider (5m rate \u00d7 3600). Most traffic goes to Ollama (~$0/token); a small fraction to Claude. The visible gap is the entire demo's point: routing the right traffic to local models saves money. Red band is Anthropic spend; green is the rounding-error Ollama line.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1230,6 +1440,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1269,7 +1584,7 @@
           "refId": "A"
         }
       ],
-      "title": "💸 Claude (paid) vs Ollama (free) — USD per hour",
+      "title": "\ud83d\udcb8 Claude (paid) vs Ollama (free) \u2014 USD per hour",
       "type": "timeseries",
       "transparent": true
     },
@@ -1278,7 +1593,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Counterfactual: if every Ollama token had instead gone to Claude Haiku ($0.25/M input, $1.25/M output), what would it have cost? This number = (counterfactual Haiku bill) − (actual Ollama bill ≈ $0).",
+      "description": "Counterfactual: if every Ollama token had instead gone to Claude Haiku ($0.25/M input, $1.25/M output), what would it have cost? This number = (counterfactual Haiku bill) \u2212 (actual Ollama bill \u2248 $0).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1325,7 +1640,7 @@
         },
         "textMode": "auto",
         "wideLayout": false,
-        "percentChangeColorMode": "standard",
+        "percentChangeColorMode": "inverted",
         "showPercentChange": true
       },
       "pluginVersion": "11.0.0",
@@ -1343,7 +1658,7 @@
           "refId": "A"
         }
       ],
-      "title": "💸 Money saved by routing Ollama instead of Claude Haiku",
+      "title": "\ud83d\udcb8 Money saved by routing Ollama instead of Claude Haiku",
       "type": "stat",
       "transparent": true
     },
@@ -1352,7 +1667,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-model cost over 24h. Claude Opus is usually #1 even though it serves <1% of traffic. Compare to the call counts in 'AI o11y — Best Models' — expensive ≠ most-used.",
+      "description": "Per-model cost over 24h. Claude Opus is usually #1 even though it serves <1% of traffic. Compare to the call counts in 'AI o11y \u2014 Best Models' \u2014 expensive \u2260 most-used.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1598,6 +1913,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1649,7 +2069,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Same breakdown as the 24h table, but as a time series projected to **USD per hour** (5m rate × 3600). Shows when each model fired and how its hourly burn rate moved.",
+      "description": "Same breakdown as the 24h table, but as a time series projected to **USD per hour** (5m rate \u00d7 3600). Shows when each model fired and how its hourly burn rate moved.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1852,6 +2272,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1890,7 +2415,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Spend rate per model — USD per hour",
+      "title": "\ud83d\udcb0 Spend rate per model \u2014 USD per hour",
       "type": "timeseries",
       "transparent": true
     },
@@ -2094,6 +2619,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -2146,7 +2776,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost share — which model took what share of the bill? (24h)",
+      "title": "Cost share \u2014 which model took what share of the bill? (24h)",
       "type": "piechart",
       "transparent": true
     },
@@ -2160,7 +2790,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "📦 Per-specialist — which agent's traffic is most expensive?",
+      "title": "\ud83d\udce6 Per-specialist \u2014 which agent's traffic is most expensive?",
       "type": "row"
     },
     {
@@ -2168,7 +2798,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by the top-8 <use case, specialist> combinations (5m rate × 3600), stacked. Finer-grained than the headline panel — use to spot which use case driving which specialist is the most expensive. Colors group by specialist hue.",
+      "description": "**USD per hour** by the top-8 <use case, specialist> combinations (5m rate \u00d7 3600), stacked. Finer-grained than the headline panel \u2014 use to spot which use case driving which specialist is the most expensive. Colors group by specialist hue.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2177,9 +2807,9 @@
           "custom": {
             "axisLabel": "USD / hour",
             "drawStyle": "line",
-            "fillOpacity": 35,
+            "fillOpacity": 40,
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "showPoints": "never",
             "spanNulls": true,
             "gradientMode": "opacity",
@@ -2446,6 +3076,111 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -2485,7 +3220,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Top 8 <use case, specialist> by spend rate — USD per hour",
+      "title": "\ud83d\udcb0 Top 8 <use case, specialist> by spend rate \u2014 USD per hour",
       "type": "timeseries",
       "transparent": true
     }
@@ -2599,7 +3334,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Cost (per-user attribution)",
+  "title": "AI o11y \u2014 Cost (per-user attribution)",
   "uid": "ai-obs-cost",
   "weekStart": ""
 }

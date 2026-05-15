@@ -164,7 +164,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 internal SupportBot users by 24h cost. Columns: calls (gen_ai operation count), input+output tokens, 24h USD cost, **30-day projected cost** (24h \u00d7 30 \u2014 what this user would cost if the next month looked like the last 24h), and waste % (low-quality calls flagged by Sigil / total). Sorted by 24h cost descending. Use the User dropdown to drill into a single employee.",
+      "description": "Top 10 SupportBot users by 24h spend. Cost is the headline (pink = expensive). Inline bars on Calls and Tokens show volume relative to the leader. Waste % only colors when \u22655% (low-quality calls). 30d forecast is muted text \u2014 useful but not the story.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -222,28 +222,21 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "gauge",
+                  "mode": "lcd",
+                  "valueDisplayMode": "color"
                 }
               },
               {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#8AB8FF",
-                      "value": null
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 200
-                    },
-                    {
-                      "color": "#F472B6",
-                      "value": 1000
-                    }
-                  ]
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 200
               }
             ]
           },
@@ -264,28 +257,21 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "gauge",
+                  "mode": "lcd",
+                  "valueDisplayMode": "color"
                 }
               },
               {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#8AB8FF",
-                      "value": null
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 100000
-                    },
-                    {
-                      "color": "#F472B6",
-                      "value": 500000
-                    }
-                  ]
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 220
               }
             ]
           },
@@ -306,7 +292,8 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-background",
+                  "mode": "gradient"
                 }
               },
               {
@@ -315,7 +302,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "#8AB8FF",
+                      "color": "transparent",
                       "value": null
                     },
                     {
@@ -328,6 +315,10 @@
                     }
                   ]
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 160
               }
             ]
           },
@@ -348,7 +339,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               },
               {
@@ -357,19 +348,23 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "#8AB8FF",
+                      "color": "text",
                       "value": null
                     },
                     {
                       "color": "#A78BFA",
-                      "value": 30
+                      "value": 50
                     },
                     {
                       "color": "#F472B6",
-                      "value": 150
+                      "value": 200
                     }
                   ]
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 130
               }
             ]
           },
@@ -390,7 +385,8 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-background",
+                  "mode": "gradient"
                 }
               },
               {
@@ -399,11 +395,11 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "#8AB8FF",
+                      "color": "transparent",
                       "value": null
                     },
                     {
-                      "color": "#A78BFA",
+                      "color": "#FB923C",
                       "value": 5
                     },
                     {
@@ -412,6 +408,10 @@
                     }
                   ]
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 130
               }
             ]
           },
@@ -609,6 +609,96 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -795,7 +885,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "For each of the top-10 spenders above, which sb-* specialists they're routing to (stacked 24h tokens). Each bar's total length = that user's overall token spend on SupportBot. sb-router shows up for everyone (every chat starts there). A single dominant downstream color = focused use of one agent; a wide rainbow = a generalist (or someone trying lots of things to bypass guardrails). Compare bar shapes to spot abuse patterns the leaderboard alone can't tell you about.",
+      "description": "For each of the top-10 SupportBot spenders, the proportion of their 24h tokens spent on each specialist. Long blocks = heavy use of that agent. Read horizontally to see one user's mix; vertically to compare users on the same agent. Hover for exact counts.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -823,11 +913,23 @@
           },
           "mappings": [],
           "thresholds": {
-            "mode": "absolute",
+            "mode": "percentage",
             "steps": [
               {
                 "color": "#8AB8FF",
                 "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 33
+              },
+              {
+                "color": "#F472B6",
+                "value": 66
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
               }
             ]
           },
@@ -1028,6 +1130,96 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1050,7 +1242,7 @@
           "showLegend": true
         },
         "orientation": "horizontal",
-        "showValue": "auto",
+        "showValue": "never",
         "stacking": "normal",
         "tooltip": {
           "mode": "multi",
@@ -1149,7 +1341,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#86EFAC",
                 "value": null
               }
             ]
@@ -1352,6 +1544,96 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1439,7 +1721,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#86EFAC",
                 "value": null
               }
             ]
@@ -1639,6 +1921,96 @@
                 "value": {
                   "mode": "fixed",
                   "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
                 }
               }
             ]
