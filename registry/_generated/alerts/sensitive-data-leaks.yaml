@@ -2,7 +2,7 @@ groups:
 - name: sensitive-data-leaks
   rules:
   - alert: sensitive_data.any_match
-    expr: 'sum(rate(supportbot_pii_match_total{kind=~"credit_card|ssn|api_key"}[5m]))
+    expr: 'sum(rate(sigil_eval_scores_total{evaluator="base.pii_in_output",passed="false"}[5m]))
       > 0
 
       '

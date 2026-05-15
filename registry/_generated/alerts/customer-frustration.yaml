@@ -2,9 +2,9 @@ groups:
 - name: customer-frustration
   rules:
   - alert: customer_frustration.unaddressed_rate_10pct
-    expr: "sum(rate(sigil_eval_result_total{evaluator=\"customer_frustration\",verdict=\"\
-      fail\"}[15m]))\n  / sum(rate(neoncart_frustration_conversation_total[15m]))\
-      \ > 0.10\n"
+    expr: "sum(rate(sigil_eval_scores_total{evaluator=\"customer_frustration.unaddressed_frustration\"\
+      ,passed=\"false\"}[15m]))\n  / sum(rate(sigil_eval_scores_total{evaluator=\"\
+      customer_frustration.unaddressed_frustration\"}[15m])) > 0.10\n"
     for: 15m
     labels:
       severity: medium

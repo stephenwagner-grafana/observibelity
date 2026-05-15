@@ -44,10 +44,14 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # SKIPPED in Grafana sync: refund_policy_compliance evaluator is not
+  # registered with Sigil yet, and neoncart_refund_offer_total isn't
+  # emitted. Stub condition uses the current Sigil schema so it can be
+  # turned on once the evaluator is wired up.
   - name: refund_policy_compliance.window_violation_rate
     condition: |
-      sum(rate(sigil_eval_result_total{evaluator="refund_policy_compliance",verdict="fail"}[15m]))
-        / sum(rate(neoncart_refund_offer_total[15m])) > 0.02
+      sum(rate(sigil_eval_scores_total{evaluator="refund_policy_compliance.window_violation",passed="false"}[15m]))
+        / sum(rate(sigil_eval_scores_total{evaluator="refund_policy_compliance.window_violation"}[15m])) > 0.02
     severity: high
     route: oncall@acme.local
     duration: 10m

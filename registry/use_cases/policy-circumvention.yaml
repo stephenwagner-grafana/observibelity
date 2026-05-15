@@ -45,12 +45,13 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # Legacy supportbot namespace is gone; all workloads run in observibelity.
   - name: policy_circumvention.burst_15m
     condition: |
       sum(
         count_over_time(
-          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
-          |~ "policy_circumvention" | logfmt | category="approval_bypass" [15m]
+          {namespace="observibelity"}
+          |~ "policy_circumvention" [15m]
         )
       ) > 3
     severity: high

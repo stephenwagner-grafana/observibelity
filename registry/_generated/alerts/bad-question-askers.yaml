@@ -2,9 +2,9 @@ groups:
 - name: bad-question-askers
   rules:
   - alert: bad_question_askers.user_refusal_rate_high
-    expr: "sum by (employee) (rate(supportbot_response_classification_total{verdict=~\"\
-      refuse|decline\"}[15m]))\n  / sum by (employee) (rate(supportbot_response_total[15m]))\
-      \ > 0.4\n"
+    expr: "sum(rate(sigil_eval_scores_total{evaluator=\"base.refusal_detected\",passed=\"\
+      false\"}[15m]))\n  / sum(rate(sigil_eval_scores_total{evaluator=\"base.refusal_detected\"\
+      }[15m])) > 0.4\n"
     for: 15m
     labels:
       severity: medium

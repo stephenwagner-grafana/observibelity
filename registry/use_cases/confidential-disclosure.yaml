@@ -53,14 +53,12 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # Sigil-based detection: Sigil emits sigil_eval_scores_total{passed="false"}
+  # when the confidential_disclosure.judge_classification evaluator fires.
+  # Sigil eval metrics have no user_id label, so this is fleet-wide.
   - name: confidential_disclosure.user_paste_burst
     condition: |
-      sum by (employee) (
-        count_over_time(
-          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
-          |~ "confidential_disclosure" | logfmt | category="board_content" [15m]
-        )
-      ) >= 3
+      sum(rate(sigil_eval_scores_total{evaluator="confidential_disclosure.judge_classification",passed="false"}[15m])) > 0
     severity: critical
     route: security@acme.local
     duration: 1m

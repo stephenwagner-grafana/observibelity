@@ -43,10 +43,13 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # supportbot_response_classification_total doesn't exist; refusal/escalation
+  # is observed via the Sigil base.refusal_detected evaluator. Sigil eval
+  # metrics carry no user_id label, so this is a fleet-wide refusal-rate alert.
   - name: bad_question_askers.user_refusal_rate_high
     condition: |
-      sum by (employee) (rate(supportbot_response_classification_total{verdict=~"refuse|decline"}[15m]))
-        / sum by (employee) (rate(supportbot_response_total[15m])) > 0.4
+      sum(rate(sigil_eval_scores_total{evaluator="base.refusal_detected",passed="false"}[15m]))
+        / sum(rate(sigil_eval_scores_total{evaluator="base.refusal_detected"}[15m])) > 0.4
     severity: medium
     route: oncall@acme.local
     duration: 15m

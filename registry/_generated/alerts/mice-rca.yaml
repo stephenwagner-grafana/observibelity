@@ -2,10 +2,8 @@ groups:
 - name: mice-rca
   rules:
   - alert: mice_rca.search_5xx_burst
-    expr: 'sum(rate(http_server_requests_total{app="neoncart",route="/search",status=~"5.."}[5m]))
-      > 0.05
-
-      '
+    expr: "sum(\n  count_over_time(\n    {namespace=\"observibelity\"} |~ \"rodent_qty|42703\"\
+      \ [5m]\n  )\n) > 0\n"
     for: 2m
     labels:
       severity: high

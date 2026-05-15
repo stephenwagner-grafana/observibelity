@@ -48,10 +48,13 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # ATC events are emitted as ai_recommendation_addtocart_total (label: model)
+  # and total recommendations as ai_recommendation_total. neoncart_atc_event_total
+  # and neoncart_specialist_recommendation_total no longer exist.
   - name: model_winner.atc_rate_collapse
     condition: |
-      sum by (model) (rate(neoncart_atc_event_total{source="live"}[15m]))
-        / sum by (model) (rate(neoncart_specialist_recommendation_total[15m])) < 0.01
+      sum by (model) (rate(ai_recommendation_addtocart_total[15m]))
+        / sum by (model) (rate(ai_recommendation_total[15m])) < 0.01
     severity: medium
     route: oncall@acme.local
     duration: 10m

@@ -53,9 +53,12 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # sigil_eval_result_total doesn't exist; real metric is sigil_eval_scores_total
+  # with `passed` label. No `severity` label on Sigil metrics — single-event
+  # severity is enforced by the threshold (> 0) and duration: 0s.
   - name: ai-o11y-hiring-discrim
     condition: |
-      sum(rate(sigil_eval_result_total{evaluator="hiring_discrimination_risk",verdict="fail",severity="critical"}[1m])) > 0
+      sum(rate(sigil_eval_scores_total{evaluator="hiring_discrimination_risk.protected_characteristic",passed="false"}[1m])) > 0
     severity: critical
     route: hr-compliance@acme.local
     duration: 0s

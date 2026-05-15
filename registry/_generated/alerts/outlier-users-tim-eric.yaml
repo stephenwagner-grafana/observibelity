@@ -2,8 +2,9 @@ groups:
 - name: outlier-users-tim-eric
   rules:
   - alert: outlier_users.cost_concentration
-    expr: "max by (employee) (sum_over_time(supportbot_tokens_total[1h]))\n  / sum(rate(supportbot_tokens_total[1h])\
-      \ * 3600) > 0.25\n"
+    expr: "max by (user_id) (sum_over_time(gen_ai_client_token_usage_total{service_namespace=\"\
+      observibelity\",user_id=~\".*@.*\"}[1h]))\n  / sum(rate(gen_ai_client_token_usage_total{service_namespace=\"\
+      observibelity\"}[1h]) * 3600) > 0.25\n"
     for: 15m
     labels:
       severity: medium

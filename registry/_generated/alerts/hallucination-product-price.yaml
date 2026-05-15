@@ -2,9 +2,9 @@ groups:
 - name: hallucination-product-price
   rules:
   - alert: hallucination.rate_regression_2x
-    expr: "sum(rate(sigil_eval_result_total{evaluator=\"hallucination\",verdict=\"\
-      fail\"}[15m]))\n  > 2 * sum(rate(sigil_eval_result_total{evaluator=\"hallucination\"\
-      ,verdict=\"fail\"}[4h]))\n"
+    expr: "sum(rate(sigil_eval_scores_total{evaluator=\"hallucination.product_in_catalog\"\
+      ,passed=\"false\"}[15m]))\n  > 2 * sum(rate(sigil_eval_scores_total{evaluator=\"\
+      hallucination.product_in_catalog\",passed=\"false\"}[4h]))\n"
     for: 10m
     labels:
       severity: high

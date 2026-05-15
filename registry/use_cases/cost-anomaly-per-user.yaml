@@ -47,11 +47,14 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # Switched from the legacy {supportbot,neoncart}_tokens_total{employee=...}
+  # metrics to the OTel GenAI semconv metric gen_ai_client_token_usage_total
+  # with the user_id label. service_namespace pins the metric to ObserVIBElity
+  # workloads (no longer split across two k8s namespaces).
   - name: ai-o11y-cost-per-user
     condition: |
-      max by (employee) (
-        sum_over_time(supportbot_tokens_total{employee!=""}[1h])
-          + sum_over_time(neoncart_tokens_total{employee!=""}[1h])
+      max by (user_id) (
+        sum_over_time(gen_ai_client_token_usage_total{service_namespace="observibelity",user_id=~".*@.*"}[1h])
       ) > 100000
     severity: high
     route: finance-ops@acme.local

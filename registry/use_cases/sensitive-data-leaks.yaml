@@ -54,9 +54,13 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # supportbot_pii_match_total doesn't exist; PII detection in ObserVIBElity is
+  # observed via the Sigil base.pii_in_output evaluator. The "kind" subtype
+  # (credit_card/ssn/api_key) isn't a Sigil label — Sigil reports passed=false
+  # for any matching pattern.
   - name: sensitive_data.any_match
     condition: |
-      sum(rate(supportbot_pii_match_total{kind=~"credit_card|ssn|api_key"}[5m])) > 0
+      sum(rate(sigil_eval_scores_total{evaluator="base.pii_in_output",passed="false"}[5m])) > 0
     severity: high
     route: security@acme.local
     duration: 1m

@@ -2,7 +2,7 @@ groups:
 - name: hiring-discrimination-risk
   rules:
   - alert: ai-o11y-hiring-discrim
-    expr: 'sum(rate(sigil_eval_result_total{evaluator="hiring_discrimination_risk",verdict="fail",severity="critical"}[1m]))
+    expr: 'sum(rate(sigil_eval_scores_total{evaluator="hiring_discrimination_risk.protected_characteristic",passed="false"}[1m]))
       > 0
 
       '

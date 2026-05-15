@@ -2,9 +2,9 @@ groups:
 - name: refund-policy-compliance
   rules:
   - alert: refund_policy_compliance.window_violation_rate
-    expr: "sum(rate(sigil_eval_result_total{evaluator=\"refund_policy_compliance\"\
-      ,verdict=\"fail\"}[15m]))\n  / sum(rate(neoncart_refund_offer_total[15m])) >\
-      \ 0.02\n"
+    expr: "sum(rate(sigil_eval_scores_total{evaluator=\"refund_policy_compliance.window_violation\"\
+      ,passed=\"false\"}[15m]))\n  / sum(rate(sigil_eval_scores_total{evaluator=\"\
+      refund_policy_compliance.window_violation\"}[15m])) > 0.02\n"
     for: 10m
     labels:
       severity: high

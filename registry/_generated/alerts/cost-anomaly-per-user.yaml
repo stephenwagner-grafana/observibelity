@@ -2,9 +2,8 @@ groups:
 - name: cost-anomaly-per-user
   rules:
   - alert: ai-o11y-cost-per-user
-    expr: "max by (employee) (\n  sum_over_time(supportbot_tokens_total{employee!=\"\
-      \"}[1h])\n    + sum_over_time(neoncart_tokens_total{employee!=\"\"}[1h])\n)\
-      \ > 100000\n"
+    expr: "max by (user_id) (\n  sum_over_time(gen_ai_client_token_usage_total{service_namespace=\"\
+      observibelity\",user_id=~\".*@.*\"}[1h])\n) > 100000\n"
     for: 5m
     labels:
       severity: high

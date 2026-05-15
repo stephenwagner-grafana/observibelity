@@ -44,10 +44,14 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # SKIPPED in Grafana sync: neither the customer_frustration Sigil
+  # evaluator nor neoncart_frustration_conversation_total exist. The
+  # judge evaluator above isn't registered with Sigil yet. Leaving the
+  # condition stub so it can be wired up later.
   - name: customer_frustration.unaddressed_rate_10pct
     condition: |
-      sum(rate(sigil_eval_result_total{evaluator="customer_frustration",verdict="fail"}[15m]))
-        / sum(rate(neoncart_frustration_conversation_total[15m])) > 0.10
+      sum(rate(sigil_eval_scores_total{evaluator="customer_frustration.unaddressed_frustration",passed="false"}[15m]))
+        / sum(rate(sigil_eval_scores_total{evaluator="customer_frustration.unaddressed_frustration"}[15m])) > 0.10
     severity: medium
     route: customer-success@acme.local
     duration: 15m

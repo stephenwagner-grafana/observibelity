@@ -45,9 +45,12 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # sigil_eval_result_total doesn't exist; the real PII-echo detection uses
+  # the Sigil base.pii_in_output evaluator (the use case's own pii_echo.*
+  # evaluators aren't registered in Sigil yet). passed="false" is the verdict.
   - name: ai-o11y-pii-echo
     condition: |
-      sum(rate(sigil_eval_result_total{evaluator="pii_echo",verdict="fail"}[1m])) > 0
+      sum(rate(sigil_eval_scores_total{evaluator="base.pii_in_output",passed="false"}[1m])) > 0
     severity: critical
     route: security@acme.local
     duration: 0s

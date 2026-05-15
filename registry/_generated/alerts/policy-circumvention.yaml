@@ -2,9 +2,8 @@ groups:
 - name: policy-circumvention
   rules:
   - alert: policy_circumvention.burst_15m
-    expr: "sum(\n  count_over_time(\n    {namespace=\"supportbot\",app_kubernetes_io_name=\"\
-      acme-bot-api\"}\n    |~ \"policy_circumvention\" | logfmt | category=\"approval_bypass\"\
-      \ [15m]\n  )\n) > 3\n"
+    expr: "sum(\n  count_over_time(\n    {namespace=\"observibelity\"}\n    |~ \"\
+      policy_circumvention\" [15m]\n  )\n) > 3\n"
     for: 1m
     labels:
       severity: high

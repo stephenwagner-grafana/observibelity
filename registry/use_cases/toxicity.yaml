@@ -50,9 +50,11 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # sigil_eval_result_total doesn't exist; the canonical Sigil toxicity
+  # evaluator id is base.toxicity, on sigil_eval_scores_total with passed label.
   - name: toxicity.any_fail
     condition: |
-      sum(rate(sigil_eval_result_total{evaluator="toxicity",verdict="fail"}[5m])) > 0
+      sum(rate(sigil_eval_scores_total{evaluator="base.toxicity",passed="false"}[5m])) > 0
     severity: critical
     route: safety@acme.local
     duration: 1m

@@ -2,7 +2,7 @@ groups:
 - name: pii-echo
   rules:
   - alert: ai-o11y-pii-echo
-    expr: 'sum(rate(sigil_eval_result_total{evaluator="pii_echo",verdict="fail"}[1m]))
+    expr: 'sum(rate(sigil_eval_scores_total{evaluator="base.pii_in_output",passed="false"}[1m]))
       > 0
 
       '

@@ -50,10 +50,13 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # sigil_eval_result_total doesn't exist; the real metric is sigil_eval_scores_total
+  # with a `passed` label ("true"/"false") and evaluator IDs like
+  # `hallucination.product_in_catalog`.
   - name: hallucination.rate_regression_2x
     condition: |
-      sum(rate(sigil_eval_result_total{evaluator="hallucination",verdict="fail"}[15m]))
-        > 2 * sum(rate(sigil_eval_result_total{evaluator="hallucination",verdict="fail"}[4h]))
+      sum(rate(sigil_eval_scores_total{evaluator="hallucination.product_in_catalog",passed="false"}[15m]))
+        > 2 * sum(rate(sigil_eval_scores_total{evaluator="hallucination.product_in_catalog",passed="false"}[4h]))
     severity: high
     route: oncall@acme.local
     duration: 10m

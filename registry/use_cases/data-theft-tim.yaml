@@ -52,12 +52,15 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # All ObserVIBElity workloads live in the observibelity namespace; the
+  # legacy supportbot namespace is gone. Filter on exfil-shaped log lines
+  # from any observibelity pod.
   - name: data_theft
     condition: |
-      sum by (employee) (
+      sum(
         count_over_time(
-          {namespace="supportbot",app_kubernetes_io_name="acme-bot-api"}
-          |~ "exfil_event" | logfmt | employee != "" [10m]
+          {namespace="observibelity"}
+          |~ "exfil_event" [10m]
         )
       ) >= 5
     severity: critical

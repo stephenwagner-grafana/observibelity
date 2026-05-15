@@ -49,9 +49,16 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # ObserVIBElity doesn't emit http_server_requests_total; the canonical
+  # signal for this deterministic RCA is the Postgres "rodent_qty" column-
+  # not-found error in Loki (sqlstate 42703).
   - name: mice_rca.search_5xx_burst
     condition: |
-      sum(rate(http_server_requests_total{app="neoncart",route="/search",status=~"5.."}[5m])) > 0.05
+      sum(
+        count_over_time(
+          {namespace="observibelity"} |~ "rodent_qty|42703" [5m]
+        )
+      ) > 0
     severity: high
     route: oncall@acme.local
     duration: 2m

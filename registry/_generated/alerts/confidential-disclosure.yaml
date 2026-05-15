@@ -2,9 +2,10 @@ groups:
 - name: confidential-disclosure
   rules:
   - alert: confidential_disclosure.user_paste_burst
-    expr: "sum by (employee) (\n  count_over_time(\n    {namespace=\"supportbot\"\
-      ,app_kubernetes_io_name=\"acme-bot-api\"}\n    |~ \"confidential_disclosure\"\
-      \ | logfmt | category=\"board_content\" [15m]\n  )\n) >= 3\n"
+    expr: 'sum(rate(sigil_eval_scores_total{evaluator="confidential_disclosure.judge_classification",passed="false"}[15m]))
+      > 0
+
+      '
     for: 1m
     labels:
       severity: critical

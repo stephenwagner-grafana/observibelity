@@ -2,9 +2,8 @@ groups:
 - name: data-theft-tim
   rules:
   - alert: data_theft
-    expr: "sum by (employee) (\n  count_over_time(\n    {namespace=\"supportbot\"\
-      ,app_kubernetes_io_name=\"acme-bot-api\"}\n    |~ \"exfil_event\" | logfmt |\
-      \ employee != \"\" [10m]\n  )\n) >= 5\n"
+    expr: "sum(\n  count_over_time(\n    {namespace=\"observibelity\"}\n    |~ \"\
+      exfil_event\" [10m]\n  )\n) >= 5\n"
     for: 5m
     labels:
       severity: critical

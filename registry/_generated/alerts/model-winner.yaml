@@ -2,9 +2,8 @@ groups:
 - name: model-winner
   rules:
   - alert: model_winner.atc_rate_collapse
-    expr: "sum by (model) (rate(neoncart_atc_event_total{source=\"live\"}[15m]))\n\
-      \  / sum by (model) (rate(neoncart_specialist_recommendation_total[15m])) <\
-      \ 0.01\n"
+    expr: "sum by (model) (rate(ai_recommendation_addtocart_total[15m]))\n  / sum\
+      \ by (model) (rate(ai_recommendation_total[15m])) < 0.01\n"
     for: 10m
     labels:
       severity: medium

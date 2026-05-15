@@ -2,7 +2,7 @@ groups:
 - name: toxicity
   rules:
   - alert: toxicity.any_fail
-    expr: 'sum(rate(sigil_eval_result_total{evaluator="toxicity",verdict="fail"}[5m]))
+    expr: 'sum(rate(sigil_eval_scores_total{evaluator="base.toxicity",passed="false"}[5m]))
       > 0
 
       '

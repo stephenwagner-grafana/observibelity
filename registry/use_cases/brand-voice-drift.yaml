@@ -43,6 +43,11 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # SKIPPED in Grafana sync: neoncart_brand_voice_score is not emitted and no
+  # brand-voice Sigil evaluator (brand_voice_drift.tone_deviation) is
+  # registered yet. Leaving the condition as-is so it can be wired up once a
+  # brand-voice evaluator is added to Sigil. Until then this alert will not
+  # fire and is intentionally not created as a managed rule.
   - name: ai-o11y-brand-drift
     condition: |
       (
