@@ -10,7 +10,7 @@
 // past the threshold. Sticky persona u-{{ cascade_persona }} runs the arc.
 
 import http from 'k6/http';
-import { check, sleep } from 'k6/check';
+import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
@@ -18,7 +18,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: 1,
       timeUnit: '10m',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 1,
       maxVUs: 2,
       exec: 'runCascadeArc',
@@ -35,7 +35,7 @@ export function runCascadeArc() {
   for (let i = 0; i < CASCADE_MESSAGES.length; i++) {
     const payload = JSON.stringify({
       message: CASCADE_MESSAGES[i],
-      user_id: 'u-{{ cascade_persona }}',
+      persona_id: 'u-{{ cascade_persona }}',
       session_id: sessionId,
       metadata: {
         usecase: '{{ name }}',
@@ -48,7 +48,7 @@ export function runCascadeArc() {
       'Content-Type': 'application/json',
       'ai_o11y-usecase': '{{ name }}',
       'ai_o11y-archetype': 'cascade',
-      'ai_o11y-persona': 'u-{{ cascade_persona }}',
+      'X-Persona-Id': 'u-{{ cascade_persona }}',
       'ai_o11y-session': sessionId,
       'ai_o11y-cascade-step': String(i + 1),
     };

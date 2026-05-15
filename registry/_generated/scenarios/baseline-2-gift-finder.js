@@ -117,7 +117,7 @@ export default function () {
   const chatBody = {
     message,
     session_id: sessionId,
-    user_id: userId,
+    persona_id: userId,
     provider_override: routing.provider_override,
     traffic_origin: 'continuous',
     usecase: 'model-winner',

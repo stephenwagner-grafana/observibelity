@@ -133,11 +133,11 @@ llmGateway:
           - llama3.1:8b                               # 8B Llama
           - gemma2:9b                                 # 9B Gemma
           - phi3:medium-128k                          # 14B Phi
+          - qwen2.5:14b                               # 14B Qwen2 (replaces command-r at the 14B+ slot)
           - qwen3:30b-a3b-instruct-2507-q4_K_M        # 30B Qwen3 MoE (fast — 3B active params)
-          # command-r:latest dropped — 32B dense at 86 tok/s warm couldn't
-          # keep up with K6_VUS=100; produced ~370 timeouts/min during its
-          # rotation slot. To restore a 12th slot and 60-min hourly cycle,
-          # pull a faster mid-size model (e.g. qwen2.5:14b, mixtral:8x7b).
+          # command-r:latest deliberately excluded — 32B dense at ~86 tok/s
+          # warm produced ~370 timeouts/min during its slot. qwen2.5:14b
+          # takes the 12th seat instead — fast enough to sustain VU pressure.
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
@@ -275,9 +275,14 @@ k6:
   # actually working (without blowing the Anthropic budget on the 2% slice).
   cycle_seconds: 5        # 5s rest between full scenario loops (was 10/30)
   default_rate: "5m"      # default rate per scenario if not specified
-  vus: 100                # virtual users per scenario. 150 saturated the 30B/32B slots
-                          # (queue > NUM_PARALLEL × per-request-time → 15s timeouts);
-                          # 100 paired with OLLAMA_NUM_PARALLEL=6 keeps timeouts at 0.
+  vus: 180                # virtual users per scenario — calibrated to push the
+                          # 5090 toward ~80% GPU utilization without timeouts.
+                          # Paired with OLLAMA_NUM_PARALLEL=8 + MAX_LOADED_MODELS=1.
+  # Fraction of loadgen traffic that goes directly to Claude (Anthropic).
+  # 0.03 → ~$20/day budget at vus=180, Haiku-only avg ~430 in / 60 out tokens
+  # per call. Adjust here if you change vus or switch the default Claude
+  # model to Sonnet (Sonnet is 3× input, 3× output the cost of Haiku).
+  claudeFraction: 0.03
 
 # Observability behaviors shared across components.
 # traffic_origin_default: continuous vs scenario-driven mix; never call this "loadgen".

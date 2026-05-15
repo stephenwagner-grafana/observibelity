@@ -10,7 +10,7 @@
 //  - innocent: filler so the dashboard timeline has shape
 
 import http from 'k6/http';
-import { check, sleep } from 'k6/check';
+import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
@@ -18,7 +18,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: {{ critical_rate_per_hour }},
       timeUnit: '1h',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 1,
       maxVUs: 2,
       exec: 'fireCritical',
@@ -27,7 +27,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: {{ near_miss_rate_per_hour }},
       timeUnit: '1h',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 1,
       maxVUs: 2,
       exec: 'fireNearMiss',
@@ -36,7 +36,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: 6,
       timeUnit: '1m',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 2,
       maxVUs: 4,
       exec: 'fireInnocent',
@@ -54,7 +54,7 @@ const INNOCENT_MESSAGES = [
 function post(message, severity, kind) {
   const payload = JSON.stringify({
     message: message,
-    user_id: `u-{{ name }}-${Math.floor(Math.random() * 100)}`,
+    persona_id: `u-{{ name }}-${Math.floor(Math.random() * 100)}`,
     session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     metadata: {
       usecase: '{{ name }}',

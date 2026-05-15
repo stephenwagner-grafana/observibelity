@@ -36,13 +36,24 @@ spec:
               set -e
               echo "ObserVIBElity k6 traffic engine starting"
               CYCLE_SECONDS="${CYCLE_SECONDS:-{{ .Values.k6.cycle_seconds | default 10 }}}"
+              # Run ALL scripts in parallel each cycle. The previous sequential
+              # for-loop deadlocked when any probe script's duration exceeded
+              # the next probe's. Parallel + wait lets baseline.js drive
+              # bulk throughput while every probe fires its specific use-case
+              # signal simultaneously. Each script controls its own duration;
+              # the cycle ends when the slowest one returns.
+              # Don't let set -e + any single script's non-zero exit kill the
+              # whole loop; that put us in CrashLoopBackOff earlier.
+              set +e
               while true; do
                 for script in /etc/k6/scripts/*.js; do
                   if [ -f "$script" ]; then
-                    echo "Running $(basename "$script")"
-                    k6 run --quiet --no-summary "$script" || true
+                    echo "starting $(basename "$script")"
+                    k6 run --quiet --no-summary "$script" >/tmp/k6-$$-$(basename "$script").log 2>&1 &
                   fi
                 done
+                wait
+                echo "cycle done; sleeping ${CYCLE_SECONDS}s"
                 sleep "$CYCLE_SECONDS"
               done
           env:

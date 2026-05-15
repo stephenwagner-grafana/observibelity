@@ -10,7 +10,7 @@
 // loadgen/scenarios/{{ name }}.js.
 
 import http from 'k6/http';
-import { check, sleep } from 'k6/check';
+import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
@@ -18,7 +18,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: 1,
       timeUnit: '1m',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 1,
       maxVUs: 2,
       exec: 'fire',
@@ -35,7 +35,7 @@ const BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster
 export function fire() {
   const payload = JSON.stringify({
     message: '{{ trigger_phrase }}',
-    user_id: 'u-trace-fix-{{ name }}',
+    persona_id: 'u-trace-fix-{{ name }}',
     session_id: `s-${Date.now()}`,
     metadata: {
       usecase: '{{ name }}',

@@ -8,7 +8,7 @@
 // every category in CATEGORIES so the leaderboard always has signal.
 
 import http from 'k6/http';
-import { check, sleep } from 'k6/check';
+import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
@@ -16,7 +16,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: {{ baseline_rate }},
       timeUnit: '1m',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 4,
       maxVUs: 12,
       exec: 'fire',
@@ -48,7 +48,7 @@ export function fire() {
   const category = pickCategory();
   const payload = JSON.stringify({
     message: pickMessage(),
-    user_id: `u-leaderboard-${Math.floor(Math.random() * 50)}`,
+    persona_id: `u-leaderboard-${Math.floor(Math.random() * 50)}`,
     session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     metadata: {
       usecase: '{{ name }}',

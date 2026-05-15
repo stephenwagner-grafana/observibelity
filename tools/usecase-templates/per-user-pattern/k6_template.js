@@ -9,7 +9,7 @@
 // so the persona surfaces on the leaderboard.
 
 import http from 'k6/http';
-import { check, sleep } from 'k6/check';
+import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
@@ -17,7 +17,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: {{ weight }},
       timeUnit: '1m',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 2,
       maxVUs: 4,
       exec: 'fireOffender',
@@ -26,7 +26,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: 1,
       timeUnit: '1m',
-      duration: '24h',
+      duration: '60s',
       preAllocatedVUs: 4,
       maxVUs: 8,
       exec: 'fireBaseline',
@@ -44,7 +44,7 @@ export function fireOffender() {
   const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];
   const payload = JSON.stringify({
     message: msg,
-    user_id: '{{ persona_id }}',
+    persona_id: '{{ persona_id }}',
     session_id: `s-{{ persona_id }}-${Date.now()}`,
     metadata: {
       usecase: '{{ name }}',
@@ -56,7 +56,7 @@ export function fireOffender() {
     'Content-Type': 'application/json',
     'ai_o11y-usecase': '{{ name }}',
     'ai_o11y-archetype': 'per-user-pattern',
-    'ai_o11y-persona': '{{ persona_id }}',
+    'X-Persona-Id': '{{ persona_id }}',
   };
   const res = http.post(`${BASE_URL}/chat`, payload, { headers });
   check(res, { 'request accepted': (r) => r.status < 500 });
@@ -67,7 +67,7 @@ export function fireBaseline() {
   const persona = BASELINE_PERSONAS[Math.floor(Math.random() * BASELINE_PERSONAS.length)];
   const payload = JSON.stringify({
     message: 'help me with my order please',
-    user_id: persona,
+    persona_id: persona,
     session_id: `s-${persona}-${Date.now()}`,
     metadata: { usecase: '{{ name }}', archetype: 'per-user-pattern' },
   });
@@ -75,7 +75,7 @@ export function fireBaseline() {
     'Content-Type': 'application/json',
     'ai_o11y-usecase': '{{ name }}',
     'ai_o11y-archetype': 'per-user-pattern',
-    'ai_o11y-persona': persona,
+    'X-Persona-Id': persona,
   };
   http.post(`${BASE_URL}/chat`, payload, { headers });
   sleep(1);
