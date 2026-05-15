@@ -61,12 +61,16 @@ dashboard:
   folder: ai-observability
 
 alerts:
+  # NOTE: sigil_eval_scores_total is normalized 0-1 by Sigil (not the YAML's
+  # 0-100 anchor scale), so the threshold here is 0.3 not 30. The anchor
+  # rubric in the evaluator spec is still 0-100 for the LLM judge — Sigil
+  # normalizes scores before emitting metrics.
   - name: ai-quality-score.user_low_score
     condition: |
       ( sum by (user_id) (rate(sigil_eval_scores_total{evaluator="quality.business_value_score"}[1h]))
         /
         sum by (user_id) (rate(sigil_eval_executions_total{evaluator="quality.business_value_score"}[1h]))
-      ) < 30
+      ) < 0.3
     severity: medium
     route: ai-ops@acme.local
     duration: 30m
