@@ -695,10 +695,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\"}[15m])) / (sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[15m])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\",user_id=~\".*@.*\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[15m])) + 0.001))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": false,
           "refId": "A"
         }
@@ -769,10 +769,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\"}[15m])) / (sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[15m])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\",user_id=~\".*@.*\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[15m])) + 0.001))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": false,
           "refId": "A"
         }
@@ -825,12 +825,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "ai_o11y_persona_id"
+              "options": "user_id"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Persona"
+                "value": "User"
               },
               {
                 "id": "custom.width",
@@ -890,7 +890,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[1h])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -969,15 +969,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(15, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h])))",
+          "expr": "topk(15, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",gen_ai_token_type=\"input\"}[1h])))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Input tokens by persona, bar view (1h)",
+      "title": "Input tokens by user, bar view (1h)",
       "type": "bargauge"
     },
     {
@@ -1030,15 +1030,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1m])) / (sum by (ai_o11y_persona_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[1h])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[1m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[1h])) + 0.001))",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "⚠ Sudden burst detector — rate(1m) ÷ rate(1h) per persona",
+      "title": "⚠ Sudden burst detector — rate(1m) ÷ rate(1h) per user",
       "type": "timeseries"
     },
     {
@@ -1168,10 +1168,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\"}[1h])))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": false,
           "refId": "A"
         }
@@ -1525,10 +1525,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"prompt-injection.*\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"prompt-injection.*\"}[1h])))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": false,
           "refId": "A"
         }
@@ -1589,8 +1589,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(8, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist=~\"sb-.*\" |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(8, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system)\" [1h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -2145,10 +2145,10 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(8, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\"}[1h])))",
+          "expr": "topk(8, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\"}[1h])))",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "legendFormat": "{{user_id}}",
           "range": false,
           "refId": "A"
         }
@@ -2336,7 +2336,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_persona_id)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}, user_id)",
         "hide": 0,
         "includeAll": true,
         "label": "Employee",
@@ -2344,7 +2344,7 @@
         "name": "employee_id",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_persona_id)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}, user_id)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

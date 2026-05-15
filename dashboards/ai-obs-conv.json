@@ -185,8 +185,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(refund|return)\" | json | ai_o11y_specialist=\"nc-chatbot\" [5m]))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(refund|return)\" | json | ai_o11y_specialist=\"nc-chatbot\" | user_id=~\".*@(gmail|hotmail|yahoo)\\\\..*\" [5m]))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }

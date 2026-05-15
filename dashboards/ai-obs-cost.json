@@ -296,7 +296,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])) > 100000)",
+          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id=~\".*@.*\"}[1h])) > 100000)",
           "legendFormat": "count",
           "refId": "A",
           "instant": false,
@@ -706,7 +706,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id=~\".*@.*\"}[1h])))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -997,7 +997,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_total{user_id!=\"\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[$__range])) > 100000",
+          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_total{user_id=~\".*@.*\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_total{user_id=~\".*@.*\"}[$__range])) > 100000",
           "format": "time_series",
           "instant": false,
           "range": true,

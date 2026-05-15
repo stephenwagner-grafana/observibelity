@@ -192,7 +192,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [1h])) > 0)",
+          "expr": "count(sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])) > 0)",
           "legendFormat": "employees",
           "queryType": "instant",
           "refId": "A"
@@ -387,8 +387,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [10m])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [10m])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -446,8 +446,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [5m])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [5m])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -532,7 +532,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=\"$persona_id\" [10m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=\"$persona_id\" [10m]))",
           "legendFormat": "exfil score",
           "queryType": "range",
           "refId": "A"
@@ -542,7 +542,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_persona_id=\"$persona_id\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" | user_id=\"$persona_id\" [5m]))",
           "legendFormat": "total events",
           "queryType": "range",
           "refId": "B"
@@ -610,7 +610,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=\"$persona_id\" [10m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=\"$persona_id\" [10m]))",
           "legendFormat": "events",
           "queryType": "instant",
           "refId": "A"
@@ -760,8 +760,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}} exfil",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "legendFormat": "{{user_id}} exfil",
           "queryType": "range",
           "refId": "A"
         },
@@ -770,8 +770,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}} total",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "legendFormat": "{{user_id}} total",
           "queryType": "range",
           "refId": "B"
         },
@@ -780,8 +780,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}} cc",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "legendFormat": "{{user_id}} cc",
           "queryType": "range",
           "refId": "C"
         }
@@ -840,7 +840,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_persona_id=~\"$persona_id\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\"$persona_id\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -916,22 +916,22 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": "u-tim-l",
-          "value": "u-tim-l"
+          "selected": false,
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "loki",
           "uid": "${datasource_loki}"
         },
-        "definition": "{container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\"",
+        "definition": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\"",
         "hide": 0,
         "includeAll": false,
         "label": "Employee",
         "multi": false,
         "name": "persona_id",
         "options": [],
-        "query": "label_values({container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\", ai_o11y_persona_id)",
+        "query": "label_values({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\", user_id)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,

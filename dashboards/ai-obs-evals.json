@@ -200,8 +200,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_persona_id!=\"\" [24h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [24h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }

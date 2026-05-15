@@ -210,8 +210,8 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "How many personas are active?",
-      "description": "Distinct ai_o11y.persona_id values seen in llm-gateway logs in the last 5 minutes. Green at 20+ — the centerpiece personas (Tim/Mara/Jordan/Priya/Eric) should always be present.",
+      "title": "How many users are active?",
+      "description": "Distinct user_id (email) values seen in llm-gateway logs in the last 5 minutes. Green at 20+ — the centerpiece users (Tim/Mara/Jordan/Priya/Eric) should always be present.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -229,7 +229,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "count(sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
+          "expr": "count(sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".*@.*\" [5m])))",
           "queryType": "instant"
         }
       ],
@@ -443,9 +443,9 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(25, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.persona_id\\\": \\\"<ai_o11y_persona_id>\\\"<_>` | ai_o11y_persona_id!=\"\" [5m])))",
+          "expr": "topk(25, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".*@.*\" [5m])))",
           "queryType": "instant",
-          "legendFormat": "{{ai_o11y_persona_id}}"
+          "legendFormat": "{{user_id}}"
         }
       ],
       "options": {

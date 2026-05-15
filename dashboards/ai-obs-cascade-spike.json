@@ -380,8 +380,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" | user_id=~\".*@.*\" [5m])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -460,8 +460,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [5m]))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" | user_id=~\".*@.*\" [5m]))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -583,8 +583,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" [10m])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" | user_id=~\".*@.*\" [10m])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }

@@ -457,8 +457,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [24h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -511,12 +511,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "employee"
+              "options": "user_id"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Employee"
+                "value": "User"
               },
               {
                 "id": "custom.width",
@@ -614,7 +614,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h]))",
           "legendFormat": "security events",
           "queryType": "range",
           "refId": "A"
@@ -624,7 +624,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_persona_id!=\"\" [24h]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [24h]))",
           "legendFormat": "hiring risk events",
           "queryType": "range",
           "refId": "B"
@@ -634,7 +634,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "100 - 10 * sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_persona_id!=\"\" | ai_o11y_specialist=\"sb-security-handler\" [24h]))",
+          "expr": "100 - 10 * sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h]))",
           "legendFormat": "compliance score",
           "queryType": "range",
           "refId": "C"
@@ -645,7 +645,7 @@
         {
           "id": "joinByField",
           "options": {
-            "byField": "employee",
+            "byField": "user_id",
             "mode": "outer"
           }
         }

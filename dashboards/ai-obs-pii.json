@@ -294,8 +294,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" | json | ai_o11y_persona_id!=\"\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -362,8 +362,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(1, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(1, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -428,8 +428,8 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_persona_id!=\"\" [1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
