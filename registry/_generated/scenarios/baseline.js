@@ -61,9 +61,10 @@ import { check } from 'k6';
 //     instead of stair-step.
 //   * Average rate ≈ 5.83 RPS, ~3% lower than the prior flat 6 RPS — cost
 //     dashboards (Claude burn, total tokens) stay comparable within noise.
-// 6 RPS × 0.014 claudeFraction × $0.0026 avg/call × 86400s ≈ $19/day Claude
-// spend at ~1k-token chat avg. Stays under the $20/day k6 budget with a
-// small buffer for baseline-2-gift-finder.js (which also routes Claude).
+// 5.83 RPS × 0.003 claudeFraction × $0.01261 avg/call × 86400s ≈ $19/day
+// Claude spend at the new 60/25/7.5/7.5 Haiku/Sonnet/Opus mix (see model
+// math below). Stays under the $20/day k6 budget with a small buffer for
+// baseline-2-gift-finder.js (which also routes Claude).
 const PRE_VUS = parseInt(__ENV.K6_VUS || '40', 10);
 const TARGET_DURATION = __ENV.K6_DURATION || '3600s';  // 1h — cycle-gap drowns in noise
 
@@ -129,8 +130,10 @@ const SUPPORTBOT_URL = __ENV.SUPPORTBOT_URL || 'http://supportbot';
 //   Opus 4.7   $0.0525  × 0.075 = $0.00394
 //                          avg = $0.01261/call
 // vs the prior 80/15/2.5/2.5 mix at $0.00700/call — 1.8× more expensive.
-// To keep daily k6 Claude spend ≤ $20, claudeFraction drops 0.03 → 0.014
-// in values-deploy.yaml.
+// To keep daily k6 Claude spend ≤ $20 at the new mix and the sine-wave's
+// 5.83 RPS avg, claudeFraction is 0.003 in values-deploy.yaml. (Earlier
+// 0.014 was sized for the old $0.0026/call mix and ran $60-90/day after
+// the model-mix change without dropping the fraction.)
 //
 // The gateway's provider_override + model_override are wired through
 // NeonCart /chat and Support Bot /chat, then through nc-chatbot /
@@ -160,7 +163,7 @@ const CLAUDE_MODELS = [
   // 7.5% Opus 4.7 — newest flagship, equal slice with 4.5 (3/40)
   'claude-opus-4-7', 'claude-opus-4-7', 'claude-opus-4-7',
 ];
-const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.014');
+const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.003');
 
 // Sigil groups Sigil generation events into a "conversation" by
 // hash(persona_id + UTC_hour) — see llm-gateway/app/sigil.py:_derive_session_id.
