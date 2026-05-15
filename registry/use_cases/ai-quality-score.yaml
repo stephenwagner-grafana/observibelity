@@ -17,7 +17,7 @@ description: |
 scenarios:
   - name: ai-quality-score-baseline
     k6_template: sticky-persona
-    persona: u-emp-norm-1
+    persona: norman.adams@acme.com
     weight: 1
     rate: "1/m"
     params:
@@ -81,6 +81,6 @@ slo:
   window: 7d
 
 demo:
-  do: "Wait for ~25% of generations to be sampled by the quality LLM judge. The waster personas (u-waster-1..5) bottom out around score 10-20; normal employees average 55-70; centerpiece-personas like Priya (research synthesis) score 75+."
+  do: "Wait for ~25% of generations to be sampled by the quality LLM judge. The waster personas (wendy.tridge@acme.com..5) bottom out around score 10-20; normal employees average 55-70; centerpiece-personas like Priya (research synthesis) score 75+."
   signal: "sigil_eval_scores_total{evaluator=\"quality.business_value_score\"} firing; avg-per-user score visible on ai-obs-per-user; waster personas bottom of leaderboard."
   sell: "AI ROI: a single 0-100 score per user that captures how much of their corporate-AI spend is actually productive work."

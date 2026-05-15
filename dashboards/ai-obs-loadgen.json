@@ -102,7 +102,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -191,7 +191,7 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "How fast is k6 driving chats? (req/sec)",
+      "title": "How fast is k6 driving chats? (chats/min)",
       "description": "Rate of Sigil generation log lines from llm-gateway (one per chat). Best proxy for live k6 throughput. Red below 0.1/sec means loadgen is essentially idle.",
       "gridPos": {
         "h": 5,
@@ -210,7 +210,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"sigil generation\" [5m]))",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"sigil generation\" [5m])) * 60",
           "instant": false,
           "range": true,
           "format": "time_series"
@@ -234,7 +234,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "reqps",
+          "unit": "short",
           "decimals": 2,
           "thresholds": {
             "mode": "absolute",
@@ -418,7 +418,7 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "\ud83d\udcb0 What is loadgen burning per hour? (USD/hr)",
+      "title": "\ud83d\udcb0 What is loadgen burning per hour?",
       "description": "Total gen_ai cost rate \u00d7 3600. Almost all of this is Claude \u2014 the 80% Ollama traffic is essentially free. Yellow above $5/hr, red above $25/hr.",
       "gridPos": {
         "h": 5,
@@ -437,7 +437,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
           "instant": false,
           "range": true,
           "format": "time_series"
@@ -462,7 +462,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
-          "decimals": 3,
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1259,8 +1259,8 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "Use-case traffic over time (top 12 by rate)",
-      "description": "Per-use_case chats/sec over the dashboard window. Use this to watch a scenario ramp, dip, or die out after you tweak baseline.js weights and restart k6.",
+      "title": "Use-case traffic over time (top 12 by rate, chats/min)",
+      "description": "Per-use_case chats/min over the dashboard window. Use this to watch a scenario ramp, dip, or die out after you tweak baseline.js weights and restart k6.",
       "gridPos": {
         "h": 11,
         "w": 16,
@@ -1278,7 +1278,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(12, sum by (ai_o11y_usecase) (rate({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
+          "expr": "topk(12, sum by (ai_o11y_usecase) (rate({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m]))) * 60",
           "queryType": "range",
           "legendFormat": "{{ai_o11y_usecase}}"
         }
@@ -2769,7 +2769,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios \u2014 the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude \u2014 uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) \u2014 total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) \u2014 per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) \u2014 per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) \u2014 full demo agenda\n"
+        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios \u2014 the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | tim.lin@acme.com | supportbot |\n| **5** | hiring-discrimination-risk | reese.hartmann@acme.com | supportbot |\n| 4 | prompt-injection | eric.bader@acme.com | supportbot |\n| 4 | prompt-injection-llm01 | eric.bader@acme.com | supportbot |\n| 4 | normal-support (HR) | norman.adams@acme.com | supportbot |\n| 4 | normal-support (IT) | norah.brooks@acme.com | supportbot |\n| 4 | normal-shopping | bob.salisbury@hotmail.com | neoncart |\n| 4 | normal-shopping | alice.engle@gmail.com | neoncart |\n| 4 | **mice-rca** (centerpiece) | mick.merritt@gmail.com | neoncart |\n| 4 | **email-cascade** | mara.chen@acme.com | supportbot |\n| 4 | **cost-anomaly-per-user** | priya.singh@acme.com | supportbot |\n| 4 | **confidential-disclosure** | jordan.finn@acme.com | supportbot |\n| 3 | sensitive-data-leaks | peter.parsons@acme.com | supportbot |\n| 3 | refund-policy-compliance | ruby.refind@gmail.com | neoncart |\n| 3 | prompt-injection | ivan.jenkins@aim.com | neoncart |\n| 3 | normal-support (hiring) | reese.hartmann@acme.com | supportbot |\n| 3 | normal-support (expense) | noah.carter@acme.com | supportbot |\n| 3 | normal-shopping | carol.markey@yahoo.com | neoncart |\n| 3 | model-winner | grace.gifford@yahoo.com | neoncart |\n| 3 | customer-frustration | fran.fume@aim.com | neoncart |\n| 3 | cost-anomaly-per-user | priya.singh@acme.com | neoncart |\n| 3 | brand-voice-drift | nate.malone@yahoo.com | neoncart |\n| 3 | bad-question-askers | rudy.dean@acme.com | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude \u2014 uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) \u2014 total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) \u2014 per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) \u2014 per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) \u2014 full demo agenda\n"
       },
       "fieldConfig": {
         "defaults": {},

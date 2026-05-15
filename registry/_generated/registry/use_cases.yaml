@@ -56,7 +56,7 @@ use_cases:
   phase: 2
   centerpiece: true
   archetype: per-user-pattern
-  description: Sticky persona u-jordan-finance pastes 4 per hour fake Q4 board content
+  description: Sticky persona jordan.finn@acme.com pastes 4 per hour fake Q4 board content
   scenario_count: 1
   evaluator_count: 2
   alert_count: 1
@@ -68,7 +68,7 @@ use_cases:
   phase: 2
   centerpiece: true
   archetype: per-user-pattern
-  description: Sticky persona u-priya-research pastes 40-80x repeated paragraphs of
+  description: Sticky persona priya.singh@acme.com pastes 40-80x repeated paragraphs of
   scenario_count: 1
   evaluator_count: 2
   alert_count: 1
@@ -92,7 +92,7 @@ use_cases:
   phase: 2
   centerpiece: true
   archetype: per-user-pattern
-  description: Tim Heidecker (persona u-tim-l) is the loadgen archetype for a malicious-
+  description: Tim Heidecker (persona tim.lin@acme.com) is the loadgen archetype for a malicious-
   scenario_count: 1
   evaluator_count: 2
   alert_count: 1

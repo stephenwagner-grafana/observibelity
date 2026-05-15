@@ -15,6 +15,6 @@ groups:
     annotations:
       summary: "Confidential Disclosure \u2014 top leakers (Jordan from Finance):\
         \ confidential_disclosure.user_paste_burst firing"
-      description: Sticky persona u-jordan-finance pastes 4 per hour fake Q4 board
+      description: Sticky persona jordan.finn@acme.com pastes 4 per hour fake Q4 board
         content
       runbook: registry/use_cases/confidential-disclosure.yaml

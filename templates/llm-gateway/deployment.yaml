@@ -68,6 +68,18 @@ spec:
               value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).windowSeconds | default 300 | quote }}
             - name: OLLAMA_ROTATION_MODELS
               value: {{ (default (list) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).models) | join "," | quote }}
+            # Prewarm task: pre-loads the next-rotation model and evicts
+            # the previous one on every bucket flip so the daemon keeps
+            # exactly active + next warm (see app/prewarm.py). keepAlive
+            # is the lifetime hint sent on every /api/chat request AND
+            # every prewarm call — both share the same value so the daemon
+            # ages them out together.
+            - name: OLLAMA_PREWARM_ENABLED
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).prewarm).enabled | default true | quote }}
+            - name: OLLAMA_PREWARM_TICK_SECONDS
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).prewarm).tickSeconds | default 5 | quote }}
+            - name: OLLAMA_KEEP_ALIVE
+              value: {{ (default (dict) .Values.llmGateway.providers.ollama).keepAlive | default "30m" | quote }}
             - name: LLM_GATEWAY_DEFAULT_PROVIDER
               value: {{ .Values.llmGateway.defaultProvider | default "anthropic" | quote }}
             # Per-call provider timeout. Default is 60s; for the .240 5090
@@ -88,6 +100,11 @@ spec:
               value: {{ .Values.global.deploymentEnvironment | default "demo" | quote }}
             - name: OBSERVIBELITY_NAMESPACE
               value: {{ .Values.global.namespace | quote }}
+            # SupportBot email domain — drives persona_to_email() output for
+            # all sb-* personas. Rebrand by changing supportbot.branding.emailDomain
+            # in values.yaml; the gateway picks it up on pod restart.
+            - name: SUPPORTBOT_EMAIL_DOMAIN
+              value: {{ (default (dict) .Values.supportbot.branding).emailDomain | default "acme.com" | quote }}
             - name: PRICING_CONFIG_PATH
               value: /etc/llm-gateway/pricing.json
             - name: ROUTING_CONFIG_PATH

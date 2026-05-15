@@ -366,7 +366,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Input tokens/sec per sb-* specialist over time (gen_ai_client_token_usage). Filtered by the Specialist dropdown. One line per agent shows the live mix.",
+      "description": "Input tokens/min per sb-* specialist over time (gen_ai_client_token_usage). Filtered by the Specialist dropdown. One line per agent shows the live mix.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -698,7 +698,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_specialist=~\"$specialist\",gen_ai_token_type=\"input\"}[5m]))",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_specialist=~\"$specialist\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -706,7 +706,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which specialist is taking the load? (input tokens/sec)",
+      "title": "Which specialist is taking the load? (input tokens/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -1057,14 +1057,14 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h]))",
+          "expr": "sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h]))",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "What share of traffic per specialist? (1h)",
+      "title": "What share of traffic per specialist?",
       "type": "piechart",
       "transparent": false
     },
@@ -1086,7 +1086,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Input tokens/sec broken down by ai_o11y_usecase. Each named scenario from registry/use_cases gets a line, so you can see, e.g., data-theft-tim ramping up live.",
+      "description": "Input tokens/min broken down by ai_o11y_usecase. Each named scenario from registry/use_cases gets a line, so you can see, e.g., data-theft-tim ramping up live.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1418,7 +1418,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"$use_case\",gen_ai_token_type=\"input\"}[5m]))",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"$use_case\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -1426,7 +1426,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which use cases are active? (tokens/sec by use_case)",
+      "title": "Which use cases are active? (tokens/min by use_case)",
       "type": "timeseries",
       "transparent": false
     },
@@ -1483,7 +1483,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h]))",
+          "expr": "sum by (ai_o11y_usecase) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -1491,7 +1491,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top use cases by token volume (1h)",
+      "title": "\ud83d\udd25 Top use cases by token volume",
       "type": "bargauge",
       "transparent": false
     },
@@ -1571,7 +1571,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\",user_id=~\".*@.*\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[15m])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) + 0.001))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -1646,7 +1646,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\",user_id=~\".*@.*\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[15m])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) + 0.001))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -1676,7 +1676,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-persona token total over the last hour, sorted descending. Tim L (data-theft-tim) and Eric (prompt-injection) should sit at the top during the demo.",
+      "description": "Per-persona token total over the last hour, sorted descending. tim.lin@acme.com (data-theft-tim) and eric.bader@acme.com (prompt-injection) should sit at the top during the demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1768,7 +1768,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[1h])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1776,7 +1776,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top spenders by tokens (1h)",
+      "title": "\ud83d\udd25 Top spenders by tokens",
       "type": "table",
       "transformations": [
         {
@@ -1799,7 +1799,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-persona input tokens consumed in the last hour, visualized as bars. Verbose padding (Eric) and recursive prompts (Tim L) keep this lit.",
+      "description": "Per-persona input tokens consumed in the last hour, visualized as bars. Verbose padding (eric.bader@acme.com) and recursive prompts (tim.lin@acme.com) keep this lit.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1847,7 +1847,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(15, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",gen_ai_token_type=\"input\"}[1h])))",
+          "expr": "topk(15, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -1855,7 +1855,7 @@
           "refId": "A"
         }
       ],
-      "title": "Input tokens by user, bar view (1h)",
+      "title": "Input tokens by user, bar view",
       "type": "bargauge",
       "transparent": false
     },
@@ -2196,7 +2196,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[1m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}[1h])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[1m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[1h])) + 0.001))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{user_id}}",
@@ -2558,7 +2558,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\"}[5m]))",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -2566,7 +2566,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 PII and data-leak scenarios over time",
+      "title": "\ud83d\udea8 PII and data-leak scenarios over time (tokens/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2575,7 +2575,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top personas by tokens in the same five sensitive-data use cases, 1h window. Tim Heidecker (u-tim-l, data-theft-tim) should sit at top during the demo.",
+      "description": "Top personas by tokens in the same five sensitive-data use cases, 1h window. tim.lin@acme.com (data-theft-tim) should sit at top during the demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2623,7 +2623,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\", service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -2709,7 +2709,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"prompt-injection.*\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"prompt-injection.*\", service_namespace=\"observibelity\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2782,7 +2782,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"toxicity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"toxicity\", service_namespace=\"observibelity\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2855,7 +2855,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"hiring-discrimination-risk\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"hiring-discrimination-risk\", service_namespace=\"observibelity\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2928,7 +2928,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"confidential-disclosure\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"confidential-disclosure\", service_namespace=\"observibelity\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2945,7 +2945,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top personas by tokens consumed in any prompt-injection use case (1h). Eric (u-eric-bad) should top this during the demo.",
+      "description": "Top personas by tokens consumed in any prompt-injection use case (1h). eric.bader@acme.com should top this during the demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2993,7 +2993,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"prompt-injection.*\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"prompt-injection.*\", service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -3064,7 +3064,7 @@
           "refId": "A"
         }
       ],
-      "title": "Backup detector \u2014 regex hits on injection phrasing (1h)",
+      "title": "Backup detector \u2014 regex hits on injection phrasing",
       "type": "bargauge",
       "transparent": false
     },
@@ -3086,7 +3086,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD per hour per sb-* specialist. Prefers gen_ai_client_operation_cost_total; falls back to a $3/M-input estimate (Sonnet pricing) if the canonical cost metric is missing.",
+      "description": "USD per hour per sb-* specialist. Sigil-attributed cost: sum(rate(gen_ai_client_cost_USD_total)) * 3600.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3101,7 +3101,8 @@
             "spanNulls": true,
             "gradientMode": "opacity"
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": [
           {
@@ -3401,7 +3402,8 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull",
+            "mean"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -3418,7 +3420,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_cost_total{ai_o11y_specialist=~\"sb-.*\"}[5m])) * 3600 or sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[5m])) * 60 * 3e-6",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -3426,7 +3428,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 What does each specialist cost per hour? (5m rate \u00d7 3600)",
+      "title": "\ud83d\udcb0 What does each specialist cost per hour?",
       "type": "timeseries",
       "transparent": false
     },
@@ -3767,7 +3769,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_token_type) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[5m]))",
+          "expr": "sum by (gen_ai_token_type) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_token_type}}",
@@ -3775,7 +3777,7 @@
           "refId": "A"
         }
       ],
-      "title": "Input vs output tokens/sec across all specialists",
+      "title": "Input vs output tokens/min across all specialists",
       "type": "timeseries",
       "transparent": false
     },
@@ -4139,14 +4141,14 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[1h]))",
+          "expr": "sum by (gen_ai_response_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h]))",
           "instant": true,
           "legendFormat": "{{gen_ai_response_model}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "\ud83e\udd16 Which model handled what share of traffic? (1h)",
+      "title": "\ud83e\udd16 Which model handled what share of traffic?",
       "type": "piechart",
       "transparent": false
     },
@@ -4487,7 +4489,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\"}[5m]))",
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_response_model}}",
@@ -4495,7 +4497,7 @@
           "refId": "A"
         }
       ],
-      "title": "Per-model token rate over time",
+      "title": "Per-model token rate over time (tokens/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -4573,7 +4575,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"email-cascade\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"email-cascade\", service_namespace=\"observibelity\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -4646,7 +4648,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"tool-call-runaway\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"tool-call-runaway\", service_namespace=\"observibelity\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -4995,7 +4997,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\"}[5m]))",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\", service_namespace=\"observibelity\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -5003,7 +5005,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cascade scenarios over time \u2014 tokens/sec",
+      "title": "Cascade scenarios over time \u2014 tokens/min",
       "type": "timeseries",
       "transparent": false
     },
@@ -5012,7 +5014,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top personas by tokens spent in either cascade use case (1h). Mara Chen (u-mara-chen) should top this during the demo.",
+      "description": "Top personas by tokens spent in either cascade use case (1h). mara.chen@acme.com should top this during the demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -5060,7 +5062,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(8, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\"}[1h])))",
+          "expr": "topk(8, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\", service_namespace=\"observibelity\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -5199,7 +5201,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_usecase)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\"}, ai_o11y_usecase)",
         "hide": 0,
         "includeAll": true,
         "label": "Use case",
@@ -5207,7 +5209,7 @@
         "name": "use_case",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_usecase)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\"}, ai_o11y_usecase)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -5226,7 +5228,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_specialist)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
         "hide": 0,
         "includeAll": true,
         "label": "Specialist",
@@ -5234,7 +5236,7 @@
         "name": "specialist",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}, ai_o11y_specialist)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -5253,7 +5255,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}, user_id)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}, user_id)",
         "hide": 0,
         "includeAll": true,
         "label": "Employee",
@@ -5261,7 +5263,7 @@
         "name": "employee_id",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\"}, user_id)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}, user_id)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

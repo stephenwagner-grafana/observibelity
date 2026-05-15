@@ -102,6 +102,18 @@ llmGateway:
       # configured. Per-request callers can still pin a specific model via
       # ``model_override`` on the request body — that always wins.
       model: ""
+      # keepAlive is sent on EVERY /api/chat request AND every prewarm
+      # call, so the active + next-rotation models share an aging clock
+      # with the daemon. Tune up if you want pre-warmed models to linger
+      # across flips on daemons with higher MAX_LOADED_MODELS budgets.
+      keepAlive: "30m"
+      # Prewarm — keeps exactly the active + next rotation models loaded
+      # in VRAM. On every bucket flip, the llm-gateway pre-loads the next
+      # model and evicts the previous one. See app/prewarm.py. Disable to
+      # fall back to the raw "cold-load every 5 min" behaviour.
+      prewarm:
+        enabled: true
+        tickSeconds: 5
       # Lockstep model rotation — every Ollama-bound specialist in the
       # cluster uses the SAME model in a 5-minute window, then they all
       # flip together. The pod-side trick is ``int(time.time()) //
@@ -117,9 +129,11 @@ llmGateway:
         # 5-minute window × 12 models = 60-minute cycle that aligns with
         # wall-clock hours. Each model occupies the same 5-min slot every
         # hour (00:00, 00:05, 00:10 ...), giving the Model Winner dashboard
-        # clean hourly bands. Paired with OLLAMA_MAX_LOADED_MODELS=3 +
-        # KEEP_ALIVE=30m on the desktop: the most-recent 3 models stay hot,
-        # rotating in/out costs one cold-load (~1-4s) every 5 min.
+        # clean hourly bands. With prewarm.enabled=true the gateway loads
+        # the next model BEFORE the flip and evicts the previous one
+        # after, keeping the daemon at exactly 2 warm models — pair with
+        # OLLAMA_MAX_LOADED_MODELS=2 on the .240 desktop to enforce that
+        # cap at the daemon layer too.
         windowSeconds: 300
         # 12-model rotation ordered by size (1.1B → 32B) spanning 6 distinct
         # architectures (Llama, Gemma, Phi, Mistral, Qwen, Cohere) so the
@@ -228,6 +242,10 @@ supportbot:
     name: "Ask Acme"
     tagline: "Internal support, on tap."
     primaryColor: "#2563eb"
+    # Email domain stamped on every sb-* persona's user.id label. Change
+    # this together with name (e.g. "Ask Foo" + "foo.com") so the brand
+    # and the emitted identities stay aligned.
+    emailDomain: "acme.com"
   resources:
     requests:
       cpu: 200m

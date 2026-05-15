@@ -13,6 +13,6 @@ groups:
     annotations:
       summary: "Cost Anomaly per User \u2014 Priya pastes 40-80x paragraphs: ai-o11y-cost-per-user\
         \ firing"
-      description: Sticky persona u-priya-research pastes 40-80x repeated paragraphs
+      description: Sticky persona priya.singh@acme.com pastes 40-80x repeated paragraphs
         of
       runbook: registry/use_cases/cost-anomaly-per-user.yaml

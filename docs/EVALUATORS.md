@@ -101,7 +101,7 @@ These three fire on **every** completion the platform sees. They are the "always
   ```
 - **Parent use case:** none (baseline)
 - **Dashboard it feeds:** `ai-obs-evals` panel "Refusal rate" (top-right)
-- **Alert:** `base.refusal_rate_runaway` — `sum(rate(sigil_eval_result_total{evaluator="base.refusal_detected"}[15m])) / sum(rate(gen_ai_request_total[15m])) > 0.3` — severity medium → `quality@acme.local`
+- **Alert:** `base.refusal_rate_runaway` — `sum(rate(sigil_eval_result_total{evaluator="base.refusal_detected"}[15m])) / sum(rate(gen_ai_request_total[15m])) > 0.3` — severity medium → `quality@acme.com`
 - **What gets paged:** quality team if more than 30% of replies refuse over 15m
 - **Skip impact:** the `ai-obs-evals` "refusal rate" panel reverts to LogQL keyword search (less accurate); helpfulness regression is invisible until customers complain
 - **Cost per run:** $0.00
@@ -117,7 +117,7 @@ These three fire on **every** completion the platform sees. They are the "always
   ```
 - **Parent use case:** none (baseline; overlaps with the `sensitive-data-leaks` use case, but baseline runs on neoncart too)
 - **Dashboard it feeds:** `ai-obs-pii` — every panel
-- **Alert:** `base.pii_in_output` — `sum(rate(sigil_eval_result_total{evaluator="base.pii_in_output",verdict="fail"}[1m])) > 0` — severity critical → `security@acme.local` — pages immediately
+- **Alert:** `base.pii_in_output` — `sum(rate(sigil_eval_result_total{evaluator="base.pii_in_output",verdict="fail"}[1m])) > 0` — severity critical → `security@acme.com` — pages immediately
 - **What gets paged:** security on-call, every match
 - **Skip impact:** `ai-obs-pii` runs entirely off this evaluator. If skipped, the panel reverts to a heuristic LogQL `|~ "\\d{3}-\\d{2}-\\d{4}"` that misses obfuscated forms (`123 45 6789`)
 - **Cost per run:** $0.00
@@ -147,7 +147,7 @@ These three fire on **every** completion the platform sees. They are the "always
 - **Sample rate:** 10% (set in Sigil → Evaluator → Sampling tab — important for cost)
 - **Parent use case:** none (baseline; overlaps with use-case `toxicity` which is full-coverage)
 - **Dashboard it feeds:** `ai-obs-evals` "Toxicity rate (baseline sample)" panel
-- **Alert:** `base.toxicity_fail` — `sum(rate(sigil_eval_result_total{evaluator="base.toxicity",verdict="fail"}[5m])) > 0` — severity critical → `safety@acme.local`
+- **Alert:** `base.toxicity_fail` — `sum(rate(sigil_eval_result_total{evaluator="base.toxicity",verdict="fail"}[5m])) > 0` — severity critical → `safety@acme.com`
 - **What gets paged:** safety team, every fail
 - **Skip impact:** baseline tone panel blank; the use-case `toxicity` evaluator still covers 100% sampling on flagged use cases, so this is the cross-cutting safety net
 - **Cost per run:** ~$0.0001 × 10% sample = **~$0.20–$1.00/day** at current traffic
@@ -168,7 +168,7 @@ The planner identifies these 6 as the demo headlines. **Every centerpiece use ca
   (?i)(board\s+pre-?read|q[1-4]\s+earnings\s+draft|m&a\s+target|deal\s+memo\s+draft|preliminary\s+10-?q)
   ```
 - **Dashboard:** `ai-obs-compliance`
-- **Alert:** `confidential_disclosure.user_paste_burst` — fires when one user pastes 3+ matching items in 15m → `security@acme.local`
+- **Alert:** `confidential_disclosure.user_paste_burst` — fires when one user pastes 3+ matching items in 15m → `security@acme.com`
 - **Skip impact:** compliance dashboard "Confidential paste leaderboard" panel goes blank
 - **Cost:** $0.00
 
@@ -198,7 +198,7 @@ The planner identifies these 6 as the demo headlines. **Every centerpiece use ca
   and request.user != ""
   ```
 - **Dashboard:** `ai-obs-cost` "Top burn employees (1h)" panel
-- **Alert:** `ai-o11y-cost-per-user` — same expression aggregated → `finance-ops@acme.local`
+- **Alert:** `ai-o11y-cost-per-user` — same expression aggregated → `finance-ops@acme.com`
 - **Skip impact:** cost leaderboard reverts to LogQL counting of token attributes (works but slower; loses the `verdict=fail` channel)
 - **Cost:** $0.00
 
@@ -226,7 +226,7 @@ The planner identifies these 6 as the demo headlines. **Every centerpiece use ca
   cc_paste\s+employee=\S+\s+last4=\d{4}
   ```
 - **Dashboard:** `ai-obs-data-theft` — primary signal
-- **Alert:** `data_theft` — 5+ matches per employee in 10m → `security@acme.local`
+- **Alert:** `data_theft` — 5+ matches per employee in 10m → `security@acme.com`
 - **Skip impact:** the whole `ai-obs-data-theft` headline ("Tim is mass-pasting cards") goes blank; this is the highest-WTF demo moment
 - **Cost:** $0.00
 
@@ -256,7 +256,7 @@ The planner identifies these 6 as the demo headlines. **Every centerpiece use ca
   and conversation.duration_seconds > 60
   ```
 - **Dashboard:** `ai-obs-cascade-spike` "Email cascade conversations"
-- **Alert:** `conv_runaway` — fires when any conversation crosses 100 tool calls in 1m → `oncall@acme.local`
+- **Alert:** `conv_runaway` — fires when any conversation crosses 100 tool calls in 1m → `oncall@acme.com`
 - **Skip impact:** cascade dashboard reverts to LogQL keyword search for `[email-cascade]`; less specific
 - **Cost:** $0.00
 
@@ -293,7 +293,7 @@ The planner identifies these 6 as the demo headlines. **Every centerpiece use ca
   {"verdict":"pass|fail","category":"age|race|religion|gender|national_origin|disability|none","reasoning":"<one sentence>"}
   ```
 - **Dashboard:** `ai-obs-compliance` "Hiring discrimination events"
-- **Alert:** `ai-o11y-hiring-discrim` — any fail at all → `hr-compliance@acme.local` immediately
+- **Alert:** `ai-o11y-hiring-discrim` — any fail at all → `hr-compliance@acme.com` immediately
 - **Skip impact:** the dashboard's most-cited compliance use case has no data
 - **Cost:** $0.0005 × ~50/day = **~$0.025/day**
 
@@ -373,7 +373,7 @@ event.name == "completion"
 and response.text contains_any(request.detected_pii_values)
 and len(request.detected_pii_values) > 0
 ```
-Alert: `ai-o11y-pii-echo`, `> 0 fails/1m` → `security@acme.local` immediate. Skip: input-→-output echo story breaks; baseline still catches output-only PII.
+Alert: `ai-o11y-pii-echo`, `> 0 fails/1m` → `security@acme.com` immediate. Skip: input-→-output echo story breaks; baseline still catches output-only PII.
 
 ### B.2 — `pii_echo.regex_card_in_output`
 Source: `response`
@@ -466,7 +466,7 @@ where score>=2 is a fail.
 
 Output strict JSON only.
 ```
-Alert: `toxicity.any_fail` — any fail/5m → `safety@acme.local`.
+Alert: `toxicity.any_fail` — any fail/5m → `safety@acme.com`.
 
 ### C.2 — `brand_voice_drift.tone_deviation` (severity: medium)
 ```
@@ -480,7 +480,7 @@ concise, uses neon emoji on greetings). Return JSON
 
 Output strict JSON only.
 ```
-Alert: `ai-o11y-brand-drift` — score drops below mean - 2σ for 30m → `brand@acme.local`.
+Alert: `ai-o11y-brand-drift` — score drops below mean - 2σ for 30m → `brand@acme.com`.
 
 ### C.3 — `customer_frustration.unaddressed_frustration` (severity: medium)
 ```
@@ -496,7 +496,7 @@ or escalated to human.
 Output strict JSON only:
 {"verdict":"pass|fail","reason":"unaddressed_frustration|none"}
 ```
-Alert: `customer_frustration.unaddressed_rate_10pct` — > 10% over 15m → `customer-success@acme.local`.
+Alert: `customer_frustration.unaddressed_rate_10pct` — > 10% over 15m → `customer-success@acme.com`.
 
 ### C.4 — `hallucination.product_in_catalog` (severity: high)
 ```
@@ -512,7 +512,7 @@ the catalog.
 Output strict JSON only:
 {"verdict":"pass|fail","category":"product|price|policy|none","missing":[...]}
 ```
-Alert: `hallucination.rate_regression_2x` — fail rate 2× the 4h baseline → `oncall@acme.local`.
+Alert: `hallucination.rate_regression_2x` — fail rate 2× the 4h baseline → `oncall@acme.com`.
 
 ### C.5 — `refund_policy_compliance.window_violation` (severity: high)
 ```
@@ -529,7 +529,7 @@ Determine whether the assistant's refund offer is within policy.
 Output strict JSON only:
 {"verdict":"pass|fail","reason":"window_violation|category_violation|none"}
 ```
-Alert: `refund_policy_compliance.window_violation_rate` — > 2% over 15m → `oncall@acme.local`.
+Alert: `refund_policy_compliance.window_violation_rate` — > 2% over 15m → `oncall@acme.com`.
 
 ### C.6 — `policy_circumvention.approval_bypass` (severity: high)
 ```
@@ -544,7 +544,7 @@ avoid a normal approval / review / compliance step.
 Output strict JSON only:
 {"category":"...","verdict":"pass|fail","reasoning":"<one sentence>"}
 ```
-Alert: `policy_circumvention.burst_15m` — > 3 approval_bypass hits/15m → `compliance@acme.local`.
+Alert: `policy_circumvention.burst_15m` — > 3 approval_bypass hits/15m → `compliance@acme.com`.
 
 ---
 
@@ -760,50 +760,50 @@ If after 5 minutes you still see no events:
 
 ```
                         ┌──── ai-obs-evals (baseline + injection + tox)
-                        │       └─► base.toxicity_fail       → safety@acme.local
-                        │           toxicity.any_fail        → safety@acme.local
-                        │           prompt_injection_burst   → security@acme.local
+                        │       └─► base.toxicity_fail       → safety@acme.com
+                        │           toxicity.any_fail        → safety@acme.com
+                        │           prompt_injection_burst   → security@acme.com
                         │
                         ├──── ai-obs-pii (every PII evaluator)
-                        │       └─► base.pii_in_output       → security@acme.local  IMMEDIATE
-                        │           ai-o11y-pii-echo         → security@acme.local  IMMEDIATE
-                        │           sensitive_data.any_match → security@acme.local
+                        │       └─► base.pii_in_output       → security@acme.com  IMMEDIATE
+                        │           ai-o11y-pii-echo         → security@acme.com  IMMEDIATE
+                        │           sensitive_data.any_match → security@acme.com
                         │
                         ├──── ai-obs-compliance (hiring, confidential, policy)
-                        │       └─► ai-o11y-hiring-discrim    → hr-compliance@acme.local IMMEDIATE
-                        │           confidential_disclosure.user_paste_burst → security@acme.local
-                        │           policy_circumvention.burst_15m → compliance@acme.local
+                        │       └─► ai-o11y-hiring-discrim    → hr-compliance@acme.com IMMEDIATE
+                        │           confidential_disclosure.user_paste_burst → security@acme.com
+                        │           policy_circumvention.burst_15m → compliance@acme.com
                         │
                         ├──── ai-obs-data-theft (Tim story)
-                        │       └─► data_theft                → security@acme.local
+                        │       └─► data_theft                → security@acme.com
                         │
                         ├──── ai-obs-cost (token + per-user)
-                        │       └─► ai-o11y-cost-per-user     → finance-ops@acme.local
-                        │           token_spikes.spike_ratio_3x → oncall@acme.local
-                        │           outlier_users.cost_concentration → oncall@acme.local
+                        │       └─► ai-o11y-cost-per-user     → finance-ops@acme.com
+                        │           token_spikes.spike_ratio_3x → oncall@acme.com
+                        │           outlier_users.cost_concentration → oncall@acme.com
    Sigil evaluators ────┤
                         ├──── ai-obs-cascade-spike (email + tools)
-                        │       └─► conv_runaway              → oncall@acme.local
-                        │           ai-o11y-tool-runaway      → oncall@acme.local
-                        │           cost_spike_anthropic      → oncall@acme.local
+                        │       └─► conv_runaway              → oncall@acme.com
+                        │           ai-o11y-tool-runaway      → oncall@acme.com
+                        │           cost_spike_anthropic      → oncall@acme.com
                         │
                         ├──── ai-obs-tools (tool runaway, error rate)
                         │
                         ├──── ai-obs-conv (frustration, turns)
-                        │       └─► customer_frustration.unaddressed_rate_10pct → customer-success@acme.local
+                        │       └─► customer_frustration.unaddressed_rate_10pct → customer-success@acme.com
                         │
                         ├──── ai-obs-ground (hallucination, quality trend)
-                        │       └─► hallucination.rate_regression_2x → oncall@acme.local
-                        │           quality_trend.helpfulness_regression → oncall@acme.local
+                        │       └─► hallucination.rate_regression_2x → oncall@acme.com
+                        │           quality_trend.helpfulness_regression → oncall@acme.com
                         │
                         ├──── ai-obs-best-models (model winner, brand voice)
-                        │       └─► ai-o11y-brand-drift       → brand@acme.local
-                        │           model_winner.atc_rate_collapse → oncall@acme.local
+                        │       └─► ai-o11y-brand-drift       → brand@acme.com
+                        │           model_winner.atc_rate_collapse → oncall@acme.com
                         │
                         └──── ai-obs-app-neoncart / ai-obs-app-supportbot (app vitals)
-                                └─► mice_rca.search_5xx_burst → oncall@acme.local
-                                    bad_question_askers.user_refusal_rate_high → oncall@acme.local
-                                    refund_policy_compliance.window_violation_rate → oncall@acme.local
+                                └─► mice_rca.search_5xx_burst → oncall@acme.com
+                                    bad_question_askers.user_refusal_rate_high → oncall@acme.com
+                                    refund_policy_compliance.window_violation_rate → oncall@acme.com
 ```
 
 ---

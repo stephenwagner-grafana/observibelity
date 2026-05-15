@@ -5,19 +5,19 @@ phase: 2
 centerpiece: true
 archetype: per-user-pattern
 description: |
-  Sticky persona u-jordan-finance pastes 4 per hour fake Q4 board content
+  Sticky persona jordan.finn@acme.com pastes 4 per hour fake Q4 board content
   and M&A pre-read content into Support Bot prompts. The confidential-
   disclosure detector flags each match against a corpus of "board_content"
   and "ma_preread" patterns, emits a confidential_disclosure event tagged
   with the employee, and increments the per-employee leaderboard. Within
-  one observation window, u-jordan-finance is the top-1 leaker on the
+  one observation window, jordan.finn@acme.com is the top-1 leaker on the
   ai-obs-pii dashboard. This is the per-user-pattern centerpiece — "you
   don't need a model, you need attribution".
 
 scenarios:
   - name: sb-jordan-board-paste
     k6_template: sticky-persona
-    persona: u-jordan-finance
+    persona: jordan.finn@acme.com
     weight: 8
     rate: "4/h"
     params:
@@ -69,6 +69,6 @@ slo:
   window: 30d
 
 demo:
-  do: "Wait for the sticky u-jordan-finance scenario (4/h fake board / M&A pre-read content)."
-  signal: "Loki: confidential_disclosure: board_content events; leaderboard top-1 = u-jordan-finance on ai-obs-pii."
+  do: "Wait for the sticky jordan.finn@acme.com scenario (4/h fake board / M&A pre-read content)."
+  signal: "Loki: confidential_disclosure: board_content events; leaderboard top-1 = jordan.finn@acme.com on ai-obs-pii."
   sell: "Leaderboard of leakers — finance pasting board content lights up first."
