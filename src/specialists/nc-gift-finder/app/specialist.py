@@ -245,13 +245,6 @@ class NcGiftFinder(Specialist):
             if slug:
                 fallback_nav = ("category", slug)
 
-        # Same auto-redirect demotion rule as nc-chatbot: if any tool
-        # failed on this turn, keep the navigate button click-to-go so the
-        # user gets to inspect the failure.
-        had_tool_error = any(tc.get("status") == "error" for tc in all_tool_calls)
-        if explicit_nav and had_tool_error:
-            explicit_nav["auto"] = False
-
         actions: list[dict] = []
         if explicit_nav:
             actions.append(explicit_nav)

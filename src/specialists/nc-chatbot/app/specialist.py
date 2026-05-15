@@ -239,14 +239,6 @@ class NcChatbot(Specialist):
             if slug:
                 fallback_nav = ("category", slug)
 
-        # If any tool failed on this turn, demote the auto-redirect so the
-        # user can read the error bubble before the page swaps out from
-        # under them (e.g. mice-rca: search succeeded, navigate succeeded,
-        # but get_inventory blew up — don't auto-jump away from the err).
-        had_tool_error = any(tc.get("status") == "error" for tc in all_tool_calls)
-        if explicit_nav and had_tool_error:
-            explicit_nav["auto"] = False
-
         actions: list[dict] = []
         if explicit_nav:
             # Auto-redirect: the agent picked navigate as a verb on this turn.
