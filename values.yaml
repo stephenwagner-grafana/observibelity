@@ -76,6 +76,12 @@ llmGateway:
   # latency — anything slower than that is a real problem to investigate,
   # not normal behaviour.
   providerTimeoutSeconds: 15
+  # Phase A: gateway-internal streaming for the nc-chatbot specialist only.
+  # When true, the gateway streams chunks from the upstream provider and
+  # records a real first-token timestamp into gen_ai.client.time_to_first_token
+  # for nc-chatbot calls. Every other specialist keeps the heuristic. Flip
+  # to false to disable streaming without a rebuild if usage extraction drifts.
+  streamNcChatbot: true
   # Specialists that don't explicitly request a provider hit this one by
   # default. ``ollama`` keeps the LLM bill in check (Anthropic was the
   # default before — every chat reply rode Haiku, projecting ~$96/day

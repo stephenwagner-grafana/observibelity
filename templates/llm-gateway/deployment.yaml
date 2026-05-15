@@ -88,6 +88,9 @@ spec:
             # network blip), not normal latency.
             - name: LLM_GATEWAY_PROVIDER_TIMEOUT_S
               value: {{ .Values.llmGateway.providerTimeoutSeconds | default 10 | quote }}
+            # Phase A: scope streaming + real TTFT to nc-chatbot. See values.yaml.
+            - name: STREAM_NC_CHATBOT
+              value: {{ .Values.llmGateway.streamNcChatbot | default true | quote }}
             - name: OTEL_SERVICE_NAME
               value: llm-gateway
             - name: OTEL_EXPORTER_OTLP_ENDPOINT

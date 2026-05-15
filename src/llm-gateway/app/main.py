@@ -88,6 +88,16 @@ DEFAULT_PROVIDER = (
     or "anthropic"
 )
 
+# Phase A: gateway-internal streaming, scoped to nc-chatbot only so the
+# blast radius of any streaming-side regression (token-usage extraction,
+# SDK quirks, etc.) is one specialist instead of the whole fleet.
+# Default ON; flip to "false" to revert to non-streaming without rebuilding.
+STREAM_NC_CHATBOT = _env_bool("STREAM_NC_CHATBOT", True)
+# The exact specialist name eligible for streaming. Hardcoded list — not a
+# regex / env-var set — to keep "what's in the streaming path" trivially
+# auditable from the code.
+_STREAMING_SPECIALISTS = frozenset({"nc-chatbot"})
+
 # Prometheus metrics — exposed at /metrics, scraped by the otel-collector.
 REQ_COUNT = Counter(
     "llm_gateway_requests_total",
@@ -356,8 +366,9 @@ GEN_AI_COST_USD = _meter.create_counter(
 )
 GEN_AI_TTFT = _meter.create_histogram(
     name="gen_ai.client.time_to_first_token",
-    description="Time from request start to first token (approximated as 60% "
-                "of total response time for non-streaming upstreams).",
+    description="Time from request start to first token. Real wall-clock "
+                "measurement on streaming specialists (Phase A: nc-chatbot); "
+                "60% of total response time heuristic on non-streaming ones.",
     unit="s",
 )
 
@@ -450,6 +461,15 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         # any healthy gen completion needs; Anthropic SDK's own default is
         # 600s, Ollama's is 120s — this is the tightest of the three.
         _PROVIDER_TIMEOUT_S = float(os.environ.get("LLM_GATEWAY_PROVIDER_TIMEOUT_S", "60"))
+        # Phase A streaming: scoped to nc-chatbot. Every other specialist
+        # keeps the existing non-streaming path. ttft_ms is None on the
+        # non-streaming path and filled in by complete_stream() when it
+        # observes a real first text chunk.
+        use_streaming = (
+            STREAM_NC_CHATBOT and req.specialist in _STREAMING_SPECIALISTS
+        )
+        ttft_ms: float | None = None
+        streaming_used = False
         start_time = time.monotonic()
         with REQ_LATENCY.labels(
             provider=provider_name,
@@ -457,9 +477,33 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
             specialist=req.specialist,
         ).time():
             try:
-                resp = await asyncio.wait_for(
-                    provider.complete(req), timeout=_PROVIDER_TIMEOUT_S
-                )
+                if use_streaming:
+                    try:
+                        resp, ttft_ms = await asyncio.wait_for(
+                            provider.complete_stream(req),
+                            timeout=_PROVIDER_TIMEOUT_S,
+                        )
+                        streaming_used = True
+                    except asyncio.TimeoutError:
+                        raise
+                    except Exception as exc:  # noqa: BLE001
+                        # Fail-safe: if streaming blows up mid-flight, fall
+                        # back to the non-streaming path for this request so
+                        # the specialist still gets an answer. Logged with
+                        # full traceback so regressions are visible.
+                        log.warning(
+                            "streaming failed for specialist=%s provider=%s; "
+                            "falling back to non-streaming: %s",
+                            req.specialist, provider_name, exc,
+                        )
+                        span.set_attribute("llm_gateway.streaming.fallback", True)
+                        resp = await asyncio.wait_for(
+                            provider.complete(req), timeout=_PROVIDER_TIMEOUT_S
+                        )
+                else:
+                    resp = await asyncio.wait_for(
+                        provider.complete(req), timeout=_PROVIDER_TIMEOUT_S
+                    )
             except asyncio.TimeoutError as exc:
                 span.record_exception(exc)
                 span.set_attribute("error", True)
@@ -477,6 +521,9 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 log.exception("provider %s failed", provider_name)
                 raise HTTPException(status_code=502, detail=f"{provider_name}: {exc}")
         duration_seconds = time.monotonic() - start_time
+        span.set_attribute("llm_gateway.streaming.used", streaming_used)
+        if streaming_used and ttft_ms is not None:
+            span.set_attribute("gen_ai.server.time_to_first_token", ttft_ms / 1000.0)
 
         # Compute cost and stitch it back onto the response payload.
         cost = compute_cost(
@@ -549,11 +596,16 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 output_tokens, {**gen_ai_attrs, "gen_ai.token.type": "output"}
             )
             GEN_AI_OPERATION_DURATION.record(duration_seconds, gen_ai_attrs)
-            # TTFT approximated as 60% of total response duration since our
-            # upstreams are non-streaming. Mirrors the same heuristic the
-            # Sigil exporter uses (see sigil.py:_approx_ttft_s). The Sigil
-            # Performance dashboard's TTFT P95 panel reads this histogram.
-            GEN_AI_TTFT.record(max(duration_seconds * 0.6, 0.001), gen_ai_attrs)
+            # TTFT: when streaming actually delivered a first chunk
+            # (nc-chatbot under Phase A), record the real wall-clock value.
+            # Otherwise keep the 60%-of-duration heuristic so panels that
+            # average across all specialists don't go empty on the
+            # non-streaming majority.
+            if streaming_used and ttft_ms is not None:
+                ttft_seconds = max(ttft_ms / 1000.0, 0.001)
+            else:
+                ttft_seconds = max(duration_seconds * 0.6, 0.001)
+            GEN_AI_TTFT.record(ttft_seconds, gen_ai_attrs)
             GEN_AI_COST_USD.add(
                 float(cost["input_usd"]),
                 {**gen_ai_attrs, "gen_ai.cost.type": "input"},
@@ -567,7 +619,8 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
 
         # Sigil generation event (fire-and-forget; never blocks the response).
         # Pass duration_ms so the Sigil exporter can populate the TTFT
-        # histogram even though we're not streaming upstream yet.
+        # histogram. Real ttft_ms is passed alongside when streaming
+        # produced one — sigil.py prefers it over the 60% heuristic.
         ctx = span.get_span_context()
         span_id_hex = format(ctx.span_id, "016x") if ctx.span_id else ""
         trace_id_hex = format(ctx.trace_id, "032x") if ctx.trace_id else ""
@@ -578,6 +631,7 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 span_id=span_id_hex,
                 trace_id=trace_id_hex,
                 duration_ms=duration_seconds * 1000.0,
+                ttft_ms=ttft_ms if streaming_used else None,
             )
         except Exception:  # noqa: BLE001
             log.exception("Sigil generation emit failed")

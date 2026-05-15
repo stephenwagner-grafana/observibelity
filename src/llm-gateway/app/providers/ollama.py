@@ -24,6 +24,7 @@ the *default* model selection is rotated.
 """
 from __future__ import annotations
 
+import json as _json
 import logging
 import os
 import time
@@ -41,6 +42,7 @@ DEFAULT_MODEL = "llama3.1:8b"
 DEFAULT_BASE_URL = "http://localhost:11434"
 DEFAULT_TIMEOUT = 120.0
 DEFAULT_ROTATION_WINDOW_SECONDS = 300  # 5 minutes
+DEFAULT_KEEP_ALIVE = "30m"  # match prewarm task + daemon-side OLLAMA_KEEP_ALIVE
 
 
 def _parse_rotation_models(raw: str | None) -> list[str]:
@@ -67,6 +69,12 @@ class OllamaProvider(Provider):
         # (and tests) that read it directly via ``getattr(provider, "model")``.
         self.model = self.config.get("model", DEFAULT_MODEL)
         self.timeout = float(self.config.get("timeout", DEFAULT_TIMEOUT))
+        # Tells the Ollama daemon how long to keep this model resident
+        # after the request returns. The prewarm task uses the same value
+        # so the active model and its pre-loaded successor share lifetimes.
+        self.keep_alive = self.config.get("keep_alive") or os.environ.get(
+            "OLLAMA_KEEP_ALIVE", DEFAULT_KEEP_ALIVE
+        )
 
         # --- Lockstep rotation config (env-driven; chart wires these in) ---
         self.rotation_enabled = (
@@ -165,6 +173,7 @@ class OllamaProvider(Provider):
             "model": model,
             "messages": self._flatten_messages(req.messages),
             "stream": False,
+            "keep_alive": self.keep_alive,
             "options": {"num_predict": req.max_tokens, "temperature": 0.7},
         }
         if req.tools:
@@ -202,6 +211,123 @@ class OllamaProvider(Provider):
             provider=self.name,
             model=data.get("model", model),
         )
+
+    # ------------------------------------------------------------------
+    # Phase A: gateway-internal streaming (nc-chatbot only)
+    # ------------------------------------------------------------------
+    async def complete_stream(
+        self, req: CompleteRequest
+    ) -> tuple[CompleteResponse, float | None]:
+        """Stream /api/chat and assemble the same CompleteResponse.
+
+        Ollama emits newline-delimited JSON when ``stream: true``. Each
+        chunk has ``message.content`` (a piece of the assistant reply); the
+        final chunk has ``done: true`` plus ``prompt_eval_count`` /
+        ``eval_count`` which we use for token usage. We must read until the
+        ``done`` chunk — stopping early loses token counts.
+        """
+        rotation_model, rotation_bucket = self._current_rotation_model()
+        model = req.model_override or rotation_model
+
+        try:
+            current_span = trace.get_current_span()
+            if current_span is not None:
+                if self.rotation_enabled and not req.model_override:
+                    current_span.set_attribute("ollama.rotation.enabled", True)
+                    current_span.set_attribute("ollama.rotation.bucket", rotation_bucket)
+                    current_span.set_attribute(
+                        "ollama.rotation.window_seconds", self.rotation_window
+                    )
+                    current_span.set_attribute("ollama.rotation.model", rotation_model)
+                    current_span.set_attribute(
+                        "ollama.rotation.pool_size", len(self.rotation_models)
+                    )
+                else:
+                    current_span.set_attribute("ollama.rotation.enabled", False)
+        except Exception:  # noqa: BLE001 — telemetry must never break a request
+            pass
+
+        payload: dict[str, Any] = {
+            "model": model,
+            "messages": self._flatten_messages(req.messages),
+            "stream": True,
+            "keep_alive": self.keep_alive,
+            "options": {"num_predict": req.max_tokens, "temperature": 0.7},
+        }
+        if req.tools:
+            payload["tools"] = req.tools
+
+        text_parts: list[str] = []
+        tool_calls_raw: list[dict] = []
+        prompt_eval_count = 0
+        eval_count = 0
+        done_reason: str | None = None
+        last_model = model
+        start = time.monotonic()
+        ttft_ms: float | None = None
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with client.stream(
+                "POST", f"{self.base_url}/api/chat", json=payload
+            ) as r:
+                r.raise_for_status()
+                async for line in r.aiter_lines():
+                    if not line:
+                        continue
+                    try:
+                        chunk = _json.loads(line)
+                    except _json.JSONDecodeError:
+                        continue
+                    msg = chunk.get("message") or {}
+                    piece = msg.get("content") or ""
+                    if piece:
+                        if ttft_ms is None:
+                            ttft_ms = (time.monotonic() - start) * 1000.0
+                        text_parts.append(piece)
+                    # Tool calls can appear on any chunk in newer Ollama
+                    # builds; collect them as they show up.
+                    tc = msg.get("tool_calls") or []
+                    if tc:
+                        tool_calls_raw.extend(tc)
+                    if chunk.get("model"):
+                        last_model = chunk["model"]
+                    if chunk.get("done"):
+                        prompt_eval_count = int(chunk.get("prompt_eval_count", 0) or 0)
+                        eval_count = int(chunk.get("eval_count", 0) or 0)
+                        done_reason = chunk.get("done_reason")
+                        # Final chunk may also carry the full tool_calls list.
+                        final_msg = chunk.get("message") or {}
+                        final_tc = final_msg.get("tool_calls") or []
+                        if final_tc and not tool_calls_raw:
+                            tool_calls_raw.extend(final_tc)
+                        break
+
+        tool_calls = [
+            {
+                "id": tc.get("id", ""),
+                "name": (tc.get("function") or {}).get("name", "") or tc.get("name", ""),
+                "input": (tc.get("function") or {}).get("arguments")
+                or tc.get("arguments")
+                or {},
+            }
+            for tc in tool_calls_raw
+        ]
+        finish_reason = (
+            "tool_use" if tool_calls else ("length" if done_reason == "length" else "stop")
+        )
+
+        resp = CompleteResponse(
+            content="".join(text_parts),
+            tool_calls=tool_calls,
+            finish_reason=finish_reason,
+            usage={
+                "input_tokens": prompt_eval_count,
+                "output_tokens": eval_count,
+            },
+            provider=self.name,
+            model=last_model,
+        )
+        return resp, ttft_ms
 
     async def healthy(self) -> bool:
         """GET / on the Ollama base URL — fast, no model required."""

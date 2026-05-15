@@ -4,13 +4,16 @@ Calls api.anthropic.com via the official `anthropic` SDK. Translates
 OpenAI-style messages and tools into Anthropic's Messages API shape, parses
 text + tool_use content blocks back out, and reports token usage.
 
-Prompt caching, vision, and streaming arrive in later phases — see
-docs/PROVIDERS.md.
+Prompt caching + vision arrive in later phases — see docs/PROVIDERS.md.
+Phase A streaming (gateway-internal, nc-chatbot only) is implemented in
+:meth:`AnthropicProvider.complete_stream` — the public ``complete()``
+contract stays non-streaming so other specialists are untouched.
 """
 from __future__ import annotations
 
 import logging
 import os
+import time
 from typing import Any
 
 from anthropic import AsyncAnthropic
@@ -207,6 +210,91 @@ class AnthropicProvider(Provider):
             provider=self.name,
             model=getattr(response, "model", model),
         )
+
+    # ------------------------------------------------------------------
+    # Phase A: gateway-internal streaming (nc-chatbot only)
+    # ------------------------------------------------------------------
+    async def complete_stream(
+        self, req: CompleteRequest
+    ) -> tuple[CompleteResponse, float | None]:
+        """Stream the Messages API and assemble the same CompleteResponse.
+
+        Uses ``client.messages.stream()`` which exposes:
+
+        * per-chunk text deltas (used to capture wall-clock TTFT)
+        * ``.get_final_message()`` after the stream closes — carries the
+          fully populated ``usage`` block, including the count that only
+          shows up in the ``message_delta`` event.
+
+        Returns ``(CompleteResponse, ttft_ms_or_None)``. ``ttft_ms`` is
+        ``None`` when no non-empty text chunk was observed (tool-only
+        responses, errors before first delta, etc.).
+        """
+        model = req.model_override or self.model
+        system, messages = self._to_anthropic_messages(req.messages)
+        tools = self._to_anthropic_tools(req.tools)
+
+        kwargs: dict[str, Any] = {
+            "model": model,
+            "max_tokens": req.max_tokens,
+            "messages": messages,
+        }
+        if system is not None:
+            kwargs["system"] = system
+        if tools is not None:
+            kwargs["tools"] = tools
+
+        start = time.monotonic()
+        ttft_ms: float | None = None
+
+        async with self.client.messages.stream(**kwargs) as stream:
+            # text_stream yields the text deltas as they arrive. First
+            # non-empty chunk = TTFT. We don't accumulate text here — the
+            # final message has it in canonical block form, which is what
+            # the non-streaming path returns.
+            async for chunk in stream.text_stream:
+                if chunk and ttft_ms is None:
+                    ttft_ms = (time.monotonic() - start) * 1000.0
+            # Drain anything left (tool_use blocks etc. — text_stream only
+            # yields text). get_final_message() blocks until the stream is
+            # fully consumed and the message_delta carrying usage arrived.
+            final = await stream.get_final_message()
+
+        text_parts: list[str] = []
+        tool_calls: list[dict] = []
+        for block in final.content:
+            block_type = getattr(block, "type", None)
+            if block_type == "text":
+                text_parts.append(getattr(block, "text", ""))
+            elif block_type == "tool_use":
+                tool_calls.append(
+                    {
+                        "id": getattr(block, "id", ""),
+                        "name": getattr(block, "name", ""),
+                        "input": getattr(block, "input", {}),
+                    }
+                )
+
+        usage_obj = getattr(final, "usage", None)
+        input_tokens = getattr(usage_obj, "input_tokens", 0) if usage_obj else 0
+        output_tokens = getattr(usage_obj, "output_tokens", 0) if usage_obj else 0
+
+        finish_reason = getattr(final, "stop_reason", "stop") or "stop"
+        finish_map = {"end_turn": "stop", "max_tokens": "length", "tool_use": "tool_use"}
+        finish_reason = finish_map.get(finish_reason, finish_reason)
+
+        resp = CompleteResponse(
+            content="".join(text_parts),
+            tool_calls=tool_calls,
+            finish_reason=finish_reason,
+            usage={
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+            },
+            provider=self.name,
+            model=getattr(final, "model", model),
+        )
+        return resp, ttft_ms
 
     async def healthy(self) -> bool:
         """Cheap readiness check: SDK is constructed and we have an API key."""

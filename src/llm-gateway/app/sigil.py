@@ -347,6 +347,7 @@ async def emit_generation_event(
     span_id: str = "",
     trace_id: str = "",
     duration_ms: float | None = None,
+    ttft_ms: float | None = None,
 ) -> None:
     """Emit one Sigil generation event for the AI Observability plugin.
 
@@ -354,6 +355,11 @@ async def emit_generation_event(
     we just log the event JSON to stdout for backwards compatibility with
     the original Phase-1 stub — that line is what the legacy Loki dashboards
     parse.
+
+    ``ttft_ms``: real measured time-to-first-token in milliseconds when the
+    gateway streamed the response (Phase A: nc-chatbot only). When omitted
+    or ``None``, ``set_first_token_at`` falls back to the 60%-of-duration
+    heuristic.
     """
     # Pull trace context from the active OTel span when the caller didn't
     # pass explicit IDs — sigil events without trace_id can't be correlated
@@ -537,12 +543,23 @@ async def emit_generation_event(
 
     try:
         with rec_ctx as rec:
-            # Approximate TTFT: we don't stream upstream yet, so feed the
-            # plugin's TTFT histogram with a best-effort number — 60% of
-            # total duration for non-streaming providers — which is what
-            # users would observe end-to-end. Real per-token TTFT becomes
-            # accurate when the providers move to streaming mode.
-            if duration_ms is not None and duration_ms > 0:
+            # TTFT: prefer the real wall-clock measurement provided by the
+            # gateway when it actually streamed (Phase A: nc-chatbot). For
+            # non-streaming specialists, fall back to 60%-of-duration so
+            # the Performance dashboard's TTFT P95 panel keeps reading
+            # something for the rest of the fleet.
+            if ttft_ms is not None and ttft_ms > 0 and duration_ms is not None:
+                try:
+                    ttft_s = max(ttft_ms / 1000.0, 0.001)
+                    rec.set_first_token_at(
+                        datetime.fromtimestamp(
+                            time.time() - (duration_ms / 1000.0) + ttft_s,
+                            tz=timezone.utc,
+                        )
+                    )
+                except Exception:  # noqa: BLE001
+                    log.debug("sigil set_first_token_at skipped", exc_info=True)
+            elif duration_ms is not None and duration_ms > 0:
                 try:
                     approx_ttft_s = max(duration_ms * 0.6 / 1000.0, 0.001)
                     rec.set_first_token_at(

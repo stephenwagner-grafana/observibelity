@@ -70,6 +70,24 @@ class Provider(ABC):
         """Execute the completion. Subclasses implement provider-specific logic."""
         ...
 
+    async def complete_stream(
+        self, req: CompleteRequest
+    ) -> tuple[CompleteResponse, float | None]:
+        """Streaming variant of :meth:`complete`.
+
+        Returns the same assembled ``CompleteResponse`` as ``complete()`` plus
+        the measured time-to-first-token in **milliseconds** (or ``None`` if
+        the provider couldn't measure one, e.g. when no content chunk ever
+        arrived). The default implementation falls back to ``complete()`` and
+        returns ``None`` for TTFT so providers that don't implement streaming
+        still satisfy the contract.
+
+        Phase A scopes use of this to nc-chatbot only — see
+        ``llm_gateway.main.complete`` and STREAM_NC_CHATBOT env var.
+        """
+        resp = await self.complete(req)
+        return resp, None
+
     async def healthy(self) -> bool:
         """Lightweight readiness check. Subclasses override with a real probe."""
         return True
