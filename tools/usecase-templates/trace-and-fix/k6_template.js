@@ -16,7 +16,7 @@ export const options = {
   scenarios: {
     '{{ name }}_trace_and_fix': {
       executor: 'constant-arrival-rate',
-      rate: 1,
+      rate: 6,
       timeUnit: '1m',
       duration: '60s',
       preAllocatedVUs: 1,

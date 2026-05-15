@@ -204,13 +204,12 @@ async def _render_with_personas(
     resolved = persona_id or pick_random_persona_id(personas)
     request.state.persona_id = resolved
     set_persona_span_attr(resolved)
-    # Find the email for the resolved persona so the chat widget can
-    # embed it as a hidden input (server -> /chat -> nc-chatbot -> Sigil).
-    email = ""
-    for p in personas:
-        if p.persona_id == resolved:
-            email = p.email or ""
-            break
+    # Interactive web sessions all identify as wags@gmail.com so the
+    # demo owner's browser traffic is distinguishable from loadgen
+    # personas in Sigil's Conversations + per-user leaderboards. Loadgen
+    # still ships its own persona+email via the chat /api body and
+    # bypasses this template entirely, so this override is HTML-only.
+    email = "wags@gmail.com"
     ctx: dict[str, Any] = {
         "branding": BRANDING,
         "personas": personas,

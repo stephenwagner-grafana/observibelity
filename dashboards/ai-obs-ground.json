@@ -387,7 +387,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Hallucination-signal events broken out by the specialist that produced them (sb-router, nc-chatbot, etc.). Use to localise which agent is bluffing.",
+      "description": "Hedging-keyword events per specialist over time, extracted from the gateway's structured 'sigil generation' JSON via pattern + json (the line has a text prefix before the JSON). Use to localise which agent is bluffing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -719,7 +719,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist!=\"\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -1131,7 +1131,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Specialists ranked by hallucination-signal count in the last hour. The bar at the top is your worst bluffer right now.",
+      "description": "Specialists ranked by hedging-signal count in the last hour, extracted via pattern + json from the gateway log. The bar at the top is your worst bluffer right now.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1179,7 +1179,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [1h])))",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist!=\"\" [1h])))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "instant",
           "refId": "A"
@@ -1194,7 +1194,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-specialist scoreboard: hallucination fails in the last hour and the matching pass rate. Sort by fails to find your worst offender.",
+      "description": "Per-specialist scoreboard: hedging-flag counts and clean-response ratio over the last 30m, extracted via pattern + json from the gateway log. Sort by fails to find your worst offender.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1587,9 +1587,9 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [30m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist!=\"\" [30m]))",
           "legendFormat": "{{ai_o11y_specialist}} fails",
-          "queryType": "range",
+          "queryType": "instant",
           "refId": "A"
         },
         {
@@ -1597,9 +1597,9 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} !~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | ai_o11y_specialist!=\"\" [30m])) / (sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist!=\"\" [30m])) + 1)",
+          "expr": "1 - (sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist!=\"\" [30m])) / (sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist!=\"\" [30m])) + 1))",
           "legendFormat": "{{ai_o11y_specialist}} pass rate",
-          "queryType": "range",
+          "queryType": "instant",
           "refId": "B"
         }
       ],
@@ -1655,7 +1655,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway line that matched a hallucination signal. Read the raw prompt and reply \u2014 sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
+      "description": "Live Loki tail of every gateway 'sigil generation' line that matched a hedging keyword (window scoped to recent activity). Read the raw prompt and reply \u2014 sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -1679,7 +1679,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" | json | user_id=~\".*@.*\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".+@.+\"",
           "queryType": "range",
           "refId": "A"
         }
