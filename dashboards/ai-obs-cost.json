@@ -3223,6 +3223,112 @@
       "title": "\ud83d\udcb0 Top 8 <use case, specialist> by spend rate \u2014 USD per hour",
       "type": "timeseries",
       "transparent": false
+    },
+    {
+      "id": 101,
+      "type": "timeseries",
+      "title": "\ud83e\udd16 Bedrock eval-judge spend rate (USD/hour)",
+      "description": "Sigil's LLM-as-judge evaluators bypass the gateway and call Bedrock directly. This panel adds them to the total LLM bill.",
+      "gridPos": {
+        "x": 0,
+        "y": 53,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(sigil_eval_judge_tokens_total{direction=\"input\", provider=\"bedrock\"}[5m])) * 3600 / 1e6 * 1.0",
+          "legendFormat": "input ($1/M)"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(sigil_eval_judge_tokens_total{direction=\"output\", provider=\"bedrock\"}[5m])) * 3600 / 1e6 * 5.0",
+          "legendFormat": "output ($5/M)"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "(sum(rate(sigil_eval_judge_tokens_total{direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
+          "legendFormat": "total Bedrock $/hr"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ]
+        }
+      }
+    },
+    {
+      "id": 102,
+      "type": "stat",
+      "title": "\ud83d\udcb0 Bedrock eval cost (month-to-date)",
+      "description": "Cumulative input+output cost from sigil_eval_judge_tokens_total since the counter started. Add to Anthropic-API spend for the total Claude bill.",
+      "gridPos": {
+        "x": 12,
+        "y": 53,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(sigil_eval_judge_tokens_total{direction=\"input\", provider=\"bedrock\"}) / 1e6 * 1.0 + sum(sigil_eval_judge_tokens_total{direction=\"output\", provider=\"bedrock\"}) / 1e6 * 5.0"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
     }
   ],
   "refresh": "30s",
