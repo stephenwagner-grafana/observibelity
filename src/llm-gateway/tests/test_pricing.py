@@ -8,10 +8,10 @@ from app.pricing import PRICES, compute_cost
 
 def test_haiku_cost_matches_published_rate():
     cost = compute_cost("claude-haiku-4-5-20251001", 1_000_000, 1_000_000)
-    # Published rates: $0.25 input / $1.25 output per MTok.
-    assert cost["input_usd"] == pytest.approx(0.25)
-    assert cost["output_usd"] == pytest.approx(1.25)
-    assert cost["total_usd"] == pytest.approx(1.50)
+    # Published rates: $1 input / $5 output per MTok (Haiku 4.5).
+    assert cost["input_usd"] == pytest.approx(1.00)
+    assert cost["output_usd"] == pytest.approx(5.00)
+    assert cost["total_usd"] == pytest.approx(6.00)
 
 
 def test_sonnet_cost_matches_published_rate():
@@ -32,9 +32,12 @@ def test_zero_tokens_zero_cost():
     assert cost["total_usd"] == 0.0
 
 
-def test_ollama_local_model_is_free():
-    cost = compute_cost("llama3.1:8b", 50_000, 50_000)
-    assert cost["total_usd"] == 0.0
+def test_ollama_charges_gpu_energy_cost():
+    # Ollama is NOT free — it bills for GPU energy + amortization. Honest
+    # RTX 5090 pricing for llama3.1:8b is ~$0.55/MTok in+out.
+    cost = compute_cost("llama3.1:8b", 1_000_000, 1_000_000)
+    assert cost["total_usd"] > 0.0
+    assert cost["total_usd"] == pytest.approx(1.10, abs=0.01)
 
 
 def test_prices_table_well_formed():

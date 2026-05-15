@@ -52,51 +52,75 @@ data:
       },
       "llama3.1:8b": {
         "provider": "ollama",
-        "input_per_million_usd": 0.12,
-        "output_per_million_usd": 0.12,
-        "note": "estimated GPU amortized cost on RTX 5090 (~8B params)"
+        "input_per_million_usd": 0.55,
+        "output_per_million_usd": 0.55,
+        "note": "RTX 5090 honest cost: $0.138/active-hr (575W * $0.16/kWh + $2k/5y amort) / ~70 tok/s"
       },
       "llama3.2:1b": {
         "provider": "ollama",
-        "input_per_million_usd": 0.03,
-        "output_per_million_usd": 0.03,
-        "note": "estimated GPU amortized cost on RTX 5090"
+        "input_per_million_usd": 0.08,
+        "output_per_million_usd": 0.08,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~500 tok/s"
       },
-      "qwen2.5:0.5b": {
-        "provider": "ollama",
-        "input_per_million_usd": 0.02,
-        "output_per_million_usd": 0.02,
-        "note": "estimated GPU amortized cost on RTX 5090"
-      },
-      "qwen2.5:7b": {
-        "provider": "ollama",
-        "input_per_million_usd": 0.12,
-        "output_per_million_usd": 0.12,
-        "note": "estimated GPU amortized cost on RTX 5090"
-      },
-      "gemma2:2b": {
-        "provider": "ollama",
-        "input_per_million_usd": 0.05,
-        "output_per_million_usd": 0.05,
-        "note": "estimated GPU amortized cost on RTX 5090"
-      },
-      "phi3:mini": {
+      "llama3.2:latest": {
         "provider": "ollama",
         "input_per_million_usd": 0.08,
         "output_per_million_usd": 0.08,
-        "note": "estimated GPU amortized cost on RTX 5090"
+        "note": "alias of llama3.2:1b"
+      },
+      "qwen2.5:0.5b": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.04,
+        "output_per_million_usd": 0.04,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~1000 tok/s"
+      },
+      "qwen2.5:7b": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.48,
+        "output_per_million_usd": 0.48,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~80 tok/s"
+      },
+      "qwen3:4b": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.25,
+        "output_per_million_usd": 0.25,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~150 tok/s"
+      },
+      "qwen3:30b-a3b-instruct-2507-q4_K_M": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.64,
+        "output_per_million_usd": 0.64,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~60 tok/s (MoE 30B w/ 3B active, q4)"
+      },
+      "mistral:7b-instruct": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.48,
+        "output_per_million_usd": 0.48,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~80 tok/s"
+      },
+      "gemma2:2b": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.15,
+        "output_per_million_usd": 0.15,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~250 tok/s"
+      },
+      "phi3:mini": {
+        "provider": "ollama",
+        "input_per_million_usd": 0.19,
+        "output_per_million_usd": 0.19,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~200 tok/s"
       },
       "tinyllama:1.1b": {
         "provider": "ollama",
-        "input_per_million_usd": 0.03,
-        "output_per_million_usd": 0.03,
-        "note": "estimated GPU amortized cost on RTX 5090"
+        "input_per_million_usd": 0.06,
+        "output_per_million_usd": 0.06,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~600 tok/s"
       },
       "smollm2:135m": {
         "provider": "ollama",
-        "input_per_million_usd": 0.01,
-        "output_per_million_usd": 0.01,
-        "note": "estimated GPU amortized cost on RTX 5090"
+        "input_per_million_usd": 0.02,
+        "output_per_million_usd": 0.02,
+        "note": "RTX 5090 honest cost: $0.138/active-hr / ~2000 tok/s"
       }
     }
   routing.json: |
