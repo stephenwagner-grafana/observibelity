@@ -282,7 +282,10 @@ k6:
   # 0.03 → ~$20/day budget at vus=180, Haiku-only avg ~430 in / 60 out tokens
   # per call. Adjust here if you change vus or switch the default Claude
   # model to Sonnet (Sonnet is 3× input, 3× output the cost of Haiku).
-  claudeFraction: 0.03
+  claudeFraction: 0.03    # ~$20/day Anthropic burn at vus=40.
+                          # NOTE: Sigil eval-judge calls hit Bedrock
+                          # directly — they're NOT counted here.
+                          # Track via sigil_eval_judge_tokens_total.
 
 # Observability behaviors shared across components.
 # traffic_origin_default: continuous vs scenario-driven mix; never call this "loadgen".
