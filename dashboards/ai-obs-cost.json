@@ -212,7 +212,8 @@
         },
         "textMode": "auto",
         "wideLayout": false,
-        "percentChangeColorMode": "inverted"
+        "percentChangeColorMode": "inverted",
+        "showPercentChange": true
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -285,7 +286,8 @@
         },
         "textMode": "auto",
         "wideLayout": false,
-        "percentChangeColorMode": "inverted"
+        "percentChangeColorMode": "inverted",
+        "showPercentChange": true
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -593,7 +595,8 @@
         },
         "textMode": "auto",
         "wideLayout": false,
-        "percentChangeColorMode": "inverted"
+        "percentChangeColorMode": "inverted",
+        "showPercentChange": true
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -675,8 +678,8 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
-          "values": false
+          "fields": "Value",
+          "values": true
         },
         "showUnfilled": true,
         "valueMode": "color"
@@ -689,9 +692,27 @@
             "uid": "${datasource_prom}"
           },
           "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])))",
+          "format": "table",
+          "instant": true,
+          "range": false,
           "legendFormat": "{{user_id}}",
-          "queryType": "instant",
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {"Time": true, "__name__": true},
+            "indexByName": {"user_id": 0, "Value": 1}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{"field": "Value", "desc": true}]
+          }
         }
       ],
       "title": "\ud83d\udd25 Top spenders right now (tokens per hour)",
@@ -1311,7 +1332,8 @@
         },
         "textMode": "auto",
         "wideLayout": false,
-        "percentChangeColorMode": "inverted"
+        "percentChangeColorMode": "standard",
+        "showPercentChange": true
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -2108,18 +2130,18 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by <use case, specialist> (5m rate \u00d7 3600). Finer-grained than the headline panel \u2014 use to compare how nc-chatbot vs sb-router vs nc-gift-finder stack up within their respective apps and use cases.",
+      "description": "**USD per hour** by <use case, specialist> (5m rate \u00d7 3600). Finer-grained than the headline panel \u2014 use to compare how nc-chatbot vs sb-router vs nc-gift-finder stack up within their respective apps and use cases. Colors group by specialist: each specialist gets the same hue across every use case.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "axisLabel": "USD / hour",
             "drawStyle": "line",
-            "fillOpacity": 15,
+            "fillOpacity": 5,
             "lineInterpolation": "smooth",
-            "lineWidth": 2,
+            "lineWidth": 1,
             "showPoints": "never",
             "spanNulls": true,
             "gradientMode": "opacity"
@@ -2128,6 +2150,66 @@
           "decimals": 2
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*/ nc-chatbot$"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {"mode": "fixed", "fixedColor": "#8AB8FF"}
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*/ nc-gift-finder$"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {"mode": "fixed", "fixedColor": "#86EFAC"}
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*/ sb-router$"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {"mode": "fixed", "fixedColor": "#A78BFA"}
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*/ sb-(employee-info|hr-info|kb-search)$"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {"mode": "fixed", "fixedColor": "#67E8F9"}
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*/ sb-(it-troubleshoot|policy-finder|expense-helper|hiring-helper|ticket-helper|escalator|security-handler)$"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {"mode": "fixed", "fixedColor": "#F472B6"}
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
