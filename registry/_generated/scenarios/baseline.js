@@ -38,35 +38,77 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-// Smoothed 2026-05-15: replaced fixed-VU + per-iter sleep with
-// `constant-arrival-rate`. The old mode had 40+ VUs all bursting at the
-// start of each 65s cycle, then sleeping randomly 0.2-0.8s — that produced
-// the spiky sb-router request-rate pattern visible on
-// ai-obs-app-supportbot. constant-arrival-rate paces iterations evenly so
-// every minute looks the same. The 5s cycle gap between k6 runs is
-// negligible against a 180s duration.
+// Smoothed (round 2) 2026-05-15: replaced flat-line constant-arrival-rate +
+// 180s duration with a long-running `ramping-arrival-rate` driving a
+// 12-stage sine-ish wave. The previous shape (rate=6 for 180s, exit, sleep
+// 5s, restart) produced cliff-edge transitions on nc-chatbot's request-rate
+// graph because:
+//   * the orchestrator (k6-traffic deployment) runs ALL scripts in parallel
+//     then `wait`s for the SLOWEST to finish before sleeping 5s and
+//     restarting. baseline.js at 180s is the laggard — every other probe
+//     (60s) finishes ~2 minutes before baseline.js does, so during those
+//     2 minutes only baseline.js + 60s probes that re-fire on the next
+//     cycle contribute. The result was 0 -> ~peak -> 0 transitions every
+//     ~185s.
+//   * with constant rate of 6 RPS, the boundary between "running" and
+//     "stopped" is a vertical cliff, not a curve.
+// The new shape:
+//   * 60-minute total cycle (12 stages × 5 min) — the 5s orchestrator gap
+//     becomes 0.14% of the cycle instead of 2.7%; visually imperceptible.
+//   * Sine-ish wave between low=2 RPS and high=10 RPS, centered on
+//     ~5.83 RPS. k6's ramping-arrival-rate linearly interpolates the rate
+//     across each stage's duration, so the request curve is continuous
+//     instead of stair-step.
+//   * Average rate ≈ 5.83 RPS, ~3% lower than the prior flat 6 RPS — cost
+//     dashboards (Claude burn, total tokens) stay comparable within noise.
 // 6 RPS × 0.014 claudeFraction × $0.0026 avg/call × 86400s ≈ $19/day Claude
 // spend at ~1k-token chat avg. Stays under the $20/day k6 budget with a
 // small buffer for baseline-2-gift-finder.js (which also routes Claude).
-const TARGET_RPS = parseInt(__ENV.K6_BASELINE_RPS || '6', 10);
-const TARGET_DURATION = __ENV.K6_DURATION || '180s';
 const PRE_VUS = parseInt(__ENV.K6_VUS || '40', 10);
+const TARGET_DURATION = __ENV.K6_DURATION || '3600s';  // 1h — cycle-gap drowns in noise
+
+// Sine-ish wave between low and high RPS. 12 stages × 5 min = 60 min total.
+// Each entry is `target` for the end of a 5-min stage; ramping-arrival-rate
+// linearly interpolates from the previous stage's target.
+//
+// First and last targets are both 3 RPS so the hourly cycle boundary (when
+// k6 exits and the orchestrator sleeps 5s before restarting) is a low,
+// short notch instead of a tall cliff. startRate also = 3 (see below).
+//
+//   stage:    0    1    2    3    4    5    6    7    8    9   10   11
+//   target:   3    7   10    8    4    2    4    8   10    7    4    3
+// avg = (3+7+10+8+4+2+4+8+10+7+4+3) / 12 = 70/12 ≈ 5.83 RPS
+// Two peaks and one deep valley per hour — irregular enough to look organic.
+const WAVE_TARGETS = [3, 7, 10, 8, 4, 2, 4, 8, 10, 7, 4, 3];
+const STAGE_SECONDS = parseInt(__ENV.K6_BASELINE_STAGE_SECONDS || '300', 10);
 
 export const options = {
   scenarios: {
-    steady: {
-      executor: 'constant-arrival-rate',
-      rate: TARGET_RPS,
+    wave: {
+      executor: 'ramping-arrival-rate',
+      // Start at the first target so the very first second isn't a cliff
+      // from 0 — k6 ramps to stage[0].target over stage[0].duration.
+      startRate: WAVE_TARGETS[0],
       timeUnit: '1s',
-      duration: TARGET_DURATION,
       preAllocatedVUs: PRE_VUS,
       maxVUs: PRE_VUS * 3,
+      stages: WAVE_TARGETS.map((t) => ({ target: t, duration: `${STAGE_SECONDS}s` })),
+      // gracefulStop lets in-flight iterations finish so the tail isn't a
+      // hard cliff either; combined with the 1h duration this means the
+      // only "cliff" in the graph is between the script ending and the
+      // orchestrator's 5s gap before the next run — invisible at 1h scale.
+      gracefulStop: '5s',
     },
   },
   thresholds: {
     http_req_failed: ['rate<0.80'],  // many demo flows are intentional 4xx/5xx
   },
 };
+// NOTE: TARGET_DURATION is unused by ramping-arrival-rate (total runtime is
+// the sum of stage durations = 12 × 300 = 3600s by default). It remains a
+// settable env var so an operator can shorten the cycle for debugging via
+// K6_BASELINE_STAGE_SECONDS without touching the script.
+void TARGET_DURATION;
 
 const NEONCART_URL = __ENV.NEONCART_URL || 'http://neoncart';
 const SUPPORTBOT_URL = __ENV.SUPPORTBOT_URL || 'http://supportbot';
