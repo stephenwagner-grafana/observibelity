@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the ℹ icon on any panel for what the numbers mean.",
+  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the \u2139 icon on any panel for what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -53,16 +53,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "🎯 Toxicity — any fail is a P0",
+      "title": "\ud83c\udfaf Toxicity \u2014 any fail is a P0",
       "type": "row"
     },
     {
@@ -70,7 +165,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway log lines in the last hour matching hateful/abusive keywords (hate, kill yourself, slurs, etc.). Any non-zero value opens a ticket — the threshold is one.",
+      "description": "Count of gateway log lines in the last hour matching hateful/abusive keywords (hate, kill yourself, slurs, etc.). Any non-zero value opens a ticket \u2014 the threshold is one.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -80,11 +175,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 1
               }
             ]
@@ -97,11 +192,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -111,7 +206,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -122,12 +219,15 @@
           },
           "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hate|stupid|idiot|moron|kill yourself|damn|terrible|disgust|loath|awful|worst|disgrac)\" [1h]))",
           "legendFormat": "toxicity events",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "🚨 Hateful content events (1h)",
-      "type": "stat"
+      "title": "\ud83d\udea8 Hateful content events (1h)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -172,7 +272,7 @@
         "h": 9,
         "w": 12,
         "x": 6,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
@@ -206,20 +306,21 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Top 10 employees by toxic events (24h)",
-      "type": "barchart"
+      "title": "\ud83d\udd25 Top 10 employees by toxic events (24h)",
+      "type": "barchart",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes — there is no quiet threshold for this one.",
+      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes \u2014 there is no quiet threshold for this one.",
       "gridPos": {
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 1
+        "y": 4
       },
       "id": 4,
       "options": {
@@ -250,15 +351,16 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Toxicity alert — is it firing?",
-      "type": "alertlist"
+      "title": "\u26a0 Toxicity alert \u2014 is it firing?",
+      "type": "alertlist",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Per-specialist pass rate over the last hour — fraction of gateway events that did NOT match a toxic keyword. Green band starts at 99.9%; anything below ~99% means that specialist is fielding abusive traffic.",
+      "description": "Per-specialist pass rate over the last hour \u2014 fraction of gateway events that did NOT match a toxic keyword. Green band starts at 99.9%; anything below ~99% means that specialist is fielding abusive traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -270,15 +372,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 0.99
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 0.999
               }
             ]
@@ -291,7 +393,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -305,7 +407,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -320,8 +424,9 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Toxicity pass rate by specialist (1h)",
-      "type": "stat"
+      "title": "\ud83d\udcc8 Toxicity pass rate by specialist (1h)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -329,11 +434,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 13
       },
       "id": 6,
       "panels": [],
-      "title": "📊 All evaluators — which one is firing most?",
+      "title": "\ud83d\udcca All evaluators \u2014 which one is firing most?",
       "type": "row"
     },
     {
@@ -341,7 +446,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Four lines, one per evaluator family — toxicity, hallucination, PII, prompt injection — counting matching gateway log lines in rolling 5m windows. Stacked spikes show when multiple categories light up at once (often the same conversation).",
+      "description": "Four lines, one per evaluator family \u2014 toxicity, hallucination, PII, prompt injection \u2014 counting matching gateway log lines in rolling 5m windows. Stacked spikes show when multiple categories light up at once (often the same conversation).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -353,17 +458,214 @@
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 14
       },
       "id": 7,
       "options": {
@@ -422,8 +724,9 @@
           "refId": "D"
         }
       ],
-      "title": "📈 Evaluator firings by category over time",
-      "type": "timeseries"
+      "title": "\ud83d\udcc8 Evaluator firings by category over time",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -431,11 +734,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 24
       },
       "id": 8,
       "panels": [],
-      "title": "📋 Status table — fire rate, fails, pass rate per evaluator",
+      "title": "\ud83d\udccb Status table \u2014 fire rate, fails, pass rate per evaluator",
       "type": "row"
     },
     {
@@ -459,7 +762,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -604,6 +907,201 @@
                 "value": "percentunit"
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -611,7 +1109,7 @@
         "h": 13,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 9,
       "options": {
@@ -664,7 +1162,7 @@
           "refId": "C"
         }
       ],
-      "title": "📋 Evaluator scoreboard — fire rate · fails · pass rate",
+      "title": "\ud83d\udccb Evaluator scoreboard \u2014 fire rate \u00b7 fails \u00b7 pass rate",
       "transformations": [
         {
           "id": "joinByField",
@@ -674,7 +1172,8 @@
           }
         }
       ],
-      "type": "table"
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -682,11 +1181,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 38
       },
       "id": 10,
       "panels": [],
-      "title": "🚨 Critical events — alerts firing + raw log stream",
+      "title": "\ud83d\udea8 Critical events \u2014 alerts firing + raw log stream",
       "type": "row"
     },
     {
@@ -699,7 +1198,7 @@
         "h": 10,
         "w": 10,
         "x": 0,
-        "y": 36
+        "y": 39
       },
       "id": 11,
       "options": {
@@ -732,8 +1231,9 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Firing evaluator alerts (grouped by severity)",
-      "type": "alertlist"
+      "title": "\u26a0 Firing evaluator alerts (grouped by severity)",
+      "type": "alertlist",
+      "transparent": true
     },
     {
       "datasource": {
@@ -745,7 +1245,7 @@
         "h": 10,
         "w": 14,
         "x": 10,
-        "y": 36
+        "y": 39
       },
       "id": 12,
       "options": {
@@ -769,8 +1269,9 @@
           "refId": "A"
         }
       ],
-      "title": "📜 Critical evaluator fails — raw log stream (Loki)",
-      "type": "logs"
+      "title": "\ud83d\udcdc Critical evaluator fails \u2014 raw log stream (Loki)",
+      "type": "logs",
+      "transparent": true
     }
   ],
   "refresh": "30s",
@@ -909,7 +1410,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Evaluators (Toxicity + Overview)",
+  "title": "AI o11y \u2014 Evaluators (Toxicity + Overview)",
   "uid": "ai-obs-evals",
   "weekStart": ""
 }

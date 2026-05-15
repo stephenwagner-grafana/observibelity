@@ -245,15 +245,20 @@ TRANSFORMERS = {
 
 
 def apply(dashboard):
-    # 1. Push everything down to make room for the ribbon.
-    for p in dashboard.get("panels", []):
-        p.setdefault("gridPos", {})["y"] = p["gridPos"].get("y", 0) + RIBBON_HEIGHT
+    panels = dashboard.get("panels", [])
+    already_styled = any(p.get("id") == RIBBON_PANEL_ID for p in panels)
 
-    # 2. Prepend the ribbon.
-    dashboard["panels"].insert(0, build_ribbon_panel())
+    if not already_styled:
+        # 1. Push everything down to make room for the ribbon.
+        for p in panels:
+            p.setdefault("gridPos", {})["y"] = p["gridPos"].get("y", 0) + RIBBON_HEIGHT
+        # 2. Prepend the ribbon.
+        panels.insert(0, build_ribbon_panel())
 
-    # 3. Transform every non-row panel.
-    for panel in dashboard["panels"]:
+    # 3. Transform every non-row panel. (Idempotent: threshold remaps are
+    #    no-ops on already-soft colors, override pins skip duplicates,
+    #    and stat/timeseries property sets are unconditional.)
+    for panel in panels:
         ptype = panel.get("type")
         if ptype == "row" or panel.get("id") == RIBBON_PANEL_ID:
             continue
