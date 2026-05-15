@@ -19,6 +19,7 @@ this implementation for a real INSERT without changing the agent surface.
 from __future__ import annotations
 
 import logging
+import os
 from typing import ClassVar
 
 from pydantic import BaseModel, Field
@@ -26,13 +27,19 @@ from prometheus_client import Counter
 
 from tool_base import Tool
 
+# Python defaults the root logger to WARNING, which silently drops our
+# atc_event INFO lines and the registry's atc_event rule never fires.
+# Bootstrap once at import time; uvicorn's own loggers configure themselves
+# separately so this only affects app-level logging.
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 log = logging.getLogger(__name__)
+log.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 
 ADD_COUNTER = Counter(
     "nc_cart_add_total",
     "Cart-add events initiated by an agent via the add_to_cart tool.",
-    ["caller", "sku"],
+    ["caller", "sku", "agent_name", "model", "source"],
 )
 
 
@@ -44,6 +51,13 @@ class AddToCartArgs(BaseModel):
     qty: int = Field(default=1, ge=1, le=20)
     persona_id: str | None = Field(default=None, description="Shopper persona (echoed back, not validated).")
     note: str | None = Field(default=None, max_length=200, description="Optional short reason the agent chose this item.")
+    # Provenance labels — let the model-winner dashboard correlate which
+    # model produced the recommendation that converted into an add. The
+    # specialist passes these through after its gateway call resolves the
+    # concrete model id.
+    agent_name: str | None = Field(default=None, max_length=64, description="Sigil agent_name that initiated the add.")
+    model: str | None = Field(default=None, max_length=128, description="Concrete model id (e.g. claude-sonnet-4-6, llama3.2:1b).")
+    source: str | None = Field(default="agent", max_length=32, description="agent|live|loadgen — drives the model-winner attribution.")
 
 
 class AddToCartResult(BaseModel):
@@ -74,10 +88,24 @@ class AddToCart(Tool):
         # ALLOWED_CALLERS is empty so we don't need to enforce; we only
         # record it for Prometheus.  X-Caller is captured in the FastAPI
         # wrapper and surfaces via OTel attributes, not here.
-        ADD_COUNTER.labels(caller=caller, sku=args.sku or "").inc(args.qty)
+        ADD_COUNTER.labels(
+            caller=caller,
+            sku=args.sku or "",
+            agent_name=args.agent_name or "",
+            model=args.model or "",
+            source=args.source or "agent",
+        ).inc(args.qty)
+        # Emit a single structured log line the registry's atc_event
+        # evaluator + the Sigil "atc by model" panel can both parse via
+        # `| json` once the llm-gateway log-stream pattern strips the
+        # logger prefix.
         log.info(
-            "add_to_cart agent intent product_id=%s sku=%s qty=%s persona=%s note=%s",
-            args.product_id, args.sku, args.qty, args.persona_id, args.note,
+            "atc_event source=%s product_id=%s sku=%s qty=%s "
+            "agent_name=%s model=%s persona=%s note=%s",
+            args.source or "agent",
+            args.product_id, args.sku, args.qty,
+            args.agent_name or "", args.model or "",
+            args.persona_id, args.note,
         )
         return AddToCartResult(
             product_id=args.product_id,

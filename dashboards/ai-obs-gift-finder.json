@@ -1,0 +1,369 @@
+{
+  "uid": "ai-obs-gift-finder",
+  "title": "AI Gift Finder — ATC + Quality",
+  "tags": ["ai-observability", "gift-finder"],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "",
+  "refresh": "30s",
+  "description": "Gift-finder demo dashboard. ATC events (per conversation, per model) on the left; built-in heuristic quality eval (pass rate, fail reasons by model) on the right. ATC + quality both ride Loki structured log events emitted by the add_to_cart tool and the nc-gift-finder specialist — no Prometheus scraping required.",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource_loki",
+        "label": "Loki datasource",
+        "type": "datasource",
+        "query": "loki",
+        "current": { "text": "grafanacloud-stephenwagner-logs", "value": "grafanacloud-logs" },
+        "hide": 0
+      },
+      {
+        "name": "datasource_prom",
+        "label": "Prometheus datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "grafanacloud-stephenwagner-prom", "value": "grafanacloud-prom" },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "id": 1,
+      "title": "🎁 Add-to-Cart (ATC) — every model, every conversation",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "ATC events (last 1h)",
+      "description": "Total add-to-cart events the gift-finder triggered in the last hour — across all conversations and models.",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" [1h]))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "ATC events"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "barchart",
+      "title": "ATC by model — last 1h",
+      "description": "How many add-to-carts each underlying model produced. The bigger the bar, the better that model is at recommending gifts the shopper actually wants.",
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 1 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "legend": { "showLegend": false, "displayMode": "list", "placement": "bottom" },
+        "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>` [1h]))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "ATC rate — by source (live vs loadgen)",
+      "description": "Add-to-cart event rate split by source. `live` = interactive demo clicks; `loadgen` = continuous k6 traffic. Lets you watch your own demo clicks land in real time without being drowned out by loadgen.",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "spanNulls": true
+          }
+        }
+      },
+      "options": {
+        "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (source) (rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" | pattern `<_>atc_event source=<source> <_>` [5m]))",
+          "legendFormat": "{{source}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Top conversations — ATCs per persona",
+      "description": "Which shoppers added the most items in the last hour. Useful to spot high-converting personas during a live demo.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        }
+      },
+      "options": {
+        "showHeader": true,
+        "footer": { "show": false, "reducer": ["sum"] }
+      },
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Value", "desc": true }]
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(20, sum by (persona) (count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> persona=<persona> <_>` [1h])))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "{{persona}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Top products added (by SKU)",
+      "description": "Most-added SKUs in the last hour. Reveals which products the gift-finder is favoring.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "legend": { "showLegend": false, "displayMode": "list", "placement": "bottom" },
+        "stacking": "none"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(15, sum by (sku) (count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\" | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> <_>` [1h])))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "{{sku}}"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 10,
+      "title": "🎯 Response Quality — heuristic eval per turn",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Quality pass rate (last 1h)",
+      "description": "Share of gift-finder turns that returned ≥3 product candidates, at least one within budget, with the reply text mentioning a product. Below 70% means the agent is struggling — usually the model is too small or the catalog is sparse.",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 18 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.5 },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "green", "value": 0.85 }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality result=pass\" [1h])) / sum(count_over_time({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality result=\" [1h]))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "pass rate"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Pass vs. fail over time (5m windows)",
+      "description": "Rolling pass/fail trend. The pitch: even when API requests are all 2xx, an LLM agent can quietly drift — this panel catches the drift before users do.",
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 18 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "spanNulls": true
+          },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "pass" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "fail" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (result) (rate({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality\" | pattern `<_>nc_gift_finder_quality result=<result> <_>` [5m]))",
+          "legendFormat": "{{result}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Total turns evaluated (1h)",
+      "description": "Number of gift-finder turns scored against the heuristic eval in the last hour.",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 18 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality result=\" [1h]))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "turns"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "barchart",
+      "title": "Fail reasons by model — last 1h",
+      "description": "When the eval fails, why. Reasons: `missing_products` (<3 returned), `over_budget` (none under stated budget), `reply_no_product_mention` (model returned products but didn't name them in the prose).",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 26 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "legend": { "showLegend": true, "placement": "right" },
+        "stacking": "normal"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, reason) (count_over_time({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality result=fail\" | pattern `<_>nc_gift_finder_quality result=<result> reason=<reason> model=<model> <_>` [1h]))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "{{model}} / {{reason}}"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "table",
+      "title": "Per-model quality scorecard (last 1h)",
+      "description": "Pass count + fail count + pass-rate for each model. The model-winner story made literal.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 26 },
+      "datasource": { "type": "loki", "uid": "${datasource_loki}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "align": "auto", "displayMode": "auto" }
+        }
+      },
+      "options": {
+        "showHeader": true,
+        "footer": { "show": false }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, result) (count_over_time({service_namespace=\"observibelity\",container=\"specialist\"} |~ \"nc_gift_finder_quality\" | pattern `<_>nc_gift_finder_quality result=<result> reason=<reason> model=<model> <_>` [1h]))",
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "{{model}} / {{result}}"
+        }
+      ]
+    }
+  ]
+}

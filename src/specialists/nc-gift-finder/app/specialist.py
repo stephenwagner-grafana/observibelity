@@ -13,10 +13,37 @@ and Add-to-cart tool surface. Single tool-use round-trip:
 from __future__ import annotations
 
 import json
+import logging
+import os
 import re
 from typing import Any
 
+from prometheus_client import Counter
+
 from specialist_base import Specialist, SpecialistRequest, SpecialistResponse
+
+# Root logger defaults to WARNING — bootstrap INFO so nc_gift_finder_quality
+# log lines reach Loki for the demo's quality-rate panel.
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
+log = logging.getLogger(__name__)
+log.setLevel(os.getenv("LOG_LEVEL", "INFO"))
+
+
+# Built-in heuristic quality eval — emitted on every gift-finder turn so
+# the demo's "quality of response" panel has a steady pulse without
+# needing Sigil's UI-only LLM-judge evaluators wired up.
+#
+# Pass criteria:
+#   1. agent returned >= 3 product candidates (cards), AND
+#   2. at least one of them is <= the budget the user stated (if any), AND
+#   3. the reply text mentions at least one returned product's name.
+# Anything else fails. Labels are model + reason so the dashboard can
+# break down "which model produces good gift-finder turns".
+QUALITY_COUNTER = Counter(
+    "nc_gift_finder_quality_total",
+    "Heuristic quality eval result emitted on every gift-finder turn.",
+    ["result", "reason", "model"],
+)
 
 
 # Same keyword→category map as nc-chatbot so the catalog grid behind the
@@ -73,6 +100,7 @@ class NcGiftFinder(Specialist):
         "search_products",
         "get_product",
         "add_to_cart",
+        "navigate",
     ]
     SYSTEM_PROMPT = (
         "You are NeonCart's Gift Finder — a concise, confident shopping assistant "
@@ -84,6 +112,13 @@ class NcGiftFinder(Specialist):
         "anchor (~$150) and say so. Don't ask 5 clarifying questions before searching.\n"
         "- Use search_products to find candidates. Pass the SINGULAR product noun as "
         "the query (e.g. \"headphone\" not \"headphones\") — the catalog stores singular names.\n"
+        "- Use navigate when the user says \"show me X\", \"take me to X\", \"open X\", "
+        "or otherwise asks to be SENT to a page. Call it ALONGSIDE search_products "
+        "on the same turn — search returns the cards, navigate redirects the "
+        "browser to the matching catalog page. Pick target=\"category\" with a "
+        "category slug (peripherals|displays|audio|mobile|wearables|computers|"
+        "gaming|cables|storage|smart-home) when the request maps to one cleanly; "
+        "otherwise target=\"search\" with the singular noun.\n"
         "- After the search, summarise the top 3-5 picks with ONE short line each "
         "explaining the fit (\"premium ANC for the daily commute\", \"compact, sturdy, "
         "kid-proof\"). Don't dump every spec; the UI renders product cards below.\n"
@@ -105,13 +140,27 @@ class NcGiftFinder(Specialist):
         result = await self.call_gateway(messages, req)
         all_tool_calls: list[dict] = []
         products: list[dict] = []
-        navigate_target: tuple[str, str] | None = None
+        explicit_nav: dict | None = None
+        fallback_nav: tuple[str, str] | None = None
         cart_added: list[dict] = []
+
+        # The concrete model the gateway routed to. Stamped on every
+        # add_to_cart so the model-winner dashboard can attribute the ATC
+        # back to the model that produced the recommendation.
+        chosen_model = result.get("model") or ""
 
         if result.get("tool_calls"):
             for tc in result["tool_calls"]:
                 all_tool_calls.append(tc)
                 tool_args = tc.get("input") or tc.get("args") or {}
+                # When the agent calls add_to_cart, decorate its args with
+                # the model+agent labels so the tool's counter and log line
+                # carry full provenance.
+                if tc["name"] == "add_to_cart":
+                    if isinstance(tool_args, dict):
+                        tool_args.setdefault("agent_name", self.NAME)
+                        tool_args.setdefault("model", chosen_model)
+                        tool_args.setdefault("source", "agent")
                 tool_result = await self.call_tool(
                     tc["name"], tool_args, req,
                 )
@@ -121,14 +170,24 @@ class NcGiftFinder(Specialist):
                     q = (tool_args or {}).get("query", "") or req.message
                     slug = _category_for(q) or _category_for(req.message)
                     if slug:
-                        navigate_target = ("category", slug)
+                        fallback_nav = ("category", slug)
                 elif tc["name"] == "get_product":
                     item = (tool_result or {}).get("item") or tool_result
                     if isinstance(item, dict) and item.get("id"):
                         products.append(item)
-                        navigate_target = ("product", str(item["id"]))
+                        fallback_nav = ("product", str(item["id"]))
                 elif tc["name"] == "add_to_cart":
                     cart_added.append({"input": tool_args, "result": tool_result})
+                elif tc["name"] == "navigate":
+                    if isinstance(tool_result, dict) and tool_result.get("url"):
+                        explicit_nav = {
+                            "type": "navigate",
+                            "target": tool_result.get("target") or tool_args.get("target") or "search",
+                            "value": tool_result.get("value") or tool_args.get("value") or "",
+                            "url": tool_result["url"],
+                            "label": tool_result.get("label") or "Open",
+                            "auto": True,
+                        }
                 messages.append({"role": "assistant", "tool_calls": [tc]})
                 messages.append(
                     {
@@ -144,15 +203,22 @@ class NcGiftFinder(Specialist):
         # Even if the model never called search_products (e.g. ran out of
         # tokens or refused), surface a category nav hint when the user
         # message clearly named one.
-        if not navigate_target:
+        if not (explicit_nav or fallback_nav):
             slug = _category_for(req.message)
             if slug:
-                navigate_target = ("category", slug)
+                fallback_nav = ("category", slug)
 
         actions: list[dict] = []
-        if navigate_target:
+        if explicit_nav:
+            actions.append(explicit_nav)
+        elif fallback_nav:
             actions.append(
-                {"type": "navigate", "target": navigate_target[0], "value": navigate_target[1]}
+                {
+                    "type": "navigate",
+                    "target": fallback_nav[0],
+                    "value": fallback_nav[1],
+                    "auto": False,
+                }
             )
 
         # Budget filter — drop any product over the inferred ceiling so the
@@ -168,12 +234,65 @@ class NcGiftFinder(Specialist):
 
         usage = result.get("usage", {}) or {}
         cost = usage.get("cost_usd") or usage.get("cost") or {}
+
+        # Built-in quality eval — fire on every turn so the demo panel has
+        # a steady signal. See QUALITY_COUNTER comment above for criteria.
+        reply_text = result.get("content", "") or ""
+        self._emit_quality_eval(req, products, reply_text, chosen_model, budget)
+
         return SpecialistResponse(
-            reply=result.get("content", ""),
+            reply=reply_text,
             tool_calls=all_tool_calls,
             cost_usd=float(cost.get("total_usd", 0.0)),
-            model=result.get("model"),
+            model=chosen_model,
             provider=result.get("provider"),
             actions=actions,
             products=products[:6],
+        )
+
+    def _emit_quality_eval(
+        self,
+        req: SpecialistRequest,
+        products: list[dict],
+        reply_text: str,
+        model: str,
+        budget: float | None,
+    ) -> None:
+        """Score the turn against three lightweight criteria + emit a counter.
+
+        Reasons (sticky single-label on the counter for legend clarity):
+          ok                       — all three pass.
+          missing_products         — fewer than 3 product candidates.
+          over_budget              — products returned, but none under budget.
+          reply_no_product_mention — products returned but reply doesn't name any.
+        """
+        reason = "ok"
+        result = "pass"
+        if len(products) < 3:
+            reason = "missing_products"
+            result = "fail"
+        elif budget is not None:
+            within = [
+                p for p in products
+                if p.get("price_usd") is None
+                or float(p["price_usd"]) <= budget
+            ]
+            if not within:
+                reason = "over_budget"
+                result = "fail"
+        if result == "pass":
+            names = [
+                (p.get("name") or "").split()
+                for p in products
+            ]
+            tokens = {w.lower() for parts in names for w in parts if len(w) > 3}
+            mentioned = any(t in reply_text.lower() for t in tokens) if tokens else False
+            if not mentioned:
+                reason = "reply_no_product_mention"
+                result = "fail"
+        QUALITY_COUNTER.labels(result=result, reason=reason, model=model or "").inc()
+        log.info(
+            "nc_gift_finder_quality result=%s reason=%s model=%s "
+            "products=%d budget=%s session=%s",
+            result, reason, model, len(products), budget, req.session_id,
         )
