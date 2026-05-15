@@ -171,7 +171,7 @@ data["templating"]["list"] = [
     },
 ]
 
-# ---------- annotations: pod restarts ----------
+# ---------- annotations: auto-detected outages ----------
 data["annotations"] = {
     "list": [
         {
@@ -188,8 +188,30 @@ data["annotations"] = {
             "enable": True,
             "hide": False,
             "iconColor": "rgba(239, 68, 68, 1)",
+            "name": "k3s NotReady",
+            "expr": 'kube_node_status_condition{cluster="k3s",condition="Ready",status="true"} == 0',
+            "step": "1m",
+            "titleFormat": "k3s outage — {{node}} NotReady",
+            "tagKeys": "node",
+        },
+        {
+            "datasource": PROM_DS,
+            "enable": True,
+            "hide": False,
+            "iconColor": "rgba(251, 146, 60, 1)",
+            "name": "Loadgen pod down",
+            "expr": 'kube_pod_status_phase{namespace="observibelity",pod=~"k6-traffic-.*",phase!="Running"} == 1',
+            "step": "1m",
+            "titleFormat": "Loadgen pod {{phase}} — {{pod}}",
+            "tagKeys": "pod,phase",
+        },
+        {
+            "datasource": PROM_DS,
+            "enable": True,
+            "hide": False,
+            "iconColor": "rgba(245, 158, 11, 1)",
             "name": "Pod restart",
-            "expr": 'changes(kube_pod_container_status_restarts_total{namespace="observibelity",pod=~"k6-traffic-.*|llm-gateway-.*"}[5m]) > 0',
+            "expr": 'changes(kube_pod_container_status_restarts_total{namespace="observibelity",pod=~"k6-traffic-.*|llm-gateway-.*|neoncart-.*|nc-.*"}[5m]) > 0',
             "step": "5m",
             "titleFormat": "Pod restart: {{pod}}",
             "tagKeys": "pod",
@@ -563,16 +585,16 @@ P.append({
 
 # Row 4 header
 y += 7
-P.append(row(217, "💵 Revenue flow over time — where the money was (and wasn't)", y))
+P.append(row(217, "💵 Revenue flow over time — actual vs. missed, throughout the window", y))
 y += 1
 
-# Big revenue timeseries
+# 218: Actual revenue $/hour + dashed baseline
 P.append({
     "id": 218,
     "type": "timeseries",
-    "title": "Cart-add revenue — $/hour",
-    "description": "Each bar = the previous 5 min of ATC events × avg value, scaled to $/hour. Flat = outage. Pod-restart annotations marked in red.",
-    "gridPos": gridpos(0, y, 24, 8),
+    "title": "Actual revenue — $/hour",
+    "description": "Each green bar = the previous 5 min of ATC events × avg value, scaled to $/hour. The dashed line is the baseline; gaps below it are visible as red bars in the chart underneath.",
+    "gridPos": gridpos(0, y, 24, 6),
     "datasource": LOKI_DS,
     "targets": [
         {
@@ -581,7 +603,7 @@ P.append({
                 'sum(rate({service_namespace="observibelity",container="tool"} '
                 '|~ "atc_event source=loadgen" [5m])) * 3600 * ${avg_atc_value}'
             ),
-            "legendFormat": "$/hour (live)", "range": True,
+            "legendFormat": "actual $/hour", "range": True,
         },
         {
             "datasource": PROM_DS, "refId": "B",
@@ -595,7 +617,7 @@ P.append({
             "color": {"mode": "thresholds"},
             "custom": {
                 "drawStyle": "bars",
-                "fillOpacity": 70,
+                "fillOpacity": 80,
                 "gradientMode": "opacity",
                 "lineWidth": 1,
                 "barAlignment": 0,
@@ -620,7 +642,7 @@ P.append({
                 ],
             },
             {
-                "matcher": {"id": "byName", "options": "$/hour (live)"},
+                "matcher": {"id": "byName", "options": "actual $/hour"},
                 "properties": [
                     {"id": "color", "value": {"mode": "fixed", "fixedColor": "#10B981"}},
                 ],
@@ -628,13 +650,73 @@ P.append({
         ],
     },
     "options": {
-        "legend": {"calcs": ["mean", "max", "min"], "displayMode": "table", "placement": "right", "showLegend": True},
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": True},
         "tooltip": {"mode": "multi", "sort": "desc"},
     },
 })
 
-# Row 5 header
-y += 8
+# 240: Missed revenue when it happened — auto-populated outage display
+missed_per_hour_loki = (
+    '(${baseline_atc_per_hour} '
+    '- sum(rate({service_namespace="observibelity",container="tool"} '
+    '|~ "atc_event source=loadgen" [5m])) * 3600) * ${avg_atc_value}'
+)
+P.append({
+    "id": 240,
+    "type": "timeseries",
+    "title": "Missed revenue — when today's outages happened",
+    "description": (
+        "Auto-populated: every 5 min where the engine ran below baseline shows up as a red "
+        "bar valued at `(baseline − actual) × avg cart-add value`. Tall red bars = outage windows. "
+        "Negative values (over-performing) are hidden via threshold."
+    ),
+    "gridPos": gridpos(0, y + 6, 24, 7),
+    "datasource": LOKI_DS,
+    "targets": [
+        {
+            "datasource": LOKI_DS, "refId": "A",
+            "expr": missed_per_hour_loki,
+            "legendFormat": "missed $/hour", "range": True,
+        },
+    ],
+    "fieldConfig": {
+        "defaults": {
+            "unit": "currencyUSD",
+            "color": {"mode": "thresholds"},
+            "min": 0,
+            "custom": {
+                "drawStyle": "bars",
+                "fillOpacity": 90,
+                "gradientMode": "opacity",
+                "lineWidth": 1,
+                "barAlignment": 0,
+                "barWidthFactor": 0.92,
+                "showPoints": "never",
+                "thresholdsStyle": {"mode": "off"},
+                "stacking": {"group": "A", "mode": "none"},
+            },
+            "thresholds": {"mode": "absolute", "steps": [
+                {"color": "transparent", "value": None},
+                {"color": "#EF4444", "value": 1},
+            ]},
+        },
+        "overrides": [
+            {
+                "matcher": {"id": "byName", "options": "missed $/hour"},
+                "properties": [
+                    {"id": "color", "value": {"mode": "fixed", "fixedColor": "#EF4444"}},
+                ],
+            },
+        ],
+    },
+    "options": {
+        "legend": {"calcs": ["sum", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": True},
+        "tooltip": {"mode": "multi", "sort": "desc"},
+    },
+})
+
+# Row 5 header — bump y by the combined height of the two stacked rev charts (6 + 7 = 13)
+y += 13
 P.append(row(219, "🎯 Where the revenue came from", y))
 y += 1
 

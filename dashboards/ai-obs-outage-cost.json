@@ -21,8 +21,36 @@
         "enable": true,
         "hide": false,
         "iconColor": "rgba(239, 68, 68, 1)",
+        "name": "k3s NotReady",
+        "expr": "kube_node_status_condition{cluster=\"k3s\",condition=\"Ready\",status=\"true\"} == 0",
+        "step": "1m",
+        "titleFormat": "k3s outage \u2014 {{node}} NotReady",
+        "tagKeys": "node"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "rgba(251, 146, 60, 1)",
+        "name": "Loadgen pod down",
+        "expr": "kube_pod_status_phase{namespace=\"observibelity\",pod=~\"k6-traffic-.*\",phase!=\"Running\"} == 1",
+        "step": "1m",
+        "titleFormat": "Loadgen pod {{phase}} \u2014 {{pod}}",
+        "tagKeys": "pod,phase"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "rgba(245, 158, 11, 1)",
         "name": "Pod restart",
-        "expr": "changes(kube_pod_container_status_restarts_total{namespace=\"observibelity\",pod=~\"k6-traffic-.*|llm-gateway-.*\"}[5m]) > 0",
+        "expr": "changes(kube_pod_container_status_restarts_total{namespace=\"observibelity\",pod=~\"k6-traffic-.*|llm-gateway-.*|neoncart-.*|nc-.*\"}[5m]) > 0",
         "step": "5m",
         "titleFormat": "Pod restart: {{pod}}",
         "tagKeys": "pod"
@@ -1375,7 +1403,7 @@
     {
       "id": 217,
       "type": "row",
-      "title": "\ud83d\udcb5 Revenue flow over time \u2014 where the money was (and wasn't)",
+      "title": "\ud83d\udcb5 Revenue flow over time \u2014 actual vs. missed, throughout the window",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1388,10 +1416,10 @@
     {
       "id": 218,
       "type": "timeseries",
-      "title": "Cart-add revenue \u2014 $/hour",
-      "description": "Each bar = the previous 5 min of ATC events \u00d7 avg value, scaled to $/hour. Flat = outage. Pod-restart annotations marked in red.",
+      "title": "Actual revenue \u2014 $/hour",
+      "description": "Each green bar = the previous 5 min of ATC events \u00d7 avg value, scaled to $/hour. The dashed line is the baseline; gaps below it are visible as red bars in the chart underneath.",
       "gridPos": {
-        "h": 8,
+        "h": 6,
         "w": 24,
         "x": 0,
         "y": 39
@@ -1408,7 +1436,7 @@
           },
           "refId": "A",
           "expr": "sum(rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [5m])) * 3600 * ${avg_atc_value}",
-          "legendFormat": "$/hour (live)",
+          "legendFormat": "actual $/hour",
           "range": true
         },
         {
@@ -1430,7 +1458,7 @@
           },
           "custom": {
             "drawStyle": "bars",
-            "fillOpacity": 70,
+            "fillOpacity": 80,
             "gradientMode": "opacity",
             "lineWidth": 1,
             "barAlignment": 0,
@@ -1495,7 +1523,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "$/hour (live)"
+              "options": "actual $/hour"
             },
             "properties": [
               {
@@ -1513,8 +1541,106 @@
         "legend": {
           "calcs": [
             "mean",
-            "max",
-            "min"
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 240,
+      "type": "timeseries",
+      "title": "Missed revenue \u2014 when today's outages happened",
+      "description": "Auto-populated: every 5 min where the engine ran below baseline shows up as a red bar valued at `(baseline \u2212 actual) \u00d7 avg cart-add value`. Tall red bars = outage windows. Negative values (over-performing) are hidden via threshold.",
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "refId": "A",
+          "expr": "(${baseline_atc_per_hour} - sum(rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [5m])) * 3600) * ${avg_atc_value}",
+          "legendFormat": "missed $/hour",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": {
+            "mode": "thresholds"
+          },
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 90,
+            "gradientMode": "opacity",
+            "lineWidth": 1,
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "showPoints": "never",
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "#EF4444",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "missed $/hour"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#EF4444"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean",
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -1534,7 +1660,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 52
       },
       "collapsed": false,
       "panels": []
@@ -1548,7 +1674,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 48
+        "y": 53
       },
       "datasource": {
         "type": "loki",
@@ -1609,7 +1735,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 48
+        "y": 53
       },
       "datasource": {
         "type": "loki",
@@ -1669,7 +1795,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 56
+        "y": 61
       },
       "collapsed": false,
       "panels": []
@@ -1683,7 +1809,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 57
+        "y": 62
       },
       "options": {
         "mode": "markdown",
