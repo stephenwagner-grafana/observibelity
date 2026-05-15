@@ -39,7 +39,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export const options = {
-  vus: parseInt(__ENV.K6_VUS || '30', 10),
+  vus: parseInt(__ENV.K6_VUS || '60', 10),
   duration: __ENV.K6_DURATION || '60s',
   thresholds: {
     http_req_failed: ['rate<0.80'],  // many demo flows are intentional 4xx/5xx
@@ -455,5 +455,5 @@ export default function () {
   // exfil). Accept any well-formed HTTP response so the loadgen keeps running.
   check(r, { 'response received': (res) => res.status > 0 && res.status < 600 });
 
-  sleep(Math.random() * 2 + 0.5);  // 0.5-2.5s per VU between requests
+  sleep(Math.random() * 0.6 + 0.2);  // 0.5-2.5s per VU between requests
 }
