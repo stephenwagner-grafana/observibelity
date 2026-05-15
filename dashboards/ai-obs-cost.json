@@ -732,6 +732,7 @@
           },
           "custom": {
             "axisLabel": "Tokens / hour",
+            "axisSoftMin": 0,
             "drawStyle": "line",
             "fillOpacity": 8,
             "lineInterpolation": "smooth",
@@ -741,6 +742,7 @@
             "gradientMode": "opacity",
             "thresholdsStyle": {"mode": "line"}
           },
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
