@@ -27,3 +27,4 @@ _remote_backup*
 registry/_generated/scenarios/*.js
 !registry/_generated/scenarios/baseline.js
 !registry/_generated/scenarios/baseline-2-gift-finder.js
+deploy/wags-ai/etc-default-alloy.env

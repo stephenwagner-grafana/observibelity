@@ -1,0 +1,12 @@
+[Unit]
+Description=Run nvidia-textfile every 10 seconds
+After=alloy.service
+
+[Timer]
+OnBootSec=15s
+OnUnitActiveSec=10s
+AccuracySec=1s
+Unit=nvidia-textfile.service
+
+[Install]
+WantedBy=timers.target

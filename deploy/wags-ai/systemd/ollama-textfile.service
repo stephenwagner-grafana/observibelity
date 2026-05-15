@@ -1,0 +1,11 @@
+[Unit]
+Description=Write Ollama API metrics to Alloy textfile collector
+After=alloy.service ollama.service
+Wants=alloy.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ollama-textfile.sh
+User=root
+Group=root
+Nice=10

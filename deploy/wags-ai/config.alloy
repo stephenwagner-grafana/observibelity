@@ -1,0 +1,247 @@
+// Grafana Alloy — wags-ai (192.168.2.240)
+// Bare-metal Ubuntu 24.04 desktop, RTX 5090, Ollama 0.13.x
+// Ships:
+//   - host metrics (linux node) → Prom remote_write
+//   - NVIDIA GPU metrics (textfile from nvidia-smi) → same
+//   - Ollama API metrics (textfile from /api/ps + /api/tags) → same
+//   - ollama process metrics → same
+//   - all systemd-journal logs → Loki
+//   - OTLP receiver on :4317/:4318 → Grafana Cloud OTLP gateway
+//   - kernel logs (kmsg) → Loki
+// Source of truth: github.com/stephenwagner-grafana/observibelity → deploy/wags-ai/
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// ============================================================
+// CREDENTIALS — sourced from /etc/default/alloy environment.
+// ============================================================
+// Set these in /etc/default/alloy:
+//   GCLOUD_PROM_USER, GCLOUD_PROM_PASS, GCLOUD_PROM_URL
+//   GCLOUD_LOKI_USER, GCLOUD_LOKI_PASS, GCLOUD_LOKI_URL
+//   GCLOUD_OTLP_USER, GCLOUD_OTLP_PASS, GCLOUD_OTLP_URL
+
+// ============================================================
+// 1. HOST METRICS (linux node_exporter + textfile)
+// ============================================================
+prometheus.exporter.unix "host" {
+  set_collectors = [
+    "cpu", "cpufreq", "diskstats", "filesystem", "hwmon",
+    "loadavg", "meminfo", "netdev", "netstat", "nvme", "os",
+    "pressure", "processes", "schedstat", "sockstat", "stat",
+    "systemd", "textfile", "thermal_zone", "time", "uname", "vmstat",
+  ]
+  filesystem {
+    mount_points_exclude = "^/(dev|proc|sys|run|var/lib/docker)($|/)"
+    fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
+  }
+  textfile {
+    directory = "/var/lib/alloy/textfile"
+  }
+  systemd {
+    unit_include = "^(alloy|ollama|nvidia-persistenced|docker|containerd|cron|sshd|ssh|systemd-resolved|systemd-timesyncd|nvidia-textfile|ollama-textfile)\\.(service|socket|timer)$"
+  }
+}
+
+prometheus.scrape "host_metrics" {
+  targets         = prometheus.exporter.unix.host.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "15s"
+  job_name        = "integrations/linux-node"
+}
+
+// ============================================================
+// 2. OLLAMA PROCESS METRICS
+// ============================================================
+prometheus.exporter.process "ollama" {
+  matcher {
+    name    = "ollama"
+    comm    = ["ollama", "ollama_llama_se"]
+  }
+}
+
+prometheus.scrape "ollama_process" {
+  targets         = prometheus.exporter.process.ollama.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "15s"
+  job_name        = "ollama-process"
+}
+
+// ============================================================
+// 3. METRIC RELABELING — guarantee host label everywhere
+// ============================================================
+prometheus.relabel "add_host" {
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+  rule {
+    target_label = "host"
+    replacement  = "wags-ai"
+  }
+  rule {
+    target_label = "cluster"
+    replacement  = "homelab"
+  }
+}
+
+// ============================================================
+// 4. PROM REMOTE WRITE → GRAFANA CLOUD
+// ============================================================
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = sys.env("GCLOUD_PROM_URL")
+    basic_auth {
+      username = sys.env("GCLOUD_PROM_USER")
+      password = sys.env("GCLOUD_PROM_PASS")
+    }
+  }
+  external_labels = {
+    host    = "wags-ai",
+    cluster = "homelab",
+  }
+}
+
+// ============================================================
+// 5. JOURNAL LOGS → LOKI
+// ============================================================
+loki.relabel "journal" {
+  forward_to = []
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+  rule {
+    source_labels = ["__journal__transport"]
+    target_label  = "transport"
+  }
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "instance"
+  }
+}
+
+loki.source.journal "host_logs" {
+  forward_to    = [loki.process.journal.receiver]
+  relabel_rules = loki.relabel.journal.rules
+  max_age       = "12h"
+  labels = {
+    host    = "wags-ai",
+    job     = "integrations/linux-node",
+    cluster = "homelab",
+  }
+}
+
+loki.process "journal" {
+  forward_to = [loki.write.grafana_cloud.receiver]
+
+  // Tag Ollama load/eviction events so they're trivially queryable.
+  // Driving the AI-justifies-AI demo: Sift will pivot on these.
+  stage.match {
+    selector = "{unit=\"ollama.service\"}"
+    stage.regex {
+      expression = "(?P<event>load (model|library))"
+    }
+    stage.labels {
+      values = {
+        event = "",
+      }
+    }
+  }
+  stage.match {
+    selector = "{unit=\"ollama.service\"}"
+    stage.regex {
+      expression = "(?P<event>(stopped server|llm load progress|new model load|llama_model_load))"
+    }
+    stage.labels {
+      values = {
+        event = "",
+      }
+    }
+  }
+  stage.static_labels {
+    values = {
+      cluster = "homelab",
+    }
+  }
+}
+
+loki.write "grafana_cloud" {
+  endpoint {
+    url = sys.env("GCLOUD_LOKI_URL")
+    basic_auth {
+      username = sys.env("GCLOUD_LOKI_USER")
+      password = sys.env("GCLOUD_LOKI_PASS")
+    }
+  }
+  external_labels = {
+    host    = "wags-ai",
+    cluster = "homelab",
+  }
+}
+
+// ============================================================
+// 6. OTLP RECEIVER + GRAFANA CLOUD OTLP GATEWAY EXPORTER
+//    For apps on this host (and any of its docker containers)
+//    that emit traces / metrics / logs over OTLP.
+// ============================================================
+otelcol.receiver.otlp "host" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    metrics = [otelcol.processor.resourcedetection.host.input]
+    logs    = [otelcol.processor.resourcedetection.host.input]
+    traces  = [otelcol.processor.resourcedetection.host.input]
+  }
+}
+
+otelcol.processor.resourcedetection "host" {
+  detectors = ["env", "system"]
+  system {
+    hostname_sources = ["os"]
+    resource_attributes {
+      host.id   { enabled = true }
+      host.name { enabled = true }
+      host.arch { enabled = true }
+      os.type   { enabled = true }
+    }
+  }
+  output {
+    metrics = [otelcol.processor.batch.host.input]
+    logs    = [otelcol.processor.batch.host.input]
+    traces  = [otelcol.processor.batch.host.input]
+  }
+}
+
+otelcol.processor.batch "host" {
+  send_batch_size = 1000
+  send_batch_max_size = 2000
+  timeout = "5s"
+  output {
+    metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    logs    = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    traces  = [otelcol.exporter.otlphttp.grafana_cloud.input]
+  }
+}
+
+otelcol.exporter.otlphttp "grafana_cloud" {
+  client {
+    endpoint = sys.env("GCLOUD_OTLP_URL")
+    auth     = otelcol.auth.basic.grafana_cloud.handler
+    compression = "gzip"
+  }
+}
+
+otelcol.auth.basic "grafana_cloud" {
+  username = sys.env("GCLOUD_OTLP_USER")
+  password = sys.env("GCLOUD_OTLP_PASS")
+}
+
+// (otelcol.receiver.hostmetrics is not in Alloy 1.16.1; node_exporter covers it.)
