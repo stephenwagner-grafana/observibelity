@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-loadgen",
-  "title": "AI o11y \u2014 Loadgen Activity (what k6 is driving right now)",
+  "title": "AI o11y — Loadgen Activity (what k6 is driving right now)",
   "tags": [
     "ai-observability",
     "loadgen",
@@ -63,7 +63,7 @@
     {
       "id": 1,
       "type": "row",
-      "title": "\ud83d\udce1 Overview \u2014 is k6 actually generating traffic right now?",
+      "title": "📡 Overview — is k6 actually generating traffic right now?",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -76,7 +76,7 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "How fast is k6 driving chats? (req/sec, 5m)",
+      "title": "How fast is k6 driving chats? (req/sec)",
       "description": "Rate of Sigil generation log lines from llm-gateway (one per chat). Best proxy for live k6 throughput. Red below 0.1/sec means loadgen is essentially idle.",
       "gridPos": {
         "h": 5,
@@ -141,7 +141,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "How many use cases are firing? (5m)",
+      "title": "How many use cases are firing?",
       "description": "Distinct ai_o11y.usecase values seen in llm-gateway logs in the last 5 minutes. Green at 18+ — registry has 22 scenarios so anything well below means traffic is too thin to keep them all lit.",
       "gridPos": {
         "h": 5,
@@ -210,7 +210,7 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "How many personas are active? (5m)",
+      "title": "How many personas are active?",
       "description": "Distinct ai_o11y.persona_id values seen in llm-gateway logs in the last 5 minutes. Green at 20+ — the centerpiece personas (Tim/Mara/Jordan/Priya/Eric) should always be present.",
       "gridPos": {
         "h": 5,
@@ -357,7 +357,7 @@
     {
       "id": 7,
       "type": "barchart",
-      "title": "Which use cases are getting hit? (chats per use_case, 5m)",
+      "title": "Which use cases are getting hit? (chats per use_case)",
       "description": "Total chats per use_case in the last 5 minutes. Should mirror the baseline.js weight table at the bottom — data-theft-tim (8) and hiring-discrimination-risk (5) lead.",
       "gridPos": {
         "h": 11,
@@ -424,7 +424,7 @@
     {
       "id": 8,
       "type": "barchart",
-      "title": "🔥 Which personas are driving the chats? (5m)",
+      "title": "🔥 Which personas are driving the chats?",
       "description": "Total chats per persona in the last 5 minutes. Centerpiece personas (Tim L, Mara, Jordan, Priya, Eric) should dominate — if they don't, baseline.js weights need a look.",
       "gridPos": {
         "h": 11,
@@ -567,7 +567,7 @@
     {
       "id": 11,
       "type": "piechart",
-      "title": "📦 Where is traffic landing? (specialist mix, 5m)",
+      "title": "📦 Where is traffic landing? (specialist mix)",
       "description": "Donut split of chats by destination specialist. Sanity check that sb-router and nc-chatbot are fanning out to their respective sub-specialists, not getting stuck on a single one.",
       "gridPos": {
         "h": 11,
@@ -640,8 +640,8 @@
     {
       "id": 13,
       "type": "piechart",
-      "title": "\ud83e\udd16 Ollama vs Claude \u2014 is the 80/20 split holding? (5m)",
-      "description": "Donut of gen_ai.system share. Target ratio is set by LOADGEN_CLAUDE_FRACTION (default 0.10\u20130.20). If Claude is dominating, you'll see it here before the cost stat panel turns red.",
+      "title": "🤖 Ollama vs Claude — is the 80/20 split holding?",
+      "description": "Donut of gen_ai.system share. Target ratio is set by LOADGEN_CLAUDE_FRACTION (default 0.10–0.20). If Claude is dominating, you'll see it here before the cost stat panel turns red.",
       "gridPos": {
         "h": 9,
         "w": 8,
@@ -703,8 +703,8 @@
     {
       "id": 14,
       "type": "table",
-      "title": "\u2744 Which scenarios have gone cold? (hits in last 30m)",
-      "description": "Per-use_case hit count over the last 30 minutes, sorted high-to-low. Red row = zero hits \u2014 usually a baseline.js weight at 0, a k6 pod restart, or stale routing keywords in sb-router.",
+      "title": "❄ Which scenarios have gone cold? (hits in last 30m)",
+      "description": "Per-use_case hit count over the last 30 minutes, sorted high-to-low. Red row = zero hits — usually a baseline.js weight at 0, a k6 pod restart, or stale routing keywords in sb-router.",
       "gridPos": {
         "h": 9,
         "w": 16,
@@ -851,7 +851,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios \u2014 the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude \u2014 uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) \u2014 total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) \u2014 per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) \u2014 per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) \u2014 full demo agenda\n"
+        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios — the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | u-tim-l | supportbot |\n| **5** | hiring-discrimination-risk | u-hr-recruiter | supportbot |\n| 4 | prompt-injection | u-eric-bad | supportbot |\n| 4 | prompt-injection-llm01 | u-eric-bad | supportbot |\n| 4 | normal-support (HR) | u-emp-norm-1 | supportbot |\n| 4 | normal-support (IT) | u-emp-norm-2 | supportbot |\n| 4 | normal-shopping | u-bob-sales | neoncart |\n| 4 | normal-shopping | u-alice-eng | neoncart |\n| 4 | **mice-rca** (centerpiece) | u-customer-mice | neoncart |\n| 4 | **email-cascade** | u-mara-chen | supportbot |\n| 4 | **cost-anomaly-per-user** | u-priya-research | supportbot |\n| 4 | **confidential-disclosure** | u-jordan-finance | supportbot |\n| 3 | sensitive-data-leaks | u-emp-test-pii | supportbot |\n| 3 | refund-policy-compliance | u-shopper-refund | neoncart |\n| 3 | prompt-injection | u-shopper-injector | neoncart |\n| 3 | normal-support (hiring) | u-hr-recruiter | supportbot |\n| 3 | normal-support (expense) | u-emp-norm-3 | supportbot |\n| 3 | normal-shopping | u-carol-mktg | neoncart |\n| 3 | model-winner | u-shopper-gift | neoncart |\n| 3 | customer-frustration | u-frustrated | neoncart |\n| 3 | cost-anomaly-per-user | u-priya-research | neoncart |\n| 3 | brand-voice-drift | u-norm-2 | neoncart |\n| 3 | bad-question-askers | u-emp-rude | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude — uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) — total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) — per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) — per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) — full demo agenda\n"
       },
       "fieldConfig": {
         "defaults": {},

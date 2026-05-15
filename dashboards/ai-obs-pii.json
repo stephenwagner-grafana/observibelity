@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ event }} \u2014 {{ employee }}"
+        "textFormat": "{{ event }} — {{ employee }}"
       }
     ]
   },
@@ -145,7 +145,7 @@
           "refId": "C"
         }
       ],
-      "title": "📈 PII detected by kind over time (5m)",
+      "title": "📈 PII detected by kind over time",
       "type": "timeseries"
     },
     {
@@ -216,7 +216,7 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Is PII actually being redacted? (mask rate, 5m)",
+      "title": "📈 Is PII actually being redacted? (mask rate)",
       "type": "gauge"
     },
     {
@@ -455,7 +455,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of prompt-injection attempts in the last hour \u2014 \"ignore previous instructions\", \"disregard your system prompt\", etc. Yellow \u22655, red \u226520.",
+      "description": "Count of prompt-injection attempts in the last hour — \"ignore previous instructions\", \"disregard your system prompt\", etc. Yellow ≥5, red ≥20.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -523,7 +523,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway lines in the last hour where PII (SSN, credit card, password, API key) appeared in the model output. ANY non-zero value is a P0 \u2014 the bot just echoed sensitive material.",
+      "description": "Count of gateway lines in the last hour where PII (SSN, credit card, password, API key) appeared in the model output. ANY non-zero value is a P0 — the bot just echoed sensitive material.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -579,7 +579,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 PII echoed back by the bot (1h) \u2014 P0 if > 0",
+      "title": "🚨 PII echoed back by the bot (1h) — P0 if > 0",
       "type": "stat"
     },
     {
@@ -648,7 +648,7 @@
           "refId": "B"
         }
       ],
-      "title": "📈 Prompt injection + PII echo over time (5m)",
+      "title": "📈 Prompt injection + PII echo over time",
       "type": "timeseries"
     },
     {
@@ -743,7 +743,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "\ud83d\udcdc Show me the actual log lines",
+      "title": "📜 Show me the actual log lines",
       "type": "row"
     },
     {
@@ -751,7 +751,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway line matching PII patterns. Values are last-4 redacted \u2014 but the surrounding context tells you who pasted what.",
+      "description": "Live Loki tail of every gateway line matching PII patterns. Values are last-4 redacted — but the surrounding context tells you who pasted what.",
       "gridPos": {
         "h": 11,
         "w": 14,
@@ -930,7 +930,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 PII, Injection, Disclosure",
+  "title": "AI o11y — PII, Injection, Disclosure",
   "uid": "ai-obs-pii",
   "weekStart": ""
 }

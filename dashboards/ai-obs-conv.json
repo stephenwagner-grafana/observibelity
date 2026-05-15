@@ -31,7 +31,7 @@
       }
     ]
   },
-  "description": "Conversational quality \u2014 refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
+  "description": "Conversational quality — refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -69,7 +69,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Fraction of nc-chatbot log lines (last 15m) that mention refund/return/policy. A noisy proxy for refund-policy chatter \u2014 yellow above 1%, red above 2%. Treat as a heads-up, not a verdict.",
+      "description": "Fraction of nc-chatbot log lines (last 15m) that mention refund/return/policy. A noisy proxy for refund-policy chatter — yellow above 1%, red above 2%. Treat as a heads-up, not a verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -191,7 +191,7 @@
           "refId": "A"
         }
       ],
-      "title": "💬 Refund/return mentions per session over time (5m)",
+      "title": "💬 Refund/return mentions per session over time",
       "type": "timeseries"
     },
     {
@@ -338,7 +338,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\ude24 Frustration mentions vs empathetic responses (1h)",
+      "title": "😤 Frustration mentions vs empathetic responses (1h)",
       "type": "timeseries"
     },
     {
@@ -482,7 +482,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "2\u03c3 lower bound"
+              "options": "2σ lower bound"
             },
             "properties": [
               {
@@ -557,12 +557,12 @@
           "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "-2\u03c3",
+          "legendFormat": "-2σ",
           "range": true,
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udcc8 Output rate vs 6h baseline \u2014 drift fires below -2\u03c3",
+      "title": "📈 Output rate vs 6h baseline — drift fires below -2σ",
       "type": "timeseries"
     },
     {
@@ -632,7 +632,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Brand drift right now (negative = drifting)",
+      "title": "🚨 Brand drift right now (negative = drifting)",
       "type": "stat"
     },
     {
@@ -653,7 +653,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per nc-/sb- specialist with three signals from the last hour: cost rate (USD/sec), p95 request latency, and avg output token rate. Column headers in the field overrides still reference 'compliance/frustration/brand score' \u2014 those labels are misleading; trust the underlying numeric columns.",
+      "description": "One row per nc-/sb- specialist with three signals from the last hour: cost rate (USD/sec), p95 request latency, and avg output token rate. Column headers in the field overrides still reference 'compliance/frustration/brand score' — those labels are misleading; trust the underlying numeric columns.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -933,7 +933,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Conversations (Refund, Frustration, Brand)",
+  "title": "AI o11y — Conversations (Refund, Frustration, Brand)",
   "uid": "ai-obs-conv",
   "weekStart": ""
 }

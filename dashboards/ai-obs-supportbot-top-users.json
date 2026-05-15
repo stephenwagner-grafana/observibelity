@@ -36,16 +36,32 @@
   "liveNow": false,
   "panels": [
     {
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "content": "<div style=\"padding:18px 22px;\">\n  <h1 style=\"margin:0 0 8px 0; font-size:22px; font-weight:600; color:#e5e7eb; letter-spacing:-0.01em;\">Who's using SupportBot \u2014 and what is it costing?</h1>\n  <p style=\"margin:0 0 12px 0; color:#a3a3a3; font-size:14px; max-width:960px; line-height:1.55;\">\n    ACME's internal SupportBot routes every employee chat through <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-router</code> (intent classifier) to one of nine specialists (<code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-hr-info</code>, <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-it-troubleshoot</code>, <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-policy-finder</code>, \u2026). AI is usage-priced, so a handful of heavy users or abusers can swing the monthly bill 10\u00d7 while the average employee is a rounding error. <b style=\"color:#e5e7eb;\">This view ranks the top 10 internal users by 24h cost</b> and shows which agents they're hitting.\n  </p>\n  <div style=\"display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; font-size:13px; color:#d4d4d4; line-height:1.5;\">\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2460 Leaderboard</span> \u2014 calls, tokens, 24h\u00a0cost, projected 30d cost, and waste % (low-quality calls / total). Sorted by spend.</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2461 Per-user agent mix</span> \u2014 stacked tokens by sb-* specialist. Outliers in one agent often indicate misuse or repetitive misuse patterns.</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2462 Time trends</span> \u2014 cost/hour and calls/min. Spikes outside business hours = paste-bombs (Priya), injection probes (Eric), or exfil attempts (Tim).</div>\n  </div>\n  <div style=\"margin-top:12px; font-size:12px; color:#737373;\">Tip: pick a single user from the <b>User</b> dropdown to scope the whole dashboard. Scope is hard-pinned to <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#a3a3a3;\">ai_o11y_specialist=~\"sb-.*\"</code> so only SupportBot traffic counts.</div>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "id": 1,
       "panels": [],
-      "title": "SupportBot \u2014 top 10 internal users (24h)",
+      "title": "\ud83c\udfc6 Top 10 internal SupportBot users (last 24h)",
       "type": "row"
     },
     {
@@ -53,7 +69,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 internal SupportBot users by 24h cost. Columns: calls (gen_ai operation count), input+output tokens, total USD cost, waste % (high-waste calls / total calls). Sorted by cost desc.",
+      "description": "Top 10 internal SupportBot users by 24h cost. Columns: calls (gen_ai operation count), input+output tokens, 24h USD cost, **30-day projected cost** (24h × 30 — what this user would cost if the next month looked like the last 24h), and waste % (low-quality calls flagged by Sigil / total). Sorted by 24h cost descending. Use the User dropdown to drill into a single employee.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -190,7 +206,7 @@
               },
               {
                 "id": "decimals",
-                "value": 4
+                "value": 2
               },
               {
                 "id": "custom.cellOptions",
@@ -214,6 +230,48 @@
                     {
                       "color": "red",
                       "value": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Projected 30d (USD)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 30
+                    },
+                    {
+                      "color": "red",
+                      "value": 150
                     }
                   ]
                 }
@@ -268,7 +326,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 1
+        "y": 6
       },
       "id": 2,
       "options": {
@@ -398,6 +456,22 @@
           }
         },
         {
+          "id": "calculateField",
+          "options": {
+            "alias": "Projected 30d (USD)",
+            "binary": {
+              "left": "Cost (24h, USD)",
+              "operator": "*",
+              "right": "30"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        },
+        {
           "id": "sortBy",
           "options": {
             "fields": {},
@@ -418,11 +492,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 18
       },
       "id": 3,
       "panels": [],
-      "title": "Per-user agent (specialist) breakdown",
+      "title": "🧩 Per-user agent mix — which specialists are they hitting?",
       "type": "row"
     },
     {
@@ -430,7 +504,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Which sb-* specialists each user is hitting, by token consumption (24h). Stacked so each bar's total height = that user's overall token spend across SupportBot agents. sb-router is the intent classifier (always present); the rest are downstream specialists.",
+      "description": "For each of the top-10 spenders above, which sb-* specialists they're routing to (stacked 24h tokens). Each bar's total length = that user's overall token spend on SupportBot. sb-router shows up for everyone (every chat starts there). A single dominant downstream color = focused use of one agent; a wide rainbow = a generalist (or someone trying lots of things to bypass guardrails). Compare bar shapes to spot abuse patterns the leaderboard alone can't tell you about.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -474,7 +548,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 4,
       "options": {
@@ -534,11 +608,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 31
       },
       "id": 5,
       "panels": [],
-      "title": "Time trends",
+      "title": "📈 Time trends — spend rate and chat rate per user",
       "type": "row"
     },
     {
@@ -546,7 +620,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost rate per user for the top-10 internal SupportBot spenders. Spikes here usually correlate with paste-bombs (Priya), repeated injection probes (Eric), or exfil attempts (Tim).",
+      "description": "Cost rate per user, projected to **USD per hour** (5m rate × 3600). One line per top-10 SupportBot spender. A sustained line at $0.10/hr ≈ $72/month per user; sudden spikes correlate with paste-bombs (Priya), repeated injection probes (Eric), or exfil attempts (Tim). Use the time picker to zoom — short windows expose bursty abuse; 24h shows business-hours patterns.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -555,7 +629,7 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "",
+            "axisLabel": "USD / hour",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
@@ -592,7 +666,8 @@
               }
             ]
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -600,7 +675,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 27
+        "y": 32
       },
       "id": 6,
       "options": {
@@ -625,12 +700,12 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[5m])))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[5m]))) * 3600",
           "legendFormat": "{{user_id}}",
           "refId": "A"
         }
       ],
-      "title": "Cost/sec by user (top 10 SupportBot users)",
+      "title": "💸 Cost per hour by user — top 10 SupportBot spenders",
       "type": "timeseries"
     },
     {
@@ -638,7 +713,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Call rate per user for the top-10 internal SupportBot users. Multi-step routing means each chat counts as 2+ calls (sb-router classifies, then a downstream specialist responds).",
+      "description": "Call rate per user, projected to **calls per minute** (5m rate × 60). One line per top-10 SupportBot user. Multi-step routing means each chat counts as 2+ calls — sb-router classifies first, then a downstream specialist responds — so a real conversation produces 2–5 cpm. Sustained >10 cpm by one user is unusual.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -647,7 +722,7 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "",
+            "axisLabel": "calls / minute",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
@@ -684,7 +759,8 @@
               }
             ]
           },
-          "unit": "ops"
+          "unit": "short",
+          "decimals": 1
         },
         "overrides": []
       },
@@ -692,7 +768,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 32
       },
       "id": 7,
       "options": {
@@ -717,12 +793,12 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_operation_duration_seconds_count{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[5m])))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_operation_duration_seconds_count{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[5m]))) * 60",
           "legendFormat": "{{user_id}}",
           "refId": "A"
         }
       ],
-      "title": "Calls/sec by user (top 10 SupportBot users)",
+      "title": "💬 Calls per minute by user — top 10 SupportBot users",
       "type": "timeseries"
     }
   ],

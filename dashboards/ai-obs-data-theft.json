@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cc_paste \u2014 {{ employee }} last4={{ last4 }}"
+        "textFormat": "cc_paste — {{ employee }} last4={{ last4 }}"
       }
     ]
   },
@@ -452,7 +452,7 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Exfil events over time — top 10 employees (5m)",
+      "title": "📈 Exfil events over time — top 10 employees",
       "type": "timeseries"
     },
     {
@@ -548,7 +548,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udcc8 $persona_id \u2014 exfil score vs total events over time",
+      "title": "📈 $persona_id — exfil score vs total events over time",
       "type": "timeseries"
     },
     {
@@ -616,7 +616,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 $persona_id \u2014 exfil events in last 10m",
+      "title": "🚨 $persona_id — exfil events in last 10m",
       "type": "stat"
     },
     {
@@ -786,7 +786,7 @@
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udd25 Top 20 exfilters \u2014 exfil count + cc-paste hits (1h)",
+      "title": "🔥 Top 20 exfilters — exfil count + cc-paste hits (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -808,7 +808,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "\ud83d\udcdc Show me the actual log lines \u2014 cc_paste + exfil events",
+      "title": "📜 Show me the actual log lines — cc_paste + exfil events",
       "type": "row"
     },
     {
@@ -955,7 +955,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Data Theft (per-employee exfil)",
+  "title": "AI o11y — Data Theft (per-employee exfil)",
   "uid": "ai-obs-data-theft",
   "weekStart": ""
 }

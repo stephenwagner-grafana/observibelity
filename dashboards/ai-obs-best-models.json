@@ -281,7 +281,7 @@
           "refId": "A"
         }
       ],
-      "title": "ATC rate per model over time (5m sliding)",
+      "title": "ATC rate per model over time",
       "type": "timeseries"
     },
     {
@@ -586,13 +586,14 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Stacked cost rate (USD/sec) per model over time. Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes.",
+      "description": "Stacked **USD per hour** by model (5m rate × 3600). Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes because they're ~10× the per-token price of Ollama-local.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisLabel": "USD / hour",
             "drawStyle": "line",
             "fillOpacity": 15,
             "lineInterpolation": "smooth",
@@ -604,7 +605,8 @@
               "mode": "normal"
             }
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -635,7 +637,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -643,7 +645,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Spend rate per model over time (5m sliding)",
+      "title": "💰 Spend rate per model — USD per hour",
       "type": "timeseries"
     },
     {
@@ -704,7 +706,7 @@
           "refId": "A"
         }
       ],
-      "title": "⏱ How slow is the worst 5% of requests per model? (p95, 5m)",
+      "title": "⏱ How slow is the worst 5% of requests per model? (p95)",
       "type": "timeseries"
     },
     {
@@ -937,7 +939,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83c\udd9a Claude vs Ollama \u2014 total spend side by side (24h)",
+      "title": "🆚 Claude vs Ollama — total spend side by side (24h)",
       "type": "barchart"
     },
     {
@@ -1136,7 +1138,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Best Models (ranked by ATC)",
+  "title": "AI o11y — Best Models (ranked by ATC)",
   "uid": "ai-obs-best-models",
   "weekStart": ""
 }

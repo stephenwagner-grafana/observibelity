@@ -21,18 +21,18 @@
         "enable": true,
         "hide": false,
         "iconColor": "red",
-        "name": "Hiring discrimination \u2014 P0",
+        "name": "Hiring discrimination — P0",
         "tagKeys": "employee,category",
         "target": {
           "expr": "{container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "hiring discrim \u2014 {{ employee }}"
+        "textFormat": "hiring discrim — {{ employee }}"
       }
     ]
   },
-  "description": "Compliance signals \u2014 policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
+  "description": "Compliance signals — policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -62,7 +62,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83d\udea8 Hiring discrimination \u2014 has ANY event fired? (zero tolerance)",
+      "title": "🚨 Hiring discrimination — has ANY event fired? (zero tolerance)",
       "type": "row"
     },
     {
@@ -280,7 +280,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Span count for the request_access service \u2014 these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
+      "description": "Span count for the request_access service — these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -401,7 +401,7 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Guardrail events over time — by specialist (5m)",
+      "title": "📈 Guardrail events over time — by specialist",
       "type": "timeseries"
     },
     {
@@ -484,7 +484,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 \u00d7 circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
+      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 × circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -812,7 +812,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Compliance",
+  "title": "AI o11y — Compliance",
   "uid": "ai-obs-compliance",
   "weekStart": ""
 }

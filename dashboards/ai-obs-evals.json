@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the \u2139 icon on any panel for what the numbers mean.",
+  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the ℹ icon on any panel for what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -70,7 +70,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway log lines in the last hour matching hateful/abusive keywords (hate, kill yourself, slurs, etc.). Any non-zero value opens a ticket \u2014 the threshold is one.",
+      "description": "Count of gateway log lines in the last hour matching hateful/abusive keywords (hate, kill yourself, slurs, etc.). Any non-zero value opens a ticket — the threshold is one.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -214,7 +214,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes \u2014 there is no quiet threshold for this one.",
+      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes — there is no quiet threshold for this one.",
       "gridPos": {
         "h": 9,
         "w": 6,
@@ -333,7 +333,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "\ud83d\udcca All evaluators \u2014 which one is firing most?",
+      "title": "📊 All evaluators — which one is firing most?",
       "type": "row"
     },
     {
@@ -422,7 +422,7 @@
           "refId": "D"
         }
       ],
-      "title": "📈 Evaluator firings by category over time (5m)",
+      "title": "📈 Evaluator firings by category over time",
       "type": "timeseries"
     },
     {
@@ -664,7 +664,7 @@
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udccb Evaluator scoreboard \u2014 fire rate \u00b7 fails \u00b7 pass rate",
+      "title": "📋 Evaluator scoreboard — fire rate · fails · pass rate",
       "transformations": [
         {
           "id": "joinByField",
@@ -909,7 +909,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Evaluators (Toxicity + Overview)",
+  "title": "AI o11y — Evaluators (Toxicity + Overview)",
   "uid": "ai-obs-evals",
   "weekStart": ""
 }

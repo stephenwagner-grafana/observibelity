@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} \u2014 {{ container }}"
+        "textFormat": "{{ pod }} — {{ container }}"
       },
       {
         "datasource": {
@@ -140,7 +140,7 @@
           "refId": "A"
         }
       ],
-      "title": "How much traffic is hitting NeonCart? (req/s, 5m)",
+      "title": "How much traffic is hitting NeonCart? (req/s)",
       "type": "stat"
     },
     {
@@ -210,7 +210,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Are requests failing? (error rate, 5m)",
+      "title": "⚠ Are requests failing? (error rate)",
       "type": "stat"
     },
     {
@@ -280,7 +280,7 @@
           "refId": "A"
         }
       ],
-      "title": "How slow is the slow tail? (p95 latency, 5m)",
+      "title": "How slow is the slow tail? (p95 latency)",
       "type": "stat"
     },
     {
@@ -350,7 +350,7 @@
           "refId": "A"
         }
       ],
-      "title": "How bad is the worst 1%? (p99 latency, 5m)",
+      "title": "How bad is the worst 1%? (p99 latency)",
       "type": "stat"
     },
     {
@@ -445,7 +445,7 @@
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat \u2192 tool \u2192 failing SQL.",
+      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat → tool → failing SQL.",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -467,7 +467,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "\ud83d\udc2d Show me mice \u2014 failing traces (the centerpiece pivot)",
+      "title": "🐭 Show me mice — failing traces (the centerpiece pivot)",
       "type": "traces"
     },
     {
@@ -542,7 +542,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which specialist is taking the load? (rate by specialist, 5m)",
+      "title": "Which specialist is taking the load? (rate by specialist)",
       "type": "timeseries"
     },
     {
@@ -601,7 +601,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which specialist is slow? (p95 latency by specialist, 5m)",
+      "title": "Which specialist is slow? (p95 latency by specialist)",
       "type": "timeseries"
     },
     {
@@ -775,7 +775,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which tools are being called and how often? (5m)",
+      "title": "Which tools are being called and how often?",
       "type": "timeseries"
     },
     {
@@ -849,7 +849,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Which tools are failing? (error rate by tool, 5m)",
+      "title": "⚠ Which tools are failing? (error rate by tool)",
       "type": "bargauge"
     },
     {
@@ -940,7 +940,7 @@
           "refId": "B"
         }
       ],
-      "title": "How many tokens per model, input vs output? (5m)",
+      "title": "How many tokens per model, input vs output?",
       "type": "timeseries"
     },
     {
@@ -948,13 +948,14 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost rate in USD/sec — both the total line and a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total.",
+      "description": "NeonCart spend rate projected to **USD per hour** (5m rate × 3600) — total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisLabel": "USD / hour",
             "drawStyle": "line",
             "fillOpacity": 10,
             "lineInterpolation": "smooth",
@@ -963,7 +964,8 @@
             "showPoints": "never",
             "spanNulls": true
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -991,7 +993,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m]))",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "total",
@@ -1003,7 +1005,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -1011,7 +1013,7 @@
           "refId": "B"
         }
       ],
-      "title": "💰 What's the burn rate? (USD/sec, total and per model)",
+      "title": "💰 What's the burn rate? — USD per hour, total and per model",
       "type": "timeseries"
     },
     {
@@ -1380,7 +1382,7 @@
           "refId": "A"
         }
       ],
-      "title": "How busy is the DB? (queries/sec by tool, 5m)",
+      "title": "How busy is the DB? (queries/sec by tool)",
       "type": "timeseries"
     },
     {
@@ -1439,7 +1441,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which DB-backed tool is slow? (p95 query duration, 5m)",
+      "title": "Which DB-backed tool is slow? (p95 query duration)",
       "type": "timeseries"
     },
     {
@@ -1447,7 +1449,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here \u2014 pivot to the matching trace above to walk the span tree.",
+      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here — pivot to the matching trace above to walk the span tree.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -1616,7 +1618,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 NeonCart",
+  "title": "AI o11y — NeonCart",
   "uid": "ai-obs-app-neoncart",
   "weekStart": ""
 }

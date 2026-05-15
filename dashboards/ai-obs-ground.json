@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "halluc \u2014 {{ category }}"
+        "textFormat": "halluc — {{ category }}"
       }
     ]
   },
-  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is \u22652\u00d7 the trailing 4h baseline. Hover the \u2139 icon on any panel for what each number means.",
+  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is ≥2× the trailing 4h baseline. Hover the ℹ icon on any panel for what each number means.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -314,7 +314,7 @@
           "refId": "A"
         }
       ],
-      "title": "📦 Hallucinations per specialist over time (5m)",
+      "title": "📦 Hallucinations per specialist over time",
       "type": "timeseries"
     },
     {
@@ -618,7 +618,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udccb Per-specialist scoreboard \u2014 fails + pass rate (1h)",
+      "title": "📋 Per-specialist scoreboard — fails + pass rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -640,7 +640,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udcdc Show me the actual log lines",
+      "title": "📜 Show me the actual log lines",
       "type": "row"
     },
     {
@@ -790,7 +790,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Groundedness (Hallucinations)",
+  "title": "AI o11y — Groundedness (Hallucinations)",
   "uid": "ai-obs-ground",
   "weekStart": ""
 }

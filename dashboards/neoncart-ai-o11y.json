@@ -23,7 +23,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Total /chat invocations the storefront has handled over the selected time range. This is the volume baseline \u2014 every other number here should be read against it.",
+      "description": "Total /chat invocations the storefront has handled over the selected time range. This is the volume baseline — every other number here should be read against it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -179,7 +179,7 @@
           }
         }
       ],
-      "title": "What % of tool calls are failing? (5m)",
+      "title": "What % of tool calls are failing?",
       "type": "stat"
     },
     {
@@ -247,7 +247,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "p95 latency of the product-search tool specifically. A spike to \u22651.5s is the smoking gun for the 'show me mice' RCA \u2014 that's the Postgres query timing out before throwing.",
+      "description": "p95 latency of the product-search tool specifically. A spike to ≥1.5s is the smoking gun for the 'show me mice' RCA — that's the Postgres query timing out before throwing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -355,7 +355,7 @@
           }
         }
       ],
-      "title": "🐭 mice-RCA Postgres errors (5m)",
+      "title": "🐭 mice-RCA Postgres errors",
       "type": "stat"
     },
     {
@@ -375,7 +375,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "p95 latency over time, one line per tool. The mice failure is visible as a step up to \u22651.5s on the search_products series \u2014 every other tool stays flat, which is why the line graph is the give-away.",
+      "description": "p95 latency over time, one line per tool. The mice failure is visible as a step up to ≥1.5s on the search_products series — every other tool stays flat, which is why the line graph is the give-away.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -446,7 +446,7 @@
       "targets": [
         {
           "expr": "histogram_quantile(0.95, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
-          "legendFormat": "p95 \u2014 {{outcome}}",
+          "legendFormat": "p95 — {{outcome}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -455,7 +455,7 @@
         },
         {
           "expr": "histogram_quantile(0.50, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
-          "legendFormat": "p50 \u2014 {{outcome}}",
+          "legendFormat": "p50 — {{outcome}}",
           "refId": "B",
           "datasource": {
             "type": "prometheus",
@@ -659,7 +659,7 @@
         "y": 31
       },
       "id": 400,
-      "title": "\ud83d\udd0e Pick a failed trace \u2014 drop into the waterfall",
+      "title": "🔎 Pick a failed trace — drop into the waterfall",
       "type": "row"
     },
     {
@@ -667,7 +667,7 @@
         "type": "tempo",
         "uid": "${tempo}"
       },
-      "description": "Most recent failing traces on the get_inventory tool \u2014 the mice-RCA smoking gun. Click any trace ID to land in the Tempo waterfall (chat.request \u2192 agent.turn \u2192 tool \u2192 http \u2192 db.postgres.query) and see exactly where it broke.",
+      "description": "Most recent failing traces on the get_inventory tool — the mice-RCA smoking gun. Click any trace ID to land in the Tempo waterfall (chat.request → agent.turn → tool → http → db.postgres.query) and see exactly where it broke.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -692,7 +692,7 @@
           }
         }
       ],
-      "title": "\ud83d\udc2d Recent mice-RCA failures \u2014 click to open the trace",
+      "title": "🐭 Recent mice-RCA failures — click to open the trace",
       "type": "table"
     },
     {
@@ -725,7 +725,7 @@
           }
         }
       ],
-      "title": "All recent NeonCart failures \u2014 click to open the trace",
+      "title": "All recent NeonCart failures — click to open the trace",
       "type": "table"
     },
     {
@@ -745,7 +745,7 @@
         "type": "loki",
         "uid": "${loki}"
       },
-      "description": "Warning + error lines from the llm-gateway container. Every line carries trace_id and span_id \u2014 click Inspect \u2192 Trace on any log to jump straight to the matching Tempo trace.",
+      "description": "Warning + error lines from the llm-gateway container. Every line carries trace_id and span_id — click Inspect → Trace on any log to jump straight to the matching Tempo trace.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -854,7 +854,7 @@
     "from": "now-30m",
     "to": "now"
   },
-  "title": "NeonCart \u2014 AI Observability RCA (ObserVIBElity)",
+  "title": "NeonCart — AI Observability RCA (ObserVIBElity)",
   "uid": "neoncart-ai-o11y",
   "description": "NeonCart RCA dashboard. Tool errors, chat latency, mice-rca SQL surface, failing traces. Rewritten to use traces_spanmetrics_* + gen_ai_* (ObserVIBElity convention)."
 }

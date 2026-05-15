@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cascade started \u2014 {{ conv_id }}"
+        "textFormat": "cascade started — {{ conv_id }}"
       }
     ]
   },
@@ -386,7 +386,7 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Escalator activity per session over time (top 10, 5m)",
+      "title": "📈 Escalator activity per session over time (top 10)",
       "type": "timeseries"
     },
     {
@@ -466,7 +466,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Emails-per-session distribution \u2014 look for the right-tail outliers",
+      "title": "🔥 Emails-per-session distribution — look for the right-tail outliers",
       "type": "heatmap"
     },
     {
@@ -602,7 +602,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udcdc Forensics \u2014 what is the cascade actually doing right now?",
+      "title": "📜 Forensics — what is the cascade actually doing right now?",
       "type": "row"
     },
     {
@@ -647,7 +647,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines \u2014 when you see that counter ticking up, you're watching the runaway.",
+      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines — when you see that counter ticking up, you're watching the runaway.",
       "gridPos": {
         "h": 11,
         "w": 10,
@@ -784,7 +784,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Email Cascade",
+  "title": "AI o11y — Email Cascade",
   "uid": "ai-obs-cascade-spike",
   "weekStart": ""
 }

@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} \u2014 {{ container }}"
+        "textFormat": "{{ pod }} — {{ container }}"
       }
     ]
   },
-  "description": "SupportBot app dashboard \u2014 health, specialists, 16 use cases, outliers, prompt-injection, cost, model routing, cascades, live tail. Queries are namespace-agnostic; they target the llm-gateway sigil JSON event stream wherever it runs.",
+  "description": "SupportBot app dashboard — health, specialists, 16 use cases, outliers, prompt-injection, cost, model routing, cascades, live tail. Queries are namespace-agnostic; they target the llm-gateway sigil JSON event stream wherever it runs.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -61,7 +61,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83c\udfe5 Health \u2014 is SupportBot up and meeting SLOs?",
+      "title": "🏥 Health — is SupportBot up and meeting SLOs?",
       "type": "row"
     },
     {
@@ -123,7 +123,7 @@
           "refId": "A"
         }
       ],
-      "title": "How much traffic is hitting SupportBot? (req/s, 5m)",
+      "title": "How much traffic is hitting SupportBot? (req/s)",
       "type": "stat"
     },
     {
@@ -193,7 +193,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Are requests failing? (error rate, 5m)",
+      "title": "⚠ Are requests failing? (error rate)",
       "type": "stat"
     },
     {
@@ -263,7 +263,7 @@
           "refId": "A"
         }
       ],
-      "title": "How slow is the slow tail? (p95 latency, 5m)",
+      "title": "How slow is the slow tail? (p95 latency)",
       "type": "stat"
     },
     {
@@ -333,7 +333,7 @@
           "refId": "A"
         }
       ],
-      "title": "How bad is the worst 1%? (p99 latency, 5m)",
+      "title": "How bad is the worst 1%? (p99 latency)",
       "type": "stat"
     },
     {
@@ -346,7 +346,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "\ud83d\udce6 Specialists \u2014 which sb-* agents handle the traffic?",
+      "title": "📦 Specialists — which sb-* agents handle the traffic?",
       "type": "row"
     },
     {
@@ -407,7 +407,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which specialist is taking the load? (input tokens/sec, 5m)",
+      "title": "Which specialist is taking the load? (input tokens/sec)",
       "type": "timeseries"
     },
     {
@@ -491,7 +491,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "\ud83d\udcca Use case mix \u2014 which scenarios are firing right now?",
+      "title": "📊 Use case mix — which scenarios are firing right now?",
       "type": "row"
     },
     {
@@ -552,7 +552,7 @@
           "refId": "A"
         }
       ],
-      "title": "Which use cases are active? (tokens/sec by use_case, 5m)",
+      "title": "Which use cases are active? (tokens/sec by use_case)",
       "type": "timeseries"
     },
     {
@@ -629,7 +629,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "\ud83d\udeab Bad question askers \u2014 who's getting refused or escalated?",
+      "title": "🚫 Bad question askers — who's getting refused or escalated?",
       "type": "row"
     },
     {
@@ -790,7 +790,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "\ud83d\udc64 Outlier users \u2014 Tim, Eric and other heavy hitters",
+      "title": "👤 Outlier users — Tim, Eric and other heavy hitters",
       "type": "row"
     },
     {
@@ -985,7 +985,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Ratio of each persona's 1-minute token rate to their 1-hour baseline. A value above 3 is a sudden burst \u2014 the signature for token-spike or cascade behavior. Use to catch a normally quiet user who just lit up.",
+      "description": "Ratio of each persona's 1-minute token rate to their 1-hour baseline. A value above 3 is a sudden burst — the signature for token-spike or cascade behavior. Use to catch a normally quiet user who just lit up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1038,7 +1038,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Sudden burst detector \u2014 rate(1m) \u00f7 rate(1h) per persona",
+      "title": "⚠ Sudden burst detector — rate(1m) ÷ rate(1h) per persona",
       "type": "timeseries"
     },
     {
@@ -1051,7 +1051,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udee1\ufe0f Sensitive data \u2014 are leaks or policy breaks happening?",
+      "title": "🛡️ Sensitive data — are leaks or policy breaks happening?",
       "type": "row"
     },
     {
@@ -1112,7 +1112,7 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 PII and data-leak scenarios over time (5m)",
+      "title": "🚨 PII and data-leak scenarios over time",
       "type": "timeseries"
     },
     {
@@ -1189,7 +1189,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "\ud83d\udea8 Prompt injection (LLM01) \u2014 are users trying to override the system prompt?",
+      "title": "🚨 Prompt injection (LLM01) — are users trying to override the system prompt?",
       "type": "row"
     },
     {
@@ -1608,7 +1608,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "\ud83d\udcb0 Cost and token volume \u2014 what is SupportBot costing?",
+      "title": "💰 Cost and token volume — what is SupportBot costing?",
       "type": "row"
     },
     {
@@ -1669,7 +1669,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 What does each specialist cost per hour? (5m rate \u00d7 3600)",
+      "title": "💰 What does each specialist cost per hour? (5m rate × 3600)",
       "type": "timeseries"
     },
     {
@@ -1743,7 +1743,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "\ud83e\udd16 Models \u2014 which LLMs are answering SupportBot questions?",
+      "title": "🤖 Models — which LLMs are answering SupportBot questions?",
       "type": "row"
     },
     {
@@ -1875,7 +1875,7 @@
           "refId": "A"
         }
       ],
-      "title": "Per-model token rate over time (5m)",
+      "title": "Per-model token rate over time",
       "type": "timeseries"
     },
     {
@@ -1888,7 +1888,7 @@
       },
       "id": 15,
       "panels": [],
-      "title": "\ud83d\udce7 Email cascade \u2014 runaway tool calls from 'show me every email'",
+      "title": "📧 Email cascade — runaway tool calls from 'show me every email'",
       "type": "row"
     },
     {
@@ -2089,7 +2089,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cascade scenarios over time — tokens/sec (5m)",
+      "title": "Cascade scenarios over time — tokens/sec",
       "type": "timeseries"
     },
     {
@@ -2166,7 +2166,7 @@
       },
       "id": 16,
       "panels": [],
-      "title": "\ud83d\udce1 Live event stream \u2014 raw Sigil logs",
+      "title": "📡 Live event stream — raw Sigil logs",
       "type": "row"
     },
     {
@@ -2370,7 +2370,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 SupportBot",
+  "title": "AI o11y — SupportBot",
   "uid": "ai-obs-app-supportbot",
   "weekStart": ""
 }
