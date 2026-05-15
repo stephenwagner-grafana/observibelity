@@ -294,7 +294,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "count(sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
+          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])) > 100000)",
           "legendFormat": "count",
           "refId": "A",
           "instant": false,
@@ -688,8 +688,8 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])))",
-          "legendFormat": "{{ai_o11y_persona_id}}",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])))",
+          "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -703,7 +703,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Each row is one user-hour where consumption exceeded 100k tokens. Use this to answer 'was that spike a one-off at 14:32, or was someone heavy all afternoon?'",
+      "description": "One row per user who used more than 100,000 tokens in the last hour. Pink bar length = how far over the threshold. Internal employees end in @acme.com; external customers use public mail (gmail.com, etc.).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -730,16 +730,35 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "employee"
+              "options": "user_id"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Employee"
+                "value": "User"
               },
               {
                 "id": "custom.width",
-                "value": 280
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tokens (last hour)"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           },
@@ -751,7 +770,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Tokens / 1h"
+                "value": "Tokens (last hour)"
               },
               {
                 "id": "custom.cellOptions",
@@ -950,7 +969,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Tokens / 1h"
+            "displayName": "Tokens (last hour)"
           }
         ]
       },
@@ -960,13 +979,34 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
-          "legendFormat": "{{ai_o11y_persona_id}}",
-          "queryType": "instant",
+          "expr": "topk(20, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])) > 100000)",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "legendFormat": "{{user_id}}",
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Cost anomalies \u2014 who blew past 100k tokens, and when",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "user_id": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "user_id": "User",
+              "Value": "Tokens (last hour)"
+            }
+          }
+        }
+      ],
+      "title": "\ud83d\udea8 Users over the 100k tokens/hour threshold",
       "type": "table",
       "transparent": true
     },
