@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "Cost tracking + per-user attribution. The bill explains itself: u-priya-research lights up the top of the leaderboard with 40-80x repeated paragraphs.",
+  "description": "Where the LLM money is going. Read top-to-bottom: total spend \u2192 who's spending \u2192 which model \u2192 which specialist. Each panel description (hover the \u2139 icon) explains exactly what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -53,16 +53,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "Cost headline",
+      "title": "\ud83d\udcb0 Headline \u2014 what are we spending overall?",
       "type": "row"
     },
     {
@@ -70,7 +165,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Total USD cost across all apps + models in the last 24 hours.",
+      "description": "Sum of all gen_ai costs across providers (Anthropic Claude + Ollama) over the last 24 hours. This is the bill.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -80,15 +175,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 50
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 200
               }
             ]
@@ -101,11 +196,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -115,7 +210,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -126,21 +223,22 @@
           },
           "expr": "sum(increase(gen_ai_client_cost_USD_total[24h]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "USD",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Total cost (24h)",
-      "type": "stat"
+      "title": "\ud83d\udcb0 Total LLM spend \u2014 last 24h",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Number of users currently above the 100k/hr cost anomaly threshold.",
+      "description": "Number of users currently above the 100k tokens/hr cost-anomaly threshold. Red = at least one user is over budget right now. The 'Top spenders' panel below tells you which user(s).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -150,15 +248,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 3
               }
             ]
@@ -171,11 +269,11 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -185,7 +283,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -196,27 +296,31 @@
           },
           "expr": "count(sum by (ai_o11y_persona_id) (increase(gen_ai_client_token_usage_total{ai_o11y_persona_id!=\"\"}[1h])) > 100000)",
           "legendFormat": "count",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "Users > 100k tokens / 1h",
-      "type": "stat"
+      "title": "\u26a0 Heavy users right now (>100k tokens in last hour)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Total cost over time, by app.",
+      "description": "**USD per hour** by specialist (5m rate \u00d7 3600), stacked. Use to spot which specific agent (sb-router, nc-chatbot, etc.) caused a cost spike. Total stack height = current burn rate \u00d7 1h.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisLabel": "USD / hour",
             "drawStyle": "line",
-            "fillOpacity": 20,
+            "fillOpacity": 40,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
@@ -224,17 +328,185 @@
             "stacking": {
               "group": "A",
               "mode": "normal"
-            }
+            },
+            "gradientMode": "opacity"
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 1
+        "y": 4
       },
       "id": 4,
       "options": {
@@ -257,7 +529,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total[5m]))",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -265,15 +537,16 @@
           "refId": "A"
         }
       ],
-      "title": "Cost over time by app (5m)",
-      "type": "timeseries"
+      "title": "\ud83d\udcb0 Spend rate per specialist \u2014 USD per hour",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Predicted cost over the next 24 hours, extrapolated from current 1h rate.",
+      "description": "Naive extrapolation: current cost-per-second \u00d7 24h. NOT a forecast \u2014 just 'if nothing changes, this is what tomorrow looks like.' Useful as a sanity check against the actual 24h total above.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -283,15 +556,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 100
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 500
               }
             ]
@@ -304,11 +577,11 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "id": 5,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -318,7 +591,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -329,14 +604,15 @@
           },
           "expr": "sum(rate(gen_ai_client_cost_USD_total[1h])) * 86400",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "predicted 24h USD",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Cost prediction (next 24h, extrapolated)",
-      "type": "stat"
+      "title": "\ud83d\udd2e Tomorrow's bill at today's burn rate",
+      "type": "stat",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -344,11 +620,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 13
       },
       "id": 6,
       "panels": [],
-      "title": "Per-user cost attribution",
+      "title": "\ud83d\udc64 Per-user \u2014 who is doing the spending?",
       "type": "row"
     },
     {
@@ -356,25 +632,25 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top spenders by 1h token sum across both apps. > 100k fires the cost anomaly alert.",
+      "description": "Ten users consuming the most tokens in the last hour, sorted descending. Bars at the right edge = users at or near the 100k anomaly threshold. This is the leaderboard of 'who is spending your AI budget'.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 50000
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 100000
               }
             ]
@@ -387,7 +663,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 11
+        "y": 14
       },
       "id": 7,
       "options": {
@@ -418,15 +694,16 @@
           "refId": "A"
         }
       ],
-      "title": "Per-user 1h token sum (top 10)",
-      "type": "bargauge"
+      "title": "\ud83d\udd25 Top spenders right now (tokens per hour)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Users currently above the 100k tokens/1h cost-anomaly threshold.",
+      "description": "Each row is one user-hour where consumption exceeded 100k tokens. Use this to answer 'was that spike a one-off at 14:32, or was someone heavy all afternoon?'",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -442,7 +719,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               }
             ]
@@ -484,6 +761,171 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -491,7 +933,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 11
+        "y": 14
       },
       "id": 8,
       "options": {
@@ -524,8 +966,9 @@
           "refId": "A"
         }
       ],
-      "title": "Cost anomalies \u2014 users > 100k tokens / 1h",
-      "type": "table"
+      "title": "\ud83d\udea8 Cost anomalies \u2014 who blew past 100k tokens, and when",
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -533,11 +976,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 24
       },
       "id": 9,
       "panels": [],
-      "title": "Cost by model + specialist (Claude vs Ollama)",
+      "title": "\ud83e\udd16 Per-model \u2014 which model is the bill coming from?",
       "type": "row"
     },
     {
@@ -545,15 +988,16 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost rate by provider \u2014 anthropic (Claude) vs ollama side-by-side. The dramatic gap is the point of the demo: local models are ~10-100x cheaper per token.",
+      "description": "**USD per hour** by provider (5m rate \u00d7 3600). Most traffic goes to Ollama (~$0/token); a small fraction to Claude. The visible gap is the entire demo's point: routing the right traffic to local models saves money. Red band is Anthropic spend; green is the rounding-error Ollama line.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisLabel": "USD / hour",
             "drawStyle": "line",
-            "fillOpacity": 30,
+            "fillOpacity": 40,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
@@ -561,9 +1005,11 @@
             "stacking": {
               "group": "A",
               "mode": "normal"
-            }
+            },
+            "gradientMode": "opacity"
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": [
           {
@@ -575,7 +1021,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "red",
+                  "fixedColor": "#F472B6",
                   "mode": "fixed"
                 }
               }
@@ -590,8 +1036,143 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "green",
+                  "fixedColor": "#8AB8FF",
                   "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
                 }
               }
             ]
@@ -602,7 +1183,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 14,
       "options": {
@@ -626,7 +1207,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_system) (rate(gen_ai_client_cost_USD_total[5m]))",
+          "expr": "sum by (gen_ai_system) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_system}}",
@@ -634,15 +1215,16 @@
           "refId": "A"
         }
       ],
-      "title": "Cost rate by provider (5m) \u2014 Claude vs Ollama",
-      "type": "timeseries"
+      "title": "\ud83d\udcb8 Claude (paid) vs Ollama (free) \u2014 USD per hour",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Counterfactual: if every Ollama token had gone to Haiku ($0.25/M input, $1.25/M output) instead, how much would it have cost? Subtract actual Ollama cost to get the savings. Assumes ~$0.0000007/token blended Haiku rate.",
+      "description": "Counterfactual: if every Ollama token had instead gone to Claude Haiku ($0.25/M input, $1.25/M output), what would it have cost? This number = (counterfactual Haiku bill) \u2212 (actual Ollama bill \u2248 $0).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -652,15 +1234,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": 0.01
               },
               {
-                "color": "super-light-green",
+                "color": "#67E8F9",
                 "value": 1
               }
             ]
@@ -673,11 +1255,11 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 25
       },
       "id": 15,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -687,7 +1269,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -698,21 +1282,22 @@
           },
           "expr": "(sum(increase(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\"}[24h])) * 0.0000007) - sum(increase(gen_ai_client_cost_USD_total{gen_ai_system=\"ollama\"}[24h]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "savings USD",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Savings from Ollama vs Haiku (24h)",
-      "type": "stat"
+      "title": "\ud83d\udcb8 Money saved by routing Ollama instead of Claude Haiku",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-model cost over 24h \u2014 Claude and Ollama models side-by-side. Watch Claude rows dominate spend even though Ollama serves most traffic.",
+      "description": "Per-model cost over 24h. Claude Opus is usually #1 even though it serves <1% of traffic. Compare to the call counts in 'AI o11y \u2014 Best Models' \u2014 expensive \u2260 most-used.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -728,15 +1313,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 0.5
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 5
               }
             ]
@@ -778,6 +1363,171 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -785,7 +1535,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 29
       },
       "id": 16,
       "options": {
@@ -820,23 +1570,25 @@
           "refId": "A"
         }
       ],
-      "title": "Cost by model (24h)",
-      "type": "table"
+      "title": "Which model rang up the bill? (24h)",
+      "type": "table",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost over time broken down by model (Claude and Ollama).",
+      "description": "Same breakdown as the 24h table, but as a time series projected to **USD per hour** (5m rate \u00d7 3600). Shows when each model fired and how its hourly burn rate moved.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisLabel": "USD / hour",
             "drawStyle": "line",
-            "fillOpacity": 20,
+            "fillOpacity": 40,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
@@ -844,17 +1596,185 @@
             "stacking": {
               "group": "A",
               "mode": "normal"
-            }
+            },
+            "gradientMode": "opacity"
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 34
       },
       "id": 10,
       "options": {
@@ -877,7 +1797,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -885,15 +1805,16 @@
           "refId": "A"
         }
       ],
-      "title": "Cost by model (5m)",
-      "type": "timeseries"
+      "title": "\ud83d\udcb0 Spend rate per model \u2014 USD per hour",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost by model breakdown \u2014 fraction of total. Window widened to 24h so claude-opus-4-7 (which fires on ~1% of conversations) is captured.",
+      "description": "Donut of 24h cost split by model. Window is 24h so claude-opus-4-7 (fires on ~1% of conversations) is captured even when no opus calls happened in the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -908,13 +1829,179 @@
           },
           "unit": "currencyUSD"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 31
+        "y": 34
       },
       "id": 11,
       "options": {
@@ -959,8 +2046,9 @@
           "refId": "A"
         }
       ],
-      "title": "Cost share by model (24h)",
-      "type": "piechart"
+      "title": "Cost share \u2014 which model took what share of the bill? (24h)",
+      "type": "piechart",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -968,11 +2056,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 43
       },
       "id": 12,
       "panels": [],
-      "title": "Cost by app / specialist",
+      "title": "\ud83d\udce6 Per-specialist \u2014 which agent's traffic is most expensive?",
       "type": "row"
     },
     {
@@ -980,29 +2068,198 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Cost by specialist + app over time.",
+      "description": "**USD per hour** by <use case, specialist> (5m rate \u00d7 3600). Finer-grained than the headline panel \u2014 use to compare how nc-chatbot vs sb-router vs nc-gift-finder stack up within their respective apps and use cases.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisLabel": "USD / hour",
             "drawStyle": "line",
             "fillOpacity": 15,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
-          "unit": "currencyUSD"
+          "unit": "currencyUSD",
+          "decimals": 2
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 44
       },
       "id": 13,
       "options": {
@@ -1025,7 +2282,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase, ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist!=\"\"}[5m]))",
+          "expr": "sum by (ai_o11y_usecase, ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist!=\"\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}} / {{ai_o11y_specialist}}",
@@ -1033,8 +2290,9 @@
           "refId": "A"
         }
       ],
-      "title": "Cost over time by app + specialist (5m)",
-      "type": "timeseries"
+      "title": "\ud83d\udcb0 Spend rate per <use case, specialist> \u2014 USD per hour",
+      "type": "timeseries",
+      "transparent": true
     }
   ],
   "refresh": "30s",
