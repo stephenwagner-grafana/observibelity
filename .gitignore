@@ -23,6 +23,7 @@ values-deploy.yaml
 _remote_backup*
 
 # Generated k6 scenario .js files (built by `make build-usecases`).
-# Only the .cm.yaml ConfigMap wrappers + baseline.js are tracked.
+# Only the .cm.yaml ConfigMap wrappers + hand-written baselines are tracked.
 registry/_generated/scenarios/*.js
 !registry/_generated/scenarios/baseline.js
+!registry/_generated/scenarios/baseline-2-gift-finder.js
