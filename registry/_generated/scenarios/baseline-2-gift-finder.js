@@ -171,5 +171,7 @@ export default function () {
     );
   }
 
-  sleep(0.4);
+  // Jittered sleep so the 3 VUs don't fire iterations in lockstep — breaks
+  // up the gift-finder pulse on the per-specialist rate panel.
+  sleep(0.2 + Math.random() * 0.4);
 }
