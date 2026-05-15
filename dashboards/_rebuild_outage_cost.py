@@ -325,9 +325,101 @@ P.append(stat_panel(
     description="Set this to your real average order-line value. Default $150 = midpoint of gift-finder persona budgets.",
 ))
 
-# Row 2 header
+# ───────────── Row 2: Missed revenue (measured shortfall today) ─────────────
 y += 8
-P.append(row(207, "🛑 Cost if the engine stops — what an outage costs the business", y))
+P.append(row(230, "📉 Missed revenue — what today's downtime actually cost", y))
+y += 1
+
+# HERO: missed revenue today (baseline*24h - actual_24h) * avg value
+missed_today_loki = (
+    '(${baseline_atc_per_hour} * 24 '
+    '- sum(count_over_time({service_namespace="observibelity",container="tool"} '
+    '|~ "atc_event source=loadgen" [24h]))) * ${avg_atc_value}'
+)
+P.append(stat_panel(
+    pid=231, title="Missed revenue today (last 24h)", expr=missed_today_loki,
+    ds=LOKI_DS, x=0, y=y, w=12, h=8,
+    color_mode="background", graph="area", text_mode="value",
+    description=(
+        "Measured shortfall: (`baseline_atc_per_hour` × 24h) − today's actual cart-adds, "
+        "valued at `avg_atc_value`. Positive = revenue left on the table due to "
+        "outages, slowdowns, or capacity caps. Negative = you over-performed baseline."
+    ),
+    thresholds=[
+        {"color": "#10B981", "value": None},       # negative / zero: over-performing → green
+        {"color": "#F59E0B", "value": 1},          # any shortfall: amber
+        {"color": "#EF4444", "value": 50_000},     # serious shortfall: red
+    ],
+))
+
+# Missed this hour
+missed_hour_loki = (
+    '(${baseline_atc_per_hour} '
+    '- sum(count_over_time({service_namespace="observibelity",container="tool"} '
+    '|~ "atc_event source=loadgen" [1h]))) * ${avg_atc_value}'
+)
+P.append(stat_panel(
+    pid=232, title="Missed this hour", expr=missed_hour_loki,
+    ds=LOKI_DS, x=12, y=y, w=6, h=4,
+    color_mode="value", graph="area",
+    description="Shortfall in the last 60 minutes vs. baseline. Live bleed indicator.",
+    thresholds=[
+        {"color": "#10B981", "value": None},
+        {"color": "#F59E0B", "value": 1},
+        {"color": "#EF4444", "value": 5_000},
+    ],
+))
+
+# Revenue capture rate (actual / expected) × 100
+capture_rate_loki = (
+    '(sum(count_over_time({service_namespace="observibelity",container="tool"} '
+    '|~ "atc_event source=loadgen" [24h])) '
+    '/ (${baseline_atc_per_hour} * 24)) * 100'
+)
+P.append(stat_panel(
+    pid=233, title="Revenue capture rate (24h)", expr=capture_rate_loki,
+    ds=LOKI_DS, x=18, y=y, w=6, h=4,
+    color_mode="value", graph="area",
+    unit="percent", decimals=1,
+    description=(
+        "Percent of baseline revenue actually captured today. 100% = matched baseline; "
+        "70% = lost ~30% of expected revenue; >100% = beat baseline."
+    ),
+    thresholds=[
+        {"color": "#EF4444", "value": None},
+        {"color": "#F59E0B", "value": 70},
+        {"color": "#10B981", "value": 95},
+    ],
+    calc="lastNotNull",
+))
+
+# Expected today (baseline math, no Loki call needed)
+expected_today_expr = "${baseline_atc_per_hour} * 24 * ${avg_atc_value}"
+P.append(stat_panel(
+    pid=234, title="Expected today (baseline)", expr=expected_today_expr,
+    ds=PROM_DS, x=12, y=y+4, w=6, h=4,
+    color_mode="value", graph="none",
+    description="What the engine should have produced today at baseline rate.",
+    thresholds=[
+        {"color": "#9CA3AF", "value": None},
+    ],
+))
+
+# Actual today (mirror of revenue last 24h but framed against missed)
+P.append(stat_panel(
+    pid=235, title="Actual today",
+    expr=revenue_24h_loki,
+    ds=LOKI_DS, x=18, y=y+4, w=6, h=4,
+    color_mode="value", graph="area",
+    description="Measured revenue in the trailing 24 hours.",
+    thresholds=[
+        {"color": "#10B981", "value": None},
+    ],
+))
+
+# ───────────── Row 3: Projected outage cost (scenario / tunable) ─────────────
+y += 8
+P.append(row(207, "🛑 Projected outage cost — what a future N-hour outage would cost", y))
 y += 1
 
 # Markdown explainer

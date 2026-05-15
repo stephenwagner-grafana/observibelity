@@ -486,14 +486,371 @@
       }
     },
     {
-      "id": 207,
+      "id": 230,
       "type": "row",
-      "title": "\ud83d\uded1 Cost if the engine stops \u2014 what an outage costs the business",
+      "title": "\ud83d\udcc9 Missed revenue \u2014 what today's downtime actually cost",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 12
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 231,
+      "type": "stat",
+      "title": "Missed revenue today (last 24h)",
+      "description": "Measured shortfall: (`baseline_atc_per_hour` \u00d7 24h) \u2212 today's actual cart-adds, valued at `avg_atc_value`. Positive = revenue left on the table due to outages, slowdowns, or capacity caps. Negative = you over-performed baseline.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "refId": "A",
+          "expr": "(${baseline_atc_per_hour} * 24 - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h]))) * ${avg_atc_value}",
+          "legendFormat": "",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F59E0B",
+                "value": 1
+              },
+              {
+                "color": "#EF4444",
+                "value": 50000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false
+      }
+    },
+    {
+      "id": 232,
+      "type": "stat",
+      "title": "Missed this hour",
+      "description": "Shortfall in the last 60 minutes vs. baseline. Live bleed indicator.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 13
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "refId": "A",
+          "expr": "(${baseline_atc_per_hour} - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [1h]))) * ${avg_atc_value}",
+          "legendFormat": "",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F59E0B",
+                "value": 1
+              },
+              {
+                "color": "#EF4444",
+                "value": 5000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      }
+    },
+    {
+      "id": 233,
+      "type": "stat",
+      "title": "Revenue capture rate (24h)",
+      "description": "Percent of baseline revenue actually captured today. 100% = matched baseline; 70% = lost ~30% of expected revenue; >100% = beat baseline.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "refId": "A",
+          "expr": "(sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) / (${baseline_atc_per_hour} * 24)) * 100",
+          "legendFormat": "",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#EF4444",
+                "value": null
+              },
+              {
+                "color": "#F59E0B",
+                "value": 70
+              },
+              {
+                "color": "#10B981",
+                "value": 95
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      }
+    },
+    {
+      "id": 234,
+      "type": "stat",
+      "title": "Expected today (baseline)",
+      "description": "What the engine should have produced today at baseline rate.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 17
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "${baseline_atc_per_hour} * 24 * ${avg_atc_value}",
+          "legendFormat": "",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#9CA3AF",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      }
+    },
+    {
+      "id": 235,
+      "type": "stat",
+      "title": "Actual today",
+      "description": "Measured revenue in the trailing 24 hours.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 17
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "refId": "A",
+          "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value}",
+          "legendFormat": "",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      }
+    },
+    {
+      "id": 207,
+      "type": "row",
+      "title": "\ud83d\uded1 Projected outage cost \u2014 what a future N-hour outage would cost",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
       },
       "collapsed": false,
       "panels": []
@@ -507,7 +864,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 13
+        "y": 22
       },
       "options": {
         "mode": "markdown",
@@ -528,7 +885,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 13
+        "y": 22
       },
       "datasource": {
         "type": "prometheus",
@@ -600,7 +957,7 @@
         "h": 4,
         "w": 8,
         "x": 16,
-        "y": 13
+        "y": 22
       },
       "datasource": {
         "type": "prometheus",
@@ -664,7 +1021,7 @@
         "h": 4,
         "w": 3,
         "x": 16,
-        "y": 17
+        "y": 26
       },
       "datasource": {
         "type": "prometheus",
@@ -728,7 +1085,7 @@
         "h": 4,
         "w": 2,
         "x": 19,
-        "y": 17
+        "y": 26
       },
       "datasource": {
         "type": "prometheus",
@@ -792,7 +1149,7 @@
         "h": 4,
         "w": 3,
         "x": 21,
-        "y": 17
+        "y": 26
       },
       "datasource": {
         "type": "prometheus",
@@ -855,7 +1212,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 30
       },
       "collapsed": false,
       "panels": []
@@ -869,7 +1226,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 31
       },
       "datasource": {
         "type": "prometheus",
@@ -955,7 +1312,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 31
       },
       "datasource": {
         "type": "prometheus",
@@ -1023,7 +1380,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 38
       },
       "collapsed": false,
       "panels": []
@@ -1037,7 +1394,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 39
       },
       "datasource": {
         "type": "loki",
@@ -1177,7 +1534,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 47
       },
       "collapsed": false,
       "panels": []
@@ -1191,7 +1548,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 48
       },
       "datasource": {
         "type": "loki",
@@ -1252,7 +1609,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 39
+        "y": 48
       },
       "datasource": {
         "type": "loki",
@@ -1312,7 +1669,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 56
       },
       "collapsed": false,
       "panels": []
@@ -1326,7 +1683,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 57
       },
       "options": {
         "mode": "markdown",
