@@ -3,9 +3,40 @@
 
 {% block content %}
 <section class="nc-hero">
-  <h1>{{ branding.name }}</h1>
-  <p>{{ branding.tagline }}</p>
-  <a class="nc-cta" href="/catalog">Browse the full catalog</a>
+  <div class="nc-hero__main">
+    <h1>{{ branding.name }}</h1>
+    <p>{{ branding.tagline }}</p>
+    <a class="nc-cta" href="/catalog">Browse the full catalog</a>
+  </div>
+
+  <aside class="nc-hero__gift" aria-label="AI Gift Finder">
+    <div class="nc-hero__gift-tag"><span aria-hidden="true">🎁</span> AI Gift Finder</div>
+    <h2 class="nc-hero__gift-title">Tell me about them. I'll find the gift.</h2>
+    <p class="nc-hero__gift-sub">
+      Click a starter — or type your own. Backed by Claude + Sigil.
+    </p>
+    <div class="nc-hero__gift-chips">
+      <button type="button" class="nc-hero__gift-chip"
+              data-gift-prompt="birthday gift for my dad under $200, he likes audio">
+        🎂 dad · $200 · audio
+      </button>
+      <button type="button" class="nc-hero__gift-chip"
+              data-gift-prompt="anniversary gift for my wife around $300, into wearables">
+        💍 wife · $300 · wearables
+      </button>
+      <button type="button" class="nc-hero__gift-chip"
+              data-gift-prompt="holiday gift for my 10-year-old nephew under $50, into gaming">
+        🎄 nephew · $50 · gaming
+      </button>
+      <button type="button" class="nc-hero__gift-chip"
+              data-gift-prompt="graduation gift for my best friend around $100, peripherals">
+        🎓 friend · $100 · peripherals
+      </button>
+    </div>
+    <button type="button" class="nc-hero__gift-cta" data-gift-open="true">
+      Chat with the Gift Finder <span aria-hidden="true">→</span>
+    </button>
+  </aside>
 </section>
 
 <section class="nc-section">

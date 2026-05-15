@@ -190,34 +190,59 @@
       .catch(() => {});
   }
 
-  // Render the first navigate action (target=category|search|product|cart) as
-  // a clickable button under the reply text. Spec change: previously this
-  // auto-redirected on a timer; now it surfaces a button the user can click,
-  // which keeps the chat open and the choice visible to the demo audience.
+  // Render the first navigate action under the reply text.
+  //
+  // Two flavours:
+  //   * auto:true   — the agent explicitly called the `navigate` tool. We
+  //                   honour it: render a "Taking you to ..." pill AND
+  //                   redirect after ~1.4s so the user gets to read the
+  //                   reply before the page swaps.
+  //   * auto:false  — keyword-fallback nav synthesised from search hits
+  //                   (legacy behaviour). Click-to-go button only; the
+  //                   page never moves until the user clicks.
   function renderNavigate(actions) {
     if (!Array.isArray(actions) || !actions.length) return null;
-    const nav = actions.find((a) => a && a.type === "navigate" && a.value);
+    const nav = actions.find((a) => a && a.type === "navigate");
     if (!nav) return null;
-    let href = null;
-    let label = "Open";
-    if (nav.target === "category") {
-      href = `/catalog?category=${encodeURIComponent(nav.value)}`;
-      label = `Browse ${prettyCategorySlug(nav.value)}`;
-    } else if (nav.target === "search") {
-      href = `/catalog?q=${encodeURIComponent(nav.value)}`;
-      label = `Search "${nav.value}"`;
-    } else if (nav.target === "product") {
-      href = `/products/${encodeURIComponent(nav.value)}`;
-      label = "View product";
-    } else if (nav.target === "cart") {
-      href = `/cart`;
-      label = "Go to cart";
+    // Prefer the URL the navigate tool returned (carries the canonical
+    // shape including any future params we add). Fall back to building
+    // from (target, value) for keyword-synth actions.
+    let href = nav.url || null;
+    let label = nav.label || null;
+    if (!href) {
+      if (nav.target === "category" && nav.value) {
+        href = `/catalog?category=${encodeURIComponent(nav.value)}`;
+        label = label || `Browse ${prettyCategorySlug(nav.value)}`;
+      } else if (nav.target === "search" && nav.value) {
+        href = `/catalog?q=${encodeURIComponent(nav.value)}`;
+        label = label || `Search "${nav.value}"`;
+      } else if (nav.target === "product" && nav.value) {
+        href = `/products/${encodeURIComponent(nav.value)}`;
+        label = label || "View product";
+      } else if (nav.target === "cart") {
+        href = `/cart`;
+        label = label || "Go to cart";
+      }
     }
     if (!href) return null;
+    label = label || "Open";
     const a = document.createElement("a");
     a.className = "chat-nav-btn";
     a.href = href;
-    a.innerHTML = `<span aria-hidden="true">&rarr;</span> ${escapeHTML(label)}`;
+    if (nav.auto) {
+      a.classList.add("chat-nav-btn--auto");
+      a.innerHTML =
+        `<span class="chat-nav-btn__spin" aria-hidden="true">↻</span> `
+        + `Taking you to ${escapeHTML(label)}…`;
+      // Defer the redirect so the bubble paints and the user reads the
+      // reply text. setTimeout (not requestIdleCallback) so the delay is
+      // predictable for a demo.
+      setTimeout(() => {
+        window.location.href = href;
+      }, 1400);
+    } else {
+      a.innerHTML = `<span aria-hidden="true">&rarr;</span> ${escapeHTML(label)}`;
+    }
     return a;
   }
 
@@ -334,6 +359,25 @@
       sendMessage(input ? input.value : "");
     });
   }
+
+  // Hero gift-finder card on the homepage. Clicking any `[data-gift-prompt]`
+  // chip opens the chat widget and immediately fires that prompt — the
+  // gift-finder route picks it up via the keyword detector. The `[data-gift-open]`
+  // CTA just opens the widget (no auto-send) so the user can compose freely.
+  document.querySelectorAll("[data-gift-prompt], [data-gift-open]").forEach((btn) => {
+    btn.addEventListener("click", (evt) => {
+      evt.preventDefault();
+      const prompt = btn.dataset.giftPrompt;
+      setOpen(true);
+      if (prompt) {
+        // Give the panel layout a tick before submit so the typing
+        // indicator + bubble animate cleanly.
+        setTimeout(() => sendMessage(prompt), 120);
+      } else if (input) {
+        setTimeout(() => input.focus(), 200);
+      }
+    });
+  });
 
   // Delegate Add-to-cart clicks anywhere inside the chat panel so the
   // handler survives every re-render of the bubble cards.
