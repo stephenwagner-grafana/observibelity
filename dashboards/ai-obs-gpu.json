@@ -1,0 +1,167 @@
+{
+  "annotations": {
+    "list": [
+      {"builtIn": 1, "datasource": {"type": "grafana", "uid": "-- Grafana --"}, "enable": true, "hide": true,
+       "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}
+    ]
+  },
+  "description": "🎮 GPU pressure on the bare-metal Ollama host (.240, RTX 5090). Read top→bottom: how busy is the card → how saturated is VRAM → how hot is it → how is request latency tracking GPU pressure. Empty until you set up nvidia-gpu-exporter or Alloy's nvidia integration on .240 — see the panel descriptions for the metric names expected.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [{"asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true,
+             "tags": ["observibelity"], "title": "ObserVIBElity dashboards", "type": "dashboards"}],
+  "liveNow": false,
+  "panels": [
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}, "id": 1, "panels": [],
+     "title": "🎮 GPU pressure right now (RTX 5090 on .240)", "type": "row"},
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Current GPU compute utilization (%). >80% sustained = the 5090 is the bottleneck and queue depth in Ollama will grow. Source: nvidia_gpu_exporter metric nvidia_smi_utilization_gpu_ratio (×100).",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "min": 0, "max": 100, "unit": "percent",
+        "thresholds": {"mode": "absolute", "steps": [
+          {"color": "green", "value": null}, {"color": "yellow", "value": 60}, {"color": "orange", "value": 80}, {"color": "red", "value": 95}]}}},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 1}, "id": 2,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+                  "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+                  "showPercentChange": false, "textMode": "value_and_name", "wideLayout": true},
+      "pluginVersion": "11.0.0",
+      "targets": [{"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+                   "expr": "avg(nvidia_smi_utilization_gpu_ratio) * 100 or avg(DCGM_FI_DEV_GPU_UTIL) or vector(0)",
+                   "instant": true, "legendFormat": "GPU util", "refId": "A"}],
+      "title": "GPU compute utilization (%)", "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "VRAM used / total. >90% = some models are being evicted between requests and the rotation will see cold-start hits. The 5090 has 32 GB; the 8-model rotation pool fits comfortably (~22 GB total).",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "min": 0, "max": 100, "unit": "percent",
+        "thresholds": {"mode": "absolute", "steps": [
+          {"color": "green", "value": null}, {"color": "yellow", "value": 70}, {"color": "orange", "value": 85}, {"color": "red", "value": 95}]}}},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 1}, "id": 3,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+                  "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+                  "showPercentChange": false, "textMode": "value_and_name", "wideLayout": true},
+      "pluginVersion": "11.0.0",
+      "targets": [{"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+                   "expr": "(sum(nvidia_smi_memory_used_bytes) / sum(nvidia_smi_memory_total_bytes)) * 100 or (sum(DCGM_FI_DEV_FB_USED) / (sum(DCGM_FI_DEV_FB_USED) + sum(DCGM_FI_DEV_FB_FREE))) * 100 or vector(0)",
+                   "instant": true, "legendFormat": "VRAM", "refId": "A"}],
+      "title": "VRAM in use (% of 32 GB)", "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "GPU die temperature in °C. The 5090's thermal limit is around 88°C; sustained >80°C means the fans should be ramping. Useful for spotting thermal throttling that could explain latency hiccups.",
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "min": 0, "max": 95, "unit": "celsius",
+        "thresholds": {"mode": "absolute", "steps": [
+          {"color": "green", "value": null}, {"color": "yellow", "value": 70}, {"color": "orange", "value": 80}, {"color": "red", "value": 88}]}}},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 1}, "id": 4,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+                  "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+                  "showPercentChange": false, "textMode": "value_and_name", "wideLayout": true},
+      "pluginVersion": "11.0.0",
+      "targets": [{"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+                   "expr": "max(nvidia_smi_temperature_gpu) or max(DCGM_FI_DEV_GPU_TEMP) or vector(0)",
+                   "instant": true, "legendFormat": "GPU temp", "refId": "A"}],
+      "title": "GPU temperature (°C)", "type": "stat"
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}, "id": 5, "panels": [],
+     "title": "📈 Pressure over time", "type": "row"},
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "GPU utilization, VRAM, and temperature on one chart. Spikes here should line up with rotation flips into bigger models (mistral:7b, qwen2.5:7b). If util hits 100% and stays there, raise OLLAMA_NUM_PARALLEL above 1.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {
+        "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto",
+        "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none",
+        "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+        "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5,
+        "scaleDistribution": {"type": "linear"}, "showPoints": "auto", "spanNulls": false,
+        "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}},
+        "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+        "min": 0, "max": 100, "unit": "percent"}},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10}, "id": 6,
+      "options": {"legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+                  "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+         "expr": "avg(nvidia_smi_utilization_gpu_ratio) * 100 or avg(DCGM_FI_DEV_GPU_UTIL)",
+         "legendFormat": "GPU util %", "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+         "expr": "(sum(nvidia_smi_memory_used_bytes) / sum(nvidia_smi_memory_total_bytes)) * 100 or (sum(DCGM_FI_DEV_FB_USED) / (sum(DCGM_FI_DEV_FB_USED) + sum(DCGM_FI_DEV_FB_FREE))) * 100",
+         "legendFormat": "VRAM %", "refId": "B"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+         "expr": "max(nvidia_smi_temperature_gpu) or max(DCGM_FI_DEV_GPU_TEMP)",
+         "legendFormat": "GPU temp °C", "refId": "C"}
+      ],
+      "title": "GPU util / VRAM / temp — last 1h", "type": "timeseries"
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 20}, "id": 7, "panels": [],
+     "title": "⏱ Ollama latency on .240 (correlates with GPU pressure above)", "type": "row"},
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "P95 / P50 / Avg request latency for Ollama calls broken down by model. Compare with the GPU util panel above — bigger models (mistral:7b, qwen2.5:7b) spike util AND p95 latency at the same time.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {
+        "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto",
+        "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "linear", "lineWidth": 2,
+        "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto",
+        "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}},
+        "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+        "unit": "s"}},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 21}, "id": 8,
+      "options": {"legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+                  "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+         "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_provider_name=\"ollama\"}[5m])))",
+         "legendFormat": "p95 — {{gen_ai_request_model}}", "refId": "A"}
+      ],
+      "title": "Ollama p95 latency per model (5m)", "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "description": "Ollama request rate per model. The rotation cycles models every 60s, so each model gets bursts. Steady-state ~31 calls/min total with 60 k6 VUs.",
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {
+        "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto",
+        "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "linear", "lineWidth": 2,
+        "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto",
+        "stacking": {"group": "A", "mode": "normal"}, "thresholdsStyle": {"mode": "off"}},
+        "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+        "unit": "rpm"}},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 31}, "id": 9,
+      "options": {"legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+                  "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "editorMode": "code",
+         "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", gen_ai_provider_name=\"ollama\"}[5m])) * 60",
+         "legendFormat": "{{gen_ai_request_model}}", "refId": "A"}
+      ],
+      "title": "Ollama request rate per model (calls/min, stacked)", "type": "timeseries"
+    },
+    {"collapsed": false, "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41}, "id": 10, "panels": [],
+     "title": "📖 No data yet? — set up the GPU exporter on .240", "type": "row"},
+    {
+      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "description": "",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 42}, "id": 11,
+      "options": {"code": {"language": "plaintext", "showLineNumbers": false, "showMiniMap": false},
+                  "content": "### Quickest path — `nvidia_gpu_exporter` + Grafana Alloy\n\nOn `.240`:\n\n```bash\n# 1. Install the exporter (one binary, runs as systemd)\ncurl -sSL https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/latest/download/nvidia_gpu_exporter_$(uname -m | sed s/x86_64/amd64/)_linux.tar.gz \\\n  | sudo tar -C /usr/local/bin -xzf - nvidia_gpu_exporter\n\nsudo tee /etc/systemd/system/nvidia_gpu_exporter.service <<'EOF'\n[Unit]\nDescription=NVIDIA GPU Prometheus Exporter\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/nvidia_gpu_exporter --web.listen-address=:9835\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF\nsudo systemctl enable --now nvidia_gpu_exporter\n\n# Verify\ncurl -s localhost:9835/metrics | head -20\n```\n\n### Ship metrics to Grafana Cloud\n\nUse Alloy (if you already have it for other stuff on .240, just add this; if not, install via `https://github.com/grafana/alloy`):\n\n```alloy\nprometheus.scrape \"nvidia_gpu\" {\n  targets    = [{__address__ = \"localhost:9835\", instance = \"wags-ai-240\"}]\n  forward_to = [prometheus.remote_write.grafana_cloud.receiver]\n  job_name   = \"nvidia_gpu\"\n}\n```\n\nWithin 1 min the panels above will populate. If you'd rather use **DCGM Exporter** (NVIDIA's official, fancier), this dashboard supports both — the queries fall back from `nvidia_smi_*` to `DCGM_FI_DEV_*` automatically.\n",
+                  "mode": "markdown"},
+      "pluginVersion": "11.0.0",
+      "title": "Recipe — installing the exporter on .240", "type": "text"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ai-observability", "observibelity", "gpu"],
+  "templating": {"list": [
+    {"current": {"selected": true, "text": "grafanacloud-stephenwagner-prom", "value": "grafanacloud-prom"},
+     "hide": 0, "includeAll": false, "label": "Prometheus", "multi": false, "name": "datasource_prom",
+     "options": [], "query": "prometheus", "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"}
+  ]},
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "",
+  "title": "AI Obs — GPU Pressure (.240 / RTX 5090)",
+  "uid": "ai-obs-gpu",
+  "version": 1,
+  "weekStart": ""
+}

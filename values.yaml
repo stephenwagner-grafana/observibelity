@@ -105,24 +105,18 @@ llmGateway:
         # 60s = each model in the pool gets ~6 min of traffic per hour =
         # plenty of leaderboard signal for the Model Winner dashboard.
         windowSeconds: 60
-        # Ordered rotation pool. Each entry must be pre-pulled on the Ollama
-        # server (verify with ``curl ${baseUrl}/api/tags``). Default pool
-        # spans 1B-30B params so the Best Models leaderboard has meaningful
-        # cost/quality variance:
-        #   - Small (1-4B):  tinyllama:1.1b, llama3.2:1b, phi3:mini, gemma2:2b, qwen3:4b
-        #   - Medium (7B):   qwen2.5:7b, mistral:7b-instruct, llama3.2:latest
-        #   - Large (30B+):  qwen3:30b-a3b-instruct-2507-q4_K_M, phi3:medium-128k
+        # Ordered rotation pool — small/medium models only (1B-7B). The 30B
+        # qwen3 and 14B phi3-medium were dropped because they tie up the GPU
+        # long enough to starve smaller-model traffic and the leaderboard.
         models:
-          - qwen3:4b
-          - llama3.2:latest
-          - phi3:medium-128k
-          - mistral:7b-instruct
-          - qwen3:30b-a3b-instruct-2507-q4_K_M
-          - gemma2:2b
-          - qwen2.5:7b
-          - phi3:mini
           - tinyllama:1.1b
           - llama3.2:1b
+          - phi3:mini
+          - gemma2:2b
+          - qwen3:4b
+          - llama3.2:latest
+          - qwen2.5:7b
+          - mistral:7b-instruct
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
