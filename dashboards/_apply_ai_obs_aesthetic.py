@@ -300,7 +300,11 @@ def apply(dashboard):
         ptype = panel.get("type")
         if ptype == "row" or panel.get("id") == RIBBON_PANEL_ID:
             continue
-        panel["transparent"] = True
+        # Let panels keep Grafana's default elevated card background so they
+        # contrast with the page — matches the AI Obs product UI. The ribbon
+        # is the only intentionally-transparent panel (it sits like a header
+        # strip on the page background).
+        panel["transparent"] = False
         fn = TRANSFORMERS.get(ptype)
         if fn:
             fn(panel)

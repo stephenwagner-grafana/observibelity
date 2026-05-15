@@ -115,7 +115,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -131,7 +131,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -147,7 +147,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -199,7 +199,7 @@
       ],
       "title": "NeonCart \u2014 how busy are we? (chats / hr)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -267,7 +267,7 @@
       ],
       "title": "NeonCart \u2014 how slow is the slow tail? (p95 chat ms)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -318,7 +318,7 @@
       ],
       "title": "Support Bot \u2014 how busy are we? (asks / hr)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -386,7 +386,7 @@
       ],
       "title": "\ud83d\udea8 Support Bot \u2014 how many 5xx errors? (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -401,7 +401,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -417,7 +417,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     }
   ],

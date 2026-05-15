@@ -231,7 +231,7 @@
       ],
       "title": "\ud83d\udea8 Hallucination signals \u2014 last 1h",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -302,7 +302,7 @@
       ],
       "title": "\ud83d\udcc8 Are we worse than baseline? (15m \u00f7 4h ratio)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -347,7 +347,7 @@
       ],
       "title": "\u26a0 Hallucination alert \u2014 is it firing?",
       "type": "alertlist",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -707,7 +707,7 @@
       ],
       "title": "\ud83d\udce6 Hallucinations per specialist over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1091,7 +1091,7 @@
       ],
       "title": "\ud83d\udcc8 Current 15m rate vs 4h baseline",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1167,7 +1167,7 @@
       ],
       "title": "\ud83d\udd25 Top hallucinating specialists (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1594,7 +1594,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1645,7 +1645,7 @@
       ],
       "title": "\ud83d\udcdc Hallucination event log stream (Loki)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

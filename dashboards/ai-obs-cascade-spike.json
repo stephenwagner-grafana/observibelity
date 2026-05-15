@@ -231,7 +231,7 @@
       ],
       "title": "\ud83d\udcb0 How much have cascades cost us in the last hour?",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -302,7 +302,7 @@
       ],
       "title": "\ud83d\udce8 Cascade activity in the last hour (log events)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -375,7 +375,7 @@
       ],
       "title": "\ud83d\udd22 Tokens burned by cascade specialists (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -420,7 +420,7 @@
       ],
       "title": "\ud83d\udea8 Is the conv_runaway alert firing?",
       "type": "alertlist",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -780,7 +780,7 @@
       ],
       "title": "\ud83d\udcc8 Escalator activity per session over time (top 10)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -861,7 +861,7 @@
       ],
       "title": "\ud83d\udd25 Emails-per-session distribution \u2014 look for the right-tail outliers",
       "type": "heatmap",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1270,7 +1270,7 @@
       ],
       "title": "\ud83d\udea8 Top 20 runaway sessions \u2014 who's blowing past 50 emails in 10m?",
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1321,7 +1321,7 @@
       ],
       "title": "\ud83d\udce8 Live tail \u2014 escalator tool/probe events",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1359,7 +1359,7 @@
       ],
       "title": "\ud83d\udcdc Summarizer burst \u2014 2000-call loop in action",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

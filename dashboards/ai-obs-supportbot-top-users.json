@@ -143,7 +143,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -865,7 +865,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1280,7 +1280,7 @@
         }
       ],
       "type": "barchart",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1673,7 +1673,7 @@
       ],
       "title": "\ud83d\udcb8 Cost per hour by user \u2014 top 10 SupportBot spenders",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2053,7 +2053,7 @@
       ],
       "title": "\ud83d\udcac Calls per minute by user \u2014 top 10 SupportBot users",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

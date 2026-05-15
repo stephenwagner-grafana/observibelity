@@ -229,7 +229,7 @@
       ],
       "title": "\ud83d\udcb8 Refund-policy noise rate (15m)",
       "type": "gauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -576,7 +576,7 @@
       ],
       "title": "\ud83d\udcac Refund/return mentions per session over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -649,7 +649,7 @@
       ],
       "title": "\ud83d\udd22 Refund mentions in the last hour",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1016,7 +1016,7 @@
       ],
       "title": "\ud83d\ude24 Frustration mentions vs empathetic responses (1h)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1088,7 +1088,7 @@
       ],
       "title": "\u26a0 % of frustrated customers the bot ignored (1h)",
       "type": "gauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1528,7 +1528,7 @@
       ],
       "title": "\ud83d\udcc8 Output rate vs 6h baseline \u2014 drift fires below -2\u03c3",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1601,7 +1601,7 @@
       ],
       "title": "\ud83d\udea8 Brand drift right now (negative = drifting)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2076,7 +2076,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

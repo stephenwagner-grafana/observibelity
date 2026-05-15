@@ -227,7 +227,7 @@
       ],
       "title": "\ud83d\udea8 Hateful content events (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -606,7 +606,7 @@
       ],
       "title": "\ud83d\udd25 Top 10 employees by toxic events (24h)",
       "type": "barchart",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -651,7 +651,7 @@
       ],
       "title": "\u26a0 Toxicity alert \u2014 is it firing?",
       "type": "alertlist",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -724,7 +724,7 @@
       ],
       "title": "\ud83d\udcc8 Toxicity pass rate by specialist (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1114,7 +1114,7 @@
       ],
       "title": "\ud83d\udcc8 Evaluator firings by category over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1651,7 +1651,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1711,7 +1711,7 @@
       ],
       "title": "\u26a0 Firing evaluator alerts (grouped by severity)",
       "type": "alertlist",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1749,7 +1749,7 @@
       ],
       "title": "\ud83d\udcdc Critical evaluator fails \u2014 raw log stream (Loki)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

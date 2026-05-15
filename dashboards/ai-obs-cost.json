@@ -232,7 +232,7 @@
       ],
       "title": "\ud83d\udcb0 Total LLM spend \u2014 last 24h",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -306,7 +306,7 @@
       ],
       "title": "\u26a0 Heavy users right now (>100k tokens in last hour)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -661,7 +661,7 @@
       ],
       "title": "\ud83d\udcb0 Spend rate per specialist \u2014 USD per hour",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -735,7 +735,7 @@
       ],
       "title": "\ud83d\udd2e Tomorrow's bill at today's burn rate",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -848,7 +848,7 @@
       ],
       "title": "\ud83d\udd25 Top spenders right now (tokens per hour)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1217,7 +1217,7 @@
       ],
       "title": "\ud83d\udea8 Heavy users over time \u2014 when did each one spike?",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1586,7 +1586,7 @@
       ],
       "title": "\ud83d\udcb8 Claude (paid) vs Ollama (free) \u2014 USD per hour",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1660,7 +1660,7 @@
       ],
       "title": "\ud83d\udcb8 Money saved by routing Ollama instead of Claude Haiku",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2062,7 +2062,7 @@
       ],
       "title": "Which model rang up the bill? (24h)",
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2417,7 +2417,7 @@
       ],
       "title": "\ud83d\udcb0 Spend rate per model \u2014 USD per hour",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2778,7 +2778,7 @@
       ],
       "title": "Cost share \u2014 which model took what share of the bill? (24h)",
       "type": "piechart",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -3222,7 +3222,7 @@
       ],
       "title": "\ud83d\udcb0 Top 8 <use case, specialist> by spend rate \u2014 USD per hour",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

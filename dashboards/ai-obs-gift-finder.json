@@ -213,7 +213,7 @@
           "format": "time_series"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 3,
@@ -574,7 +574,7 @@
           "legendFormat": "{{model}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 4,
@@ -910,7 +910,7 @@
           "legendFormat": "{{source}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 5,
@@ -1255,7 +1255,7 @@
           "legendFormat": "{{persona}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 6,
@@ -1612,7 +1612,7 @@
           "legendFormat": "{{sku}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "type": "row",
@@ -1698,7 +1698,7 @@
           "format": "time_series"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 12,
@@ -2036,7 +2036,7 @@
           "legendFormat": "{{result}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 13,
@@ -2095,7 +2095,7 @@
           "format": "time_series"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 14,
@@ -2451,7 +2451,7 @@
           "legendFormat": "{{model}} / {{reason}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     },
     {
       "id": 15,
@@ -2779,7 +2779,7 @@
           "legendFormat": "{{model}} / {{result}}"
         }
       ],
-      "transparent": true
+      "transparent": false
     }
   ]
 }

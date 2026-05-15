@@ -232,7 +232,7 @@
       ],
       "title": "\ud83d\udea8 Max calls to a single tool (10m) \u2014 runaway gauge",
       "type": "gauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -305,7 +305,7 @@
       ],
       "title": "\ud83d\udd25 Top tools by call count (10m)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -667,7 +667,7 @@
       ],
       "title": "\ud83d\udcc8 Tool call rate per tool",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1016,7 +1016,7 @@
       ],
       "title": "\ud83d\udcc8 Top 10 tools by call count over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1113,7 +1113,7 @@
       ],
       "title": "\ud83d\udcc8 How slow are tool calls? \u2014 latency heatmap",
       "type": "heatmap",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1188,7 +1188,7 @@
       ],
       "title": "\u26a0 Which tool is failing? \u2014 error rate per tool",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1615,7 +1615,7 @@
       ],
       "title": "\ud83d\udd25 Top tools by call count \u2014 investigation shortlist (10m)",
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1666,7 +1666,7 @@
       ],
       "title": "\ud83d\udcdc Tool error log stream (Loki)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

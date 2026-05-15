@@ -73,7 +73,7 @@
       ],
       "title": "How many chats? (last $__range)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -130,7 +130,7 @@
       ],
       "title": "\ud83d\udea8 How many chats failed?",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -195,7 +195,7 @@
       ],
       "title": "What % of tool calls are failing?",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -260,7 +260,7 @@
       ],
       "title": "How slow is chat for the worst 5%? (p95)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -325,7 +325,7 @@
       ],
       "title": "Is product search slow? (p95, mice-RCA signal)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -386,7 +386,7 @@
       ],
       "title": "\ud83d\udc2d mice-RCA Postgres errors",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -734,7 +734,7 @@
       ],
       "title": "Which tool is slow? (p95 per tool over time)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1078,7 +1078,7 @@
       ],
       "title": "Chat latency \u2014 typical vs tail, OK vs failed (p50 & p95)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1425,7 +1425,7 @@
       ],
       "title": "Which tool is failing? (error rate per tool)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1759,7 +1759,7 @@
       ],
       "title": "Which use case is burning tokens? (rate per use case)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2094,7 +2094,7 @@
       ],
       "title": "Which tool is busiest? (requests/sec per tool)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "description": "Stacked bars of errors per minute, broken down by span_name (which specific operation failed). Use to spot exactly which span \u2014 db.postgres.query, http.search-service, etc. \u2014 is the source of the failure cluster.",
@@ -2431,7 +2431,7 @@
       ],
       "title": "Which span keeps failing? (errors by span name)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2477,7 +2477,7 @@
       ],
       "title": "\ud83d\udc2d Recent mice-RCA failures \u2014 click to open the trace",
       "type": "table",
-      "transparent": true,
+      "transparent": false,
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -2801,7 +2801,7 @@
       ],
       "title": "All recent NeonCart failures \u2014 click to open the trace",
       "type": "table",
-      "transparent": true,
+      "transparent": false,
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -3137,7 +3137,7 @@
       ],
       "title": "llm-gateway warnings + errors (click \u2192 trace)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "10s",

@@ -129,7 +129,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -145,7 +145,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -161,7 +161,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -177,7 +177,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -193,7 +193,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -209,7 +209,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -225,7 +225,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -241,7 +241,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -257,7 +257,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -273,7 +273,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -289,7 +289,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -305,7 +305,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -321,7 +321,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -337,7 +337,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -353,7 +353,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -369,7 +369,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     },
     {
@@ -385,7 +385,7 @@
         "mode": "html"
       },
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "text"
     }
   ],

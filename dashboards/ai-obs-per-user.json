@@ -901,7 +901,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -983,7 +983,7 @@
       ],
       "title": "Top spenders (24h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1052,7 +1052,7 @@
       ],
       "title": "Top token consumers (24h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1146,7 +1146,7 @@
       ],
       "title": "Fleet AI quality score (1h avg, 0-100)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1221,7 +1221,7 @@
       ],
       "title": "Worst quality scores (bottom 10 users, 1h avg)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

@@ -231,7 +231,7 @@
       ],
       "title": "\ud83d\udea8 Total exfil-keyword events \u2014 last 24h",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -304,7 +304,7 @@
       ],
       "title": "\ud83d\udc64 How many employees are exfiltrating? (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -377,7 +377,7 @@
       ],
       "title": "\ud83d\udd12 Credit-card pastes detected (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -422,7 +422,7 @@
       ],
       "title": "\u26a0 data_theft alert \u2014 is it firing?",
       "type": "alertlist",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -506,7 +506,7 @@
       ],
       "title": "\ud83d\udd25 Top 10 likely exfilters right now (10m rolling)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -853,7 +853,7 @@
       ],
       "title": "\ud83d\udcc8 Exfil events over time \u2014 top 10 employees",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1237,7 +1237,7 @@
       ],
       "title": "\ud83d\udcc8 $persona_id \u2014 exfil score vs total events over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1310,7 +1310,7 @@
       ],
       "title": "\ud83d\udea8 $persona_id \u2014 exfil events in last 10m",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1775,7 +1775,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1826,7 +1826,7 @@
       ],
       "title": "\ud83d\udcdc Exfil-keyword log stream (Loki) \u2014 filtered to $persona_id",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

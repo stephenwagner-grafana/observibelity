@@ -151,7 +151,7 @@
       "description": "Pinned context for the Support Bot (\"Ask Acme\") pitch \u2014 what the app is, which models are routed, what the loadgen does, and where the chat UI lives.",
       "title": "\ud83e\udd16 Start here \u2014 what is Ask Acme and what's running?",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -168,7 +168,7 @@
       "description": "The seven live demos you can run right now. Each row tells you exactly what to type or wait for, the signal it produces, the dashboard to land on, and the one-line value pitch. Stars mark the centerpiece demos.",
       "title": "Step 1 \u2014 Live demos: type this, see this signal",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -185,7 +185,7 @@
       "description": "Support Bot's eval-driven scenarios (termination intent, confidential disclosure, policy circumvention, hiring discrimination). Each is seeded by a sticky user so the leaderboard names a specific employee.",
       "title": "Step 2 \u2014 Eval-driven Support Bot use cases (light up after deploy)",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -202,7 +202,7 @@
       "description": "Evals that aren't Support Bot-specific (toxicity, PII echo, prompt injection, runaway tools, cost anomalies) but still fire here. Use the Sample-panels row at the bottom for one-click deep-links into the alert / leaderboard views.",
       "title": "Step 3 \u2014 Cross-cutting evals that also show up in Support Bot",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -219,7 +219,7 @@
       "description": "The 5-minute Support Bot story to run in front of a customer \u2014 pick ONE of the three options (A: email cascade, B: Tim data-theft, C: coworker termination intent) and stick to that arc.",
       "title": "\ud83c\udfac Run the demo \u2014 5-minute Support Bot flow (pick one)",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -236,7 +236,7 @@
       "description": "If the demo doesn't look right, this is the symptom \u2192 fix cheat sheet. Plus how to add a brand-new Support Bot use case.",
       "title": "\ud83d\udedf If something's broken \u2014 symptom \u2192 fix",
       "type": "text",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "",

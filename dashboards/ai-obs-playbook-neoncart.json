@@ -151,7 +151,7 @@
       "description": "Pinned context for the NeonCart pitch \u2014 what the app is, which models are routed, where loadgen sits, and where the storefront lives.",
       "title": "\ud83d\udecd Start here \u2014 what is NeonCart and what's running?",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -168,7 +168,7 @@
       "description": "The three live demos you can run right now. Each row tells you exactly what to type, the signal it produces, the dashboard to land on, and the one-line value pitch.",
       "title": "Step 1 \u2014 Live demos: type this, see this signal",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -185,7 +185,7 @@
       "description": "NeonCart's eval-driven use cases (hallucination, refund-policy, frustration, brand drift). These light up once the loadgen has been running long enough to plant the seeded prompts.",
       "title": "Step 2 \u2014 Eval-driven NeonCart use cases (light up after deploy)",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -202,7 +202,7 @@
       "description": "Evals that aren't NeonCart-specific (toxicity, PII echo, prompt injection, runaway tools, cost anomalies) but still fire here. Use the Sample-panels row at the bottom to deep-link straight to the right view.",
       "title": "Step 3 \u2014 Cross-cutting evals that also show up in NeonCart",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -219,7 +219,7 @@
       "description": "The 5-minute NeonCart story to run in front of a customer \u2014 three steps, no detours.",
       "title": "\ud83c\udfac Run the demo \u2014 5-minute NeonCart flow",
       "type": "text",
-      "transparent": true
+      "transparent": false
     },
     {
       "gridPos": {
@@ -236,7 +236,7 @@
       "description": "If the demo doesn't look right, this is the symptom \u2192 fix cheat sheet. Plus how to add a brand-new NeonCart use case.",
       "title": "\ud83d\udedf If something's broken \u2014 symptom \u2192 fix",
       "type": "text",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "",

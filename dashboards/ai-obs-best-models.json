@@ -538,7 +538,7 @@
       ],
       "title": "\ud83e\udd16 Which models drove the most Add-to-Carts? (1h)",
       "type": "barchart",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -611,7 +611,7 @@
       ],
       "title": "\ud83d\udd25 ATC leaderboard \u2014 same data, leaderboard view (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -974,7 +974,7 @@
       ],
       "title": "ATC rate per model over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1047,7 +1047,7 @@
       ],
       "title": "\ud83d\udcb8 Cheapest model per ATC (lower is better, 1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1547,7 +1547,7 @@
         }
       ],
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1915,7 +1915,7 @@
       ],
       "title": "\ud83d\udcb0 Spend rate per model \u2014 USD per hour",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2264,7 +2264,7 @@
       ],
       "title": "\u23f1 How slow is the worst 5% of requests per model? (p95)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2683,7 +2683,7 @@
       ],
       "title": "\ud83d\udcb5 Which models cost the most per token? (top 10, 24h)",
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -3060,7 +3060,7 @@
       ],
       "title": "\ud83c\udd9a Claude vs Ollama \u2014 total spend side by side (24h)",
       "type": "barchart",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -3434,7 +3434,7 @@
       ],
       "title": "\ud83d\udd04 Lockstep rotation timeline \u2014 one model per 5-minute slice",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

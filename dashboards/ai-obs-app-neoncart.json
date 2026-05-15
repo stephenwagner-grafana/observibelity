@@ -239,7 +239,7 @@
       ],
       "title": "How much traffic is hitting NeonCart? (req/s)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -312,7 +312,7 @@
       ],
       "title": "\u26a0 Are requests failing? (error rate)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -385,7 +385,7 @@
       ],
       "title": "How slow is the slow tail? (p95 latency)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -458,7 +458,7 @@
       ],
       "title": "How bad is the worst 1%? (p99 latency)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -503,7 +503,7 @@
       ],
       "title": "\ud83d\udea8 What's on fire? (active alerts)",
       "type": "alertlist",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -547,7 +547,7 @@
       ],
       "title": "Recent traces \u2014 pick one to inspect (use_case=$use_case)",
       "type": "traces",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -578,7 +578,7 @@
       ],
       "title": "\ud83d\udc2d Show me mice \u2014 failing traces (the centerpiece pivot)",
       "type": "traces",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -941,7 +941,7 @@
       ],
       "title": "Which specialist is taking the load? (rate by specialist)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1288,7 +1288,7 @@
       ],
       "title": "Which specialist is slow? (p95 latency by specialist)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1673,7 +1673,7 @@
       ],
       "title": "\ud83d\udd25 Top specialists by volume (last 1h)",
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2036,7 +2036,7 @@
       ],
       "title": "Which tools are being called and how often?",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2111,7 +2111,7 @@
       ],
       "title": "\u26a0 Which tools are failing? (error rate by tool)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2490,7 +2490,7 @@
       ],
       "title": "How many tokens per model, input vs output?",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2851,7 +2851,7 @@
       ],
       "title": "\ud83d\udcb0 What's the burn rate? \u2014 USD per hour, total and per model",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2924,7 +2924,7 @@
       ],
       "title": "\ud83d\udcb0 What did NeonCart cost in the last hour?",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -3309,7 +3309,7 @@
       ],
       "title": "\ud83d\udd25 Which specialist is most expensive? (top 10 by cost, 1h)",
       "type": "table",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -3361,7 +3361,7 @@
       ],
       "title": "Live generation events for this use case (use_case=$use_case)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -3436,7 +3436,7 @@
       ],
       "title": "Latest 20 calls as a structured table",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -3799,7 +3799,7 @@
       ],
       "title": "How busy is the DB? (queries/sec by tool)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -4146,7 +4146,7 @@
       ],
       "title": "Which DB-backed tool is slow? (p95 query duration)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -4184,7 +4184,7 @@
       ],
       "title": "\ud83d\udea8 DB errors \u2014 the smoking gun (Loki tail)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

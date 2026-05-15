@@ -529,7 +529,7 @@
       ],
       "title": "\ud83d\udcc8 PII detected by kind over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -601,7 +601,7 @@
       ],
       "title": "\ud83d\udcc8 Is PII actually being redacted? (mask rate)",
       "type": "gauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -993,7 +993,7 @@
       ],
       "title": "\ud83d\udd25 Top 10 employees pasting PII (1h)",
       "type": "barchart",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1066,7 +1066,7 @@
       ],
       "title": "\ud83d\udc64 Who's leaking confidential info today? (top-1, 1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1133,7 +1133,7 @@
       ],
       "title": "\ud83d\udd25 Top confidential-disclosers \u2014 leaderboard (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1219,7 +1219,7 @@
       ],
       "title": "\ud83d\udea8 Prompt-injection attempts (1h)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1288,7 +1288,7 @@
       ],
       "title": "\ud83d\udea8 PII echoed back by the bot (1h) \u2014 P0 if > 0",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1645,7 +1645,7 @@
       ],
       "title": "\ud83d\udcc8 Prompt injection + PII echo over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1728,7 +1728,7 @@
       ],
       "title": "\ud83d\udd12 PII echo \u2014 which kind is leaking? (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1779,7 +1779,7 @@
       ],
       "title": "\ud83d\udcdc PII detection log stream (Loki)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1817,7 +1817,7 @@
       ],
       "title": "\ud83d\udcdc Critical events log stream (Loki)",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

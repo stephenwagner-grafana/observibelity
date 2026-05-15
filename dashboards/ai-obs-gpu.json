@@ -222,7 +222,7 @@
       ],
       "title": "GPU compute utilization (%)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -303,7 +303,7 @@
       ],
       "title": "VRAM in use (% of 32 GB)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -384,7 +384,7 @@
       ],
       "title": "GPU temperature (\u00b0C)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -799,7 +799,7 @@
       ],
       "title": "GPU util / VRAM / temp \u2014 last 1h",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1183,7 +1183,7 @@
       ],
       "title": "Ollama p95 latency per model (5m)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1554,7 +1554,7 @@
       ],
       "title": "Ollama request rate per model (calls/min, stacked)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1594,7 +1594,7 @@
       "pluginVersion": "11.0.0",
       "title": "Recipe \u2014 installing the exporter on .240",
       "type": "text",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",

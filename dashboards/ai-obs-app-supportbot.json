@@ -127,7 +127,7 @@
       ],
       "title": "How much traffic is hitting SupportBot? (req/s)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -200,7 +200,7 @@
       ],
       "title": "\u26a0 Are requests failing? (error rate)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -273,7 +273,7 @@
       ],
       "title": "How slow is the slow tail? (p95 latency)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -346,7 +346,7 @@
       ],
       "title": "How bad is the worst 1%? (p99 latency)",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -708,7 +708,7 @@
       ],
       "title": "Which specialist is taking the load? (input tokens/sec)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1066,7 +1066,7 @@
       ],
       "title": "What share of traffic per specialist? (1h)",
       "type": "piechart",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1428,7 +1428,7 @@
       ],
       "title": "Which use cases are active? (tokens/sec by use_case)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1493,7 +1493,7 @@
       ],
       "title": "\ud83d\udd25 Top use cases by token volume (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1581,7 +1581,7 @@
       ],
       "title": "\ud83d\udc64 Who is getting escalated to humans? (top 10, 15m)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -1656,7 +1656,7 @@
       ],
       "title": "\ud83d\udee1 Who is hitting the security handler? (top 10, 15m)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -1857,7 +1857,7 @@
       ],
       "title": "Input tokens by user, bar view (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2206,7 +2206,7 @@
       ],
       "title": "\u26a0 Sudden burst detector \u2014 rate(1m) \u00f7 rate(1h) per user",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2568,7 +2568,7 @@
       ],
       "title": "\ud83d\udea8 PII and data-leak scenarios over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2633,7 +2633,7 @@
       ],
       "title": "\ud83d\udc64 Who is running sensitive-data scenarios? (top, 1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -2719,7 +2719,7 @@
       ],
       "title": "\ud83d\udea8 Prompt-injection events in last 5 min",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2792,7 +2792,7 @@
       ],
       "title": "\u2620 Toxicity events in last 5 min",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2865,7 +2865,7 @@
       ],
       "title": "\u2696 Hiring-discrimination events in last 5 min",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -2938,7 +2938,7 @@
       ],
       "title": "\ud83d\udd12 Confidential-disclosure events in last 5 min",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -3003,7 +3003,7 @@
       ],
       "title": "\ud83d\udc64 Who is attempting injection? (top personas, 1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -3066,7 +3066,7 @@
       ],
       "title": "Backup detector \u2014 regex hits on injection phrasing (1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -3428,7 +3428,7 @@
       ],
       "title": "\ud83d\udcb0 What does each specialist cost per hour? (5m rate \u00d7 3600)",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -3777,7 +3777,7 @@
       ],
       "title": "Input vs output tokens/sec across all specialists",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -4148,7 +4148,7 @@
       ],
       "title": "\ud83e\udd16 Which model handled what share of traffic? (1h)",
       "type": "piechart",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -4497,7 +4497,7 @@
       ],
       "title": "Per-model token rate over time",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -4583,7 +4583,7 @@
       ],
       "title": "\ud83d\udce7 Email-cascade events in last 5 min",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -4656,7 +4656,7 @@
       ],
       "title": "\ud83d\udd01 Tool-call runaway events in last 5 min",
       "type": "stat",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -5005,7 +5005,7 @@
       ],
       "title": "Cascade scenarios over time \u2014 tokens/sec",
       "type": "timeseries",
-      "transparent": true
+      "transparent": false
     },
     {
       "datasource": {
@@ -5070,7 +5070,7 @@
       ],
       "title": "\ud83d\udc64 Who is triggering the cascade? (top personas, 1h)",
       "type": "bargauge",
-      "transparent": true
+      "transparent": false
     },
     {
       "collapsed": false,
@@ -5121,7 +5121,7 @@
       ],
       "title": "Live Sigil events for SupportBot specialists",
       "type": "logs",
-      "transparent": true
+      "transparent": false
     }
   ],
   "refresh": "30s",
