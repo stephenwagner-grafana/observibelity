@@ -202,6 +202,8 @@ def transform_piechart(panel):
 # read the same hue for the same model.
 MODEL_COLOR_PINS = {
     "claude-opus-4-7":         PALETTE["purple"],
+    "claude-opus-4-5-20251015": "#C084FC",  # lighter violet — sister hue to opus-4-7
+    "claude-opus-4-5":         "#C084FC",
     "claude-sonnet-4-6":       PALETTE["blue"],
     "claude-haiku-4-5-20251001": PALETTE["cyan"],
     "claude-haiku-4-5":        PALETTE["cyan"],

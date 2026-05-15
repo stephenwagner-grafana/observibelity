@@ -60,6 +60,8 @@ spec:
               value: "{{ .Values.k6.cycle_seconds | default 10 }}"
             - name: DEFAULT_RATE
               value: "{{ .Values.k6.default_rate | default "5m" }}"
+            - name: LOADGEN_CLAUDE_FRACTION
+              value: "{{ .Values.k6.claudeFraction | default 0.02 }}"
           volumeMounts:
             - name: scripts
               mountPath: /etc/k6/scripts

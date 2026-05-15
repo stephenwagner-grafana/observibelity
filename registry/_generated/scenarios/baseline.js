@@ -50,26 +50,45 @@ const NEONCART_URL = __ENV.NEONCART_URL || 'http://neoncart';
 const SUPPORTBOT_URL = __ENV.SUPPORTBOT_URL || 'http://supportbot';
 
 // ── Per-conversation model routing ──────────────────────────────────────
-// Drives the ai-obs-best-models ("Model Winner") dashboard: 80% of chats go
-// to local Ollama (effectively free + diverse model rotation), 20% to Claude
-// (weighted 60% Haiku / 30% Sonnet / 10% Opus inside Claude — opus is 5x
-// more expensive than sonnet and was responsible for ~72% of demo cost
-// when the split was uniform across the three. The per-model comparison
-// panels still get enough opus data to show the model-quality story.)
+// Drives the ai-obs-best-models ("Model Winner") dashboard. Retuned
+// 2026-05-15 to cap demo cost around $20/day while keeping four Claude
+// models visible (two Opus generations so leaderboards can compare):
+//   - 2% of all chats hit Claude (was 10%) — Ollama carries the volume.
+//   - Inside that 2% Claude slice: 80% Haiku / 15% Sonnet / 2.5% Opus 4.5 /
+//     2.5% Opus 4.7 (was 60/30/10). Opus calls are cost-heavy, so the two
+//     Opus generations share a small slice equally.
+//   - Net effect: ~12% of the prior Claude spend, ~$20/day instead of
+//     $150/day, with all four tiers still represented in dashboards.
 // The gateway's provider_override + model_override are wired through
 // NeonCart /chat and Support Bot /chat, then through nc-chatbot /
 // sb-router into llm-gateway.
 const CLAUDE_MODELS = [
-  // 60% Haiku — cheap, lots of routine traffic
+  // 80% Haiku — cheap, carries the bulk of Claude traffic (32/40)
   'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
   'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
   'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  // 30% Sonnet — mid-tier
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
+  // 15% Sonnet — mid-tier signal (6/40)
   'claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-6',
-  // 10% Opus — flagship, enough for leaderboard signal without dominating cost
+  'claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-6',
+  // 2.5% Opus 4.5 — older flagship, equal slice with 4.7 (1/40)
+  'claude-opus-4-5-20251015',
+  // 2.5% Opus 4.7 — newest flagship (1/40)
   'claude-opus-4-7',
 ];
-const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.10');
+const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.02');
 
 // Sigil groups Sigil generation events into a "conversation" by
 // hash(persona_id + UTC_hour) — see llm-gateway/app/sigil.py:_derive_session_id.
