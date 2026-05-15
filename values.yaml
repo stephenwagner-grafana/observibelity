@@ -71,6 +71,11 @@ postgres:
 llmGateway:
   enabled: true
   replicas: 1
+  # Per-call provider timeout. 15s comfortably covers a cold-load of the
+  # 30B/32B rotation models on the .240 5090 (~3-5s) plus first-response
+  # latency — anything slower than that is a real problem to investigate,
+  # not normal behaviour.
+  providerTimeoutSeconds: 15
   providers:
     anthropic:
       enabled: true
@@ -102,22 +107,34 @@ llmGateway:
       # OLLAMA_MAX_LOADED_MODELS thrashing on the GPU host.
       rotation:
         enabled: true
-        # 60s = each model in the pool gets ~6 min of traffic per hour =
-        # plenty of leaderboard signal for the Model Winner dashboard.
-        windowSeconds: 60
-        # Ordered rotation pool — only fast (≤7B) models that are confirmed
-        # present on the .240 5090 desktop. The 30B qwen3 and 14B phi3-medium
-        # were dropped because they tie up the GPU long enough to starve
-        # smaller-model traffic. Other small models (tinyllama, phi3:mini,
-        # gemma2:2b, qwen2.5:7b) are excluded until ``ollama pull`` lands
-        # them on the desktop — including them earlier produced 404 storms.
+        # 5-minute window × 12 models = 60-minute cycle that aligns with
+        # wall-clock hours. Each model occupies the same 5-min slot every
+        # hour (00:00, 00:05, 00:10 ...), giving the Model Winner dashboard
+        # clean hourly bands. Paired with OLLAMA_MAX_LOADED_MODELS=3 +
+        # KEEP_ALIVE=30m on the desktop: the most-recent 3 models stay hot,
+        # rotating in/out costs one cold-load (~1-4s) every 5 min.
+        windowSeconds: 300
+        # 12-model rotation ordered by size (1.1B → 32B) spanning 6 distinct
+        # architectures (Llama, Gemma, Phi, Mistral, Qwen, Cohere) so the
+        # leaderboard surfaces meaningful cost/quality variance.
+        #
+        # Deliberately excluded:
+        #   - qwen3:4b, qwen3:30b-a3b-thinking — hybrid thinking models that
+        #     emit chain-of-thought before every reply (slow + noisy).
+        #   - llava:7b, qwen3-vl:30b — vision-only, not relevant to chat.
         models:
-          # NOTE: qwen3:4b deliberately excluded — it's a hybrid thinking
-          # model that generates chain-of-thought BEFORE every reply, so
-          # even "hi" takes ~17s. Use a plain-instruct model here.
-          - llama3.2:latest
-          - llama3.2:1b
-          - mistral:7b-instruct
+          - tinyllama:1.1b                            # 1.1B Llama
+          - llama3.2:1b                               # 1.2B Llama
+          - gemma2:2b                                 # 2B Gemma
+          - llama3.2:latest                           # 3.2B Llama
+          - phi3:mini                                 # 3.8B Phi
+          - mistral:7b-instruct                       # 7B Mistral
+          - qwen2.5:7b                                # 7B Qwen2
+          - llama3.1:8b                               # 8B Llama
+          - gemma2:9b                                 # 9B Gemma
+          - phi3:medium-128k                          # 14B Phi
+          - qwen3:30b-a3b-instruct-2507-q4_K_M        # 30B Qwen3 MoE
+          - command-r:latest                          # 32B Cohere
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
