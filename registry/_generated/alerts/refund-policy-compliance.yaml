@@ -3,7 +3,7 @@ groups:
   rules:
   - alert: refund_policy_compliance.window_violation_rate
     expr: "sum(rate(sigil_eval_scores_total{evaluator=\"refund_policy_compliance.window_violation\"\
-      ,passed=\"false\"}[15m]))\n  / sum(rate(sigil_eval_scores_total{evaluator=\"\
+      ,passed=\"false\"}[15m]))\n  / sum(rate(sigil_eval_executions_total{evaluator=\"\
       refund_policy_compliance.window_violation\"}[15m])) > 0.02\n"
     for: 10m
     labels:

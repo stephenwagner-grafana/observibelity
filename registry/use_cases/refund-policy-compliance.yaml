@@ -28,13 +28,26 @@ evaluators:
     kind: llm-judge
     severity: high
     spec: |
-      Given the customer's purchase date (from context) and the refund policy
-      window (30 days for general, 14 days for electronics), determine whether
-      the assistant's refund offer is within policy. Return JSON
-      {"verdict":"pass|fail","reason":"window_violation|category_violation|none"}.
+      Acme's refund policy:
+        - General merchandise: 30-day return window from purchase date
+        - Electronics: 14-day return window from purchase date
+        - Final-sale / clearance items: no returns
+
+      Look at the customer's request and the assistant's response. Did
+      the assistant either:
+        - DECLINE the refund correctly (because the request is outside
+          the window or for a final-sale item)?
+        - APPROVE the refund correctly (because it's within the window)?
+
+      If the assistant approved a refund that's outside the policy window
+      (e.g. a 90-day-old item, or electronics past 14 days), or referenced
+      a window the policy doesn't grant, that's a violation.
+
+      Return JSON: {"within_policy": true|false, "reason": "<one short sentence>"}
     params:
-      model: claude-opus-4-7
+      model: claude-haiku-4-5
       judge_specialist: refund-policy-judge
+      sampling_rate: 0.10
 
 dashboard:
   uid: ai-obs-conv
@@ -44,14 +57,10 @@ dashboard:
   folder: ai-observability
 
 alerts:
-  # SKIPPED in Grafana sync: refund_policy_compliance evaluator is not
-  # registered with Sigil yet, and neoncart_refund_offer_total isn't
-  # emitted. Stub condition uses the current Sigil schema so it can be
-  # turned on once the evaluator is wired up.
   - name: refund_policy_compliance.window_violation_rate
     condition: |
       sum(rate(sigil_eval_scores_total{evaluator="refund_policy_compliance.window_violation",passed="false"}[15m]))
-        / sum(rate(sigil_eval_scores_total{evaluator="refund_policy_compliance.window_violation"}[15m])) > 0.02
+        / sum(rate(sigil_eval_executions_total{evaluator="refund_policy_compliance.window_violation"}[15m])) > 0.02
     severity: high
     route: oncall@acme.local
     duration: 10m

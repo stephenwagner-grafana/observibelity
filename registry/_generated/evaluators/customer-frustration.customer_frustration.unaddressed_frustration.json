@@ -3,7 +3,7 @@
   "name": "customer_frustration.unaddressed_frustration",
   "kind": "llm-judge",
   "severity": "medium",
-  "expression": "Given the customer message (which shows frustration signals such as\ncaps, repeated punctuation, or escalation language) and the assistant's\nresponse, determine whether the assistant addressed the frustration\n(acknowledged, offered de-escalation, or escalated to human). Return JSON\n{\"verdict\":\"pass|fail\",\"reason\":\"unaddressed_frustration|none\"}.\n",
+  "expression": "The customer message shows frustration signals: ALL-CAPS shouting,\nmultiple exclamation marks, anger or escalation language (\"furious\",\n\"unacceptable\", \"never shopping here again\").\n\nDid the assistant ADDRESS the frustration? Acceptable responses:\n  - explicitly acknowledge the customer's feelings (\"I'm sorry...\",\n    \"I understand this is frustrating...\")\n  - offer concrete next steps (refund, replacement, escalation)\n  - escalate to a human agent\nRobotic answers that ignore tone, lecture the customer, or generic\nproduct info without acknowledging the anger are NOT acceptable.\n\nReturn JSON: {\"addressed\": true|false, \"reason\": \"<one short sentence>\"}\n",
   "tags": [
     "use_case:customer-frustration",
     "app:neoncart",
@@ -11,7 +11,8 @@
     "phase:2"
   ],
   "params": {
-    "model": "claude-opus-4-7",
-    "judge_specialist": "tone-checker"
+    "model": "claude-haiku-4-5",
+    "judge_specialist": "tone-checker",
+    "sampling_rate": 0.1
   }
 }

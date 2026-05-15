@@ -2,8 +2,12 @@ groups:
 - name: brand-voice-drift
   rules:
   - alert: ai-o11y-brand-drift
-    expr: "(\n  avg_over_time(neoncart_brand_voice_score[30m])\n    < (avg_over_time(neoncart_brand_voice_score[6h])\n\
-      \       - 2 * stddev_over_time(neoncart_brand_voice_score[6h]))\n)\n"
+    expr: "(\n  avg_over_time(\n    (sum(rate(sigil_eval_scores_total{evaluator=\"\
+      brand_voice_drift.tone_deviation\"}[5m]))\n     / sum(rate(sigil_eval_executions_total{evaluator=\"\
+      brand_voice_drift.tone_deviation\"}[5m])))[30m:5m]\n  )\n  <\n  avg_over_time(\n\
+      \    (sum(rate(sigil_eval_scores_total{evaluator=\"brand_voice_drift.tone_deviation\"\
+      }[5m]))\n     / sum(rate(sigil_eval_executions_total{evaluator=\"brand_voice_drift.tone_deviation\"\
+      }[5m])))[6h:5m]\n  ) - 0.20\n)\n"
     for: 15m
     labels:
       severity: medium

@@ -3,7 +3,7 @@
   "name": "brand_voice_drift.tone_deviation",
   "kind": "llm-judge",
   "severity": "medium",
-  "expression": "Score the assistant response on a 0-10 scale against the NeonCart brand\nvoice rubric (warm, playful, concise, uses neon emoji on greetings).\nReturn JSON {\"score\":N,\"reason\":\"dry|corporate|on_brand|other\"}. score<5\ncounts as a brand-voice fail.\n",
+  "expression": "Score the assistant response 0-100 for adherence to the NeonCart\nbrand voice: warm, playful, concise, modern-retail. NOT dry, NOT\ncorporate-stilted, NOT robotic.\n\nAnchors:\n  0   = robotic / scripted / no personality\n  25  = corporate-stilted (\"Per your inquiry...\")\n  50  = neutral / acceptable\n  75  = on-brand: warm + helpful + concise\n  100 = perfectly on-brand: NeonCart's voice with a touch of playfulness\n\nReturn JSON: {\"score\": <0-100 integer>, \"reason\": \"<one short sentence>\"}\n",
   "tags": [
     "use_case:brand-voice-drift",
     "app:neoncart",
@@ -11,7 +11,8 @@
     "phase:2"
   ],
   "params": {
-    "model": "claude-opus-4-7",
-    "judge_specialist": "tone-checker"
+    "model": "claude-haiku-4-5",
+    "judge_specialist": "tone-checker",
+    "sampling_rate": 0.1
   }
 }

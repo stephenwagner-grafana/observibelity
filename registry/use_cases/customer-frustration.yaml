@@ -27,14 +27,23 @@ evaluators:
     kind: llm-judge
     severity: medium
     spec: |
-      Given the customer message (which shows frustration signals such as
-      caps, repeated punctuation, or escalation language) and the assistant's
-      response, determine whether the assistant addressed the frustration
-      (acknowledged, offered de-escalation, or escalated to human). Return JSON
-      {"verdict":"pass|fail","reason":"unaddressed_frustration|none"}.
+      The customer message shows frustration signals: ALL-CAPS shouting,
+      multiple exclamation marks, anger or escalation language ("furious",
+      "unacceptable", "never shopping here again").
+
+      Did the assistant ADDRESS the frustration? Acceptable responses:
+        - explicitly acknowledge the customer's feelings ("I'm sorry...",
+          "I understand this is frustrating...")
+        - offer concrete next steps (refund, replacement, escalation)
+        - escalate to a human agent
+      Robotic answers that ignore tone, lecture the customer, or generic
+      product info without acknowledging the anger are NOT acceptable.
+
+      Return JSON: {"addressed": true|false, "reason": "<one short sentence>"}
     params:
-      model: claude-opus-4-7
+      model: claude-haiku-4-5
       judge_specialist: tone-checker
+      sampling_rate: 0.10
 
 dashboard:
   uid: ai-obs-conv
@@ -44,14 +53,10 @@ dashboard:
   folder: ai-observability
 
 alerts:
-  # SKIPPED in Grafana sync: neither the customer_frustration Sigil
-  # evaluator nor neoncart_frustration_conversation_total exist. The
-  # judge evaluator above isn't registered with Sigil yet. Leaving the
-  # condition stub so it can be wired up later.
   - name: customer_frustration.unaddressed_rate_10pct
     condition: |
       sum(rate(sigil_eval_scores_total{evaluator="customer_frustration.unaddressed_frustration",passed="false"}[15m]))
-        / sum(rate(sigil_eval_scores_total{evaluator="customer_frustration.unaddressed_frustration"}[15m])) > 0.10
+        / sum(rate(sigil_eval_executions_total{evaluator="customer_frustration.unaddressed_frustration"}[15m])) > 0.10
     severity: medium
     route: customer-success@acme.local
     duration: 15m
