@@ -102,16 +102,27 @@ llmGateway:
       # OLLAMA_MAX_LOADED_MODELS thrashing on the GPU host.
       rotation:
         enabled: true
-        windowSeconds: 300
+        # 60s = each model in the pool gets ~6 min of traffic per hour =
+        # plenty of leaderboard signal for the Model Winner dashboard.
+        windowSeconds: 60
         # Ordered rotation pool. Each entry must be pre-pulled on the Ollama
-        # server (verify with ``curl ${baseUrl}/api/tags``). The cluster
-        # iterates through them in order, one per ``windowSeconds`` window.
+        # server (verify with ``curl ${baseUrl}/api/tags``). Default pool
+        # spans 1B-30B params so the Best Models leaderboard has meaningful
+        # cost/quality variance:
+        #   - Small (1-4B):  tinyllama:1.1b, llama3.2:1b, phi3:mini, gemma2:2b, qwen3:4b
+        #   - Medium (7B):   qwen2.5:7b, mistral:7b-instruct, llama3.2:latest
+        #   - Large (30B+):  qwen3:30b-a3b-instruct-2507-q4_K_M, phi3:medium-128k
         models:
-          - llama3.2:1b
-          - phi3:mini
-          - qwen2.5:7b
+          - qwen3:4b
+          - llama3.2:latest
+          - phi3:medium-128k
+          - mistral:7b-instruct
+          - qwen3:30b-a3b-instruct-2507-q4_K_M
           - gemma2:2b
+          - qwen2.5:7b
+          - phi3:mini
           - tinyllama:1.1b
+          - llama3.2:1b
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
@@ -262,10 +273,10 @@ specialists:
   # ---- Phase 1: NeonCart -------------------------------------------------
   - name: nc-chatbot
     replicas: 1
-    tool_allowlist: [search_products, get_product, get_order_history, get_inventory, place_order, add_to_cart]
+    tool_allowlist: [search_products, get_product, get_order_history, get_inventory, place_order, add_to_cart, navigate]
   - name: nc-gift-finder
     replicas: 1
-    tool_allowlist: [search_products, get_product, add_to_cart]
+    tool_allowlist: [search_products, get_product, add_to_cart, navigate]
   - name: nc-fraud-detector
     replicas: 1
     tool_allowlist: [get_order_history, geo_lookup]
@@ -330,6 +341,9 @@ tools:
     replicas: 1
     backing_tables: [orders, order_items, catalog_items]
   - name: add_to_cart
+    replicas: 1
+    backing_tables: []
+  - name: navigate
     replicas: 1
     backing_tables: []
   # ---- Phase 2: Support Bot ---------------------------------------------
