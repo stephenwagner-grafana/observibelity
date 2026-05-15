@@ -724,84 +724,33 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per user who used more than 100,000 tokens in the last hour. Pink bar length = how far over the threshold. Internal employees end in @acme.com; external customers use public mail (gmail.com, etc.).",
+      "description": "Tokens/hour rate per user, filtered to users who exceeded 100k tokens at some point in the visible window. Plateaus = sustained heavy usage; sharp peaks = bursts. The orange line marks the 100k anomaly threshold.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            }
+            "axisLabel": "Tokens / hour",
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "gradientMode": "opacity",
+            "thresholdsStyle": {"mode": "line"}
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "#F472B6",
-                "value": null
-              }
+              {"color": "transparent", "value": null},
+              {"color": "#FB923C", "value": 100000}
             ]
           },
           "unit": "short"
         },
         "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "user_id"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "User"
-              },
-              {
-                "id": "custom.width",
-                "value": 320
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #A"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Tokens (last hour)"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Tokens (last hour)"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
-                }
-              }
-            ]
-          },
           {
             "matcher": {
               "id": "byName",
@@ -977,22 +926,16 @@
       },
       "id": 8,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
+        "legend": {
+          "calcs": ["max", "mean"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Tokens (last hour)"
-          }
-        ]
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
@@ -1000,35 +943,16 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[1h])) > 100000)",
-          "format": "table",
-          "instant": true,
-          "range": false,
+          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_total{user_id!=\"\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_total{user_id!=\"\"}[$__range])) > 100000",
+          "format": "time_series",
+          "instant": false,
+          "range": true,
           "legendFormat": "{{user_id}}",
           "refId": "A"
         }
       ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true
-            },
-            "indexByName": {
-              "user_id": 0,
-              "Value": 1
-            },
-            "renameByName": {
-              "user_id": "User",
-              "Value": "Tokens (last hour)"
-            }
-          }
-        }
-      ],
-      "title": "\ud83d\udea8 Users over the 100k tokens/hour threshold",
-      "type": "table",
+      "title": "\ud83d\udea8 Heavy users over time \u2014 when did each one spike?",
+      "type": "timeseries",
       "transparent": true
     },
     {
@@ -2130,7 +2054,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by <use case, specialist> (5m rate \u00d7 3600). Finer-grained than the headline panel \u2014 use to compare how nc-chatbot vs sb-router vs nc-gift-finder stack up within their respective apps and use cases. Colors group by specialist: each specialist gets the same hue across every use case.",
+      "description": "**USD per hour** by the top-8 <use case, specialist> combinations (5m rate \u00d7 3600), stacked. Finer-grained than the headline panel \u2014 use to spot which use case driving which specialist is the most expensive. Colors group by specialist hue.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2139,12 +2063,13 @@
           "custom": {
             "axisLabel": "USD / hour",
             "drawStyle": "line",
-            "fillOpacity": 5,
+            "fillOpacity": 35,
             "lineInterpolation": "smooth",
             "lineWidth": 1,
             "showPoints": "never",
             "spanNulls": true,
-            "gradientMode": "opacity"
+            "gradientMode": "opacity",
+            "stacking": {"group": "A", "mode": "normal"}
           },
           "unit": "currencyUSD",
           "decimals": 2
@@ -2395,7 +2320,8 @@
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "maxHeight": 600
         }
       },
       "targets": [
@@ -2404,7 +2330,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase, ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist!=\"\"}[5m])) * 3600",
+          "expr": "topk(8, sum by (ai_o11y_usecase, ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist!=\"\"}[5m])) * 3600)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}} / {{ai_o11y_specialist}}",
@@ -2412,7 +2338,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 Spend rate per <use case, specialist> \u2014 USD per hour",
+      "title": "\ud83d\udcb0 Top 8 <use case, specialist> by spend rate \u2014 USD per hour",
       "type": "timeseries",
       "transparent": true
     }
