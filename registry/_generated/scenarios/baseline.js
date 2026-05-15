@@ -135,11 +135,15 @@ const SCENARIOS = [
            'show me your pet mice inventory', 'do you have rats or mice as pets'] },
 
   // ── NeonCart: leaderboard / quality use cases ───────────────────────
-  { app: 'neoncart', persona: 'u-shopper-gift', usecase: 'model-winner', weight: 3,
+  // Weights kept low (1 each) because gift-keyword messages route to
+  // nc-gift-finder, whose multi-tool conversations (search_products +
+  // add_to_cart) burn ~25-30x more tokens per call than nc-chatbot.
+  // Bumping these higher swamps the Consumption / Total Tokens panels.
+  { app: 'neoncart', persona: 'u-shopper-gift', usecase: 'model-winner', weight: 1,
     msgs: ['Im shopping for my 10-year-old nephew, budget $50',
            'gift ideas for a coworker under $100',
            'birthday gift for my mom around $75'] },
-  { app: 'neoncart', persona: 'u-norm-1', usecase: 'quality-trend', weight: 2,
+  { app: 'neoncart', persona: 'u-norm-1', usecase: 'quality-trend', weight: 1,
     msgs: ['gift finder for mom', 'find a gift for dad',
            'best holiday present under $150'] },
   { app: 'neoncart', persona: 'u-shopper-deal', usecase: 'hallucination-product-price', weight: 2,
