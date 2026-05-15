@@ -70,6 +70,12 @@ spec:
               value: {{ (default (list) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).models) | join "," | quote }}
             - name: LLM_GATEWAY_DEFAULT_PROVIDER
               value: {{ .Values.llmGateway.defaultProvider | default "anthropic" | quote }}
+            # Per-call provider timeout. Default is 60s; for the .240 5090
+            # fleet with sub-second response targets, 10s is generous —
+            # anything slower than that is a real problem (model missing,
+            # network blip), not normal latency.
+            - name: LLM_GATEWAY_PROVIDER_TIMEOUT_S
+              value: {{ .Values.llmGateway.providerTimeoutSeconds | default 10 | quote }}
             - name: OTEL_SERVICE_NAME
               value: llm-gateway
             - name: OTEL_EXPORTER_OTLP_ENDPOINT

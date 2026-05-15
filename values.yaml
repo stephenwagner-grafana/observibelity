@@ -105,17 +105,18 @@ llmGateway:
         # 60s = each model in the pool gets ~6 min of traffic per hour =
         # plenty of leaderboard signal for the Model Winner dashboard.
         windowSeconds: 60
-        # Ordered rotation pool — small/medium models only (1B-7B). The 30B
-        # qwen3 and 14B phi3-medium were dropped because they tie up the GPU
-        # long enough to starve smaller-model traffic and the leaderboard.
+        # Ordered rotation pool — only fast (≤7B) models that are confirmed
+        # present on the .240 5090 desktop. The 30B qwen3 and 14B phi3-medium
+        # were dropped because they tie up the GPU long enough to starve
+        # smaller-model traffic. Other small models (tinyllama, phi3:mini,
+        # gemma2:2b, qwen2.5:7b) are excluded until ``ollama pull`` lands
+        # them on the desktop — including them earlier produced 404 storms.
         models:
-          - tinyllama:1.1b
-          - llama3.2:1b
-          - phi3:mini
-          - gemma2:2b
-          - qwen3:4b
+          # NOTE: qwen3:4b deliberately excluded — it's a hybrid thinking
+          # model that generates chain-of-thought BEFORE every reply, so
+          # even "hi" takes ~17s. Use a plain-instruct model here.
           - llama3.2:latest
-          - qwen2.5:7b
+          - llama3.2:1b
           - mistral:7b-instruct
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
