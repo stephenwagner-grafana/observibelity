@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "halluc — {{ category }}"
+        "textFormat": "halluc \u2014 {{ category }}"
       }
     ]
   },
-  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is ≥2× the trailing 4h baseline. Hover the ℹ icon on any panel for what each number means.",
+  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is \u22652\u00d7 the trailing 4h baseline. Hover the \u2139 icon on any panel for what each number means.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -53,16 +53,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "🚨 Headline — is the bot hallucinating right now?",
+      "title": "\ud83d\udea8 Headline \u2014 is the bot hallucinating right now?",
       "type": "row"
     },
     {
@@ -70,7 +165,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway log lines in the last hour matching hallucination signals (hedging phrases, \"fabricated\", \"cannot find\", \"made up\"). Yellow ≥3, red ≥10 — a sustained climb means the bot is bluffing.",
+      "description": "Count of gateway log lines in the last hour matching hallucination signals (hedging phrases, \"fabricated\", \"cannot find\", \"made up\"). Yellow \u22653, red \u226510 \u2014 a sustained climb means the bot is bluffing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -80,15 +175,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 3
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 10
               }
             ]
@@ -101,11 +196,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -115,7 +210,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -126,19 +223,22 @@
           },
           "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(I (think|believe|maybe|might|probably)|I.m not (sure|certain)|it (could|may) be|approximately|fabric|hallucinat|made up|cannot find)\" [1h]))",
           "legendFormat": "hallucination signals",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "🚨 Hallucination signals — last 1h",
-      "type": "stat"
+      "title": "\ud83d\udea8 Hallucination signals \u2014 last 1h",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Current 15m hallucination rate divided by the trailing 4h baseline. 1.0 = normal noise; ≥2.0 = the alert fires. Use to tell \"things are degrading\" from \"things are noisier than usual\".",
+      "description": "Current 15m hallucination rate divided by the trailing 4h baseline. 1.0 = normal noise; \u22652.0 = the alert fires. Use to tell \"things are degrading\" from \"things are noisier than usual\".",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -148,15 +248,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1.5
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 2
               }
             ]
@@ -169,11 +269,11 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -183,7 +283,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -198,20 +300,21 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Are we worse than baseline? (15m ÷ 4h ratio)",
-      "type": "stat"
+      "title": "\ud83d\udcc8 Are we worse than baseline? (15m \u00f7 4h ratio)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Current state of the hallucination alert rule. Fires when the 15m hallucination rate climbs to ≥2× the 4h baseline.",
+      "description": "Current state of the hallucination alert rule. Fires when the 15m hallucination rate climbs to \u22652\u00d7 the 4h baseline.",
       "gridPos": {
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 1
+        "y": 4
       },
       "id": 4,
       "options": {
@@ -242,8 +345,9 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Hallucination alert — is it firing?",
-      "type": "alertlist"
+      "title": "\u26a0 Hallucination alert \u2014 is it firing?",
+      "type": "alertlist",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -251,11 +355,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "id": 5,
       "panels": [],
-      "title": "📈 Rate over time — current vs baseline",
+      "title": "\ud83d\udcc8 Rate over time \u2014 current vs baseline",
       "type": "row"
     },
     {
@@ -275,17 +379,214 @@
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 14,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "id": 6,
       "options": {
@@ -314,8 +615,9 @@
           "refId": "A"
         }
       ],
-      "title": "📦 Hallucinations per specialist over time",
-      "type": "timeseries"
+      "title": "\ud83d\udce6 Hallucinations per specialist over time",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -334,7 +636,8 @@
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
@@ -348,7 +651,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "blue",
+                  "fixedColor": "#8AB8FF",
                   "mode": "fixed"
                 }
               }
@@ -363,8 +666,203 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "red",
+                  "fixedColor": "#F472B6",
                   "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
                 }
               }
             ]
@@ -375,7 +873,7 @@
         "h": 9,
         "w": 10,
         "x": 14,
-        "y": 7
+        "y": 10
       },
       "id": 7,
       "options": {
@@ -411,8 +909,9 @@
           "refId": "B"
         }
       ],
-      "title": "📈 Current 15m rate vs 4h baseline",
-      "type": "timeseries"
+      "title": "\ud83d\udcc8 Current 15m rate vs 4h baseline",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -420,11 +919,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 19
       },
       "id": 8,
       "panels": [],
-      "title": "📦 Which specialist is bluffing? — per-specialist breakdown",
+      "title": "\ud83d\udce6 Which specialist is bluffing? \u2014 per-specialist breakdown",
       "type": "row"
     },
     {
@@ -436,13 +935,13 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -455,7 +954,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 17
+        "y": 20
       },
       "id": 9,
       "options": {
@@ -486,8 +985,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Top hallucinating specialists (1h)",
-      "type": "bargauge"
+      "title": "\ud83d\udd25 Top hallucinating specialists (1h)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "datasource": {
@@ -510,7 +1010,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -568,6 +1068,201 @@
                 "value": "percentunit"
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -575,7 +1270,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 17
+        "y": 20
       },
       "id": 10,
       "options": {
@@ -618,7 +1313,7 @@
           "refId": "B"
         }
       ],
-      "title": "📋 Per-specialist scoreboard — fails + pass rate (1h)",
+      "title": "\ud83d\udccb Per-specialist scoreboard \u2014 fails + pass rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -628,7 +1323,8 @@
           }
         }
       ],
-      "type": "table"
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -636,11 +1332,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 29
       },
       "id": 11,
       "panels": [],
-      "title": "📜 Show me the actual log lines",
+      "title": "\ud83d\udcdc Show me the actual log lines",
       "type": "row"
     },
     {
@@ -648,12 +1344,12 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway line that matched a hallucination signal. Read the raw prompt and reply — sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
+      "description": "Live Loki tail of every gateway line that matched a hallucination signal. Read the raw prompt and reply \u2014 sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
       "gridPos": {
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 30
       },
       "id": 12,
       "options": {
@@ -677,8 +1373,9 @@
           "refId": "A"
         }
       ],
-      "title": "📜 Hallucination event log stream (Loki)",
-      "type": "logs"
+      "title": "\ud83d\udcdc Hallucination event log stream (Loki)",
+      "type": "logs",
+      "transparent": true
     }
   ],
   "refresh": "30s",
@@ -790,7 +1487,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Groundedness (Hallucinations)",
+  "title": "AI o11y \u2014 Groundedness (Hallucinations)",
   "uid": "ai-obs-ground",
   "weekStart": ""
 }

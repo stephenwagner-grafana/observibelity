@@ -188,6 +188,22 @@ def transform_bargauge(panel):
     opts["showUnfilled"] = True
 
 
+def transform_barchart(panel):
+    """Replace yellow/red continuous schemes with the soft blue->pink gradient."""
+    fc = panel.setdefault("fieldConfig", {}).setdefault("defaults", {})
+    if "thresholds" in fc and "steps" in fc["thresholds"]:
+        fc["thresholds"]["steps"] = soften_threshold_steps(fc["thresholds"]["steps"])
+    # Force thresholds-based coloring so the soft palette steps actually drive
+    # the bar colors. Without this, panels stuck on continuous-GrYlRd keep
+    # rendering yellow->red.
+    fc["color"] = {"mode": "thresholds"}
+    custom = fc.setdefault("custom", {})
+    custom.setdefault("gradientMode", "scheme")
+    custom.setdefault("fillOpacity", 90)
+    custom.setdefault("lineWidth", 0)
+    _add_model_color_overrides(panel)
+
+
 def transform_piechart(panel):
     fc = panel.setdefault("fieldConfig", {}).setdefault("defaults", {})
     custom = fc.setdefault("custom", {})
@@ -240,6 +256,7 @@ TRANSFORMERS = {
     "timeseries": transform_timeseries,
     "table":      transform_table,
     "bargauge":   transform_bargauge,
+    "barchart":   transform_barchart,
     "piechart":   transform_piechart,
 }
 

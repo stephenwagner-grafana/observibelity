@@ -21,18 +21,18 @@
         "enable": true,
         "hide": false,
         "iconColor": "red",
-        "name": "Hiring discrimination — P0",
+        "name": "Hiring discrimination \u2014 P0",
         "tagKeys": "employee,category",
         "target": {
           "expr": "{container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "hiring discrim — {{ employee }}"
+        "textFormat": "hiring discrim \u2014 {{ employee }}"
       }
     ]
   },
-  "description": "Compliance signals — policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
+  "description": "Compliance signals \u2014 policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -53,16 +53,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "🚨 Hiring discrimination — has ANY event fired? (zero tolerance)",
+      "title": "\ud83d\udea8 Hiring discrimination \u2014 has ANY event fired? (zero tolerance)",
       "type": "row"
     },
     {
@@ -70,7 +165,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Counts log lines mentioning hiring/protected-class terms (race, gender, age, religion, etc.) in the last 24h. The gauge sits at green when zero — anything red is a P0 violation to investigate immediately.",
+      "description": "Counts log lines mentioning hiring/protected-class terms (race, gender, age, religion, etc.) in the last 24h. The gauge sits at green when zero \u2014 anything red is a P0 violation to investigate immediately.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -99,7 +194,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -129,8 +224,9 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Hiring-discrimination events — should be ZERO (24h)",
-      "type": "gauge"
+      "title": "\ud83d\udea8 Hiring-discrimination events \u2014 should be ZERO (24h)",
+      "type": "gauge",
+      "transparent": true
     },
     {
       "datasource": {
@@ -141,13 +237,13 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-RdYlGr"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": null
               }
             ]
@@ -160,7 +256,7 @@
         "h": 7,
         "w": 16,
         "x": 8,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
@@ -191,8 +287,9 @@
           "refId": "A"
         }
       ],
-      "title": "📦 Which specialist agent is producing the hiring risk? (24h)",
-      "type": "bargauge"
+      "title": "\ud83d\udce6 Which specialist agent is producing the hiring risk? (24h)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -200,11 +297,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 11
       },
       "id": 4,
       "panels": [],
-      "title": "🛡 Policy circumvention — who's bypassing the guardrails?",
+      "title": "\ud83d\udee1 Policy circumvention \u2014 who's bypassing the guardrails?",
       "type": "row"
     },
     {
@@ -212,7 +309,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Total sb-security-handler log events in the last hour — the catch-all signal for policy circumvention. >0 means the security handler had work to do.",
+      "description": "Total sb-security-handler log events in the last hour \u2014 the catch-all signal for policy circumvention. >0 means the security handler had work to do.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -222,15 +319,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 3
               }
             ]
@@ -243,11 +340,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 9
+        "y": 12
       },
       "id": 5,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -257,7 +354,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -268,19 +367,22 @@
           },
           "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h]))",
           "legendFormat": "events",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "⚠ Policy-circumvention events in the last hour",
-      "type": "stat"
+      "title": "\u26a0 Policy-circumvention events in the last hour",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Span count for the request_access service — these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
+      "description": "Span count for the request_access service \u2014 these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -290,15 +392,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 3
               }
             ]
@@ -311,11 +413,11 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 9
+        "y": 12
       },
       "id": 6,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -325,7 +427,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -336,14 +440,15 @@
           },
           "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"request_access\"}[1h]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "approval bypass events",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "🔓 Approval-bypass attempts in the last hour",
-      "type": "stat"
+      "title": "\ud83d\udd13 Approval-bypass attempts in the last hour",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -362,17 +467,214 @@
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 12
       },
       "id": 7,
       "options": {
@@ -401,25 +703,26 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Guardrail events over time — by specialist",
-      "type": "timeseries"
+      "title": "\ud83d\udcc8 Guardrail events over time \u2014 by specialist",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Ten users with the most sb-security-handler events in the last 24h. The names at the top are the people most often bumping up against your policies — start any compliance review here.",
+      "description": "Ten users with the most sb-security-handler events in the last 24h. The names at the top are the people most often bumping up against your policies \u2014 start any compliance review here.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -432,7 +735,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 17
       },
       "id": 8,
       "options": {
@@ -463,8 +766,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Who's circumventing the most? Top 10 employees (24h)",
-      "type": "bargauge"
+      "title": "\ud83d\udd25 Who's circumventing the most? Top 10 employees (24h)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -472,11 +776,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 22
       },
       "id": 9,
       "panels": [],
-      "title": "📋 Per-employee scorecard — which people need a compliance chat?",
+      "title": "\ud83d\udccb Per-employee scorecard \u2014 which people need a compliance chat?",
       "type": "row"
     },
     {
@@ -484,7 +788,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 × circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
+      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 \u00d7 circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -500,7 +804,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -580,6 +884,201 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -587,7 +1086,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 23
       },
       "id": 10,
       "options": {
@@ -640,7 +1139,7 @@
           "refId": "C"
         }
       ],
-      "title": "📋 Per-employee compliance scorecard — circumventions, hiring risk, score",
+      "title": "\ud83d\udccb Per-employee compliance scorecard \u2014 circumventions, hiring risk, score",
       "transformations": [
         {
           "id": "joinByField",
@@ -650,7 +1149,8 @@
           }
         }
       ],
-      "type": "table"
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -658,11 +1158,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 34
       },
       "id": 11,
       "panels": [],
-      "title": "📜 Forensics — what did each critical event actually say?",
+      "title": "\ud83d\udcdc Forensics \u2014 what did each critical event actually say?",
       "type": "row"
     },
     {
@@ -675,7 +1175,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 35
       },
       "id": 12,
       "options": {
@@ -699,8 +1199,9 @@
           "refId": "A"
         }
       ],
-      "title": "📜 Live audit log — every critical compliance event",
-      "type": "logs"
+      "title": "\ud83d\udcdc Live audit log \u2014 every critical compliance event",
+      "type": "logs",
+      "transparent": true
     }
   ],
   "refresh": "30s",
@@ -812,7 +1313,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Compliance",
+  "title": "AI o11y \u2014 Compliance",
   "uid": "ai-obs-compliance",
   "weekStart": ""
 }

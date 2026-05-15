@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cascade started — {{ conv_id }}"
+        "textFormat": "cascade started \u2014 {{ conv_id }}"
       }
     ]
   },
@@ -53,16 +53,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "🚨 Is an email cascade running right now?",
+      "title": "\ud83d\udea8 Is an email cascade running right now?",
       "type": "row"
     },
     {
@@ -70,7 +165,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent in the last hour on the support bot's escalator and ticket-helper agents — the two specialists that drive the email-cascade runaway. Each full cascade run costs roughly $2.80.",
+      "description": "USD spent in the last hour on the support bot's escalator and ticket-helper agents \u2014 the two specialists that drive the email-cascade runaway. Each full cascade run costs roughly $2.80.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -80,15 +175,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 5
               }
             ]
@@ -101,11 +196,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -115,7 +210,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -126,21 +223,22 @@
           },
           "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "USD",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "💰 How much have cascades cost us in the last hour?",
-      "type": "stat"
+      "title": "\ud83d\udcb0 How much have cascades cost us in the last hour?",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of cascade-related log lines in the last hour from the llm-gateway. Each run produces thousands of lines, so this is a coarse 'are we burning' signal — not a literal run count.",
+      "description": "Count of cascade-related log lines in the last hour from the llm-gateway. Each run produces thousands of lines, so this is a coarse 'are we burning' signal \u2014 not a literal run count.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -150,15 +248,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 5
               }
             ]
@@ -171,7 +269,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
@@ -185,7 +283,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -200,15 +300,16 @@
           "refId": "A"
         }
       ],
-      "title": "📨 Cascade activity in the last hour (log events)",
-      "type": "stat"
+      "title": "\ud83d\udce8 Cascade activity in the last hour (log events)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tokens burned by the cascade-driving specialists in the last hour. A single runaway run chews through ~450k tokens — that's where the $2.80/run comes from.",
+      "description": "Tokens burned by the cascade-driving specialists in the last hour. A single runaway run chews through ~450k tokens \u2014 that's where the $2.80/run comes from.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -218,15 +319,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 100000
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 500000
               }
             ]
@@ -239,11 +340,11 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 1
+        "y": 4
       },
       "id": 4,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -253,7 +354,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -264,14 +367,15 @@
           },
           "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "legendFormat": "tokens",
-          "range": false,
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "🔢 Tokens burned by cascade specialists (1h)",
-      "type": "stat"
+      "title": "\ud83d\udd22 Tokens burned by cascade specialists (1h)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -283,7 +387,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 1
+        "y": 4
       },
       "id": 5,
       "options": {
@@ -314,8 +418,9 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Is the conv_runaway alert firing?",
-      "type": "alertlist"
+      "title": "\ud83d\udea8 Is the conv_runaway alert firing?",
+      "type": "alertlist",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -323,11 +428,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "id": 6,
       "panels": [],
-      "title": "🔍 Which session is going off the rails?",
+      "title": "\ud83d\udd0d Which session is going off the rails?",
       "type": "row"
     },
     {
@@ -335,7 +440,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 sessions by sb-escalator log activity, 5m windows. A cascade looks like one session line shooting straight up while everything else flatlines — that vertical wall is the runaway.",
+      "description": "Top 10 sessions by sb-escalator log activity, 5m windows. A cascade looks like one session line shooting straight up while everything else flatlines \u2014 that vertical wall is the runaway.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -347,17 +452,214 @@
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 10
       },
       "id": 7,
       "options": {
@@ -386,8 +688,9 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Escalator activity per session over time (top 10)",
-      "type": "timeseries"
+      "title": "\ud83d\udcc8 Escalator activity per session over time (top 10)",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -417,7 +720,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 10
       },
       "id": 8,
       "options": {
@@ -466,8 +769,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Emails-per-session distribution — look for the right-tail outliers",
-      "type": "heatmap"
+      "title": "\ud83d\udd25 Emails-per-session distribution \u2014 look for the right-tail outliers",
+      "type": "heatmap",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -475,11 +779,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 19
       },
       "id": 9,
       "panels": [],
-      "title": "🔥 Which sessions are the worst offenders right now?",
+      "title": "\ud83d\udd25 Which sessions are the worst offenders right now?",
       "type": "row"
     },
     {
@@ -503,11 +807,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 50
               }
             ]
@@ -549,6 +853,201 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
           }
         ]
       },
@@ -556,7 +1055,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 20
       },
       "id": 10,
       "options": {
@@ -589,8 +1088,9 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Top 20 runaway sessions — who's blowing past 50 emails in 10m?",
-      "type": "table"
+      "title": "\ud83d\udea8 Top 20 runaway sessions \u2014 who's blowing past 50 emails in 10m?",
+      "type": "table",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -598,11 +1098,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 30
       },
       "id": 11,
       "panels": [],
-      "title": "📜 Forensics — what is the cascade actually doing right now?",
+      "title": "\ud83d\udcdc Forensics \u2014 what is the cascade actually doing right now?",
       "type": "row"
     },
     {
@@ -610,12 +1110,12 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of sb-escalator events from the llm-gateway. Read this top-down to watch a cascade actually unfold — tool calls, retries, ticket creates.",
+      "description": "Live tail of sb-escalator events from the llm-gateway. Read this top-down to watch a cascade actually unfold \u2014 tool calls, retries, ticket creates.",
       "gridPos": {
         "h": 11,
         "w": 14,
         "x": 0,
-        "y": 28
+        "y": 31
       },
       "id": 12,
       "options": {
@@ -639,20 +1139,21 @@
           "refId": "A"
         }
       ],
-      "title": "📨 Live tail — escalator tool/probe events",
-      "type": "logs"
+      "title": "\ud83d\udce8 Live tail \u2014 escalator tool/probe events",
+      "type": "logs",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines — when you see that counter ticking up, you're watching the runaway.",
+      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines \u2014 when you see that counter ticking up, you're watching the runaway.",
       "gridPos": {
         "h": 11,
         "w": 10,
         "x": 14,
-        "y": 28
+        "y": 31
       },
       "id": 13,
       "options": {
@@ -676,8 +1177,9 @@
           "refId": "A"
         }
       ],
-      "title": "📜 Summarizer burst — 2000-call loop in action",
-      "type": "logs"
+      "title": "\ud83d\udcdc Summarizer burst \u2014 2000-call loop in action",
+      "type": "logs",
+      "transparent": true
     }
   ],
   "refresh": "30s",
@@ -784,7 +1286,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Email Cascade",
+  "title": "AI o11y \u2014 Email Cascade",
   "uid": "ai-obs-cascade-spike",
   "weekStart": ""
 }

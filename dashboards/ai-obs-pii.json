@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ event }} — {{ employee }}"
+        "textFormat": "{{ event }} \u2014 {{ employee }}"
       }
     ]
   },
-  "description": "Is sensitive data leaking? Four families on one screen: PII pasted by users, redaction effectiveness, prompt-injection attempts, and confidential disclosures (Jordan from Finance usually parks top-1). Hover the ℹ icon on any panel for what the numbers mean.",
+  "description": "Is sensitive data leaking? Four families on one screen: PII pasted by users, redaction effectiveness, prompt-injection attempts, and confidential disclosures (Jordan from Finance usually parks top-1). Hover the \u2139 icon on any panel for what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -53,16 +53,111 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "type": "timeseries",
+      "title": "",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 1,
       "panels": [],
-      "title": "🔒 PII detection — what's being pasted and is it masked?",
+      "title": "\ud83d\udd12 PII detection \u2014 what's being pasted and is it masked?",
       "type": "row"
     },
     {
@@ -70,7 +165,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Stacked PII matches in 5m windows, split by kind: SSN, credit card, secret (passwords / API keys / bearer tokens). The total height is how much sensitive material the gateway saw — the bands tell you what kind.",
+      "description": "Stacked PII matches in 5m windows, split by kind: SSN, credit card, secret (passwords / API keys / bearer tokens). The total height is how much sensitive material the gateway saw \u2014 the bands tell you what kind.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -78,7 +173,7 @@
           },
           "custom": {
             "drawStyle": "line",
-            "fillOpacity": 15,
+            "fillOpacity": 40,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
@@ -86,17 +181,214 @@
             "stacking": {
               "group": "A",
               "mode": "normal"
-            }
+            },
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 14,
         "x": 0,
-        "y": 1
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -145,8 +437,9 @@
           "refId": "C"
         }
       ],
-      "title": "📈 PII detected by kind over time",
-      "type": "timeseries"
+      "title": "\ud83d\udcc8 PII detected by kind over time",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
@@ -186,7 +479,7 @@
         "h": 9,
         "w": 10,
         "x": 14,
-        "y": 1
+        "y": 4
       },
       "id": 3,
       "options": {
@@ -216,8 +509,9 @@
           "refId": "A"
         }
       ],
-      "title": "📈 Is PII actually being redacted? (mask rate)",
-      "type": "gauge"
+      "title": "\ud83d\udcc8 Is PII actually being redacted? (mask rate)",
+      "type": "gauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -225,11 +519,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 13
       },
       "id": 4,
       "panels": [],
-      "title": "🔥 Who's pasting PII? — per-employee leaderboards",
+      "title": "\ud83d\udd25 Who's pasting PII? \u2014 per-employee leaderboards",
       "type": "row"
     },
     {
@@ -241,7 +535,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "custom": {
             "axisBorderShow": false,
@@ -260,13 +554,209 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 11
+        "y": 14
       },
       "id": 5,
       "options": {
@@ -300,8 +790,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Top 10 employees pasting PII (1h)",
-      "type": "barchart"
+      "title": "\ud83d\udd25 Top 10 employees pasting PII (1h)",
+      "type": "barchart",
+      "transparent": true
     },
     {
       "datasource": {
@@ -318,15 +809,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 3
               }
             ]
@@ -339,11 +830,11 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 11
+        "y": 14
       },
       "id": 6,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -353,7 +844,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -364,33 +857,36 @@
           },
           "expr": "topk(1, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
           "legendFormat": "{{user_id}}",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "👤 Who's leaking confidential info today? (top-1, 1h)",
-      "type": "stat"
+      "title": "\ud83d\udc64 Who's leaking confidential info today? (top-1, 1h)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 employees ranked by confidential-disclosure matches in the last hour. Use this when the top-1 alone is not enough context — look for the long tail of who else is sharing internal-only material.",
+      "description": "Top 10 employees ranked by confidential-disclosure matches in the last hour. Use this when the top-1 alone is not enough context \u2014 look for the long tail of who else is sharing internal-only material.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 3
               }
             ]
@@ -403,7 +899,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 18
       },
       "id": 7,
       "options": {
@@ -434,8 +930,9 @@
           "refId": "A"
         }
       ],
-      "title": "🔥 Top confidential-disclosers — leaderboard (1h)",
-      "type": "bargauge"
+      "title": "\ud83d\udd25 Top confidential-disclosers \u2014 leaderboard (1h)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -443,11 +940,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 23
       },
       "id": 8,
       "panels": [],
-      "title": "🚨 Prompt injection + PII echo — single-event P0 territory",
+      "title": "\ud83d\udea8 Prompt injection + PII echo \u2014 single-event P0 territory",
       "type": "row"
     },
     {
@@ -455,7 +952,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of prompt-injection attempts in the last hour — \"ignore previous instructions\", \"disregard your system prompt\", etc. Yellow ≥5, red ≥20.",
+      "description": "Count of prompt-injection attempts in the last hour \u2014 \"ignore previous instructions\", \"disregard your system prompt\", etc. Yellow \u22655, red \u226520.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -465,15 +962,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#A78BFA",
                 "value": 5
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 20
               }
             ]
@@ -486,11 +983,11 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 21
+        "y": 24
       },
       "id": 9,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -500,7 +997,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -511,19 +1010,22 @@
           },
           "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" [1h]))",
           "legendFormat": "injection events",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "🚨 Prompt-injection attempts (1h)",
-      "type": "stat"
+      "title": "\ud83d\udea8 Prompt-injection attempts (1h)",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway lines in the last hour where PII (SSN, credit card, password, API key) appeared in the model output. ANY non-zero value is a P0 — the bot just echoed sensitive material.",
+      "description": "Count of gateway lines in the last hour where PII (SSN, credit card, password, API key) appeared in the model output. ANY non-zero value is a P0 \u2014 the bot just echoed sensitive material.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -533,11 +1035,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               },
               {
-                "color": "red",
+                "color": "#F472B6",
                 "value": 1
               }
             ]
@@ -550,11 +1052,11 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 21
+        "y": 24
       },
       "id": 10,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "reduceOptions": {
@@ -564,7 +1066,9 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -575,12 +1079,15 @@
           },
           "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [1h]))",
           "legendFormat": "pii echo events",
-          "queryType": "instant",
-          "refId": "A"
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
         }
       ],
-      "title": "🚨 PII echoed back by the bot (1h) — P0 if > 0",
-      "type": "stat"
+      "title": "\ud83d\udea8 PII echoed back by the bot (1h) \u2014 P0 if > 0",
+      "type": "stat",
+      "transparent": true
     },
     {
       "datasource": {
@@ -599,17 +1106,214 @@
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 21
+        "y": 24
       },
       "id": 11,
       "options": {
@@ -648,25 +1352,26 @@
           "refId": "B"
         }
       ],
-      "title": "📈 Prompt injection + PII echo over time",
-      "type": "timeseries"
+      "title": "\ud83d\udcc8 Prompt injection + PII echo over time",
+      "type": "timeseries",
+      "transparent": true
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Breakdown of PII-echo events in the last hour by kind (SSN, credit card, secret). Tells you which category the bot is leaking — credit cards trigger PCI escalation, secrets trigger ops paging.",
+      "description": "Breakdown of PII-echo events in the last hour by kind (SSN, credit card, secret). Tells you which category the bot is leaking \u2014 credit cards trigger PCI escalation, secrets trigger ops paging.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#8AB8FF",
                 "value": null
               }
             ]
@@ -679,7 +1384,7 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 26
+        "y": 29
       },
       "id": 12,
       "options": {
@@ -730,8 +1435,9 @@
           "refId": "C"
         }
       ],
-      "title": "🔒 PII echo — which kind is leaking? (1h)",
-      "type": "bargauge"
+      "title": "\ud83d\udd12 PII echo \u2014 which kind is leaking? (1h)",
+      "type": "bargauge",
+      "transparent": true
     },
     {
       "collapsed": false,
@@ -739,11 +1445,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 33
       },
       "id": 13,
       "panels": [],
-      "title": "📜 Show me the actual log lines",
+      "title": "\ud83d\udcdc Show me the actual log lines",
       "type": "row"
     },
     {
@@ -751,12 +1457,12 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway line matching PII patterns. Values are last-4 redacted — but the surrounding context tells you who pasted what.",
+      "description": "Live Loki tail of every gateway line matching PII patterns. Values are last-4 redacted \u2014 but the surrounding context tells you who pasted what.",
       "gridPos": {
         "h": 11,
         "w": 14,
         "x": 0,
-        "y": 31
+        "y": 34
       },
       "id": 14,
       "options": {
@@ -780,8 +1486,9 @@
           "refId": "A"
         }
       ],
-      "title": "📜 PII detection log stream (Loki)",
-      "type": "logs"
+      "title": "\ud83d\udcdc PII detection log stream (Loki)",
+      "type": "logs",
+      "transparent": true
     },
     {
       "datasource": {
@@ -793,7 +1500,7 @@
         "h": 11,
         "w": 10,
         "x": 14,
-        "y": 31
+        "y": 34
       },
       "id": 15,
       "options": {
@@ -817,8 +1524,9 @@
           "refId": "A"
         }
       ],
-      "title": "📜 Critical events log stream (Loki)",
-      "type": "logs"
+      "title": "\ud83d\udcdc Critical events log stream (Loki)",
+      "type": "logs",
+      "transparent": true
     }
   ],
   "refresh": "30s",
@@ -930,7 +1638,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — PII, Injection, Disclosure",
+  "title": "AI o11y \u2014 PII, Injection, Disclosure",
   "uid": "ai-obs-pii",
   "weekStart": ""
 }
