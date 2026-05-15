@@ -175,6 +175,10 @@ jobs:
             context: src/tools/add_to_cart
             build-args: |
               TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: navigate
+            context: src/tools/navigate
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
           # ---- Phase 2: Support Bot tools -----------------------------
           - name: kb_search
             context: src/tools/kb_search

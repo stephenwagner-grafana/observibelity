@@ -265,36 +265,111 @@
     return row;
   }
 
+  // Compact list of tool_calls below the reply. Each row shows ✓/✗ + the
+  // tool name + a tiny args summary; failed tools also reveal the error
+  // string on its own line so the demo audience sees what blew up (e.g.
+  // get_inventory(sku=mice-001) → HTTP 500: column doesn't exist).
+  function renderToolCalls(toolCalls) {
+    if (!Array.isArray(toolCalls) || !toolCalls.length) return null;
+    const list = document.createElement("ul");
+    list.className = "chat-tools";
+    toolCalls.forEach((tc) => {
+      const name = tc.name || "tool";
+      const args = tc.input || tc.args || {};
+      const errored = tc.status === "error" || !!tc.error;
+      const li = document.createElement("li");
+      li.className = "chat-tools__row" + (errored ? " chat-tools__row--err" : "");
+      const argSummary = Object.entries(args)
+        .map(([k, v]) =>
+          `${k}=${typeof v === "string" ? JSON.stringify(v) : JSON.stringify(v)}`
+        )
+        .join(", ");
+      li.innerHTML =
+        `<span class="chat-tools__icon" aria-hidden="true">${errored ? "&#10005;" : "&#10003;"}</span>`
+        + `<code class="chat-tools__name">${escapeHTML(name)}</code>`
+        + (argSummary
+            ? `<span class="chat-tools__args">(${escapeHTML(argSummary)})</span>`
+            : "")
+        + (errored && tc.error
+            ? `<div class="chat-tools__err">${escapeHTML(String(tc.error))}</div>`
+            : "");
+      list.appendChild(li);
+    });
+    return list;
+  }
+
+  // Red banner at the top of the bubble when the turn carried an error.
+  // Distinct from the per-tool error rows so the audience sees BOTH the
+  // overall failure AND which specific tool blew up.
+  function renderErrorPill(data) {
+    if (!data || (!data.error && !data._errored)) return null;
+    const pill = document.createElement("div");
+    pill.className = "chat-msg__err-pill";
+    // Surface the actual failed tool when we can see it in tool_calls; else
+    // fall back to the http error code so the audience always gets context.
+    let detail = "";
+    if (Array.isArray(data.tool_calls)) {
+      const bad = data.tool_calls.find((tc) => tc && (tc.status === "error" || tc.error));
+      if (bad && bad.error) detail = `${bad.name}: ${bad.error}`;
+      else if (bad) detail = `${bad.name} failed`;
+    }
+    if (!detail) detail = String(data.error || "Turn failed");
+    pill.innerHTML =
+      `<span class="chat-msg__err-pill-icon" aria-hidden="true">&#9888;</span> `
+      + `<span class="chat-msg__err-pill-text">${escapeHTML(detail)}</span>`;
+    return pill;
+  }
+
   function fillBotShell(shell, data) {
     // Reset the shell's contents so we can build the bubble top-to-bottom:
-    // badge (model/provider) → reply text → product cards → navigate button
-    // → "Open in Sigil" link.
+    //   badge → error pill (if errored) → reply text → tool calls list →
+    //   product cards → navigate button → "Open in Sigil" link.
     shell.wrap.innerHTML = "";
 
-    // 1) badge — small dim model/provider header at the TOP of the bubble.
+    // 1) badge — model/provider header at the TOP of the bubble.
     const badge = renderBadges(data);
     if (badge) shell.wrap.appendChild(badge);
 
-    // 2) reply body (markdown).
+    // 2) error pill — fires when the turn carried a top-level error OR
+    //    when any individual tool call errored (e.g. mice-rca's
+    //    get_inventory 500 inside an otherwise-200 turn).
+    const hasToolErr = Array.isArray(data.tool_calls)
+      && data.tool_calls.some((tc) => tc && (tc.status === "error" || tc.error));
+    if (data.error || data._errored || hasToolErr) {
+      const errPill = renderErrorPill(data);
+      if (errPill) shell.wrap.appendChild(errPill);
+    }
+
+    // 3) reply body (markdown).
     const body = document.createElement("div");
     body.className = "chat-msg__body";
     body.innerHTML = renderMarkdown(data.reply || "");
     shell.wrap.appendChild(body);
     shell.body = body;
 
-    // 3) product cards (if any).
+    // 4) tool calls — ✓/✗ rows so the audience sees the agent's actions
+    //    (and which ones failed).
+    const tools = renderToolCalls(data.tool_calls);
+    if (tools) shell.wrap.appendChild(tools);
+
+    // 5) product cards (if any).
     const prods = renderProducts(data.products);
     if (prods) shell.wrap.appendChild(prods);
 
-    // 4) single navigate button surfaced from actions[].
+    // 6) single navigate button surfaced from actions[].
     const nav = renderNavigate(data.actions);
     if (nav) shell.wrap.appendChild(nav);
 
-    // 5) "Open in Sigil" deep-link, bottom-right of bubble.
+    // 7) "Open in Sigil" deep-link, bottom-right of bubble. Renders on
+    //    error too so the demo audience can pop the failed conversation
+    //    open in Sigil straight from the bubble.
     const sig = renderSigilLink(data);
     if (sig) shell.wrap.appendChild(sig);
 
     shell.wrap.classList.remove("chat-msg--shell");
+    // Note: don't add chat-msg--err here — that style fills the whole bubble
+    // red and would mask the tool rows + sigil link. The err pill above
+    // is enough to signal failure while keeping the rich content readable.
     scrollToBottom();
   }
 
@@ -329,10 +404,34 @@
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify(body),
     })
-      .then((r) => r.json().catch(() => ({ reply: "(invalid response)", error: "parse" })))
+      .then(async (r) => {
+        const ok = r.ok;
+        let data;
+        try {
+          data = await r.json();
+        } catch (e) {
+          data = { reply: "(invalid response)", error: "parse" };
+        }
+        // Tag the response with the HTTP failure state so fillBotShell can
+        // render the error pill even when the body's `error` field is absent
+        // (e.g. fetch threw before JSON parse but somehow yielded text).
+        if (!ok) data._errored = true;
+        return data;
+      })
       .then((data) => {
-        if (!data || (data.error && !data.reply)) {
-          fillBotShellError(shell, data && data.reply ? data.reply : "Chat failed.");
+        // Render the rich bubble whenever we have ANY context — even on
+        // 5xx the server now forwards model/tool_calls/sigil_url so the
+        // demo's "what did the agent do before it broke?" story still
+        // lands. Only fall back to plain-text when there's truly nothing
+        // to show.
+        const hasContext = data && (
+          data.reply
+            || (Array.isArray(data.tool_calls) && data.tool_calls.length)
+            || data.model
+            || data.sigil_url
+        );
+        if (!hasContext) {
+          fillBotShellError(shell, (data && data.reply) || "Chat failed.");
           return;
         }
         fillBotShell(shell, data);

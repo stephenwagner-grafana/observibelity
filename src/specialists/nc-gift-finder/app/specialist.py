@@ -18,6 +18,7 @@ import os
 import re
 from typing import Any
 
+import httpx
 from prometheus_client import Counter
 
 from specialist_base import Specialist, SpecialistRequest, SpecialistResponse
@@ -115,10 +116,14 @@ class NcGiftFinder(Specialist):
         "- Use navigate when the user says \"show me X\", \"take me to X\", \"open X\", "
         "or otherwise asks to be SENT to a page. Call it ALONGSIDE search_products "
         "on the same turn — search returns the cards, navigate redirects the "
-        "browser to the matching catalog page. Pick target=\"category\" with a "
-        "category slug (peripherals|displays|audio|mobile|wearables|computers|"
-        "gaming|cables|storage|smart-home) when the request maps to one cleanly; "
-        "otherwise target=\"search\" with the singular noun.\n"
+        "browser to the matching catalog page. The navigate tool takes EXACTLY "
+        "two arguments: target (string) and value (string). Pick "
+        "target=\"category\" with value=<category-slug> (peripherals|displays|"
+        "audio|mobile|wearables|computers|gaming|cables|storage|smart-home) "
+        "when the request maps to one cleanly; otherwise target=\"search\" "
+        "with value=<singular-noun>. Examples: "
+        "navigate(target=\"category\", value=\"audio\"); "
+        "navigate(target=\"search\", value=\"headphone\").\n"
         "- After the search, summarise the top 3-5 picks with ONE short line each "
         "explaining the fit (\"premium ANC for the daily commute\", \"compact, sturdy, "
         "kid-proof\"). Don't dump every spec; the UI renders product cards below.\n"
@@ -151,7 +156,6 @@ class NcGiftFinder(Specialist):
 
         if result.get("tool_calls"):
             for tc in result["tool_calls"]:
-                all_tool_calls.append(tc)
                 tool_args = tc.get("input") or tc.get("args") or {}
                 # When the agent calls add_to_cart, decorate its args with
                 # the model+agent labels so the tool's counter and log line
@@ -161,33 +165,66 @@ class NcGiftFinder(Specialist):
                         tool_args.setdefault("agent_name", self.NAME)
                         tool_args.setdefault("model", chosen_model)
                         tool_args.setdefault("source", "agent")
-                tool_result = await self.call_tool(
-                    tc["name"], tool_args, req,
-                )
-                if tc["name"] == "search_products":
-                    items = (tool_result or {}).get("items") or []
-                    products.extend(items)
-                    q = (tool_args or {}).get("query", "") or req.message
-                    slug = _category_for(q) or _category_for(req.message)
-                    if slug:
-                        fallback_nav = ("category", slug)
-                elif tc["name"] == "get_product":
-                    item = (tool_result or {}).get("item") or tool_result
-                    if isinstance(item, dict) and item.get("id"):
-                        products.append(item)
-                        fallback_nav = ("product", str(item["id"]))
-                elif tc["name"] == "add_to_cart":
-                    cart_added.append({"input": tool_args, "result": tool_result})
-                elif tc["name"] == "navigate":
-                    if isinstance(tool_result, dict) and tool_result.get("url"):
-                        explicit_nav = {
-                            "type": "navigate",
-                            "target": tool_result.get("target") or tool_args.get("target") or "search",
-                            "value": tool_result.get("value") or tool_args.get("value") or "",
-                            "url": tool_result["url"],
-                            "label": tool_result.get("label") or "Open",
-                            "auto": True,
-                        }
+                tool_error: str | None = None
+                try:
+                    tool_result = await self.call_tool(
+                        tc["name"], tool_args, req,
+                    )
+                except httpx.HTTPStatusError as exc:
+                    try:
+                        body = exc.response.json()
+                        detail = body.get("detail") if isinstance(body, dict) else str(body)
+                    except Exception:
+                        detail = (exc.response.text or "")[:200]
+                    tool_error = f"HTTP {exc.response.status_code}" + (
+                        f": {detail}" if detail else ""
+                    )
+                    tool_result = {
+                        "error": tool_error,
+                        "status": "failed",
+                        "tool": tc["name"],
+                    }
+                    log.warning("tool %s failed: %s", tc["name"], tool_error)
+                except Exception as exc:  # noqa: BLE001
+                    tool_error = str(exc) or exc.__class__.__name__
+                    tool_result = {
+                        "error": tool_error,
+                        "status": "failed",
+                        "tool": tc["name"],
+                    }
+                    log.warning("tool %s raised: %s", tc["name"], tool_error)
+
+                decorated_tc = dict(tc)
+                decorated_tc["status"] = "error" if tool_error else "ok"
+                if tool_error:
+                    decorated_tc["error"] = tool_error
+                all_tool_calls.append(decorated_tc)
+
+                if not tool_error:
+                    if tc["name"] == "search_products":
+                        items = (tool_result or {}).get("items") or []
+                        products.extend(items)
+                        q = (tool_args or {}).get("query", "") or req.message
+                        slug = _category_for(q) or _category_for(req.message)
+                        if slug:
+                            fallback_nav = ("category", slug)
+                    elif tc["name"] == "get_product":
+                        item = (tool_result or {}).get("item") or tool_result
+                        if isinstance(item, dict) and item.get("id"):
+                            products.append(item)
+                            fallback_nav = ("product", str(item["id"]))
+                    elif tc["name"] == "add_to_cart":
+                        cart_added.append({"input": tool_args, "result": tool_result})
+                    elif tc["name"] == "navigate":
+                        if isinstance(tool_result, dict) and tool_result.get("url"):
+                            explicit_nav = {
+                                "type": "navigate",
+                                "target": tool_result.get("target") or tool_args.get("target") or "search",
+                                "value": tool_result.get("value") or tool_args.get("value") or "",
+                                "url": tool_result["url"],
+                                "label": tool_result.get("label") or "Open",
+                                "auto": True,
+                            }
                 messages.append({"role": "assistant", "tool_calls": [tc]})
                 messages.append(
                     {
@@ -207,6 +244,13 @@ class NcGiftFinder(Specialist):
             slug = _category_for(req.message)
             if slug:
                 fallback_nav = ("category", slug)
+
+        # Same auto-redirect demotion rule as nc-chatbot: if any tool
+        # failed on this turn, keep the navigate button click-to-go so the
+        # user gets to inspect the failure.
+        had_tool_error = any(tc.get("status") == "error" for tc in all_tool_calls)
+        if explicit_nav and had_tool_error:
+            explicit_nav["auto"] = False
 
         actions: list[dict] = []
         if explicit_nav:

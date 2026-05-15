@@ -733,6 +733,66 @@ a:hover { text-decoration: underline; }
   border-bottom-color: var(--accent-color-soft);
 }
 
+/* Tool calls list — shows the agent's tool invocations under the reply.
+   ✓ for ok rows, ✗ + red highlight + error string for failed rows
+   (e.g. the mice-rca demo's get_inventory(sku=mice-001) 500). */
+.chat-tools {
+  list-style: none;
+  padding: 0;
+  margin: 0.55rem 0 0;
+  display: flex; flex-direction: column; gap: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.chat-tools__row {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.chat-tools__row--err {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.45);
+  color: #fecaca;
+}
+.chat-tools__icon { font-weight: 700; color: #22c55e; }
+.chat-tools__row--err .chat-tools__icon { color: #ef4444; }
+.chat-tools__name {
+  font-weight: 600;
+  color: var(--text-default);
+  background: rgba(255,255,255,0.06);
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+}
+.chat-tools__row--err .chat-tools__name { color: #fff; background: rgba(220,38,38,0.35); }
+.chat-tools__args { color: var(--text-muted); font-family: inherit; }
+.chat-tools__err {
+  flex-basis: 100%;
+  margin-top: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  color: #fecaca;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Red banner at the top of an errored bubble. Sits between the badge and
+   the reply text so the audience sees "this turn failed" at a glance,
+   while still getting the model badge + reply summary + tool details. */
+.chat-msg__err-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  margin: 0.35rem 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.72rem; font-weight: 600;
+  background: rgba(220, 38, 38, 0.18);
+  border: 1px solid rgba(220, 38, 38, 0.6);
+  border-radius: 6px;
+  color: #fecaca;
+}
+.chat-msg__err-pill-icon { font-size: 0.9rem; }
+.chat-msg__err-pill-text { letter-spacing: 0.01em; }
+
 /* Typing indicator (3 dots) while the bot is thinking */
 .chat-typing { display: inline-flex; gap: 4px; padding: 0.1rem 0; }
 .chat-typing span {

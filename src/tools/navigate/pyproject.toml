@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "observibelity-tool-navigate"
+version = "0.2.0"
+description = "Browser-navigation tool for ObserVIBElity (agent-visible page redirect)."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.9",
+  "prometheus-client>=0.20",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

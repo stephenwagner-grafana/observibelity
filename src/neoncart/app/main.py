@@ -339,14 +339,18 @@ async def catalog(
     page: int = Query(1, ge=1),
     per_page: int = Query(24, ge=1, le=100),
     category: str | None = Query(None, min_length=1, max_length=64),
+    q: str | None = Query(None, min_length=1, max_length=128),
     persona_id: str | None = Depends(get_persona_id),
     session: AsyncSession = Depends(db.get_session),
 ) -> HTMLResponse:
     """Catalog grid. ``?category=<slug>`` filters by joining categories.slug.
+    ``?q=<text>`` does an ILIKE search across name + description so the
+    chat's navigate(target=search) lands on real results.
 
     The chat widget routes the page here when the bot emits a navigate
     action, so the grid filters to match the conversation (e.g. "show me
-    keyboards" → /catalog?category=peripherals).
+    keyboards" → /catalog?category=peripherals, "show me mice" →
+    /catalog?q=mouse).
     """
     _set_usecase_attr()
     offset = (page - 1) * per_page
@@ -354,6 +358,16 @@ async def catalog(
     if category:
         items_q = items_q.join(Category, CatalogItem.category_id == Category.id).where(
             Category.slug == category
+        )
+    if q:
+        # Mirror the search_products tool's plural-stripping so navigate
+        # target=search ("mice") matches the catalog's singular naming ("mouse").
+        needle = q.strip()
+        if len(needle) > 3 and needle.lower().endswith("s") and not needle.lower().endswith("ss"):
+            needle = needle[:-1]
+        pattern = f"%{needle}%"
+        items_q = items_q.where(
+            (CatalogItem.name.ilike(pattern)) | (CatalogItem.description.ilike(pattern))
         )
     items_q = items_q.offset(offset).limit(per_page)
     cats_q = select(Category)
@@ -369,6 +383,7 @@ async def catalog(
             "categories": categories,
             "page": page,
             "active_category": category,
+            "active_query": q,
         },
     )
 
@@ -579,17 +594,34 @@ async def chat(
         )
 
     if resp.status_code >= 400:
-        return JSONResponse(
-            {
-                "reply": f"{chosen_agent} error {resp.status_code}",
-                "tool_calls": [],
-                "usecase": usecase,
-                "session_id": payload.session_id,
-                "error": f"http_{resp.status_code}",
-                "agent": chosen_agent,
-            },
-            status_code=resp.status_code,
+        # Try to forward the specialist's JSON body so the widget can still
+        # render model/tool_calls/sigil_url even when the turn failed. The
+        # nc-chatbot specialist now catches per-tool errors and returns 200,
+        # so this branch only fires on unexpected crashes (gateway down,
+        # specialist itself raised). Keep the rich envelope when possible.
+        body: dict[str, Any] = {}
+        try:
+            body = resp.json()
+        except Exception:  # noqa: BLE001
+            body = {}
+        sigil_url = _build_sigil_url(payload.session_id) if payload.session_id else None
+        out = ChatResponse(
+            reply=body.get("reply") or body.get("message") or f"{chosen_agent} error {resp.status_code}",
+            tool_calls=body.get("tool_calls") or [],
+            usecase=usecase,
+            model=body.get("model"),
+            provider=body.get("provider"),
+            actions=body.get("actions") or [],
+            products=body.get("products") or [],
+            cost_usd=float(body.get("cost_usd") or 0.0),
+            session_id=payload.session_id,
+            span_id=body.get("span_id"),
+            sigil_url=sigil_url,
+            agent=chosen_agent,
         )
+        payload_out = out.model_dump()
+        payload_out["error"] = f"http_{resp.status_code}"
+        return JSONResponse(payload_out, status_code=resp.status_code)
 
     data = resp.json()
     sigil_url = _build_sigil_url(payload.session_id) if payload.session_id else None
