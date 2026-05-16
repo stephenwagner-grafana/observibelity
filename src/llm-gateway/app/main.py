@@ -29,7 +29,7 @@ from opentelemetry.sdk.metrics.view import (
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 
 from .pricing import compute_cost, load_pricing_overrides
 from .providers import (
@@ -114,6 +114,29 @@ COST_TOTAL = Counter(
     "llm_gateway_cost_usd_total",
     "Cumulative spend in USD across all calls.",
     ["provider", "model", "specialist", "usecase"],
+)
+# Spillover instrumentation — drives the loadgen dashboard's "Claude as
+# overflow" story. SPILLOVER_TOTAL is the count of times the dispatcher
+# swapped Ollama→Anthropic because Ollama was saturated. OLLAMA_IN_FLIGHT
+# is the live in-flight gauge (set each request). CLAUDE_DAILY_SPEND_USD
+# is the running day-ledger that the budget gate reads.
+SPILLOVER_TOTAL = Counter(
+    "llm_gateway_spillover_total",
+    "Times the dispatcher swapped a target=ollama request to anthropic "
+    "because Ollama was at the saturation threshold.",
+    ["reason"],
+)
+OLLAMA_IN_FLIGHT = Gauge(
+    "llm_gateway_ollama_in_flight",
+    "Live count of Ollama requests currently being served on this gateway pod.",
+)
+CLAUDE_DAILY_SPEND_USD = Gauge(
+    "llm_gateway_claude_daily_spend_usd",
+    "Cumulative Anthropic spend (USD) for the current UTC day; resets at midnight.",
+)
+CLAUDE_DAILY_BUDGET_USD = Gauge(
+    "llm_gateway_claude_daily_budget_usd",
+    "Configured daily Anthropic budget ceiling (USD).",
 )
 
 
@@ -203,12 +226,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         log.exception("prewarm init failed; rotation flips will see cold loads")
         app.state.prewarm_task = None
 
+    CLAUDE_DAILY_BUDGET_USD.set(_CLAUDE_DAILY_BUDGET_USD)
+    CLAUDE_DAILY_SPEND_USD.set(0.0)
     log.info(
-        "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s",
+        "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s claude_budget=$%.2f/day",
         list(providers.keys()),
         DEFAULT_PROVIDER,
         PRICING_CONFIG_PATH,
         ROUTING_CONFIG_PATH,
+        _CLAUDE_DAILY_BUDGET_USD,
     )
     yield
     # Flush + close the Sigil client on shutdown so in-flight generation
@@ -394,8 +420,65 @@ GEN_AI_TTFT = _meter.create_histogram(
 tracer = trace.get_tracer("llm_gateway")
 
 
-def _select_provider(request: Request, name: str | None) -> tuple[str, Provider]:
-    """Pick a provider by name (or fall back to default) and return (name, instance)."""
+# Daily Claude budget — enforced as a hard ceiling on actual USD spent. No
+# ratios, no rate caps, no random pickers: just a running tally of real cost
+# emitted by the Anthropic provider. Spillover is permitted only while
+# today's tally is below CLAUDE_DAILY_BUDGET_USD; once the budget is
+# exhausted, requests that would have spilled stay on Ollama and accept
+# whatever queue latency follows.
+_CLAUDE_DAILY_BUDGET_USD = float(os.environ.get("CLAUDE_DAILY_BUDGET_USD", "20.0"))
+_claude_daily_spent_usd: float = 0.0
+_claude_budget_day_utc: str = ""
+
+
+def _maybe_reset_budget_day() -> None:
+    """Roll the daily ledger over at UTC midnight."""
+    global _claude_daily_spent_usd, _claude_budget_day_utc
+    from datetime import datetime, timezone  # local import: keep boot light
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if today != _claude_budget_day_utc:
+        _claude_daily_spent_usd = 0.0
+        _claude_budget_day_utc = today
+
+
+def _claude_spillover_allowed() -> bool:
+    """True iff today's cumulative Claude spend hasn't hit the budget ceiling."""
+    _maybe_reset_budget_day()
+    return _claude_daily_spent_usd < _CLAUDE_DAILY_BUDGET_USD
+
+
+def _record_claude_spend(usd: float) -> None:
+    """Add a completed Claude call's USD cost to today's tally."""
+    global _claude_daily_spent_usd
+    _maybe_reset_budget_day()
+    _claude_daily_spent_usd += max(0.0, usd)
+
+
+def claude_budget_state() -> dict[str, float | str]:
+    """Snapshot of the running budget — exposed via /metrics for the dashboard."""
+    _maybe_reset_budget_day()
+    return {
+        "budget_usd": _CLAUDE_DAILY_BUDGET_USD,
+        "spent_usd": _claude_daily_spent_usd,
+        "remaining_usd": max(0.0, _CLAUDE_DAILY_BUDGET_USD - _claude_daily_spent_usd),
+        "day_utc": _claude_budget_day_utc,
+    }
+
+
+def _select_provider(
+    request: Request, name: str | None
+) -> tuple[str, Provider, bool]:
+    """Pick a provider — with saturation-based spillover to Claude.
+
+    Returns ``(provider_name, provider, spilled_over)``. When the chosen
+    target is Ollama and the OllamaProvider reports ``is_saturated``, the
+    dispatcher swaps to Anthropic IF the rolling per-minute Claude budget
+    has room (see :data:`_CLAUDE_SPILLOVER_RPM`). Otherwise the request
+    stays on Ollama and accepts whatever queue latency follows.
+
+    ``spilled_over`` flags the swap so the /v1/complete span can annotate it
+    for dashboards that want to correlate spillover with Ollama latency.
+    """
     providers: dict[str, Provider] = request.app.state.providers
     target = name or request.app.state.default_provider
     provider = providers.get(target)
@@ -405,7 +488,21 @@ def _select_provider(request: Request, name: str | None) -> tuple[str, Provider]
             target, provider = next(iter(providers.items()))
         else:
             raise HTTPException(status_code=503, detail="No LLM providers loaded.")
-    return target, provider
+
+    # Spillover: Ollama is at capacity and there's room in the daily budget.
+    spilled = False
+    if target == "ollama" and "anthropic" in providers:
+        ollama_provider = providers.get("ollama")
+        if (
+            ollama_provider is not None
+            and getattr(ollama_provider, "is_saturated", False)
+            and _claude_spillover_allowed()
+        ):
+            target = "anthropic"
+            provider = providers["anthropic"]
+            spilled = True
+            SPILLOVER_TOTAL.labels(reason="ollama_saturated").inc()
+    return target, provider, spilled
 
 
 @app.get("/health", response_class=PlainTextResponse)
@@ -443,7 +540,9 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
     (e.g. the loadgen's 80/20 Ollama vs Claude split). When unset we fall
     back to the gateway's configured default provider.
     """
-    provider_name, provider = _select_provider(request, name=req.provider_override)
+    provider_name, provider, _spilled_over = _select_provider(
+        request, name=req.provider_override
+    )
 
     with tracer.start_as_current_span("llm_gateway.complete") as span:
         # gen_ai.* span attrs follow OTel GenAI semantic conventions; the
@@ -453,6 +552,11 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         from .sigil import _derive_session_id  # local import: avoid cycle
         _session_id = _derive_session_id(req)
         span.set_attribute("gen_ai.system", provider_name)
+        if _spilled_over:
+            # Marks requests that landed on Anthropic only because Ollama
+            # was at capacity — the dashboard correlates this with the
+            # OLLAMA_SATURATION_THRESHOLD + Claude budget exhaustion.
+            span.set_attribute("llm_gateway.spillover", "ollama_saturated")
         span.set_attribute("gen_ai.operation.name", "chat")
         span.set_attribute(
             "gen_ai.request.model",
@@ -559,6 +663,21 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         span.set_attribute("gen_ai.usage.cost.output_usd", cost["output_usd"])
         span.set_attribute("gen_ai.usage.cost.total_usd", cost["total_usd"])
         span.set_attribute("gen_ai.response.finish_reasons", [resp.finish_reason])
+
+        # Add the just-completed call's USD to the daily Claude ledger so
+        # the spillover decision in _select_provider can deny further
+        # spillover once we hit the day's budget ceiling.
+        if provider_name == "anthropic":
+            _record_claude_spend(float(cost["total_usd"]))
+            CLAUDE_DAILY_SPEND_USD.set(_claude_daily_spent_usd)
+        # Update Ollama in-flight gauge regardless of which provider served
+        # this request — gauge stays accurate even when traffic stops.
+        try:
+            ollama_provider = request.app.state.providers.get("ollama")
+            if ollama_provider is not None:
+                OLLAMA_IN_FLIGHT.set(getattr(ollama_provider, "in_flight", 0))
+        except Exception:  # noqa: BLE001 — telemetry only
+            pass
 
         # Prometheus counters.
         labels_full = dict(

@@ -45,6 +45,13 @@ DEFAULT_TIMEOUT = 120.0
 DEFAULT_ROTATION_WINDOW_SECONDS = 300  # 5 minutes
 DEFAULT_KEEP_ALIVE = "30m"  # match prewarm task + daemon-side OLLAMA_KEEP_ALIVE
 _NO_TOOLS_MARKER = "does not support tools"
+# Saturation threshold: when this many requests are in-flight on a single
+# gateway pod, the dispatcher treats Ollama as "at capacity" and routes
+# overflow to Claude (subject to daily budget). Defaults to NUM_PARALLEL=8
+# on the .240 daemon so we spill the moment Ollama starts queueing.
+OLLAMA_SATURATION_THRESHOLD = int(
+    os.environ.get("OLLAMA_SATURATION_THRESHOLD", "8")
+)
 
 
 class _NoToolsError(Exception):
@@ -119,12 +126,26 @@ class OllamaProvider(Provider):
         self.rotation_models = _parse_rotation_models(
             os.environ.get("OLLAMA_ROTATION_MODELS")
         ) or [self.model]
+        # In-flight request counter — single-threaded asyncio = race-free
+        # without a lock as long as increments don't span an await. The
+        # dispatcher reads this to decide spillover-to-Claude.
+        self._in_flight: int = 0
         if self.rotation_enabled:
             log.info(
                 "Ollama lockstep rotation: window=%ss models=%s",
                 self.rotation_window,
                 self.rotation_models,
             )
+
+    @property
+    def in_flight(self) -> int:
+        """Currently-executing Ollama requests on this gateway pod."""
+        return self._in_flight
+
+    @property
+    def is_saturated(self) -> bool:
+        """True when in-flight count is at/above the saturation threshold."""
+        return self._in_flight >= OLLAMA_SATURATION_THRESHOLD
 
     def _current_rotation_model(self) -> tuple[str, int]:
         """Return (model_name, bucket_id) for the current wall-clock window.
@@ -212,57 +233,61 @@ class OllamaProvider(Provider):
         if req.tools:
             payload["tools"] = req.tools
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            try:
-                r = await client.post(f"{self.base_url}/api/chat", json=payload)
-                r.raise_for_status()
-            except httpx.HTTPStatusError as exc:
-                # If Ollama 400s because the active rotation model doesn't
-                # support tool-calling, strip the tools field and retry once.
-                # The specialist gets a no-tool answer instead of an error;
-                # the demo stays alive across the no-tool half of the pool.
-                if not (
-                    exc.response.status_code == 400
-                    and "tools" in payload
-                    and _NO_TOOLS_MARKER in (exc.response.text or "")
-                ):
-                    raise
-                log.info(
-                    "ollama 400 (no-tools): retrying without tools, model=%s",
-                    payload.get("model"),
-                )
-                payload_no_tools = {k: v for k, v in payload.items() if k != "tools"}
-                r = await client.post(f"{self.base_url}/api/chat", json=payload_no_tools)
-                r.raise_for_status()
-            data = r.json()
+        self._in_flight += 1
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                try:
+                    r = await client.post(f"{self.base_url}/api/chat", json=payload)
+                    r.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    # If Ollama 400s because the active rotation model doesn't
+                    # support tool-calling, strip the tools field and retry once.
+                    # The specialist gets a no-tool answer instead of an error;
+                    # the demo stays alive across the no-tool half of the pool.
+                    if not (
+                        exc.response.status_code == 400
+                        and "tools" in payload
+                        and _NO_TOOLS_MARKER in (exc.response.text or "")
+                    ):
+                        raise
+                    log.info(
+                        "ollama 400 (no-tools): retrying without tools, model=%s",
+                        payload.get("model"),
+                    )
+                    payload_no_tools = {k: v for k, v in payload.items() if k != "tools"}
+                    r = await client.post(f"{self.base_url}/api/chat", json=payload_no_tools)
+                    r.raise_for_status()
+                data = r.json()
 
-        message = data.get("message", {}) or {}
-        content = message.get("content", "") or ""
-        raw_tool_calls = message.get("tool_calls", []) or []
-        tool_calls = [
-            {
-                "id": tc.get("id", ""),
-                "name": (tc.get("function") or {}).get("name", "") or tc.get("name", ""),
-                "input": (tc.get("function") or {}).get("arguments")
-                or tc.get("arguments")
-                or {},
-            }
-            for tc in raw_tool_calls
-        ]
+            message = data.get("message", {}) or {}
+            content = message.get("content", "") or ""
+            raw_tool_calls = message.get("tool_calls", []) or []
+            tool_calls = [
+                {
+                    "id": tc.get("id", ""),
+                    "name": (tc.get("function") or {}).get("name", "") or tc.get("name", ""),
+                    "input": (tc.get("function") or {}).get("arguments")
+                    or tc.get("arguments")
+                    or {},
+                }
+                for tc in raw_tool_calls
+            ]
 
-        finish_reason = "tool_use" if tool_calls else ("length" if data.get("done_reason") == "length" else "stop")
+            finish_reason = "tool_use" if tool_calls else ("length" if data.get("done_reason") == "length" else "stop")
 
-        return CompleteResponse(
-            content=content,
-            tool_calls=tool_calls,
-            finish_reason=finish_reason,
-            usage={
-                "input_tokens": int(data.get("prompt_eval_count", 0)),
-                "output_tokens": int(data.get("eval_count", 0)),
-            },
-            provider=self.name,
-            model=data.get("model", model),
-        )
+            return CompleteResponse(
+                content=content,
+                tool_calls=tool_calls,
+                finish_reason=finish_reason,
+                usage={
+                    "input_tokens": int(data.get("prompt_eval_count", 0)),
+                    "output_tokens": int(data.get("eval_count", 0)),
+                },
+                provider=self.name,
+                model=data.get("model", model),
+            )
+        finally:
+            self._in_flight = max(0, self._in_flight - 1)
 
     # ------------------------------------------------------------------
     # Phase A: gateway-internal streaming (nc-chatbot only)
@@ -368,18 +393,22 @@ class OllamaProvider(Provider):
                 done_reason, last_model_local, ttft_ms,
             )
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            try:
-                (text_parts, tool_calls_raw, prompt_eval_count, eval_count,
-                 done_reason, last_model, ttft_ms) = await _consume(client, payload)
-            except _NoToolsError:
-                log.info(
-                    "ollama 400 (no-tools, streaming): retrying without tools, model=%s",
-                    payload.get("model"),
-                )
-                payload_no_tools = {k: v for k, v in payload.items() if k != "tools"}
-                (text_parts, tool_calls_raw, prompt_eval_count, eval_count,
-                 done_reason, last_model, ttft_ms) = await _consume(client, payload_no_tools)
+        self._in_flight += 1
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                try:
+                    (text_parts, tool_calls_raw, prompt_eval_count, eval_count,
+                     done_reason, last_model, ttft_ms) = await _consume(client, payload)
+                except _NoToolsError:
+                    log.info(
+                        "ollama 400 (no-tools, streaming): retrying without tools, model=%s",
+                        payload.get("model"),
+                    )
+                    payload_no_tools = {k: v for k, v in payload.items() if k != "tools"}
+                    (text_parts, tool_calls_raw, prompt_eval_count, eval_count,
+                     done_reason, last_model, ttft_ms) = await _consume(client, payload_no_tools)
+        finally:
+            self._in_flight = max(0, self._in_flight - 1)
 
         tool_calls = [
             {

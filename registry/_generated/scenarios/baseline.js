@@ -144,7 +144,12 @@ const SUPPORTBOT_URL = __ENV.SUPPORTBOT_URL || 'http://supportbot';
 // daily Claude spend to $40-90/day — outside the cap. The gateway also
 // applies ANTHROPIC_MAX_TOKENS_CAP=200 so per-call cost stays ~$0.0019.
 const CLAUDE_MODELS = ['claude-haiku-4-5-20251001'];
-const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.003');
+// 2026-05-16: hash-based ratio picker retired. The gateway routes target=ollama
+// to Anthropic ONLY when Ollama is saturated, and only while today's Claude
+// budget has room. Loadgen sends everything to Ollama; spillover is the
+// gateway's decision. Set LOADGEN_CLAUDE_FRACTION to a non-zero value only
+// for one-off A/B tests where you explicitly want loadgen-driven Anthropic.
+const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0');
 
 // Sigil groups Sigil generation events into a "conversation" by
 // hash(persona_id + UTC_hour) — see llm-gateway/app/sigil.py:_derive_session_id.

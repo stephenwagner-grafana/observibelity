@@ -323,18 +323,13 @@ k6:
   vus: 180                # virtual users per scenario — calibrated to push the
                           # 5090 toward ~80% GPU utilization without timeouts.
                           # Paired with OLLAMA_NUM_PARALLEL=8 + MAX_LOADED_MODELS=1.
-  # Fraction of loadgen traffic that goes directly to Claude (Anthropic).
-  # Sized for a 50:1 ollama:claude ratio so the AI o11y plugin's Provider
-  # breakdown shows visible Claude activity (was ~333:1 / 0.3% before —
-  # invisible on the dashboard). 100% Haiku 4.5 + ANTHROPIC_MAX_TOKENS_CAP=200
-  # keeps daily spend in the $15-22 range:
-  #   5.83 RPS × 0.02 × ~$0.0019 (700 input + ~150 output) × 86400 ≈ $19/day.
-  # If you raise the cap or include Sonnet/Opus, recompute or you'll
-  # blow the budget — Haiku-only is what makes 50:1 + $20/day reachable.
-  claudeFraction: 0.02    # ~50:1 ollama:claude ratio, ~$15-22/day Anthropic.
-                          # NOTE: Sigil eval-judge calls hit Bedrock
-                          # directly — they're NOT counted here.
-                          # Track via sigil_eval_judge_tokens_total.
+  # Hash-based ratio picker retired 2026-05-16. The gateway routes
+  # target=ollama to Anthropic ONLY when Ollama is saturated AND today's
+  # Claude budget has room (see CLAUDE_DAILY_BUDGET_USD on llm-gateway).
+  # claudeFraction stays at 0 so loadgen sends everything to Ollama —
+  # spillover is the gateway's decision, not a probability roll. Bump
+  # this only for one-off A/B tests of loadgen-driven Anthropic traffic.
+  claudeFraction: 0       # spillover handles Claude routing; this is 0 in normal demo.
 
 # Observability behaviors shared across components.
 # traffic_origin_default: continuous vs scenario-driven mix; never call this "loadgen".
