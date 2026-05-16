@@ -47,7 +47,7 @@ const CASCADE_MESSAGES = {{ cascade_messages }};
 const CASCADE_INTERVAL = {{ cascade_interval }};
 
 export function runCascadeArc() {
-  const sessionId = `s-cascade-{{ cascade_persona }}-${Date.now()}`;
+  const sessionId = `s-cascade-{{ cascade_persona }}-${Math.floor(Date.now() / 30000)}`;
   for (let i = 0; i < CASCADE_MESSAGES.length; i++) {
     const payload = JSON.stringify({
       message: CASCADE_MESSAGES[i],

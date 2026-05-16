@@ -77,11 +77,12 @@ const NEAR_MISS_MESSAGES = {{ near_miss_messages }};
 const PERSONA_DOMAIN = '{{ app }}' === 'supportbot' ? 'acme.com' : 'gmail.com';
 
 function post(message, severity, kind) {
+  const persona = `u-{{ name }}-${Math.floor(Math.random() * 100)}@${PERSONA_DOMAIN}`;
   const payload = JSON.stringify({
     message: message,
-    persona_id: `u-{{ name }}-${Math.floor(Math.random() * 100)}@${PERSONA_DOMAIN}`,
+    persona_id: persona,
     usecase: '{{ name }}',
-    session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    session_id: `s-${persona}-${Math.floor(Date.now() / 30000)}`,
     metadata: {
       usecase: '{{ name }}',
       archetype: 'single-event-severity',

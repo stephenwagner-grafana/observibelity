@@ -71,7 +71,7 @@ export function fireOffender() {
     message: msg,
     persona_id: '{{ persona_id }}',
     usecase: '{{ name }}',
-    session_id: `s-{{ persona_id }}-${Date.now()}`,
+    session_id: `s-{{ persona_id }}-${Math.floor(Date.now() / 30000)}`,
     metadata: {
       usecase: '{{ name }}',
       archetype: 'per-user-pattern',
@@ -95,7 +95,7 @@ export function fireBaseline() {
     message: 'help me with my order please',
     persona_id: persona,
     usecase: '{{ name }}',
-    session_id: `s-${persona}-${Date.now()}`,
+    session_id: `s-${persona}-${Math.floor(Date.now() / 30000)}`,
     metadata: { usecase: '{{ name }}', archetype: 'per-user-pattern' },
   });
   const headers = {

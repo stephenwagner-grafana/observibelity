@@ -121,8 +121,8 @@ function buildMessage() {
 
 export default function () {
   const message = buildMessage();
-  const sessionId = `gf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const userId = `giftshopper${Math.floor(Math.random() * 80)}@acme.com`;
+  const sessionId = `gf-${userId}-${Math.floor(Date.now() / 30000)}`;
   const routing = pickModelRouting(userId);
 
   const chatBody = {

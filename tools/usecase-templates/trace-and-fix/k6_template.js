@@ -53,7 +53,7 @@ export function fire() {
     message: '{{ trigger_phrase }}',
     persona_id: 'trace.fix.{{ name }}',
     usecase: '{{ name }}',
-    session_id: `s-${Date.now()}`,
+    session_id: `s-${Math.floor(Date.now() / 30000)}`,
     metadata: {
       usecase: '{{ name }}',
       archetype: 'trace-and-fix',

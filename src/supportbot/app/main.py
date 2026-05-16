@@ -171,6 +171,11 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=4096)
     persona_id: str | None = None
     usecase: str | None = None
+    # Forwarded to llm-gateway so loadgen-set conversation IDs survive the
+    # supportbot -> sb-router -> specialist -> gateway chain. Without this
+    # the gateway falls back to hash(persona+UTC_hour), bucketing 1000+
+    # messages into one Sigil conversation for heavy personas.
+    session_id: str | None = None
     # Per-request routing knobs forwarded to sb-router -> llm-gateway. The
     # loadgen sets these to drive the 80/20 Ollama vs Claude split that
     # populates the ai-obs-best-models dashboard.
@@ -318,6 +323,8 @@ async def chat(request: Request, payload: ChatRequest) -> Response:
         "persona_id": pid,
         "usecase": usecase,
     }
+    if payload.session_id:
+        body["session_id"] = payload.session_id
     if payload.provider_override:
         body["provider_override"] = payload.provider_override
     if payload.model_override:

@@ -65,11 +65,12 @@ const PERSONA_DOMAIN = '{{ app }}' === 'supportbot' ? 'acme.com' : 'gmail.com';
 
 export function fire() {
   const category = pickCategory();
+  const persona = `customer${Math.floor(Math.random() * 50)}@${PERSONA_DOMAIN}`;
   const payload = JSON.stringify({
     message: pickMessage(),
-    persona_id: `customer${Math.floor(Math.random() * 50)}@${PERSONA_DOMAIN}`,
+    persona_id: persona,
     usecase: '{{ name }}',
-    session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    session_id: `s-${persona}-${Math.floor(Date.now() / 30000)}`,
     metadata: {
       usecase: '{{ name }}',
       archetype: 'leaderboard',
