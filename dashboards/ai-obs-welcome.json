@@ -1,0 +1,1002 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Opening welcome screen for the AI observability story. Hero title, the four spectra, the fifth signal (conversations), the singularity (conversation walks down to SQL), five nav cards for the journey, and a live 24h KPI strip.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "observibelity"
+      ],
+      "title": "AI Observability dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 100,
+      "type": "timeseries",
+      "title": "",
+      "description": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "lineWidth": 0,
+            "axisPlacement": "hidden",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "showPoints": "never",
+            "spanNulls": false,
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"text-align: center; padding: 1rem;\">\n\n# AI Observability with Grafana Labs\n\n### Where conversations join the OTel stack\n\n</div>\n"
+      }
+    },
+    {
+      "id": 102,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"text-align: center; font-size: 1.3em; padding: 1rem; color: #cbd5e1;\">\n\nAI changed the time-to-value of observability.\nNow observability changes the time-to-value of AI.\n\n</div>\n"
+      }
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "\ud83e\udded The four spectra. Engineering loves the right side. AI lives on the left. Observability is the bridge.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 201,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 15
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Production</span>\n    <span>Development</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+      }
+    },
+    {
+      "id": 202,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 15
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Customer facing</span>\n    <span>Internal</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+      }
+    },
+    {
+      "id": 203,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 15
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Deterministic</span>\n    <span>Probabilistic</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+      }
+    },
+    {
+      "id": 204,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 15
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Objective</span>\n    <span>Subjective</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+      }
+    },
+    {
+      "id": 300,
+      "type": "row",
+      "title": "\ud83d\udd2d The fifth signal. Conversations branch from traces. Every conversation is a trace, but not every trace is a conversation.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 301,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1.5rem; text-align: center; font-family: monospace;\">\n\n<div style=\"display: flex; justify-content: space-around; margin-bottom: 1rem;\">\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(138, 184, 255, 0.15); color: #8AB8FF; border: 1px solid #8AB8FF;\">Metrics</span>\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid #A78BFA;\">Logs</span>\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(244, 114, 182, 0.15); color: #F472B6; border: 1px solid #F472B6;\">Traces</span>\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(251, 146, 60, 0.15); color: #FB923C; border: 1px solid #FB923C;\">Profiles</span>\n</div>\n\n<div style=\"font-size: 2em; color: #F472B6; margin: 0.5rem 0;\">&darr;</div>\n\n<div>\n  <span style=\"padding: 0.6rem 1.2rem; border-radius: 6px; background: rgba(252, 165, 165, 0.2); color: #FCA5A5; border: 2px solid #FCA5A5; font-weight: bold;\">Conversations</span>\n</div>\n\n<p style=\"color: #9ca3af; font-size: 0.9em; margin-top: 1.5rem; max-width: 700px; margin-left: auto; margin-right: auto;\">\nMetrics, logs, traces, profiles. The four classical signals of OpenTelemetry. The fifth signal, conversations, branches from traces.\n</p>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 400,
+      "type": "row",
+      "title": "\ud83e\uddf6 The singularity. From any conversation, walk down to the SQL that broke.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 401,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 30
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem;\">\n\n<p style=\"font-size: 1.1em; color: #e2e8f0; line-height: 1.6;\">\nFrom a conversation, you can walk down to the trace that produced it, the tool the model called, the database it queried, the error on Postgres, and the SQL itself.\n</p>\n\n<p style=\"font-size: 1.1em; color: #f9a8d4; line-height: 1.6; font-weight: 500;\">\nObservability is the control plane for AI systems.\n</p>\n\n<div style=\"display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; font-family: monospace; font-size: 0.9em;\">\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(103, 232, 249, 0.15); color: #67E8F9; border: 1px solid #67E8F9;\">Conversation</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(138, 184, 255, 0.15); color: #8AB8FF; border: 1px solid #8AB8FF;\">Trace</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid #A78BFA;\">Tool call</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(244, 114, 182, 0.15); color: #F472B6; border: 1px solid #F472B6;\">DB error</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(251, 146, 60, 0.15); color: #FB923C; border: 1px solid #FB923C;\">SQL</span>\n</div>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 402,
+      "type": "text",
+      "title": "What this enables",
+      "transparent": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 30
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem; font-size: 0.95em; color: #cbd5e1; line-height: 1.6;\">\n\nOne observability stack.\nFive signals.\nEvery layer of an AI system, queryable from the same place.\n\n</div>\n"
+      }
+    },
+    {
+      "id": 500,
+      "type": "row",
+      "title": "\ud83d\uddfa The path ahead. Five views, one journey.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 501,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 2,
+        "y": 39
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 1\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 502,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 6,
+        "y": 39
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 2\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 503,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 10,
+        "y": 39
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 3\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 504,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 14,
+        "y": 39
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 4\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 505,
+      "type": "text",
+      "title": "",
+      "transparent": false,
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 18,
+        "y": 39
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 5\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+      }
+    },
+    {
+      "id": 506,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "options": {
+        "mode": "html",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"padding: 0 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Deterministic. Objective. Production. Customer facing.</span>\n    <span>Subjective. Probabilistic. Development. Internal.</span>\n  </div>\n  <div style=\"height: 10px; border-radius: 5px; background: linear-gradient(90deg, #FB923C 0%, #F472B6 33%, #A78BFA 66%, #8AB8FF 100%);\"></div>\n  <p style=\"text-align: center; font-size: 0.8em; color: #64748b; margin-top: 0.3rem;\">Five views move right to left across this axis.</p>\n</div>\n"
+      }
+    },
+    {
+      "id": 600,
+      "type": "row",
+      "title": "\ud83d\udcca Highlights from the last 24 hours. Live signals from a real AI system.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 601,
+      "type": "stat",
+      "title": "Tokens served (24h)",
+      "description": "Total LLM tokens (input + output) the platform processed in the trailing 24 hours.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "sum(increase(gen_ai_client_token_usage_total[24h]))",
+          "legendFormat": "",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "customUnit": " tokens"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "transparent": false
+    },
+    {
+      "id": 602,
+      "type": "stat",
+      "title": "Cost, local marginal",
+      "description": "What the on-prem Ollama traffic cost over the last 24h (electricity + amortization, per the local cost model).",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "sum(increase(gen_ai_client_cost_usd_total{gen_ai_system=\"ollama\"}[24h]))",
+          "legendFormat": "",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#67E8F9",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "transparent": false
+    },
+    {
+      "id": 603,
+      "type": "stat",
+      "title": "Cost, equivalent Anthropic",
+      "description": "What the same 24h of token volume would have cost on Anthropic Claude Sonnet (priced at $3 / $15 per 1M input/output tokens).",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{token_type=\"output\"}[24h])) * 0.000015 + sum(increase(gen_ai_client_token_usage_total{token_type=\"input\"}[24h])) * 0.000003",
+          "legendFormat": "",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#A78BFA",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "transparent": false
+    },
+    {
+      "id": 604,
+      "type": "stat",
+      "title": "Savings",
+      "description": "Percent saved by running local marginal Ollama vs the equivalent Anthropic cost. 90% or better is healthy.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "100 * (1 - (sum(increase(gen_ai_client_cost_usd_total{gen_ai_system=\"ollama\"}[24h])) / clamp_min((sum(increase(gen_ai_client_token_usage_total{token_type=\"output\"}[24h])) * 0.000015 + sum(increase(gen_ai_client_token_usage_total{token_type=\"input\"}[24h])) * 0.000003), 0.001)))",
+          "legendFormat": "",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "noValue": "...",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#EF4444",
+                "value": null
+              },
+              {
+                "color": "#F59E0B",
+                "value": 50
+              },
+              {
+                "color": "#10B981",
+                "value": 90
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "transparent": false
+    },
+    {
+      "id": 605,
+      "type": "stat",
+      "title": "Conversations (24h)",
+      "description": "Total evaluated conversations in the last 24h, as recorded by the Sigil evaluator pipeline.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "sum(increase(sigil_eval_executions_total[24h]))",
+          "legendFormat": "",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#F472B6",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "customUnit": " conversations"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "transparent": false
+    },
+    {
+      "id": 606,
+      "type": "stat",
+      "title": "Evaluations passed (24h)",
+      "description": "Percentage of Sigil evaluator runs in the trailing 24h that returned status=pass.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 48
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "refId": "A",
+          "expr": "100 * (sum(increase(sigil_eval_executions_total{status=\"pass\"}[24h])) / clamp_min(sum(increase(sigil_eval_executions_total[24h])), 1))",
+          "legendFormat": "",
+          "instant": false,
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#86EFAC",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "transparent": false
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "ai-observability",
+    "welcome",
+    "observibelity"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": true,
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-logs",
+          "value": "grafanacloud-logs"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki datasource",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-prom",
+          "value": "grafanacloud-prom"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus datasource",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "AI Observability with Grafana Labs",
+  "uid": "ai-obs-welcome",
+  "version": 0,
+  "weekStart": "",
+  "folderUid": "obs-ai-observability"
+}

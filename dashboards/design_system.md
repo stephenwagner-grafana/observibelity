@@ -309,6 +309,15 @@ Rebuild scripts should set `panel.title` and use the matching `SIZE` and
 | `header.ribbon`         | (all)         | timeseries (bars)  | 24w × 3h  | soft        | `transparent: true`. The top accent strip.                         |
 | `header.row`            | (all)         | row                | 24w × 1h  | n/a         | Emoji-prefixed section title.                                      |
 | `callout.insight`       | (any)         | text (markdown)    | 8w × 8h   | none        | `transparent: true`. Plain-English story beside a hero.            |
+| `welcome.title`         | (welcome)     | text (markdown/html)| 24w × 6h | soft        | Large hero block: title + subtitle. Centered. `transparent: true`. |
+| `narrative.thesis`      | (welcome)     | text (markdown/html)| 24w × 5h | none        | Single load-bearing thesis statement. Centered, italic. `transparent: true`. |
+| `narrative.spectrum`    | (welcome)     | text (html gradient)| 6w × 4h | soft (canonical gradient) | One shift-left axis with two endpoint labels and a CSS gradient bar. |
+| `narrative.signal_stack`| (welcome)     | text (html)        | 24w × 9h  | soft        | MLTPC fork diagram visualizing OTel signals + the fifth (conversations) branching from traces. |
+| `narrative.singularity` | (welcome)     | text (html)        | 16w × 8h  | soft        | The drill-down preview: conversation, trace, tool call, db error, sql, with arrows between. |
+| `nav.card`              | (action)      | text (markdown)    | 4w × 6h   | soft (one per card) | Clickable card linking to a child dashboard. |
+| `nav.axis`              | (action)      | text (html gradient)| 24w × 2h | soft (canonical gradient OR locally inverted, see note) | Gradient bar under a row of nav.cards, with endpoint labels that telegraph the conceptual axis. |
+
+The `welcome.*`, `narrative.*`, and `nav.*` kinds are used by the `welcome-screen` archetype (§8.6). They are narrative panels with no underlying query, sized for visual rhythm rather than for data density. The lint rules `hero.too-small` and `color.mixed-tracks` are downgraded to INFO for these kinds because the typical row in a `welcome-screen` dashboard is composed of four to six equal-sized panels rather than a single hero plus supports.
 
 **Rule of one kind per panel** — `panel.description` SHOULD start with the
 kind in brackets so the linter can parse it: `[revenue.hero] What the
@@ -405,6 +414,42 @@ N × big rectangular "card" text panels, each linking to a dashboard.
 No data queries. Pure navigation.
 ```
 
+### 8.6 `welcome-screen`: opener dashboard, used in place of slides
+
+Used for: **opening dashboard of a story presentation, first-screen agenda**. Reference: `ai-obs-welcome`.
+
+A hybrid of `landing` (folder navigator) and a narrative explainer. Replaces the opening slides of a presentation with a live dashboard. Mirrors the OOTB Grafana AI Observability landing page (hero block at top + KPI strip at bottom) with narrative content cards in between.
+
+The substitute story arc for `welcome-screen` is:
+**Establish → Provoke → Teach (concept) → Teach (concept) → Forecast (action) → Ground in data**.
+
+Canonical layout:
+
+```
+y=0   header.ribbon                                                 24w × 3h
+y=3   welcome.title                                                 24w × 6h
+y=9   narrative.thesis                                              24w × 5h
+y=14  ⟨header.row⟩ 🧭 The four spectra. ...                         24w × 1h
+y=15  narrative.spectrum × 4                                         24w × 4h (6w each)
+y=19  ⟨header.row⟩ 🔭 The fifth signal. ...                          24w × 1h
+y=20  narrative.signal_stack                                         24w × 9h
+y=29  ⟨header.row⟩ 🧶 The singularity. ...                           24w × 1h
+y=30  narrative.singularity | callout.insight                       24w × 8h (16w + 8w)
+y=38  ⟨header.row⟩ 🗺 The path ahead. ...                            24w × 1h
+y=39  nav.card × 5                                                  20w × 6h (4w each, 2w lead + 2w trail)
+y=45  nav.axis                                                      24w × 2h
+y=47  ⟨header.row⟩ 📊 Highlights from the last 24 hours. ...         24w × 1h
+y=48  stat × 6                                                      24w × 4h (4w each)
+```
+
+Total height: 52.
+
+Pre-ship checklist additions (in addition to §4):
+- [ ] No em dashes (U+2014) in any panel title, description, or markdown content. Use periods, commas, parentheses, or colons.
+- [ ] No words "Demo", "use case", or "load gen" anywhere visible.
+- [ ] At least one KPI in the bottom strip has `colorMode: "background"` to act as the hero of the row (size is held equal across the strip for visual rhythm).
+- [ ] Nav cards 1-5 link to actual child dashboards (titles + URLs filled in before the demo, not placeholders).
+
 ### Picking an archetype
 
 | If the brief says…                              | Archetype              |
@@ -414,6 +459,7 @@ No data queries. Pure navigation.
 | "show me how NeonCart / SupportBot is doing"    | `app-overview`         |
 | "is the LLM giving good answers"                | `eval-quality`         |
 | "I just want a landing page"                    | `landing`              |
+| "an opener / agenda / welcome to <story>"       | `welcome-screen`        |
 
 ---
 
@@ -486,6 +532,12 @@ severity levels: **ERROR** (must fix before push), **WARN** (should fix),
   (the ribbon) or there must be a panel at `y=0, h=3` that's transparent.
 - **WARN `aesthetic.transparent-panel`** — non-ribbon non-callout panel
   with `transparent: true` is WARN (loses the elevated card feel).
+
+### Archetype exemptions
+
+- **INFO `arc.welcome-screen-relaxed`**: when the dashboard's archetype is `welcome-screen` (detected by uid starting with `ai-obs-welcome` OR by presence of any `welcome.*` or `narrative.*` panel kind), the rules `hero.too-small`, `color.mixed-tracks`, and `arc.row-order` are downgraded to INFO. The welcome-screen archetype favors visual rhythm over a dominant hero per row.
+
+The linter should also exempt panel kinds prefixed with `welcome.`, `narrative.`, `nav.` from the `hero.no-color-mode`, `hero.no-description` rules (these are narrative panels without queries, so the description rule doesn't apply uniformly).
 
 ### Running the linter
 
@@ -583,6 +635,17 @@ cost-savings ratio (or at least the local-marginal-vs-equivalent-Claude
 $ comparison) as a small KPI visible in Act 4. Without it, the
 callback is verbal-only and weaker. *(Implementation pending — flagged
 in `DEMO_SCRIPT.md` open questions and `CONTINUATION.md`.)*
+
+### 10.6 The path-ahead axis (cards vs. gradient)
+
+When a `welcome-screen` dashboard uses `nav.card × 5` plus `nav.axis` to preview an upcoming sequence of dashboards, two color conventions can apply:
+
+| Convention | Gradient direction | When to use |
+|---|---|---|
+| **Design-system canonical** | Cool (blue) on left, warm (orange) on right, matching the soft-palette ribbon. Label LEFT as "subjective / probabilistic", RIGHT as "objective / deterministic". | Default. Visually rhymes with the ribbon at top of every dashboard. |
+| **Locally inverted (card-aligned)** | Warm on left, cool on right. Labels LEFT as "deterministic / objective", RIGHT as "subjective / probabilistic". | Used when card 1 (the narrative starting point, conceptually deterministic) is positioned at the LEFT end of the row. Picks local coherence (card position = label) over global ribbon convention. |
+
+The choice is per-dashboard. Document the choice in the `nav.axis` panel description.
 
 ---
 
