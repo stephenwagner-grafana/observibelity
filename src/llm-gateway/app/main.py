@@ -29,7 +29,7 @@ from opentelemetry.sdk.metrics.view import (
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 from .pricing import compute_cost, load_pricing_overrides
 from .providers import (
@@ -115,29 +115,10 @@ COST_TOTAL = Counter(
     "Cumulative spend in USD across all calls.",
     ["provider", "model", "specialist", "usecase"],
 )
-# Spillover instrumentation — drives the loadgen dashboard's "Claude as
-# overflow" story. SPILLOVER_TOTAL is the count of times the dispatcher
-# swapped Ollama→Anthropic because Ollama was saturated. OLLAMA_IN_FLIGHT
-# is the live in-flight gauge (set each request). CLAUDE_DAILY_SPEND_USD
-# is the running day-ledger that the budget gate reads.
-SPILLOVER_TOTAL = Counter(
-    "llm_gateway_spillover_total",
-    "Times the dispatcher swapped a target=ollama request to anthropic "
-    "because Ollama was at the saturation threshold.",
-    ["reason"],
-)
-OLLAMA_IN_FLIGHT = Gauge(
-    "llm_gateway_ollama_in_flight",
-    "Live count of Ollama requests currently being served on this gateway pod.",
-)
-CLAUDE_DAILY_SPEND_USD = Gauge(
-    "llm_gateway_claude_daily_spend_usd",
-    "Cumulative Anthropic spend (USD) for the current UTC day; resets at midnight.",
-)
-CLAUDE_DAILY_BUDGET_USD = Gauge(
-    "llm_gateway_claude_daily_budget_usd",
-    "Configured daily Anthropic budget ceiling (USD).",
-)
+# Spillover + Claude budget instrumentation lives on the OTel meter (see
+# below, ~line 391) — prometheus_client metrics never reach Grafana Cloud
+# because nothing scrapes /metrics; the OTel-via-OTLP pipeline is the
+# canonical path. Definitions are wired up after `_meter` is initialized.
 
 
 def _build_provider_configs() -> dict[str, dict]:
@@ -207,6 +188,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     providers = discover_providers(enabled_configs)
     app.state.providers = providers
     app.state.default_provider = DEFAULT_PROVIDER
+    # Make the provider dict visible to the OTel observable-gauge callbacks
+    # (which run on a background thread + can't reach FastAPI request state).
+    _provider_state.clear()
+    _provider_state.update(providers)
 
     # Wake up the Sigil exporter so the first /v1/complete doesn't pay the
     # one-time gRPC channel setup. init_sigil() is a no-op when the
@@ -226,8 +211,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         log.exception("prewarm init failed; rotation flips will see cold loads")
         app.state.prewarm_task = None
 
-    CLAUDE_DAILY_BUDGET_USD.set(_CLAUDE_DAILY_BUDGET_USD)
-    CLAUDE_DAILY_SPEND_USD.set(0.0)
     log.info(
         "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s claude_budget=$%.2f/day",
         list(providers.keys()),
@@ -416,6 +399,62 @@ GEN_AI_TTFT = _meter.create_histogram(
     unit="s",
 )
 
+# Spillover + Claude-budget metrics — OTel-native so they flow through the
+# collector → Grafana Cloud Prometheus alongside gen_ai.*. Names use dots
+# here; the Prometheus serializer converts them to underscores, so the
+# dashboard's `llm_gateway_spillover_total` etc. PromQL keeps working.
+SPILLOVER_TOTAL = _meter.create_counter(
+    name="llm_gateway.spillover.total",
+    description="Times the dispatcher swapped a target=ollama request to "
+                "anthropic because Ollama was at the saturation threshold.",
+)
+
+
+# Module-level holder for the Ollama provider dict; populated by the
+# lifespan handler at startup. The observable-gauge callbacks below read
+# from it instead of the FastAPI request-scoped state.
+_provider_state: dict[str, Provider] = {}
+
+
+def _observe_ollama_in_flight(options):  # type: ignore[no-untyped-def]
+    """Callback: report the live Ollama in-flight count for the OTel gauge."""
+    from opentelemetry.metrics import Observation
+    ollama_provider = _provider_state.get("ollama")
+    value = 0
+    if ollama_provider is not None:
+        value = int(getattr(ollama_provider, "in_flight", 0) or 0)
+    return [Observation(value, {})]
+
+
+def _observe_claude_daily_spend(options):  # type: ignore[no-untyped-def]
+    """Callback: report today's cumulative Claude spend in USD."""
+    from opentelemetry.metrics import Observation
+    _maybe_reset_budget_day()
+    return [Observation(float(_claude_daily_spent_usd), {})]
+
+
+def _observe_claude_daily_budget(options):  # type: ignore[no-untyped-def]
+    """Callback: report the configured daily Claude budget ceiling."""
+    from opentelemetry.metrics import Observation
+    return [Observation(float(_CLAUDE_DAILY_BUDGET_USD), {})]
+
+
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.in_flight",
+    description="Live count of Ollama requests currently being served on this gateway pod.",
+    callbacks=[_observe_ollama_in_flight],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.daily.spend.usd",
+    description="Cumulative Anthropic spend (USD) for the current UTC day; resets at midnight.",
+    callbacks=[_observe_claude_daily_spend],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.daily.budget.usd",
+    description="Configured daily Anthropic budget ceiling (USD).",
+    callbacks=[_observe_claude_daily_budget],
+)
+
 
 tracer = trace.get_tracer("llm_gateway")
 
@@ -501,7 +540,7 @@ def _select_provider(
             target = "anthropic"
             provider = providers["anthropic"]
             spilled = True
-            SPILLOVER_TOTAL.labels(reason="ollama_saturated").inc()
+            SPILLOVER_TOTAL.add(1, {"reason": "ollama_saturated"})
     return target, provider, spilled
 
 
@@ -666,18 +705,12 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
 
         # Add the just-completed call's USD to the daily Claude ledger so
         # the spillover decision in _select_provider can deny further
-        # spillover once we hit the day's budget ceiling.
+        # spillover once we hit the day's budget ceiling. The OTel
+        # observable-gauge callbacks (see _observe_claude_daily_spend /
+        # _observe_ollama_in_flight) read this state on each collection
+        # cycle, so no explicit .set() is needed here.
         if provider_name == "anthropic":
             _record_claude_spend(float(cost["total_usd"]))
-            CLAUDE_DAILY_SPEND_USD.set(_claude_daily_spent_usd)
-        # Update Ollama in-flight gauge regardless of which provider served
-        # this request — gauge stays accurate even when traffic stops.
-        try:
-            ollama_provider = request.app.state.providers.get("ollama")
-            if ollama_provider is not None:
-                OLLAMA_IN_FLIGHT.set(getattr(ollama_provider, "in_flight", 0))
-        except Exception:  # noqa: BLE001 — telemetry only
-            pass
 
         # Prometheus counters.
         labels_full = dict(
