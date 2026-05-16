@@ -4,6 +4,15 @@ PromQL `quantile_over_time` works over them. Without this, Loki can't
 compute p99-style baselines (Loki forbids `quantile_over_time` over a
 `count_over_time` subquery).
 
+NOT a Kubernetes resource — this body is deployed via the Loki Ruler API,
+not helm. The `if false` guard below keeps helm from trying to apply it
+as a Kind/apiVersion manifest. Render the body with:
+
+  helm template observibelity . --show-only templates/alerts/recording-rules-atc.yaml \
+    --set lokiRecordingRules.render=true
+
+Or read directly with `cat templates/alerts/recording-rules-atc.yaml`.
+
 Deploy via the Loki Ruler API:
 
   curl -X POST -H "Authorization: Bearer $GRAFANA_SERVICE_ACCOUNT_TOKEN" \
@@ -15,6 +24,7 @@ Then in dashboards, replace baked baselines with:
 
   quantile_over_time(0.99, observibelity:atc_loadgen:hourly_count[7d])
 */ -}}
+{{- if (default (dict) .Values.lokiRecordingRules).render }}
 groups:
   - name: observibelity-atc
     interval: 1m
@@ -43,3 +53,4 @@ groups:
             count_over_time({service_namespace="observibelity",container="tool"} |~ "atc_event"
               | regexp "model=(?P<model>[^ ]+)" [1h])
           )
+{{- end }}

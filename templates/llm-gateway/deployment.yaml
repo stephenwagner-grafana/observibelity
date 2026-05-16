@@ -96,6 +96,16 @@ spec:
               value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).vramTotalGb | default 32 | quote }}
             - name: OLLAMA_POOL_CAPACITY
               value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).capacity | default 8 | quote }}
+            # PromQL query overrides. Empty = use scheduler.py defaults
+            # (nvidia_gpu_* from the unix-integrations exporter). Set these
+            # when deploying on a DCGM-scraped fleet or with non-default
+            # metric names.
+            - name: OLLAMA_POOL_VRAM_QUERY
+              value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).vramQuery | default "" | quote }}
+            - name: OLLAMA_POOL_UTIL_QUERY
+              value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).utilQuery | default "" | quote }}
+            - name: OLLAMA_POOL_TTFT_QUERY
+              value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).ttftQuery | default "" | quote }}
             # keepAlive — sent on every /api/chat request AND the scheduler
             # warm-up POST when a model is loaded. Pair with the daemon's
             # OLLAMA_KEEP_ALIVE so per-request hints and daemon defaults

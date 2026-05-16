@@ -73,7 +73,18 @@ class Specialist(ABC):
 
     def __init__(self) -> None:
         self.llm_gateway_url = os.environ.get("LLM_GATEWAY_URL", "http://llm-gateway")
-        self.client = httpx.AsyncClient(timeout=30.0)
+        # Structured Timeout + Limits on the shared client. Without an
+        # explicit `keepalive_expiry`, the pool can wedge under sustained
+        # load — recover by pod restart only. Seen 2026-05-16 when sb-router
+        # answered /health but hung /v1/run after 19h of uptime.
+        self.client = httpx.AsyncClient(
+            timeout=httpx.Timeout(connect=5.0, read=30.0, write=5.0, pool=5.0),
+            limits=httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=20,
+                keepalive_expiry=30.0,
+            ),
+        )
         # Allow operators to override TOOL_ALLOWLIST via env var (chart sets
         # this from values.yaml > specialists[].tool_allowlist). Without the
         # override the class-level default applies — same behaviour as before.

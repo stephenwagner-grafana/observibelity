@@ -267,19 +267,24 @@ class GPUSensor:
         self.bearer_token = bearer_token or ""
         self.vram_total_gb = float(vram_total_gb)
         # Defaults reflect what's ACTUALLY scraped in the .240 cluster:
-        # nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes
-        # (DCGM_FI_* is not present). Operators can override via env when
-        # deploying against a DCGM-scraped fleet.
+        # nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes and
+        # nvidia_gpu_utilization_gpu_ratio (0-1) — multiplied by 100 to give
+        # a percentage. DCGM_FI_* is not present in this cluster. Operators
+        # can override via constructor arg OR env var when deploying against
+        # a DCGM-scraped or otherwise-instrumented fleet.
         self.vram_pct_query = (
             vram_pct_query
+            or os.environ.get("OLLAMA_POOL_VRAM_QUERY")
             or "100 * (nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes)"
         )
         self.gpu_util_query = (
             gpu_util_query
-            or "avg_over_time(nvidia_gpu_utilization_percent[5m])"
+            or os.environ.get("OLLAMA_POOL_UTIL_QUERY")
+            or "100 * avg_over_time(nvidia_gpu_utilization_gpu_ratio[5m])"
         )
         self.ttft_p95_query = (
             ttft_p95_query
+            or os.environ.get("OLLAMA_POOL_TTFT_QUERY")
             or (
                 'histogram_quantile(0.95, sum by (le) ('
                 'rate(gen_ai_client_time_to_first_token_seconds_bucket[5m])))'

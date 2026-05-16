@@ -138,7 +138,14 @@ def _persona_id(request: Request) -> str | None:
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     log.info("supportbot starting — DATABASE_URL=%s", db.DATABASE_URL.split("@")[-1])
     _instrument(app)
-    app.state.http = httpx.AsyncClient(timeout=15.0)
+    app.state.http = httpx.AsyncClient(
+        timeout=httpx.Timeout(connect=5.0, read=15.0, write=5.0, pool=5.0),
+        limits=httpx.Limits(
+            max_connections=100,
+            max_keepalive_connections=20,
+            keepalive_expiry=30.0,
+        ),
+    )
     try:
         yield
     finally:
