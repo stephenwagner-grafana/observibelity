@@ -525,7 +525,7 @@
     {
       "id": 14,
       "title": "$ per 1M output tokens \u2014 live, all-in",
-      "description": "GPU electricity at $kwh_price/kWh \u00d7 PUE $pue + RTX 5090 amortization ($gpu_amort_hourly/hr), divided by output tokens/sec from the gateway. Compare with Claude Sonnet 4.6 at $15/1M output.",
+      "description": "GPU electricity at $kwh_price/kWh \u00d7 PUE $pue + RTX 5090 amortization ($gpu_amort_hourly/hr), divided by output tokens/sec from the gateway. Compare with Claude Haiku 4.5 at $5/1M output (the only Claude model on the post-2026-05-16 retune).",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -784,8 +784,8 @@
     },
     {
       "id": 18,
-      "title": "Same range on Claude Sonnet 4.6",
-      "description": "What hosted inference would have cost for the same input + output tokens. Hosted = ~50\u00d7 this rig.",
+      "title": "Same range on Claude Haiku 4.5",
+      "description": "What hosted inference would have cost for the same input + output tokens if every Ollama token had gone to Anthropic's Haiku 4.5 ($1/M input, $5/M output). This is the only Claude model on the post-2026-05-16 retune.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -836,7 +836,7 @@
     {
       "id": 19,
       "title": "$ per 1M output tokens over time \u2014 idle is expensive, busy is cheap",
-      "description": "Log-scale. Wags-ai's per-million-token cost rises when the rig is idle (amortization keeps ticking, no tokens being made) and drops when load is high. The pink dashed line is Claude Sonnet 4.6's $15/1M output.",
+      "description": "Log-scale. Wags-ai's per-million-token cost rises when the rig is idle (amortization keeps ticking, no tokens being made) and drops when load is high. The pink dashed line is Claude Haiku 4.5's $5/1M output (the only Claude model post-2026-05-16).",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -2465,41 +2465,41 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": "3.00",
-          "value": "3.00"
+          "selected": false,
+          "text": "1.00",
+          "value": "1.00"
         },
         "hide": 2,
-        "label": "Claude Sonnet $/1M in",
+        "label": "Claude $/Mtok input (Haiku 4.5)",
         "name": "claude_in_per_mtok",
         "options": [
           {
             "selected": true,
-            "text": "3.00",
-            "value": "3.00"
+            "text": "1.00",
+            "value": "1.00"
           }
         ],
-        "query": "3.00",
+        "query": "1.00",
         "skipUrlSync": false,
         "type": "constant"
       },
       {
         "current": {
-          "selected": true,
-          "text": "15.00",
-          "value": "15.00"
+          "selected": false,
+          "text": "5.00",
+          "value": "5.00"
         },
         "hide": 2,
-        "label": "Claude Sonnet $/1M out",
+        "label": "Claude $/Mtok output (Haiku 4.5)",
         "name": "claude_out_per_mtok",
         "options": [
           {
             "selected": true,
-            "text": "15.00",
-            "value": "15.00"
+            "text": "5.00",
+            "value": "5.00"
           }
         ],
-        "query": "15.00",
+        "query": "5.00",
         "skipUrlSync": false,
         "type": "constant"
       }

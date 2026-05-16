@@ -73,7 +73,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -157,14 +157,15 @@
       "id": 1,
       "panels": [],
       "title": "\ud83c\udfc6 Which model is winning right now?",
-      "type": "row"
+      "type": "row",
+      "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 models ranked by real Add-to-Cart events in the last hour, parsed from the `atc_event` Loki log stream emitted by the add_to_cart tool. ATC is a real business outcome — eval scores are theory.",
+      "description": "Top 10 models ranked by real Add-to-Cart events in the last hour, parsed from the `atc_event` Loki log stream emitted by the add_to_cart tool. ATC is a real business outcome \u2014 eval scores are theory.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -547,7 +548,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Same data as the bar chart on the left, laid out as a horizontal leaderboard. Uses the real `atc_event` Loki log stream.",
+      "description": "Same data as the bar chart on the left, laid out as a horizontal leaderboard. Uses the real `atc_event` Loki log stream.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -628,14 +629,15 @@
       "id": 4,
       "panels": [],
       "title": "\ud83d\udcc8 How is each model trending \u2014 and which is cheapest per ATC?",
-      "type": "row"
+      "type": "row",
+      "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Real Add-to-Cart events per minute per model over time (5m sliding window), parsed from the `atc_event` Loki log stream. Watch one model rise as another falls during model rotations.",
+      "description": "Real Add-to-Cart events per minute per model over time (5m sliding window), parsed from the `atc_event` Loki log stream. Watch one model rise as another falls during model rotations.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -988,7 +990,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Actual USD per Add-to-Cart per model (1h). Numerator is the Prometheus cost rate for the nc-gift-finder specialist (USD/hour); denominator is real ATC events/hour from the Loki `atc_event` log stream. Lowest = best $-efficiency. Join is done in the panel via a `Binary operation` transformation (cost ÷ ATC) since the data sources are mixed.",
+      "description": "Actual USD per Add-to-Cart per model (1h). Numerator is the Prometheus cost rate for the nc-gift-finder specialist (USD/hour); denominator is real ATC events/hour from the Loki `atc_event` log stream. Lowest = best $-efficiency. Join is done in the panel via a `Binary operation` transformation (cost \u00f7 ATC) since the data sources are mixed.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1088,7 +1090,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=\"nc-gift-finder\"}[1h])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\",ai_o11y_specialist=\"nc-gift-finder\"}[1h])) * 3600",
           "format": "table",
           "instant": true,
           "legendFormat": "cost_per_hour",
@@ -1166,14 +1168,15 @@
       "id": 7,
       "panels": [],
       "title": "\ud83d\udccb The full scorecard \u2014 every metric, every model",
-      "type": "row"
+      "type": "row",
+      "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per model with every signal you need to pick a winner: real Add-to-Cart events (Loki `atc_event` log stream), conversion rate (ATC ÷ LLM calls), p50 latency, and USD per ATC (cost rate ÷ ATC count). The Conversion % and USD per ATC columns are computed in the panel via `Binary operation` transformations (Prom + Loki joined by model). Sort by any column. All numbers are 1h windows.",
+      "description": "One row per model with every signal you need to pick a winner: real Add-to-Cart events (Loki `atc_event` log stream), conversion rate (ATC \u00f7 LLM calls), p50 latency, and USD per ATC (cost rate \u00f7 ATC count). The Conversion % and USD per ATC columns are computed in the panel via `Binary operation` transformations (Prom + Loki joined by model). Sort by any column. All numbers are 1h windows.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1645,7 +1648,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[1h]))",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h]))",
           "format": "table",
           "instant": true,
           "legendFormat": "calls",
@@ -1657,7 +1660,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.5, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[1h])))",
+          "expr": "histogram_quantile(0.5, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h])))",
           "format": "table",
           "instant": true,
           "legendFormat": "p50 latency",
@@ -1669,7 +1672,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=\"nc-gift-finder\"}[1h])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\",ai_o11y_specialist=\"nc-gift-finder\"}[1h])) * 3600",
           "format": "table",
           "instant": true,
           "legendFormat": "cost_per_hour",
@@ -1755,14 +1758,15 @@
       "id": 9,
       "panels": [],
       "title": "\ud83d\udcb0 Cost vs latency \u2014 what's each model costing and how fast is it?",
-      "type": "row"
+      "type": "row",
+      "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Stacked **USD per hour** by model (5m rate \u00d7 3600). Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes because they're ~10\u00d7 the per-token price of Ollama-local.",
+      "description": "Stacked **USD per hour** by model (5m rate \u00d7 3600). Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes because they're ~10\u00d7 the per-token price of Ollama-local.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2102,7 +2106,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2119,7 +2123,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 of gen_ai client request duration per model \u2014 95 out of 100 calls finish faster than this. Spikes here mean tail-latency pain that users will feel.",
+      "description": "p95 of gen_ai client request duration per model \u2014 95 out of 100 calls finish faster than this. Spikes here mean tail-latency pain that users will feel.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2451,7 +2455,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (gen_ai_request_model, le) (rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2481,7 +2485,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent per 1M tokens processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom \u2014 which is exactly why routing decisions matter.",
+      "description": "USD spent per 1M tokens processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom \u2014 which is exactly why routing decisions matter.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2871,7 +2875,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[24h])), 1) * 1e6)",
+          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1) * 1e6)",
           "format": "table",
           "instant": true,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2888,7 +2892,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "24h Ollama gateway-attributed spend. Anthropic/Claude is billed via Sigil and does NOT appear in this gateway counter — for the full Anthropic bill cross-reference the ai-obs-finops dashboard. The Claude bar here will read ~$0 even when Claude is generating most of the traffic; that's expected.",
+      "description": "24h gateway-attributed spend split by provider. The gateway counter covers BOTH the local Ollama pool and Anthropic-Haiku (the only Claude model on the rotation post-2026-05-16). For Sigil eval-judge spend (Bedrock) cross-reference the ai-obs-finops dashboard.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3249,7 +3253,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_system) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h]))",
+          "expr": "sum by (gen_ai_system) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{gen_ai_system}}",
@@ -3257,7 +3261,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83c\udd9a Ollama spend (24h) \u2014 Anthropic billed via Sigil; see ai-obs-finops",
+      "title": "Spend by provider (24h) \u2014 Ollama vs Anthropic-Haiku",
       "type": "barchart",
       "transparent": false
     },

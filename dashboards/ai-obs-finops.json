@@ -76,7 +76,7 @@
       "id": 2,
       "type": "stat",
       "title": "\ud83d\udcb8 Projected $/day \u2014 Anthropic API",
-      "description": "Projected $/day at the current Anthropic spend rate (5-min window \u00d7 86400).",
+      "description": "Projected $/day at the current Anthropic spend rate (5-min window \u00d7 86400).\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
         "y": 3,
@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", gen_ai_response_model=~\"claude.*\"}[5m]))) * 86400",
+          "expr": "(sum(rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", gen_ai_response_model=~\"claude.*\"}[5m]))) * 86400",
           "instant": true
         }
       ],
@@ -328,7 +328,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "USD/hr by channel",
-      "description": "All three real spend channels + the estimated 5090 electricity baseline.",
+      "description": "All three real spend channels + the estimated 5090 electricity baseline.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
         "y": 9,
@@ -346,7 +346,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", gen_ai_response_model=~\"claude.*\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", gen_ai_response_model=~\"claude.*\"}[5m])) * 3600",
           "legendFormat": "Anthropic API"
         },
         {
@@ -364,7 +364,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", gen_ai_response_model!~\"claude.*\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", gen_ai_response_model!~\"claude.*\"}[5m])) * 3600",
           "legendFormat": "Ollama (GPU amortized)"
         },
         {
@@ -426,7 +426,7 @@
       "id": 7,
       "type": "table",
       "title": "Top 10 spend per specialist (USD/hr)",
-      "description": "Which specialist is driving the bill.",
+      "description": "Which specialist is driving the bill.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
         "y": 20,
@@ -444,7 +444,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600)",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])) * 3600)",
           "instant": true,
           "format": "table"
         }
@@ -498,7 +498,7 @@
       "id": 8,
       "type": "table",
       "title": "Top 10 spend per user (USD/hr)",
-      "description": "Per-employee/-shopper attribution. Drill-down for finops conversations.",
+      "description": "Per-employee/-shopper attribution. Drill-down for finops conversations.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 12,
         "y": 20,
@@ -516,7 +516,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600)",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])) * 3600)",
           "instant": true,
           "format": "table"
         }

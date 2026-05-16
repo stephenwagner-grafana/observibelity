@@ -57,7 +57,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -148,7 +148,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per model, ranked by a composite score that blends business value and cost. Formula:\n  composite = 40\u00b7atc_rate + 30/(1+1000\u00b7cost_per_conv) + 15/(1+p95_latency) + 15\u00b7quality_0_1\nWhere atc_rate is ATC events \u00f7 calls (so a model that converts 10% of its calls scores 4 from that term), cost_per_conv is dollars per call (Ollama\u22480 \u2192 full 30 points, $0.01/call \u2192 ~15 points), p95 is seconds (sub-1s \u2192 ~15, 10s \u2192 ~1.4), and quality is the Sigil business_value_score 0-1. Practical max \u2248 100 for a free, fast, high-converting, high-quality model. Sort by any column.",
+      "description": "One row per model, ranked by a composite score that blends business value and cost. Formula:\n  composite = 40\u00b7atc_rate + 30/(1+1000\u00b7cost_per_conv) + 15/(1+p95_latency) + 15\u00b7quality_0_1\nWhere atc_rate is ATC events \u00f7 calls (so a model that converts 10% of its calls scores 4 from that term), cost_per_conv is dollars per call (Ollama\u22480 \u2192 full 30 points, $0.01/call \u2192 ~15 points), p95 is seconds (sub-1s \u2192 ~15, 10s \u2192 ~1.4), and quality is the Sigil business_value_score 0-1. Practical max \u2248 100 for a free, fast, high-converting, high-quality model. Sort by any column.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -805,7 +805,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h]))",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h]))",
           "format": "table",
           "instant": true,
           "legendFormat": "calls",
@@ -841,7 +841,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])), 1)",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1)",
           "format": "table",
           "instant": true,
           "legendFormat": "cost_per_conv",
@@ -853,7 +853,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[1h]))) < +Inf",
+          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h]))) < +Inf",
           "format": "table",
           "instant": true,
           "legendFormat": "p95",
@@ -950,7 +950,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "X axis = $ per conversation (lower is better, left side wins). Y axis = ATC rate % (higher is better, top side wins). The upper-left quadrant is the bargain bin: cheap models that still drive cart-adds. Models in the lower-right are paying premium prices for no business outcome.",
+      "description": "X axis = $ per conversation (lower is better, left side wins). Y axis = ATC rate % (higher is better, top side wins). The upper-left quadrant is the bargain bin: cheap models that still drive cart-adds. Models in the lower-right are paying premium prices for no business outcome.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1326,7 +1326,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\"}[24h])), 1)",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1)",
           "format": "table",
           "instant": true,
           "legendFormat": "$ per conv",
@@ -1358,7 +1358,8 @@
       "id": 5,
       "panels": [],
       "title": "\ud83d\udcc8 Per-model trends \u2014 ATC, cost and latency over time",
-      "type": "row"
+      "type": "row",
+      "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
     {
       "datasource": {
@@ -1716,7 +1717,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD per hour spend per model (5m rate × 3600). The widest band is currently eating your budget.",
+      "description": "USD per hour spend per model (5m rate \u00d7 3600). The widest band is currently eating your budget.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2055,7 +2056,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2072,7 +2073,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 latency per model \u2014 95% of requests finish faster than this line. Watch for spikes; users feel tail latency more than averages.",
+      "description": "p95 latency per model \u2014 95% of requests finish faster than this line. Watch for spikes; users feel tail latency more than averages.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2404,7 +2405,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
