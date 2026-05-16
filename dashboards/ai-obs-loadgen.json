@@ -1,100 +1,167 @@
 {
   "uid": "ai-obs-loadgen",
-  "title": "AI o11y \u2014 Loadgen Activity (what k6 is driving right now)",
+  "title": "AI o11y \u2014 Loadgen Activity (Ollama-first + spillover process)",
   "tags": [
     "ai-observability",
     "loadgen",
     "k6",
     "operations",
-    "observibelity"
+    "observibelity",
+    "spillover"
   ],
-  "timezone": "",
   "schemaVersion": 39,
   "version": 1,
   "refresh": "30s",
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
+  "timezone": "",
   "templating": {
     "list": [
       {
+        "name": "datasource_prom",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
         "current": {
           "selected": true,
           "text": "grafanacloud-stephenwagner-prom",
           "value": "grafanacloud-prom"
         },
         "hide": 0,
-        "includeAll": false,
-        "label": "Prometheus",
-        "multi": false,
-        "name": "datasource_prom",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
         "skipUrlSync": false,
-        "type": "datasource"
+        "includeAll": false,
+        "multi": false,
+        "options": []
       },
       {
+        "name": "datasource_loki",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
         "current": {
           "selected": true,
           "text": "grafanacloud-stephenwagner-logs",
           "value": "grafanacloud-logs"
         },
         "hide": 0,
-        "includeAll": false,
-        "label": "Loki",
-        "multi": false,
-        "name": "datasource_loki",
-        "options": [],
-        "query": "loki",
-        "refresh": 1,
-        "regex": "",
         "skipUrlSync": false,
-        "type": "datasource"
+        "includeAll": false,
+        "multi": false,
+        "options": []
       }
     ]
   },
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard",
+        "iconColor": "rgba(0, 211, 255, 1)"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "#A78BFA",
+        "name": "Spillover events",
+        "expr": "increase(llm_gateway_spillover_total[1m]) > 0",
+        "step": "1m",
+        "titleFormat": "Ollama\u2192Claude spillover",
+        "useValueForTime": false
+      }
+    ]
   },
   "panels": [
     {
-      "id": 101,
+      "id": 10,
       "type": "text",
       "title": "",
-      "transparent": true,
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y \u2014 Loadgen Activity\n\n**Story:** What is k6 actually driving? This dashboard surfaces traffic volume, use-case mix, persona mix, and the Ollama/Claude 80/20 routing split. Use it as a sanity check before any demo \u2014 confirm the heavy scenarios (data-theft-tim, mice-rca, email-cascade, confidential-disclosure) are firing.\n\n**Look for:** **chats/sec** > 0, **active users** > 5, and the **\u2744 cold scenarios** table near the bottom should be empty for the scenarios you're about to demo."
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
+        "content": "## How loadgen routes traffic\n**1.** k6 sends every request to **Ollama** (no static ratio, no probability roll). **2.** Gateway tracks `ollama.in_flight`; once it hits **OLLAMA_SATURATION_THRESHOLD** (8 = NUM_PARALLEL on .240), **3.** New `target=ollama` requests get rerouted to **Claude** \u2014 IF today's running cost is below **`$20`**. **4.** When Claude's daily budget is gone, requests stay on Ollama and accept queue latency.\n_Process, not a ratio. Spillover events + budget burn appear below._"
       }
     },
     {
+      "id": 20,
+      "type": "row",
+      "title": "\ud83d\udfe2 Right now \u2014 what the loadgen + gateway are doing",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "panels": [],
+      "datasource": null,
+      "targets": []
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "Requests / sec \u2014 Ollama",
+      "description": "5m rolling rate of /v1/complete calls that landed on Ollama.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "",
-      "type": "timeseries",
-      "title": "",
-      "id": 100,
-      "transparent": true,
       "gridPos": {
-        "h": 3,
-        "w": 24,
+        "h": 4,
+        "w": 6,
         "x": 0,
-        "y": 5
+        "y": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
       },
       "targets": [
         {
@@ -102,2680 +169,1067 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
-          "legendFormat": "tokens/min",
-          "range": true,
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"ollama\"}[5m]))",
+          "instant": true,
           "refId": "A"
         }
-      ],
+      ]
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Requests / sec \u2014 Claude (spillover)",
+      "description": "5m rate of calls that ended up on Anthropic. With claudeFraction=0, every Claude call came from saturation spillover.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 4
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "custom": {
-            "drawStyle": "bars",
-            "barAlignment": 0,
-            "barWidthFactor": 0.92,
-            "fillOpacity": 100,
-            "gradientMode": "scheme",
-            "lineWidth": 0,
-            "axisPlacement": "hidden",
-            "axisLabel": "",
-            "axisColorMode": "text",
-            "showPoints": "never",
-            "spanNulls": false,
-            "hideFrom": {
-              "legend": true,
-              "tooltip": false,
-              "viz": false
-            },
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
+          "decimals": 2,
+          "unit": "reqps",
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
-                "color": "#8AB8FF",
+                "color": "#9CA3AF",
+                "value": null
+              },
+              {
+                "color": "#F472B6",
+                "value": 0.01
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"anthropic\"}[5m]))",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "Ollama in-flight (live)",
+      "description": "Concurrent Ollama requests on this gateway pod. Hits the OLLAMA_SATURATION_THRESHOLD (8 by default) \u2192 spillover fires.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F59E0B",
+                "value": 6
+              },
+              {
+                "color": "#F472B6",
+                "value": 8
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "avg(llm_gateway_ollama_in_flight)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "type": "stat",
+      "title": "Spillover events / hour",
+      "description": "Times the gateway swapped target=ollama \u2192 anthropic because Ollama hit the threshold AND the daily budget had room.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#9CA3AF",
                 "value": null
               },
               {
                 "color": "#A78BFA",
-                "value": 30
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(llm_gateway_spillover_total[1h]))",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "type": "stat",
+      "title": "\ud83d\udcb0 Claude spent today",
+      "description": "Cumulative Anthropic spend (USD) for the current UTC day. The dispatcher denies further spillover once this reaches the budget ceiling.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "unit": "currencyUSD",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
               },
               {
-                "color": "#F472B6",
-                "value": 65
+                "color": "#F59E0B",
+                "value": 15
+              },
+              {
+                "color": "#EF4444",
+                "value": 20
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max(llm_gateway_claude_daily_spend_usd)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "type": "stat",
+      "title": "\ud83e\ude99 Budget remaining",
+      "description": "$20/day - spent. When this hits 0, spillover stops and saturation-overflow stays on Ollama (with queue latency).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "unit": "currencyUSD",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#EF4444",
+                "value": null
+              },
+              {
+                "color": "#F59E0B",
+                "value": 5
+              },
+              {
+                "color": "#10B981",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max(llm_gateway_claude_daily_budget_usd) - max(llm_gateway_claude_daily_spend_usd)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "type": "stat",
+      "title": "\ud83e\uddf0 Tool-strip retries / 5m",
+      "description": "When the active Ollama model lacks tool-call support (e.g. tinyllama), the gateway catches the 400 and retries without tools. This counts those silent fallbacks.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#9CA3AF",
+                "value": null
               },
               {
                 "color": "#FB923C",
-                "value": 88
+                "value": 1
               }
             ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
+          "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"no-tools.*retrying without tools\" [5m]))",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "\ud83c\udf0a The calm beach wave \u2014 request rate by provider",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "panels": [],
+      "datasource": null,
+      "targets": []
+    },
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "Rate by provider (req/s)",
+      "description": "Ollama gets everything by default. Claude only shows up when Ollama saturates AND the budget has room. The two lines together prove the spillover process is what determines provider choice \u2014 not a ratio.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"ollama\"}[5m]))",
+          "legendFormat": "ollama",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"anthropic\"}[5m]))",
+          "legendFormat": "anthropic (spillover)",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "row",
+      "title": "\ud83d\udea6 Saturation drives spillover",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "panels": [],
+      "datasource": null,
+      "targets": []
+    },
+    {
+      "id": 51,
+      "type": "timeseries",
+      "title": "Ollama in-flight vs threshold",
+      "description": "Live in-flight count averaged across gateway pods. When it crosses 8 (the OLLAMA_SATURATION_THRESHOLD), the dispatcher starts spilling.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 1,
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    6,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#EF4444"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "avg(llm_gateway_ollama_in_flight)",
+          "legendFormat": "in_flight",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "vector(8)",
+          "legendFormat": "saturation threshold",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "type": "timeseries",
+      "title": "Spillover events / minute",
+      "description": "Bar = number of times in the last minute the dispatcher swapped target=ollama \u2192 anthropic. Should rise during Ollama saturation, drop when the budget exhausts.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 40,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 1,
           "unit": "short"
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "showLegend": false,
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
-      }
-    },
-    {
-      "id": 1,
-      "type": "row",
-      "title": "\ud83d\udce1 Overview \u2014 is k6 actually generating traffic right now?",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 2,
-      "type": "stat",
-      "title": "How fast is k6 driving chats? (chats/min)",
-      "description": "Rate of Sigil generation log lines from llm-gateway (one per chat). Best proxy for live k6 throughput. Red below 0.1/sec means loadgen is essentially idle.",
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 0,
-        "y": 9
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
       },
       "targets": [
         {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"sigil generation\" [5m])) * 60",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "orientation": "auto",
-        "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "wideLayout": false,
-        "percentChangeColorMode": "inverted"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#F472B6",
-                "value": null
-              },
-              {
-                "color": "#A78BFA",
-                "value": 0.1
-              },
-              {
-                "color": "#8AB8FF",
-                "value": 0.5
-              }
-            ]
-          },
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "transparent": false
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "How many use cases are firing?",
-      "description": "Distinct ai_o11y.usecase values seen in llm-gateway logs in the last 5 minutes. Green at 18+ \u2014 registry has 22 scenarios so anything well below means traffic is too thin to keep them all lit.",
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 6,
-        "y": 9
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "count(sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "orientation": "auto",
-        "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "wideLayout": false,
-        "percentChangeColorMode": "inverted"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#F472B6",
-                "value": null
-              },
-              {
-                "color": "#FB923C",
-                "value": 5
-              },
-              {
-                "color": "#A78BFA",
-                "value": 10
-              },
-              {
-                "color": "#8AB8FF",
-                "value": 18
-              }
-            ]
-          },
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "transparent": false
-    },
-    {
-      "id": 4,
-      "type": "stat",
-      "title": "How many users are active?",
-      "description": "Distinct user_id (email) values seen in llm-gateway logs in the last 5 minutes. Green at 20+ \u2014 the centerpiece users (Tim/Mara/Jordan/Priya/Eric) should always be present.",
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 12,
-        "y": 9
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "count(sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".*@.*\" [5m])))",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "orientation": "auto",
-        "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "wideLayout": false,
-        "percentChangeColorMode": "inverted"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#F472B6",
-                "value": null
-              },
-              {
-                "color": "#FB923C",
-                "value": 5
-              },
-              {
-                "color": "#A78BFA",
-                "value": 12
-              },
-              {
-                "color": "#8AB8FF",
-                "value": 20
-              }
-            ]
-          },
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "transparent": false
-    },
-    {
-      "id": 5,
-      "type": "stat",
-      "title": "\ud83d\udcb0 What is loadgen burning per hour?",
-      "description": "Total gen_ai cost rate \u00d7 3600. Almost all of this is Claude \u2014 the 80% Ollama traffic is essentially free. Yellow above $5/hr, red above $25/hr.",
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 18,
-        "y": 9
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "targets": [
-        {
-          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "expr": "sum(rate(llm_gateway_spillover_total[5m])) * 60",
+          "legendFormat": "spillover/min",
+          "refId": "A"
         }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "orientation": "auto",
-        "textMode": "auto",
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "wideLayout": false,
-        "percentChangeColorMode": "inverted"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyUSD",
-          "decimals": 2,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#8AB8FF",
-                "value": null
-              },
-              {
-                "color": "#A78BFA",
-                "value": 5
-              },
-              {
-                "color": "#F472B6",
-                "value": 25
-              }
-            ]
-          },
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "transparent": false
+      ]
     },
     {
-      "id": 6,
-      "type": "row",
-      "title": "\ud83d\udcca Mix breakdown \u2014 which scenarios and personas are running?",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 14
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 7,
-      "type": "barchart",
-      "title": "Which use cases are getting hit? (chats per use_case)",
-      "description": "Total chats per use_case in the last 5 minutes. Should mirror the baseline.js weight table at the bottom \u2014 data-theft-tim (8) and hiring-discrimination-risk (5) lead.",
-      "gridPos": {
-        "h": 11,
-        "w": 12,
-        "x": 0,
-        "y": 15
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "topk(22, sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m])))",
-          "queryType": "instant",
-          "legendFormat": "{{ai_o11y_usecase}}"
-        }
-      ],
-      "options": {
-        "orientation": "horizontal",
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0,
-        "showValue": "auto",
-        "stacking": "none",
-        "groupWidth": 0.7,
-        "barWidth": 0.97,
-        "barRadius": 0,
-        "fullHighlight": false,
-        "legend": {
-          "showLegend": false,
-          "displayMode": "list",
-          "placement": "bottom",
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "#8AB8FF",
-                "value": null
-              },
-              {
-                "color": "#A78BFA",
-                "value": 33
-              },
-              {
-                "color": "#F472B6",
-                "value": 66
-              },
-              {
-                "color": "#FB923C",
-                "value": 88
-              }
-            ]
-          },
-          "custom": {
-            "gradientMode": "scheme",
-            "fillOpacity": 90,
-            "lineWidth": 0
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "transparent": false
-    },
-    {
-      "id": 8,
-      "type": "barchart",
-      "title": "\ud83d\udd25 Which personas are driving the chats?",
-      "description": "Total chats per persona in the last 5 minutes. Centerpiece personas (Tim L, Mara, Jordan, Priya, Eric) should dominate \u2014 if they don't, baseline.js weights need a look.",
-      "gridPos": {
-        "h": 11,
-        "w": 12,
-        "x": 12,
-        "y": 15
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "topk(25, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".*@.*\" [5m])))",
-          "queryType": "instant",
-          "legendFormat": "{{user_id}}"
-        }
-      ],
-      "options": {
-        "orientation": "horizontal",
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0,
-        "showValue": "auto",
-        "stacking": "none",
-        "groupWidth": 0.7,
-        "barWidth": 0.97,
-        "barRadius": 0,
-        "fullHighlight": false,
-        "legend": {
-          "showLegend": false,
-          "displayMode": "list",
-          "placement": "bottom",
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "#8AB8FF",
-                "value": null
-              },
-              {
-                "color": "#A78BFA",
-                "value": 33
-              },
-              {
-                "color": "#F472B6",
-                "value": 66
-              },
-              {
-                "color": "#FB923C",
-                "value": 88
-              }
-            ]
-          },
-          "custom": {
-            "gradientMode": "scheme",
-            "fillOpacity": 90,
-            "lineWidth": 0
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "transparent": false
-    },
-    {
-      "id": 9,
-      "type": "row",
-      "title": "\ud83d\udcc8 Over time \u2014 how is the mix changing, and where is traffic landing?",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 26
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 10,
+      "id": 61,
       "type": "timeseries",
-      "title": "Use-case traffic over time (top 12 by rate, chats/min)",
-      "description": "Per-use_case chats/min over the dashboard window. Use this to watch a scenario ramp, dip, or die out after you tweak baseline.js weights and restart k6.",
-      "gridPos": {
-        "h": 11,
-        "w": 16,
-        "x": 0,
-        "y": 27
-      },
+      "title": "\ud83d\udcb0 Claude daily spend vs $20 budget",
+      "description": "Cumulative $ spent on Anthropic today. Resets at UTC midnight. The dashed line at $20 is the hard ceiling \u2014 once spent crosses it, the gateway stops spilling for the rest of the UTC day.",
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "topk(12, sum by (ai_o11y_usecase) (rate({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [5m]))) * 60",
-          "queryType": "range",
-          "legendFormat": "{{ai_o11y_usecase}}"
-        }
-      ],
-      "options": {
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        },
-        "legend": {
-          "showLegend": true,
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ]
-        }
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 30
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
             "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
             "lineInterpolation": "smooth",
-            "fillOpacity": 10,
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
             "lineWidth": 2,
-            "gradientMode": "opacity"
-          }
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
         },
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
+              "id": "byFrameRefID",
+              "options": "B"
             },
             "properties": [
               {
-                "id": "color",
+                "id": "custom.lineStyle",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
+                  "dash": [
+                    6,
+                    6
+                  ],
+                  "fill": "dash"
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
+              },
               {
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
+                  "fixedColor": "#F59E0B"
                 }
               }
             ]
           }
         ]
       },
-      "transparent": false
-    },
-    {
-      "id": 11,
-      "type": "piechart",
-      "title": "\ud83d\udce6 Where is traffic landing? (specialist mix)",
-      "description": "Donut split of chats by destination specialist. Sanity check that sb-router and nc-chatbot are fanning out to their respective sub-specialists, not getting stuck on a single one.",
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 16,
-        "y": 27
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(15, sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.specialist\\\": \\\"<ai_o11y_specialist>\\\"<_>` | ai_o11y_specialist!=\"\" [5m])))",
-          "queryType": "instant",
-          "legendFormat": "{{ai_o11y_specialist}}"
+          "expr": "max(llm_gateway_claude_daily_spend_usd)",
+          "legendFormat": "spent today",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max(llm_gateway_claude_daily_budget_usd)",
+          "legendFormat": "$20 budget",
+          "refId": "B"
         }
-      ],
-      "options": {
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "pieType": "donut",
-        "tooltip": {
-          "mode": "single",
-          "sort": "desc"
-        },
-        "legend": {
-          "showLegend": true,
-          "displayMode": "list",
-          "placement": "bottom",
-          "values": []
-        },
-        "displayLabels": [
-          "percent"
-        ]
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "transparent": false
+      ]
     },
     {
-      "id": 12,
+      "id": 70,
       "type": "row",
-      "title": "\ud83e\udd16 Model routing + freshness \u2014 are providers and scenarios alive?",
+      "title": "\ud83d\udd04 Ollama rotation \u2014 one model per 5-min window",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 38
       },
-      "collapsed": false,
-      "panels": []
+      "panels": [],
+      "datasource": null,
+      "targets": []
     },
     {
-      "id": 13,
-      "type": "piechart",
-      "title": "\ud83e\udd16 Ollama vs Claude \u2014 is the 80/20 split holding?",
-      "description": "Donut of gen_ai.system share. Target ratio is set by LOADGEN_CLAUDE_FRACTION (default 0.10\u20130.20). If Claude is dominating, you'll see it here before the cost stat panel turns red.",
+      "id": 71,
+      "type": "timeseries",
+      "title": "Active model \u2014 rate by gen_ai.request.model (Ollama only)",
+      "description": "Per-model request rate. With prewarm + OLLAMA_MAX_LOADED_MODELS=2, each window's model takes over hot \u2014 no cold-load notch at the 5-min boundary.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "gridPos": {
-        "h": 9,
-        "w": 8,
+        "h": 7,
+        "w": 24,
         "x": 0,
         "y": 39
       },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum by (gen_ai_system) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation\" | pattern `<_>\\\"gen_ai.system\\\": \\\"<gen_ai_system>\\\"<_>` | gen_ai_system!=\"\" [5m]))",
-          "queryType": "instant",
-          "legendFormat": "{{gen_ai_system}}"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "pieType": "donut",
-        "tooltip": {
-          "mode": "single",
-          "sort": "desc"
-        },
-        "legend": {
-          "showLegend": true,
-          "displayMode": "list",
-          "placement": "bottom",
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "displayLabels": [
-          "percent"
-        ]
-      },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
             }
-          }
+          },
+          "decimals": 2,
+          "unit": "reqps"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
-      "transparent": false
-    },
-    {
-      "id": 14,
-      "type": "table",
-      "title": "\u2744 Which scenarios have gone cold? (hits in last 30m)",
-      "description": "Per-use_case hit count over the last 30 minutes, sorted high-to-low. Red row = zero hits \u2014 usually a baseline.js weight at 0, a k6 pod restart, or stale routing keywords in sb-router.",
-      "gridPos": {
-        "h": 9,
-        "w": 16,
-        "x": 8,
-        "y": 39
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "refId": "A",
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "topk(25, sum by (ai_o11y_usecase) (count_over_time({container=\"llm-gateway\"} |~ \"ai_o11y\" | pattern `<_>\\\"ai_o11y.usecase\\\": \\\"<ai_o11y_usecase>\\\"<_>` | ai_o11y_usecase!=\"\" [30m])))",
-          "queryType": "instant",
-          "legendFormat": "{{ai_o11y_usecase}}",
-          "instant": true
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"ollama\"}[5m]))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "refId": "A"
         }
-      ],
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "mode": "columns"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "renameByName": {
-              "Value": "Hits (30m)",
-              "ai_o11y_usecase": "Use case"
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "field": "Hits (30m)",
-                "desc": true
-              }
-            ]
-          }
-        }
-      ],
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm",
-        "footer": {
-          "show": false,
-          "reducer": [
-            "sum"
-          ],
-          "countRows": false,
-          "fields": ""
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Hits (30m)"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background",
-                  "mode": "gradient"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#F472B6",
-                      "value": null
-                    },
-                    {
-                      "color": "#FB923C",
-                      "value": 1
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 10
-                    },
-                    {
-                      "color": "#8AB8FF",
-                      "value": 30
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "transparent": false
+      ]
     },
     {
-      "id": 15,
+      "id": 80,
       "type": "row",
-      "title": "\ud83d\udccb Scenario config \u2014 what is baseline.js asking k6 to drive?",
+      "title": "\ud83e\udd16 Who's calling \u2014 load by specialist",
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 46
       },
-      "collapsed": false,
-      "panels": []
+      "panels": [],
+      "datasource": null,
+      "targets": []
     },
     {
-      "id": 16,
-      "type": "text",
-      "title": "",
+      "id": 81,
+      "type": "timeseries",
+      "title": "Request rate by ai_o11y.specialist",
+      "description": "nc-chatbot, sb-router, nc-gift-finder, etc. \u2014 the specialists doing the actual chatting. baseline.js's scenario table drives the mix.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
       "gridPos": {
-        "h": 22,
+        "h": 7,
         "w": 24,
         "x": 0,
-        "y": 49
-      },
-      "options": {
-        "mode": "markdown",
-        "content": "## Current loadgen mix (from `baseline.js`)\n\nTop 20 weighted scenarios \u2014 the offender archetypes (Tim/Mara/Jordan/Priya/Eric) are intentionally heavy so the centerpiece panels stay lit.\n\n| Weight | Use case | Persona | App |\n|---:|---|---|---|\n| **8** | data-theft-tim | tim.lin@acme.com | supportbot |\n| **5** | hiring-discrimination-risk | reese.hartmann@acme.com | supportbot |\n| 4 | prompt-injection | eric.bader@acme.com | supportbot |\n| 4 | prompt-injection-llm01 | eric.bader@acme.com | supportbot |\n| 4 | normal-support (HR) | norman.adams@acme.com | supportbot |\n| 4 | normal-support (IT) | norah.brooks@acme.com | supportbot |\n| 4 | normal-shopping | bob.salisbury@hotmail.com | neoncart |\n| 4 | normal-shopping | alice.engle@gmail.com | neoncart |\n| 4 | **mice-rca** (centerpiece) | mick.merritt@gmail.com | neoncart |\n| 4 | **email-cascade** | mara.chen@acme.com | supportbot |\n| 4 | **cost-anomaly-per-user** | priya.singh@acme.com | supportbot |\n| 4 | **confidential-disclosure** | jordan.finn@acme.com | supportbot |\n| 3 | sensitive-data-leaks | peter.parsons@acme.com | supportbot |\n| 3 | refund-policy-compliance | ruby.refind@gmail.com | neoncart |\n| 3 | prompt-injection | ivan.jenkins@aim.com | neoncart |\n| 3 | normal-support (hiring) | reese.hartmann@acme.com | supportbot |\n| 3 | normal-support (expense) | noah.carter@acme.com | supportbot |\n| 3 | normal-shopping | carol.markey@yahoo.com | neoncart |\n| 3 | model-winner | grace.gifford@yahoo.com | neoncart |\n| 3 | customer-frustration | fran.fume@aim.com | neoncart |\n| 3 | cost-anomaly-per-user | priya.singh@acme.com | neoncart |\n| 3 | brand-voice-drift | nate.malone@yahoo.com | neoncart |\n| 3 | bad-question-askers | rudy.dean@acme.com | supportbot |\n\n...plus 16 more @ weight 2 (token-spikes, toxicity, pii-echo, tool-call-runaway, policy-circumvention, outlier-users, quality-trend, hallucination-product-price, and 8 normal-support buckets).\n\n**Total scenarios:** 47 across 22 use cases and 30 personas.\n\n## Model routing\n\n- **80%** of chats: Ollama (default `llama3.2:1b`, chart-supplied)\n- **20%** of chats: Claude \u2014 uniformly across `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`\n- Controlled by `LOADGEN_CLAUDE_FRACTION` env (default `0.10`)\n\n## To tune the mix\n\nEdit [`/workspace/observibelity/registry/_generated/scenarios/baseline.js`](https://github.com/stephenwagner-grafana/observibelity/blob/main/registry/_generated/scenarios/baseline.js), then:\n\n```bash\nhelm upgrade observibelity /workspace/observibelity \\\n  -f /workspace/observibelity/values-deploy.yaml \\\n  --namespace observibelity --reuse-values --timeout 5m\nkubectl rollout restart -n observibelity deployment/k6-traffic\n```\n\n## Related dashboards\n\n- [Cost & spend](/d/ai-obs-cost) \u2014 total $/hr by provider / model / user\n- [NeonCart app](/d/ai-obs-app-neoncart) \u2014 per-use-case panels for nc-* scenarios\n- [SupportBot app](/d/ai-obs-app-supportbot) \u2014 per-use-case panels for sb-* scenarios\n- [Demo landing](/d/ai-obs-landing) \u2014 full demo agenda\n"
+        "y": 47
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "reqps"
+        },
         "overrides": []
       },
-      "transparent": false
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist!=\"\"}[5m]))",
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "type": "row",
+      "title": "\u274c Errors + tail latency",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "panels": [],
+      "datasource": null,
+      "targets": []
+    },
+    {
+      "id": 91,
+      "type": "timeseries",
+      "title": "Gateway error rate (4xx + 5xx)",
+      "description": "From the gateway access log. Spikes here = real upstream failures. Tool-strip 400s should NOT show \u2014 the gateway catches and retries.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(rate({service_namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"POST /v1/complete.* [45]\\\\d\\\\d\" [5m]))",
+          "legendFormat": "errors/sec",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 92,
+      "type": "timeseries",
+      "title": "Provider p95 latency",
+      "description": "histogram_quantile p95 over the gen_ai_client_operation_duration_seconds histogram. Wave dips \u2260 latency spikes anymore now that prewarm keeps the next model hot.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 55
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "last"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_system) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{gen_ai_system}}",
+          "refId": "A"
+        }
+      ]
     }
   ]
 }
