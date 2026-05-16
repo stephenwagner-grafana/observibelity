@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} \u2014 {{ container }}"
+        "textFormat": "{{ pod }} — {{ container }}"
       }
     ]
   },
-  "description": "SupportBot app dashboard \u2014 health, specialists, 16 use cases, outliers, prompt-injection, cost, model routing, cascades, live tail. Queries are namespace-agnostic; they target the llm-gateway sigil JSON event stream wherever it runs.",
+  "description": "SupportBot app dashboard — health, specialists, 16 use cases, outliers, prompt-injection, cost, model routing, cascades, live tail. Queries are namespace-agnostic; they target the llm-gateway sigil JSON event stream wherever it runs.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -61,7 +61,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83c\udfe5 Health \u2014 is SupportBot up and meeting SLOs?",
+      "title": "🏥 Health — is SupportBot up and meeting SLOs?",
       "type": "row"
     },
     {
@@ -190,7 +190,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(traces_spanmetrics_calls_total{service=~\"supportbot|sb-.*\",status_code=\"STATUS_CODE_ERROR\"}[5m])) or on() vector(0)) / (sum(rate(traces_spanmetrics_calls_total{service=~\"supportbot|sb-.*\"}[5m])) + 0.001)",
+          "expr": "(sum(rate(traces_spanmetrics_calls_total{service=~\"supportbot|sb-.*\", status_code=\"STATUS_CODE_ERROR\"}[5m])) or on() vector(0)) / (sum(rate(traces_spanmetrics_calls_total{service=~\"supportbot|sb-.*\"}[5m])) + 0.001)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -198,7 +198,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Are requests failing? (error rate)",
+      "title": "⚠ Are requests failing? (error rate)",
       "type": "stat",
       "transparent": false
     },
@@ -280,7 +280,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Worst-case latency floor \u2014 99% of supportbot + sb-* requests finish under this. Useful to see how bad the worst 1% looks.",
+      "description": "Worst-case latency floor — 99% of supportbot + sb-* requests finish under this. Useful to see how bad the worst 1% looks.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -358,7 +358,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "\ud83d\udce6 Specialists \u2014 which sb-* agents handle the traffic?",
+      "title": "📦 Specialists — which sb-* agents handle the traffic?",
       "type": "row"
     },
     {
@@ -698,7 +698,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_specialist=~\"$specialist\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_specialist=~\"$specialist\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -1057,7 +1057,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h]))",
+          "expr": "sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h]))",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
           "range": false,
@@ -1078,7 +1078,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "\ud83d\udcca Use case mix \u2014 which scenarios are firing right now?",
+      "title": "📊 Use case mix — which scenarios are firing right now?",
       "type": "row"
     },
     {
@@ -1418,7 +1418,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"$use_case\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=~\"$use_case\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -1483,7 +1483,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h]))",
+          "expr": "sum by (ai_o11y_usecase) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h]))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -1491,7 +1491,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top use cases by token volume",
+      "title": "🔥 Top use cases by token volume",
       "type": "bargauge",
       "transparent": false
     },
@@ -1505,7 +1505,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "\ud83d\udeab Bad question askers \u2014 who's getting refused or escalated?",
+      "title": "🚫 Bad question askers — who's getting refused or escalated?",
       "type": "row"
     },
     {
@@ -1513,7 +1513,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-persona ratio: tokens going to sb-escalator divided by all sb-* tokens (15m window). A high % means SupportBot keeps handing this user off to a human \u2014 yellow above 10%, red above 30%.",
+      "description": "Per-persona ratio: tokens going to sb-escalator divided by all sb-* tokens (15m window). A high % means SupportBot keeps handing this user off to a human — yellow above 10%, red above 30%.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1571,7 +1571,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-escalator\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[15m])) + 0.001))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -1579,7 +1579,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udc64 Who is getting escalated to humans? (top 10, 15m)",
+      "title": "👤 Who is getting escalated to humans? (top 10, 15m)",
       "type": "bargauge",
       "transparent": false
     },
@@ -1588,7 +1588,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-persona ratio: tokens going to sb-security-handler (denials, lockdowns) divided by all sb-* tokens (15m). High % is an insider-threat early warning \u2014 yellow above 20%, red above 40%.",
+      "description": "Per-persona ratio: tokens going to sb-security-handler (denials, lockdowns) divided by all sb-* tokens (15m). High % is an insider-threat early warning — yellow above 20%, red above 40%.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1646,7 +1646,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[15m])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=\"sb-security-handler\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[15m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[15m])) + 0.001))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -1654,7 +1654,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udee1 Who is hitting the security handler? (top 10, 15m)",
+      "title": "🛡 Who is hitting the security handler? (top 10, 15m)",
       "type": "bargauge",
       "transparent": false
     },
@@ -1668,7 +1668,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "\ud83d\udc64 Outlier users \u2014 Tim, Eric and other heavy hitters",
+      "title": "👤 Outlier users — Tim, Eric and other heavy hitters",
       "type": "row"
     },
     {
@@ -1768,7 +1768,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1776,7 +1776,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top spenders by tokens",
+      "title": "🔥 Top spenders by tokens",
       "type": "table",
       "transformations": [
         {
@@ -1847,7 +1847,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(15, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h])))",
+          "expr": "topk(15, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -1864,7 +1864,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Ratio of each persona's 1-minute token rate to their 1-hour baseline. A value above 3 is a sudden burst \u2014 the signature for token-spike or cascade behavior. Use to catch a normally quiet user who just lit up.",
+      "description": "Ratio of each persona's 1-minute token rate to their 1-hour baseline. A value above 3 is a sudden burst — the signature for token-spike or cascade behavior. Use to catch a normally quiet user who just lit up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2196,7 +2196,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[1m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\", service_namespace=\"observibelity\"}[1h])) + 0.001))",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1m])) / (sum by (user_id) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])) + 0.001))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{user_id}}",
@@ -2204,7 +2204,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Sudden burst detector \u2014 rate(1m) \u00f7 rate(1h) per user",
+      "title": "⚠ Sudden burst detector — rate(1m) ÷ rate(1h) per user",
       "type": "timeseries",
       "transparent": false
     },
@@ -2218,7 +2218,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udee1\ufe0f Sensitive data \u2014 are leaks or policy breaks happening?",
+      "title": "🛡️ Sensitive data — are leaks or policy breaks happening?",
       "type": "row"
     },
     {
@@ -2558,7 +2558,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -2566,7 +2566,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 PII and data-leak scenarios over time (tokens/min)",
+      "title": "🚨 PII and data-leak scenarios over time (tokens/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2623,7 +2623,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\", service_namespace=\"observibelity\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", ai_o11y_usecase=~\"pii-echo|sensitive-data-leaks|confidential-disclosure|data-theft-tim|policy-circumvention\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -2631,7 +2631,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udc64 Who is running sensitive-data scenarios? (top, 1h)",
+      "title": "👤 Who is running sensitive-data scenarios? (top, 1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -2645,7 +2645,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "\ud83d\udea8 Prompt injection (LLM01) \u2014 are users trying to override the system prompt?",
+      "title": "🚨 Prompt injection (LLM01) — are users trying to override the system prompt?",
       "type": "row"
     },
     {
@@ -2653,7 +2653,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Count of token-bearing events tagged with any prompt-injection use case in the last 5 minutes. Yellow above 1, red above 5 \u2014 non-zero means injection traffic is live.",
+      "description": "Count of token-bearing events tagged with any prompt-injection use case in the last 5 minutes. Yellow above 1, red above 5 — non-zero means injection traffic is live.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2709,7 +2709,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"prompt-injection.*\", service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=~\"prompt-injection.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2717,7 +2717,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Prompt-injection events in last 5 min",
+      "title": "🚨 Prompt-injection events in last 5 min",
       "type": "stat",
       "transparent": false
     },
@@ -2782,7 +2782,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"toxicity\", service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=\"toxicity\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2790,7 +2790,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u2620 Toxicity events in last 5 min",
+      "title": "☠ Toxicity events in last 5 min",
       "type": "stat",
       "transparent": false
     },
@@ -2799,7 +2799,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Count of events in the hiring-discrimination-risk use case in the last 5 minutes. Yellow above 1, red above 3 \u2014 fires when HR personas try discriminatory filters.",
+      "description": "Count of events in the hiring-discrimination-risk use case in the last 5 minutes. Yellow above 1, red above 3 — fires when HR personas try discriminatory filters.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2855,7 +2855,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"hiring-discrimination-risk\", service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=\"hiring-discrimination-risk\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2863,7 +2863,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u2696 Hiring-discrimination events in last 5 min",
+      "title": "⚖ Hiring-discrimination events in last 5 min",
       "type": "stat",
       "transparent": false
     },
@@ -2872,7 +2872,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Count of events in the confidential-disclosure use case in the last 5 minutes. Yellow above 1, red above 3 \u2014 fires when someone asks the bot for internal salary, board, or strategy info.",
+      "description": "Count of events in the confidential-disclosure use case in the last 5 minutes. Yellow above 1, red above 3 — fires when someone asks the bot for internal salary, board, or strategy info.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2928,7 +2928,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"confidential-disclosure\", service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=\"confidential-disclosure\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -2936,7 +2936,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd12 Confidential-disclosure events in last 5 min",
+      "title": "🔒 Confidential-disclosure events in last 5 min",
       "type": "stat",
       "transparent": false
     },
@@ -2993,7 +2993,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"prompt-injection.*\", service_namespace=\"observibelity\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", ai_o11y_usecase=~\"prompt-injection.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -3001,7 +3001,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udc64 Who is attempting injection? (top personas, 1h)",
+      "title": "👤 Who is attempting injection? (top personas, 1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -3010,7 +3010,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Loki regex match for classic injection phrasing ('ignore previous', 'disregard\u2026instructions', etc.) in the Sigil JSON event stream. Backup signal in case the use_case classifier missed an attempt.",
+      "description": "Loki regex match for classic injection phrasing ('ignore previous', 'disregard…instructions', etc.) in the Sigil JSON event stream. Backup signal in case the use_case classifier missed an attempt.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3064,7 +3064,7 @@
           "refId": "A"
         }
       ],
-      "title": "Backup detector \u2014 regex hits on injection phrasing",
+      "title": "Backup detector — regex hits on injection phrasing",
       "type": "bargauge",
       "transparent": false
     },
@@ -3078,7 +3078,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "\ud83d\udcb0 Cost and token volume \u2014 what is SupportBot costing?",
+      "title": "💰 Cost and token volume — what is SupportBot costing?",
       "type": "row"
     },
     {
@@ -3420,7 +3420,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\"}[5m])) * 3600",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", ai_o11y_specialist=~\"sb-.*\", gen_ai_system!=\"\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -3428,7 +3428,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 What does each specialist cost per hour?",
+      "title": "💰 What does each specialist cost per hour?",
       "type": "timeseries",
       "transparent": false
     },
@@ -3769,7 +3769,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_token_type) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_token_type) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_token_type}}",
@@ -3791,7 +3791,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "\ud83e\udd16 Models \u2014 which LLMs are answering SupportBot questions?",
+      "title": "🤖 Models — which LLMs are answering SupportBot questions?",
       "type": "row"
     },
     {
@@ -4141,14 +4141,14 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[1h]))",
+          "expr": "sum by (gen_ai_response_model) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h]))",
           "instant": true,
           "legendFormat": "{{gen_ai_response_model}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "\ud83e\udd16 Which model handled what share of traffic?",
+      "title": "🤖 Which model handled what share of traffic?",
       "type": "piechart",
       "transparent": false
     },
@@ -4489,7 +4489,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",gen_ai_token_type=\"input\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", gen_ai_token_type=\"input\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_response_model}}",
@@ -4511,7 +4511,7 @@
       },
       "id": 15,
       "panels": [],
-      "title": "\ud83d\udce7 Email cascade \u2014 runaway tool calls from 'show me every email'",
+      "title": "📧 Email cascade — runaway tool calls from 'show me every email'",
       "type": "row"
     },
     {
@@ -4519,7 +4519,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Count of token-bearing events tagged ai_o11y_usecase=email-cascade in the last 5 minutes. Yellow above 20, red above 100 \u2014 non-zero means Mara just triggered the cascade.",
+      "description": "Count of token-bearing events tagged ai_o11y_usecase=email-cascade in the last 5 minutes. Yellow above 20, red above 100 — non-zero means Mara just triggered the cascade.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4575,7 +4575,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"email-cascade\", service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=\"email-cascade\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -4583,7 +4583,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udce7 Email-cascade events in last 5 min",
+      "title": "📧 Email-cascade events in last 5 min",
       "type": "stat",
       "transparent": false
     },
@@ -4592,7 +4592,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Count of token-bearing events tagged ai_o11y_usecase=tool-call-runaway in the last 5 minutes. Yellow above 20, red above 100 \u2014 the agent looping on tool calls without making progress.",
+      "description": "Count of token-bearing events tagged ai_o11y_usecase=tool-call-runaway in the last 5 minutes. Yellow above 20, red above 100 — the agent looping on tool calls without making progress.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4648,7 +4648,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=\"tool-call-runaway\", service_namespace=\"observibelity\"}[5m]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=\"tool-call-runaway\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "",
@@ -4656,7 +4656,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd01 Tool-call runaway events in last 5 min",
+      "title": "🔁 Tool-call runaway events in last 5 min",
       "type": "stat",
       "transparent": false
     },
@@ -4997,7 +4997,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", ai_o11y_usecase=~\"email-cascade|tool-call-runaway\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_usecase}}",
@@ -5005,7 +5005,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cascade scenarios over time \u2014 tokens/min",
+      "title": "Cascade scenarios over time — tokens/min",
       "type": "timeseries",
       "transparent": false
     },
@@ -5062,7 +5062,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(8, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\",user_id=~\".*@.*\",ai_o11y_usecase=~\"email-cascade|tool-call-runaway\", service_namespace=\"observibelity\"}[1h])))",
+          "expr": "topk(8, sum by (user_id) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\", ai_o11y_usecase=~\"email-cascade|tool-call-runaway\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{user_id}}",
@@ -5070,7 +5070,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udc64 Who is triggering the cascade? (top personas, 1h)",
+      "title": "👤 Who is triggering the cascade? (top personas, 1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -5084,7 +5084,7 @@
       },
       "id": 16,
       "panels": [],
-      "title": "\ud83d\udce1 Live event stream \u2014 raw Sigil logs",
+      "title": "📡 Live event stream — raw Sigil logs",
       "type": "row"
     },
     {
@@ -5289,7 +5289,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 SupportBot",
+  "title": "AI o11y — SupportBot",
   "uid": "ai-obs-app-supportbot",
   "weekStart": ""
 }

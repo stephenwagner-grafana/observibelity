@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ pod }} \u2014 {{ container }}"
+        "textFormat": "{{ pod }} — {{ container }}"
       },
       {
         "datasource": {
@@ -90,7 +90,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -173,7 +173,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83c\udfe5 Health \u2014 is NeonCart up and meeting SLOs?",
+      "title": "🏥 Health — is NeonCart up and meeting SLOs?",
       "type": "row"
     },
     {
@@ -302,7 +302,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\"}[5m])), 0.001)",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\", status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service=\"neoncart\"}[5m])), 0.001)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "err rate",
@@ -310,7 +310,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Are requests failing? (error rate)",
+      "title": "⚠ Are requests failing? (error rate)",
       "type": "stat",
       "transparent": false
     },
@@ -319,7 +319,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "95% of NeonCart requests finish in under this many seconds (OTel span metrics, 5m window). Yellow above 1s, red above 3s \u2014 the slow tail your users feel.",
+      "description": "95% of NeonCart requests finish in under this many seconds (OTel span metrics, 5m window). Yellow above 1s, red above 3s — the slow tail your users feel.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -392,7 +392,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Worst-case latency floor \u2014 99% of requests finish under this. Same OTel span metrics, 5m. Use alongside p95 to see how bad the worst 1% is.",
+      "description": "Worst-case latency floor — 99% of requests finish under this. Same OTel span metrics, 5m. Use alongside p95 to see how bad the worst 1% is.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -501,7 +501,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 What's on fire? (active alerts)",
+      "title": "🚨 What's on fire? (active alerts)",
       "type": "alertlist",
       "transparent": false
     },
@@ -515,7 +515,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "\ud83d\udd0d Trace explorer \u2014 pivot from metric to span tree",
+      "title": "🔍 Trace explorer — pivot from metric to span tree",
       "type": "row"
     },
     {
@@ -545,7 +545,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "Recent traces \u2014 pick one to inspect (use_case=$use_case)",
+      "title": "Recent traces — pick one to inspect (use_case=$use_case)",
       "type": "traces",
       "transparent": false
     },
@@ -554,7 +554,7 @@
         "type": "tempo",
         "uid": "${datasource_tempo}"
       },
-      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat \u2192 tool \u2192 failing SQL.",
+      "description": "The Phase-1 centerpiece. Each row is one 'show me mice' chat that hit an UndefinedColumn (rodent_qty) error in the pg.query tool span. Click a row to walk the span tree from chat → tool → failing SQL.",
       "gridPos": {
         "h": 10,
         "w": 12,
@@ -576,7 +576,7 @@
           "tableType": "traces"
         }
       ],
-      "title": "\ud83d\udc2d Show me mice \u2014 failing traces (the centerpiece pivot)",
+      "title": "🐭 Show me mice — failing traces (the centerpiece pivot)",
       "type": "traces",
       "transparent": false
     },
@@ -590,7 +590,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "\ud83d\udce6 Specialists \u2014 which nc-* agents are doing the work?",
+      "title": "📦 Specialists — which nc-* agents are doing the work?",
       "type": "row"
     },
     {
@@ -931,7 +931,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -1278,7 +1278,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{ai_o11y_specialist=~\"nc-.*\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{ai_o11y_specialist=~\"nc-.*\", gen_ai_system!=\"\"}[5m])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -1663,15 +1663,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\"}[1h])))",
-          "format": "time_series",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
+          "format": "table",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top specialists by volume (last 1h)",
+      "title": "🔥 Top specialists by volume (last 1h)",
       "type": "table",
       "transparent": false
     },
@@ -1685,7 +1685,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "\ud83d\udee0 Tool calls \u2014 which functions are agents invoking?",
+      "title": "🛠 Tool calls — which functions are agents invoking?",
       "type": "row"
     },
     {
@@ -1693,7 +1693,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-tool invocation rate (calls/min) over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. \u2014 one line each.",
+      "description": "Per-tool invocation rate (calls/min) over time, from OTel span metrics. Tools include get_inventory, search_products, place_order, etc. — one line each.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2043,7 +2043,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-tool error ratio (failed spans / total spans) over 5m. Yellow above 5%, red above 20%. Red bars are the tools dragging down agent reliability \u2014 typically get_inventory during the mice-rca demo.",
+      "description": "Per-tool error ratio (failed spans / total spans) over 5m. Yellow above 5%, red above 20%. Red bars are the tools dragging down agent reliability — typically get_inventory during the mice-rca demo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2109,7 +2109,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Which tools are failing? (error rate by tool)",
+      "title": "⚠ Which tools are failing? (error rate by tool)",
       "type": "bargauge",
       "transparent": false
     },
@@ -2123,7 +2123,7 @@
       },
       "id": 17,
       "panels": [],
-      "title": "\ud83e\udd16 LLM gateway \u2014 tokens and dollars going through Sigil",
+      "title": "🤖 LLM gateway — tokens and dollars going through Sigil",
       "type": "row"
     },
     {
@@ -2468,7 +2468,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}} input",
@@ -2480,7 +2480,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}} output",
@@ -2497,7 +2497,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "NeonCart spend rate projected to **USD per hour** \u2014 total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
+      "description": "NeonCart spend rate projected to **USD per hour** — total line plus a breakdown per model. Sigil applies canonical Anthropic/OpenAI pricing to compute gen_ai_client_cost_USD_total. Multiply any value by 24 for daily, by 720 for monthly.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2834,7 +2834,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "total",
@@ -2846,7 +2846,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[5m])) * 3600",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -2854,7 +2854,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udcb0 What's the burn rate? \u2014 USD per hour, total and per model",
+      "title": "💰 What's the burn rate? — USD per hour, total and per model",
       "type": "timeseries",
       "transparent": false
     },
@@ -2920,7 +2920,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}[1h]))",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "USD",
@@ -2928,7 +2928,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 What did NeonCart cost in the last hour?",
+      "title": "💰 What did NeonCart cost in the last hour?",
       "type": "stat",
       "transparent": false
     },
@@ -3340,15 +3340,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\"}[1h])))",
-          "format": "time_series",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
+          "format": "table",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Which specialist is most expensive? (top 10 by cost, 1h)",
+      "title": "🔥 Which specialist is most expensive? (top 10 by cost, 1h)",
       "type": "table",
       "transparent": false
     },
@@ -3362,7 +3362,7 @@
       },
       "id": 22,
       "panels": [],
-      "title": "\ud83d\udce1 Sigil generation log \u2014 raw LLM calls as they happen",
+      "title": "📡 Sigil generation log — raw LLM calls as they happen",
       "type": "row"
     },
     {
@@ -3489,7 +3489,7 @@
       },
       "id": 25,
       "panels": [],
-      "title": "\ud83d\uddc4 Postgres \u2014 what's happening at the database layer?",
+      "title": "🗄 Postgres — what's happening at the database layer?",
       "type": "row"
     },
     {
@@ -4194,7 +4194,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here \u2014 pivot to the matching trace above to walk the span tree.",
+      "description": "Live tail of Postgres errors in NeonCart and pg containers (Loki regex on error/psycopg/UndefinedColumn). During the mice-rca demo the rodent_qty column-does-not-exist error shows up here — pivot to the matching trace above to walk the span tree.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -4223,7 +4223,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 DB errors \u2014 the smoking gun (Loki tail)",
+      "title": "🚨 DB errors — the smoking gun (Loki tail)",
       "type": "logs",
       "transparent": false
     }
@@ -4364,7 +4364,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 NeonCart",
+  "title": "AI o11y — NeonCart",
   "uid": "ai-obs-app-neoncart",
   "weekStart": ""
 }

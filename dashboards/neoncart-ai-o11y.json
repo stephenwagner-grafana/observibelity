@@ -15,7 +15,7 @@
         "y": 0
       },
       "id": 100,
-      "title": "\ud83d\udcca At a glance \u2014 is NeonCart healthy right now?",
+      "title": "📊 At a glance — is NeonCart healthy right now?",
       "type": "row"
     },
     {
@@ -23,7 +23,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Total /chat invocations the storefront has handled over the selected time range. This is the volume baseline \u2014 every other number here should be read against it.",
+      "description": "Total /chat invocations the storefront has handled over the selected time range. This is the volume baseline — every other number here should be read against it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -63,7 +63,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[$__range]))",
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"neoncart\", span_name=\"POST\", span_kind=\"SPAN_KIND_CLIENT\"}[$__range]))",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -80,7 +80,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Chat turns where the shopper actually saw an error (a tool failed under the hood). Tracks the mice-query rate during the RCA demo \u2014 should climb when 'show me mice' is typed.",
+      "description": "Chat turns where the shopper actually saw an error (a tool failed under the hood). Tracks the mice-query rate during the RCA demo — should climb when 'show me mice' is typed.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -120,7 +120,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\",status_code=\"STATUS_CODE_ERROR\"}[$__range]))",
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"neoncart\", span_name=\"POST\", span_kind=\"SPAN_KIND_CLIENT\", status_code=\"STATUS_CODE_ERROR\"}[$__range]))",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -128,7 +128,7 @@
           }
         }
       ],
-      "title": "\ud83d\udea8 How many chats failed?",
+      "title": "🚨 How many chats failed?",
       "type": "stat",
       "transparent": false
     },
@@ -137,7 +137,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Error fraction across all NeonCart tools in the last 5 minutes (errors \u00f7 total invocations). Yellow at 2%, red at 10%. Filters to the selected tool variable above.",
+      "description": "Error fraction across all NeonCart tools in the last 5 minutes (errors ÷ total invocations). Yellow at 2%, red at 10%. Filters to the selected tool variable above.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -185,7 +185,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(traces_spanmetrics_calls_total{service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m])), 0.001)",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service=~\"$tool\", status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m])), 0.001)",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -202,7 +202,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "95th-percentile end-to-end chat latency over the last 5 minutes \u2014 the slowest 1-in-20 shopper experience. Yellow at 2s, red at 4s.",
+      "description": "95th-percentile end-to-end chat latency over the last 5 minutes — the slowest 1-in-20 shopper experience. Yellow at 2s, red at 4s.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -250,7 +250,7 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\", span_name=\"POST\", span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -267,7 +267,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "p95 latency of the product-search tool specifically. A spike to \u22651.5s is the smoking gun for the 'show me mice' RCA \u2014 that's the Postgres query timing out before throwing.",
+      "description": "p95 latency of the product-search tool specifically. A spike to ≥1.5s is the smoking gun for the 'show me mice' RCA — that's the Postgres query timing out before throwing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -332,7 +332,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Errors on the get_inventory tool in the last 5 minutes \u2014 the Postgres '42703 column does not exist' error from the mice query. Any non-zero value here = the demo is firing.",
+      "description": "Errors on the get_inventory tool in the last 5 minutes — the Postgres '42703 column does not exist' error from the mice query. Any non-zero value here = the demo is firing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -376,7 +376,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"get_inventory\",status_code=\"STATUS_CODE_ERROR\"}[5m]))",
+          "expr": "sum(increase(traces_spanmetrics_calls_total{service=\"get_inventory\", status_code=\"STATUS_CODE_ERROR\"}[5m]))",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -384,7 +384,7 @@
           }
         }
       ],
-      "title": "\ud83d\udc2d mice-RCA Postgres errors",
+      "title": "🐭 mice-RCA Postgres errors",
       "type": "stat",
       "transparent": false
     },
@@ -397,7 +397,7 @@
         "y": 6
       },
       "id": 200,
-      "title": "\u23f1 Where is the time going?",
+      "title": "⏱ Where is the time going?",
       "type": "row"
     },
     {
@@ -405,7 +405,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "p95 latency over time, one line per tool. The mice failure is visible as a step up to \u22651.5s on the search_products series \u2014 every other tool stays flat, which is why the line graph is the give-away.",
+      "description": "p95 latency over time, one line per tool. The mice failure is visible as a step up to ≥1.5s on the search_products series — every other tool stays flat, which is why the line graph is the give-away.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -741,7 +741,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "End-to-end chat latency split by outcome (OK vs ERROR). The p50 line is the typical shopper experience; the p95 line is the tail. Failed chats are usually slower than successful ones \u2014 the gap tells you how painful errors feel.",
+      "description": "End-to-end chat latency split by outcome (OK vs ERROR). The p50 line is the typical shopper experience; the p95 line is the tail. Failed chats are usually slower than successful ones — the gap tells you how painful errors feel.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1058,8 +1058,8 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
-          "legendFormat": "p95 \u2014 {{status_code}}",
+          "expr": "histogram_quantile(0.95, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\", span_name=\"POST\", span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
+          "legendFormat": "p95 — {{status_code}}",
           "refId": "A",
           "datasource": {
             "type": "prometheus",
@@ -1067,8 +1067,8 @@
           }
         },
         {
-          "expr": "histogram_quantile(0.50, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\",span_name=\"POST\",span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
-          "legendFormat": "p50 \u2014 {{status_code}}",
+          "expr": "histogram_quantile(0.50, sum by (le, status_code) (rate(traces_spanmetrics_latency_bucket{service=\"neoncart\", span_name=\"POST\", span_kind=\"SPAN_KIND_CLIENT\"}[5m])))",
+          "legendFormat": "p50 — {{status_code}}",
           "refId": "B",
           "datasource": {
             "type": "prometheus",
@@ -1076,7 +1076,7 @@
           }
         }
       ],
-      "title": "Chat latency \u2014 typical vs tail, OK vs failed (p50 & p95)",
+      "title": "Chat latency — typical vs tail, OK vs failed (p50 & p95)",
       "type": "timeseries",
       "transparent": false
     },
@@ -1089,7 +1089,7 @@
         "y": 15
       },
       "id": 300,
-      "title": "\ud83d\udea8 What's failing and where?",
+      "title": "🚨 What's failing and where?",
       "type": "row"
     },
     {
@@ -1097,7 +1097,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Error fraction (errors \u00f7 total) per tool, over time. One line per tool \u2014 easy way to see which tool is the bad apple.",
+      "description": "Error fraction (errors ÷ total) per tool, over time. One line per tool — easy way to see which tool is the bad apple.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1414,7 +1414,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m])), 0.001)",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\", status_code=\"STATUS_CODE_ERROR\"}[5m])) / clamp_min(sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\"}[5m])), 0.001)",
           "legendFormat": "{{service}}",
           "refId": "A",
           "datasource": {
@@ -1432,7 +1432,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Token throughput per minute broken down by use case (mice-RCA, gift finder, refund, etc.). Use this to see which conversation type is driving the load \u2014 and during the mice demo, where the spike is concentrated.",
+      "description": "Token throughput per minute broken down by use case (mice-RCA, gift finder, refund, etc.). Use this to see which conversation type is driving the load — and during the mice demo, where the spike is concentrated.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1749,7 +1749,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",ai_o11y_usecase!=\"\"}[1m])) * 60",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_usecase!=\"\", gen_ai_system!=\"\"}[1m])) * 60",
           "legendFormat": "{{ai_o11y_usecase}}",
           "refId": "A",
           "datasource": {
@@ -1767,7 +1767,7 @@
         "type": "prometheus",
         "uid": "${prom}"
       },
-      "description": "Requests per second handled by each tool (server-side spans). Use this to compare load \u2014 search_products usually dominates because it's the gift finder's go-to call.",
+      "description": "Requests per second handled by each tool (server-side spans). Use this to compare load — search_products usually dominates because it's the gift finder's go-to call.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -2084,7 +2084,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\",span_kind=\"SPAN_KIND_SERVER\"}[1m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\", span_kind=\"SPAN_KIND_SERVER\"}[1m]))",
           "legendFormat": "{{service}}",
           "refId": "A",
           "datasource": {
@@ -2098,7 +2098,7 @@
       "transparent": false
     },
     {
-      "description": "Stacked bars of errors per minute, broken down by span_name (which specific operation failed). Use to spot exactly which span \u2014 db.postgres.query, http.search-service, etc. \u2014 is the source of the failure cluster.",
+      "description": "Stacked bars of errors per minute, broken down by span_name (which specific operation failed). Use to spot exactly which span — db.postgres.query, http.search-service, etc. — is the source of the failure cluster.",
       "datasource": {
         "type": "prometheus",
         "uid": "${prom}"
@@ -2421,7 +2421,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (span_name) (increase(traces_spanmetrics_calls_total{service=~\"$tool\",status_code=\"STATUS_CODE_ERROR\"}[1m]))",
+          "expr": "sum by (span_name) (increase(traces_spanmetrics_calls_total{service=~\"$tool\", status_code=\"STATUS_CODE_ERROR\"}[1m]))",
           "legendFormat": "{{span_name}}",
           "refId": "A",
           "datasource": {
@@ -2443,7 +2443,7 @@
         "y": 31
       },
       "id": 400,
-      "title": "\ud83d\udd0e Pick a failed trace \u2014 drop into the waterfall",
+      "title": "🔎 Pick a failed trace — drop into the waterfall",
       "type": "row"
     },
     {
@@ -2451,7 +2451,7 @@
         "type": "tempo",
         "uid": "${tempo}"
       },
-      "description": "Most recent failing traces on the get_inventory tool \u2014 the mice-RCA smoking gun. Click any trace ID to land in the Tempo waterfall (chat.request \u2192 agent.turn \u2192 tool \u2192 http \u2192 db.postgres.query) and see exactly where it broke.",
+      "description": "Most recent failing traces on the get_inventory tool — the mice-RCA smoking gun. Click any trace ID to land in the Tempo waterfall (chat.request → agent.turn → tool → http → db.postgres.query) and see exactly where it broke.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -2476,7 +2476,7 @@
           }
         }
       ],
-      "title": "\ud83d\udc2d Recent mice-RCA failures \u2014 click to open the trace",
+      "title": "🐭 Recent mice-RCA failures — click to open the trace",
       "type": "table",
       "transparent": false,
       "fieldConfig": {
@@ -2775,7 +2775,7 @@
         "type": "tempo",
         "uid": "${tempo}"
       },
-      "description": "Most recent NeonCart-wide failing traces (any tool, any use case). Broader than the mice-RCA table above \u2014 use this when you don't yet know which tool broke.",
+      "description": "Most recent NeonCart-wide failing traces (any tool, any use case). Broader than the mice-RCA table above — use this when you don't yet know which tool broke.",
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -2800,7 +2800,7 @@
           }
         }
       ],
-      "title": "All recent NeonCart failures \u2014 click to open the trace",
+      "title": "All recent NeonCart failures — click to open the trace",
       "type": "table",
       "transparent": false,
       "fieldConfig": {
@@ -3103,7 +3103,7 @@
         "y": 50
       },
       "id": 500,
-      "title": "\ud83d\udcdc What did the gateway just log?",
+      "title": "📜 What did the gateway just log?",
       "type": "row"
     },
     {
@@ -3111,7 +3111,7 @@
         "type": "loki",
         "uid": "${loki}"
       },
-      "description": "Warning + error lines from the llm-gateway container. Every line carries trace_id and span_id \u2014 click Inspect \u2192 Trace on any log to jump straight to the matching Tempo trace.",
+      "description": "Warning + error lines from the llm-gateway container. Every line carries trace_id and span_id — click Inspect → Trace on any log to jump straight to the matching Tempo trace.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -3136,7 +3136,7 @@
           "refId": "A"
         }
       ],
-      "title": "llm-gateway warnings + errors (click \u2192 trace)",
+      "title": "llm-gateway warnings + errors (click → trace)",
       "type": "logs",
       "transparent": false
     }
@@ -3221,7 +3221,7 @@
     "from": "now-30m",
     "to": "now"
   },
-  "title": "NeonCart \u2014 AI Observability RCA (ObserVIBElity)",
+  "title": "NeonCart — AI Observability RCA (ObserVIBElity)",
   "uid": "neoncart-ai-o11y",
   "description": "NeonCart RCA dashboard. Tool errors, chat latency, mice-rca SQL surface, failing traces. Rewritten to use traces_spanmetrics_* + gen_ai_* (ObserVIBElity convention)."
 }
