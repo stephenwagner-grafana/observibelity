@@ -131,8 +131,23 @@ one of these:
    optimize AI."** — the recursive payoff.
 5. **"Shift-left turns subjective AI behavior into measurable
    operational systems."** — the executive-readable summary.
+6. **"Observability is the control plane for AI systems."** — the
+   strategic close. (*Replaces the earlier "operating system" phrasing
+   — "control plane" is sharper, technically grounded, and lands
+   harder for engineering audiences without losing executives.*)
 
 Quote these verbatim where possible. They are load-bearing.
+
+### The 97.7% callback (a recurring narrative motif)
+
+The demo opens with a concrete cost number — *7.6M tokens of inference,
+$114 on Claude Sonnet vs. $2.67 locally, a 97.7% reduction* — and pays
+it back in Act 4 by comparing the day's AI inference cost ($2.67) to a
+single 45-second outage's missed revenue (~$47K, ~18,000×). The
+callback is the moment the audience realizes the *economics of AI are
+not about inference cost; they're about what observability prevents*.
+Protect this callback structurally — it's how the demo earns its
+financial credibility.
 
 ---
 
@@ -199,23 +214,34 @@ first-class telemetry." Demonstrate:
 
 ## Wow moments — the punchlines we are aiming for
 
-These are the specific instants the audience should feel something:
+These are the specific instants the audience should feel something.
+The demo has **three load-bearing wow moments**; lose any of them and
+the demo is hollow.
 
-1. **Conversation primitive revealed.** When the user understands that
-   a conversation is to AI o11y what a span is to traces — that's act 3's
-   pop.
+1. ⭐ **WOW #1 — Conversation primitive revealed.** *(Act 3)* The
+   audience sees one bar in `📦 Specialists` open into a conversation
+   drawer with prompt + tools + evals + tokens + trace + business
+   outcome. The realization: *a conversation is to AI o11y what a span
+   is to traces*. **Load-bearing.**
 
-2. **Missed-revenue chart lighting up red.** When a single k3s error
-   fires and the dashboard immediately turns it into dollars on the
-   "What we missed" chart — that's act 4's emotional peak.
+2. ⭐ **WOW #2 — Missed-revenue + 97.7% callback.** *(Act 4)* The
+   orange spike on the missed-revenue chart ($47K in 45 seconds) is
+   immediately compared to the day's AI inference cost ($2.67). The
+   ratio (~18,000×) is the gut-punch — *the economics of AI are not
+   about what inference costs, they're about what observability
+   prevents*. **Load-bearing.** Requires the 97.7% hook to have been
+   planted in Act 1.
 
-3. **AI investigation finding the issue.** When Grafana Assistant
-   takes a vague question and surfaces the exact log line + correlated
-   trace — that's act 5's wow.
+3. ⭐ **WOW #3 — Recursive meta-conversation.** *(Act 5)* The
+   conversation that the demo presenter just had with Grafana Assistant
+   appears, in real time, on the *same* `ai-obs-app-neoncart` bar
+   chart that showed customer conversations in Act 3. *The
+   observability system observes itself.* The recursion stops being a
+   slogan and becomes a visible loop. **Load-bearing — this is the
+   meta-payoff.**
 
-4. **The recursive loop closing.** When the audience grasps that the
-   demo itself is being authored / optimized by AI — that's the meta-
-   payoff that lingers.
+The wow moments are spaced ~2 minutes apart, which is roughly the
+audience's emotional attention budget. Don't bunch them.
 
 ---
 

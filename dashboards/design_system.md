@@ -566,9 +566,23 @@ a problem.
 - "Observability optimized systems; now it optimizes AI."
 - "Using AI to optimize observability, while using observability to optimize AI."
 - "Shift-left turns subjective AI behavior into measurable operational systems."
+- "Observability is the control plane for AI systems." *(strategic close — supersedes the earlier "operating system" phrasing)*
 
 These appear in `NARRATIVE.md` and the spoken `DEMO_SCRIPT.md`. The
 design system's job is to make sure the visuals don't undercut them.
+
+### 10.5 The 97.7% callback (narrative motif → visual requirement)
+
+The demo's cold open is a concrete dollar number: *7.6M tokens of
+inference would cost $114 on Claude Sonnet but $2.67 locally — a 97.7%
+reduction*. Act 4 pays it back by comparing $2.67 (day of AI) to ~$47K
+(45 seconds of outage). The callback is the demo's financial spine.
+
+**Visual requirement**: `ai-obs-outage-cost` should surface the
+cost-savings ratio (or at least the local-marginal-vs-equivalent-Claude
+$ comparison) as a small KPI visible in Act 4. Without it, the
+callback is verbal-only and weaker. *(Implementation pending — flagged
+in `DEMO_SCRIPT.md` open questions and `CONTINUATION.md`.)*
 
 ---
 

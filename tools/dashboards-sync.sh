@@ -30,14 +30,15 @@ EOF
 
 push_one() {
   local f="$1"
-  local uid title
+  local uid title folder_uid
   uid=$(jq -r '.uid // empty' "$f")
   title=$(jq -r '.title // empty' "$f")
+  folder_uid=$(jq -r '.folderUid // "observibelity"' "$f")
   [[ -n "$uid" ]] || die "  $f: missing .uid"
 
-  log "  push $uid ($title)"
+  log "  push $uid ($title) -> folder=$folder_uid"
   local payload
-  payload=$(jq -n --slurpfile d "$f" '{dashboard: $d[0], overwrite: true, message: "synced via observibelity dashboards-sync.sh", folderUid: "observibelity"}')
+  payload=$(jq -n --slurpfile d "$f" --arg fu "$folder_uid" '{dashboard: ($d[0] | del(.folderUid)), overwrite: true, message: "synced via observibelity dashboards-sync.sh", folderUid: $fu}')
 
   if command -v gcx >/dev/null 2>&1; then
     gcx dashboards push "$f" 2>&1 | sed 's/^/    /'

@@ -4,8 +4,93 @@ This file is the "where we left off" handoff. Update it whenever a chat
 ends with in-flight work; **read it at the start of every new chat
 about the AI o11y demo**.
 
-> **Last updated**: 2026-05-16 by Claude Opus 4.7
+> **Last updated**: 2026-05-16 by Claude Opus 4.7 (narrator pass — script v1 locked, 3 wow moments, 6th framing added)
 > **Last commit on `main`**: see `git log --oneline -5`
+
+---
+
+## What changed in the latest narrator pass (2026-05-16)
+
+1. **`DEMO_SCRIPT.md` is now v1** — locked prose for all 6 acts, not a
+   scaffold. Time budget is 7:15, well within ±45s.
+2. **Three wow moments** (was two): added the **recursive
+   meta-conversation** in Act 5 — the conversation with Grafana
+   Assistant appears, in real time, on the same `ai-obs-app-neoncart`
+   bar chart that showed customer conversations in Act 3.
+3. **97.7% / $2.67 cold open** — new Act 1 hook (7.6M tokens, $114
+   Claude-equivalent vs. $2.67 local) that pays back as a callback in
+   Act 4 (~18,000× ratio vs. a 45-second outage).
+4. **6th verbatim framing** added: *"Observability is the control plane
+   for AI systems."* — replaces the earlier "operating system"
+   phrasing in the Act 6 close.
+5. **Dashboard cues consolidated** to **3 dashboards / 2 switches**
+   (was implied 5–6 switches). The trick: Acts 1, 2, 3, and 6 all live
+   on `ai-obs-app-neoncart` and use *scroll* not *switch*. Switches
+   happen only for Act 4 (→ outage-cost) and Act 5 (→ wags-ai).
+6. **Trim/add levers documented** for ±15s pacing adjustments without
+   losing wow moments.
+
+---
+
+## Things the next chat needs to settle (in priority order)
+
+These are the user-facing open questions from the new `DEMO_SCRIPT.md`.
+Highest-impact first:
+
+1. 🔴 **Grafana Assistant readiness for Act 5.** `gcx_setup.md` notes
+   we're past the auth wall but hit `usage_limit_reached`. Demo Day
+   blocker. Either resolve provisioning or pre-record the fallback
+   clip *now*.
+2. 🔴 **Confirm Assistant emits `gen_ai_*` telemetry** that lands in
+   `ai-obs-app-neoncart`'s bar chart. If it doesn't, Wow #3 doesn't
+   work. May require routing the Assistant traffic through Sigil or
+   tagging it on the gateway side.
+3. 🟡 **Add a cost-savings KPI to `ai-obs-outage-cost`** for the Act 4
+   callback (the $2.67 vs $114-equivalent comparison). Visible payoff
+   > verbal-only payoff. Route to `ai-o11y-story-architect`.
+4. 🟡 **Confirm the drill-down drawer works** on
+   `ai-obs-app-neoncart`'s `📦 Specialists` bar chart. The visual
+   payoff of Wow #1 depends on it. If it's hand-wave-only, route to
+   `ai-o11y-story-architect` for a layout fix.
+5. 🟢 **Visual cue for shift-left.** Implicit via soft palette
+   gradient. Open question: should it be explicit (recurring legend)?
+   *Current recommendation*: leave implicit.
+6. 🟢 **Decide whether Act 2 should switch to Explore.** *Current
+   recommendation*: stay on neoncart top rows (saves a switch).
+
+---
+
+## Resolved this pass
+
+- ~~"What's the precise opening line of Act 1?"~~ → 97.7% / $2.67 hook
+  (then thesis verbatim).
+- ~~"What's the fallback if Grafana Assistant misfires in act 5?"~~ →
+  Pre-recorded 30s clip kept in a tab, with the meta-conversation as
+  the load-bearing beat (not the Assistant query). Production of clip
+  is now a TODO.
+- ~~"Should there be a 30-second intermission between Acts 3 and 4?"~~
+  → No. The Act 3 → Act 4 transition ("if a conversation is the unit,
+  what's the unit cost?") is the natural pivot — handled in prose.
+
+---
+
+## Skills / lint evolutions to consider (proposed, NOT applied)
+
+These came up while solidifying the script. Don't silently apply —
+discuss with the user first:
+
+1. **New lint rule (proposal)**: `arc.97-callback` — `outage-impact`
+   archetype dashboards SHOULD surface a cost-savings KPI visible in
+   ≤ 1 panel. *Severity: INFO* (nudge, not error). Rationale: the Act
+   4 callback is now a load-bearing narrative element; dashboards
+   playing the Act 4 role should give it visual support.
+2. **Narrator skill hard-rule update**: add to `ai-o11y-demo-narrator/
+   SKILL.md` Hard Rules section — *"The 97.7% cold open + Act 4
+   callback is load-bearing; do not cut either without restructuring
+   Act 1 and Act 4 together."*
+3. **Story-architect hint**: when serving an Act 4 beat, the architect
+   should default to including a "cost ratio" panel comparing local
+   marginal cost vs. equivalent-managed-API cost.
 
 ---
 
@@ -53,25 +138,28 @@ use.
 
 ## Tomorrow's priorities (in order)
 
-1. **Write the actual spoken demo script.** Fill in `DEMO_SCRIPT.md`
-   beyond the v0 scaffold. Lock the prose for each act.
-2. **Tighten the emotional arc.** Where exactly do the two wow moments
-   land? (Currently: act 3 convo drill-down + act 4 missed-revenue.)
-3. **Refine the conceptual explanations.** Each of the verbatim
-   framings should be one short sentence in delivery. Practice each.
-4. **Decide which existing dashboards serve which beat.** Cross-
-   reference against `dashboards/` + `RATING.md`. Three buckets:
-   - **Keep as-is** — already fits a beat well.
-   - **Rebuild** — fits a beat conceptually but doesn't land. Route
-     through `ai-o11y-story-architect` after the beat is locked.
-   - **Retire** — doesn't fit any beat in the 7-min flow. Move out of
-     the curated folder; keep accessible for ad-hoc deep dives.
-5. **Evolve the skills around the finalized narrative.** Once the
-   script is locked, each skill's "when to use" prose may need a
-   tightening pass.
-6. **Identify the demo's fallback paths.** Especially act 5 (the
-   AI-investigation moment) — what if Grafana Assistant misfires
-   live? Pre-record a backup.
+(*Most of "yesterday's priorities" were closed in the latest narrator
+pass — see "What changed" above. These are the next steps.*)
+
+1. **Resolve the Grafana Assistant readiness for Act 5.** This is the
+   #1 demo-day blocker. Unblock provisioning OR record the fallback
+   clip. **Don't ship the demo without one or the other working.**
+2. **Confirm Assistant telemetry lands on neoncart's bar chart.** Wow
+   #3 depends on the meta-conversation being visible. Test before
+   recording the fallback.
+3. **Add the cost-savings KPI to `ai-obs-outage-cost`** for the Act 4
+   callback. Route to `ai-o11y-story-architect` with the brief: "Act
+   4 needs a KPI comparing local-marginal cost vs. equivalent-Claude
+   cost (~$2.67 vs ~$114 today, the 97.7% ratio)."
+4. **Confirm the drill-down works** on `ai-obs-app-neoncart`'s
+   `📦 Specialists` bar. If it's vapor, fix it — Wow #1 depends on it.
+5. **Rebuild candidates from `RATING.md`** — defer until #1–#4 are
+   green. The remaining low-scored dashboards are *not* on the demo
+   path (the demo only uses 3 dashboards now), so they're lower
+   priority than they were before this narrator pass.
+6. **Record a full dry run** of the 7-minute demo with a timer.
+   Validate the time budget. Confirm transitions feel cinematic, not
+   choppy.
 
 ---
 
