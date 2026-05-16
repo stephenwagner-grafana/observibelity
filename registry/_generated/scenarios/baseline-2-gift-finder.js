@@ -38,13 +38,8 @@ const TOOL_URL = __ENV.ADD_TO_CART_URL || 'http://add-to-cart.observibelity.svc.
 // inside Claude). Same bucket key (persona + UTC hour) → same model for
 // every iteration in the same conversation. See baseline.js for the
 // rationale on per-conversation model stability.
-const CLAUDE_MODELS = [
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-6',
-  'claude-opus-4-7',
-];
+// 100% Haiku 4.5 — mirrors baseline.js after the 2026-05-16 budget retune.
+const CLAUDE_MODELS = ['claude-haiku-4-5-20251001'];
 const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.10');
 
 function _hash(s) {

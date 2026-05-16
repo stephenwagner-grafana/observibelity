@@ -138,31 +138,12 @@ const SUPPORTBOT_URL = __ENV.SUPPORTBOT_URL || 'http://supportbot';
 // The gateway's provider_override + model_override are wired through
 // NeonCart /chat and Support Bot /chat, then through nc-chatbot /
 // sb-router into llm-gateway.
-const CLAUDE_MODELS = [
-  // 60% Haiku 4.5 — cheap, carries the bulk of Claude traffic (24/40)
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  'claude-haiku-4-5-20251001', 'claude-haiku-4-5-20251001',
-  // 25% Sonnet 4.6 — mid-tier (10/40)
-  'claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-6',
-  'claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-6',
-  'claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-6',
-  'claude-sonnet-4-6',
-  // 7.5% Opus 4.5 — prior-gen flagship, equal slice with 4.7 (3/40)
-  'claude-opus-4-5-20251015', 'claude-opus-4-5-20251015',
-  'claude-opus-4-5-20251015',
-  // 7.5% Opus 4.7 — newest flagship, equal slice with 4.5 (3/40)
-  'claude-opus-4-7', 'claude-opus-4-7', 'claude-opus-4-7',
-];
+// 100% Haiku 4.5 — only the cheapest Claude tier fits the $20/day budget
+// at the new 50:1 ollama:claude ratio (claudeFraction=0.02). Sonnet+Opus
+// dropped 2026-05-16 because mixing them at ~$0.0105-$0.0525/call pushed
+// daily Claude spend to $40-90/day — outside the cap. The gateway also
+// applies ANTHROPIC_MAX_TOKENS_CAP=200 so per-call cost stays ~$0.0019.
+const CLAUDE_MODELS = ['claude-haiku-4-5-20251001'];
 const CLAUDE_FRACTION = parseFloat(__ENV.LOADGEN_CLAUDE_FRACTION || '0.003');
 
 // Sigil groups Sigil generation events into a "conversation" by

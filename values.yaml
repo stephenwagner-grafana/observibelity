@@ -324,14 +324,14 @@ k6:
                           # 5090 toward ~80% GPU utilization without timeouts.
                           # Paired with OLLAMA_NUM_PARALLEL=8 + MAX_LOADED_MODELS=1.
   # Fraction of loadgen traffic that goes directly to Claude (Anthropic).
-  # baseline.js spreads that traffic across 4 claude-* models: 60% Haiku 4.5
-  # / 25% Sonnet 4.6 / 7.5% Opus 4.5 / 7.5% Opus 4.7. Per-call avg $0.01261
-  # at typical chat token counts. At the sine-wave's 5.83 RPS avg:
-  #   5.83 × 0.003 × $0.01261 × 86400 ≈ $19/day.
-  # 0.014 ran $60-90/day (over budget) — that fraction was sized for the
-  # OLD $0.0026 Haiku-heavy mix and never tracked the model-mix change.
-  # Bump only after re-running the per-call math in baseline.js comments.
-  claudeFraction: 0.003   # ~$19/day Anthropic burn with the 60/25/7.5/7.5 mix.
+  # Sized for a 50:1 ollama:claude ratio so the AI o11y plugin's Provider
+  # breakdown shows visible Claude activity (was ~333:1 / 0.3% before —
+  # invisible on the dashboard). 100% Haiku 4.5 + ANTHROPIC_MAX_TOKENS_CAP=200
+  # keeps daily spend in the $15-22 range:
+  #   5.83 RPS × 0.02 × ~$0.0019 (700 input + ~150 output) × 86400 ≈ $19/day.
+  # If you raise the cap or include Sonnet/Opus, recompute or you'll
+  # blow the budget — Haiku-only is what makes 50:1 + $20/day reachable.
+  claudeFraction: 0.02    # ~50:1 ollama:claude ratio, ~$15-22/day Anthropic.
                           # NOTE: Sigil eval-judge calls hit Bedrock
                           # directly — they're NOT counted here.
                           # Track via sigil_eval_judge_tokens_total.

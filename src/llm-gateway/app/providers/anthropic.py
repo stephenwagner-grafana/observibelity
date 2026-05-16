@@ -24,6 +24,14 @@ log = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 
+# Hard cap on Claude max_tokens — protects the $20/day demo budget. Specialists
+# (nc-chatbot, sb-router, etc.) ship with max_tokens=1500 sized for Ollama;
+# letting that flow through to Anthropic at 50:1 ollama:claude ratio
+# multiplies daily Claude spend ~7×. 200 tokens covers the typical chat reply
+# + one short tool-call block. Clamps the per-call ceiling, not the
+# request — short replies still finish naturally well under the cap.
+_ANTHROPIC_MAX_TOKENS_CAP = int(os.environ.get("ANTHROPIC_MAX_TOKENS_CAP", "200"))
+
 
 class AnthropicProvider(Provider):
     """Claude-backed provider used by every specialist by default in Phase 1."""
@@ -164,7 +172,7 @@ class AnthropicProvider(Provider):
 
         kwargs: dict[str, Any] = {
             "model": model,
-            "max_tokens": req.max_tokens,
+            "max_tokens": min(req.max_tokens, _ANTHROPIC_MAX_TOKENS_CAP),
             "messages": messages,
         }
         if system is not None:
@@ -236,7 +244,7 @@ class AnthropicProvider(Provider):
 
         kwargs: dict[str, Any] = {
             "model": model,
-            "max_tokens": req.max_tokens,
+            "max_tokens": min(req.max_tokens, _ANTHROPIC_MAX_TOKENS_CAP),
             "messages": messages,
         }
         if system is not None:
