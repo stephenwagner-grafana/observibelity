@@ -530,10 +530,19 @@ export default function () {
   // pickModelRouting / CLAUDE_MODELS are kept above for reference but no
   // longer applied — keeping the surrounding comment block intact for the
   // cost-math history.
+  // Cap Sigil conversation length. With no session_id, the gateway falls back
+  // to hash(persona+UTC_hour) (sigil.py:_derive_session_id) which bucketed
+  // ~1000+ msgs/hour into one conversation for heavy personas (Tim weight 8).
+  // A 30s bucket holds ~10 msgs for the heaviest persona at average RPS and
+  // ~15 at peak — short enough to make a clean demo, long enough to keep
+  // multi-turn flavor. Key includes usecase so Eric's 3 use cases stay
+  // isolated per the (chat, user) conversation-isolation rule.
+  const sessionBucket = Math.floor(Date.now() / 30000);
   const payloadObj = {
     message: msg,
     usecase: sc.usecase,
     persona_id: sc.persona,
+    session_id: `${sc.persona}-${sc.usecase}-${sessionBucket}`,
   };
   const payload = JSON.stringify(payloadObj);
 
