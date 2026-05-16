@@ -240,7 +240,7 @@ P = []
 # 200: top revenue pulse (replaces tokens/min sparkline)
 revenue_per_min_loki = (
     'sum(rate({service_namespace="observibelity",container="tool"} '
-    '|~ "atc_event source=loadgen" [$__rate_interval])) * 60 * ${avg_atc_value}'
+    '|~ "atc_event source=loadgen" [1m])) * 60 * ${avg_atc_value}'
 )
 P.append({
     "id": 200,
@@ -576,18 +576,34 @@ P.append({
     },
 })
 
-# k6 traffic pod state
+# Customer journey health — single combined strip
+# Green = customers can shop (k3s healthy + critical pods Running)
+# Red   = customers locked out (at least one critical signal is broken)
+journey_health_expr = (
+    'clamp_max('
+    'min(kube_node_status_condition{cluster="k3s",condition="Ready",status="true"}) '
+    '* clamp_max((count(kube_pod_status_phase{namespace="observibelity",pod=~"k6-traffic-.*",phase="Running"} == 1) or vector(0)), 1) '
+    '* clamp_max((count(kube_pod_status_phase{namespace="observibelity",pod=~"neoncart-.*",phase="Running"} == 1) or vector(0)), 1) '
+    '* clamp_max((count(kube_pod_status_phase{namespace="observibelity",pod=~"llm-gateway-.*",phase="Running"} == 1) or vector(0)), 1)'
+    ', 1)'
+)
 P.append({
     "id": 216,
     "type": "state-timeline",
-    "title": "Loadgen pod state — restarts/crashes show as color breaks",
-    "description": "k6 is the engine driving cart-adds. Breaks here = downstream revenue drops.",
+    "title": "Customer journey health — can shoppers reach checkout?",
+    "description": (
+        "1 = every component a customer needs is up (k3s nodes Ready, k6 driving traffic, "
+        "neoncart serving the website, llm-gateway handling chats). Any one of those breaking "
+        "drops this to 0 — customers either can't reach the site or hit an error before checkout. "
+        "This is the same signal that turns 'Lost revenue' on in the chart below."
+    ),
     "gridPos": gridpos(12, y, 12, 7),
     "datasource": PROM_DS,
     "targets": [{
         "datasource": PROM_DS, "refId": "A",
-        "expr": 'max by (pod, phase) (kube_pod_status_phase{namespace="observibelity",pod=~"k6-traffic-.*"} == 1)',
-        "legendFormat": "{{pod}} {{phase}}", "range": True,
+        "expr": journey_health_expr,
+        "legendFormat": "customer journey",
+        "range": True,
     }],
     "fieldConfig": {
         "defaults": {
@@ -597,13 +613,19 @@ P.append({
                 {"color": "#EF4444", "value": None},
                 {"color": "#10B981", "value": 1},
             ]},
-            "custom": {"fillOpacity": 75, "lineWidth": 0},
+            "custom": {"fillOpacity": 85, "lineWidth": 0},
+            "mappings": [
+                {"type": "value", "options": {
+                    "0": {"text": "Customers locked out", "color": "#EF4444", "index": 0},
+                    "1": {"text": "Customers can shop", "color": "#10B981", "index": 1},
+                }},
+            ],
         },
         "overrides": [],
     },
     "options": {
         "alignValue": "left",
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": True},
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": False},
         "mergeValues": True, "rowHeight": 0.9, "showValue": "auto",
         "tooltip": {"mode": "single", "sort": "none"},
     },
@@ -684,31 +706,43 @@ P.append({
     },
 })
 
-# 240: Missed revenue per 10-min block (same axis as 218)
-missed_per_10m = (
-    '(${baseline_atc_per_hour} / 6 '
-    '- sum(count_over_time({service_namespace="observibelity",container="tool"} '
-    '|~ "atc_event source=loadgen" [10m]))) * ${avg_atc_value}'
+# 240: Missed revenue per 10-min block — gated by detected k3s/critical-pod errors.
+# Lost revenue turns ON only when something is wrong, and stays on until the error
+# clears. The gate is the fraction of the 10-min window where at least one of:
+#   - a k3s node is NotReady, or
+#   - a critical pod (k6-traffic, neoncart, llm-gateway) is in a non-Running phase
+# is true. avg_over_time(gate[10m:1m]) gives 0.0 = healthy, 1.0 = full 10m down,
+# 0.5 = down half the window. Multiplied by expected revenue per 10-min, we get
+# missed $ exactly proportional to the error duration. Yin/yang with panel 218.
+missed_per_10m_gated = (
+    '(${baseline_atc_per_hour} / 6 * ${avg_atc_value}) '
+    '* avg_over_time(('
+    'clamp_max('
+    '(sum(kube_node_status_condition{cluster="k3s",condition="Ready",status="false"} == 1) or vector(0)) '
+    '+ (sum(kube_pod_status_phase{namespace="observibelity",pod=~"k6-traffic-.*|neoncart-.*|llm-gateway-.*",phase!="Running"} == 1) or vector(0)),'
+    ' 1)'
+    ')[10m:1m])'
 )
 P.append({
     "id": 240,
     "type": "timeseries",
-    "title": "What we missed — per 10-minute block",
+    "title": "Lost revenue — gated by k3s / critical-pod errors",
     "description": (
-        "Each red bar = revenue we expected to make in that 10-minute block but didn't. "
-        "Computed as `(baseline / 6 − actual) × avg cart-add value`. Bars only show when the "
-        "engine was below baseline — over-baseline blocks hide via the threshold. The legend "
-        "Total is the trailing 24-hour missed revenue."
+        "Turns ON when an error is firing on k3s or a critical pod (k6-traffic, neoncart, "
+        "llm-gateway) and stays ON until the error clears. Value per 10-min bar = expected "
+        "revenue × fraction of the window the error was firing. Yin/yang with the 'What we "
+        "made' chart above — when one is green, the other should be empty."
     ),
     "gridPos": gridpos(0, y + 9, 24, 8),
-    "datasource": LOKI_DS,
+    "datasource": PROM_DS,
     "targets": [
         {
-            "datasource": LOKI_DS, "refId": "A",
-            "expr": missed_per_10m,
-            "legendFormat": "missed in 10-min block",
+            "datasource": PROM_DS, "refId": "A",
+            "expr": missed_per_10m_gated,
+            "legendFormat": "lost while errors firing",
             "range": True,
             "step": "10m",
+            "interval": "10m",
         },
     ],
     "fieldConfig": {
@@ -736,7 +770,7 @@ P.append({
         },
         "overrides": [
             {
-                "matcher": {"id": "byName", "options": "missed in 10-min block"},
+                "matcher": {"id": "byName", "options": "lost while errors firing"},
                 "properties": [
                     {"id": "color", "value": {"mode": "fixed", "fixedColor": "#EF4444"}},
                 ],
