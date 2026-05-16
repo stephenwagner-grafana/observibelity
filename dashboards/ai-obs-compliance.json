@@ -21,18 +21,18 @@
         "enable": true,
         "hide": false,
         "iconColor": "red",
-        "name": "Hiring discrimination \u2014 P0",
+        "name": "Hiring discrimination — P0",
         "tagKeys": "employee,category",
         "target": {
           "expr": "{container=\"llm-gateway\"} | json | event=\"hiring_discrimination_risk\" | severity=\"critical\"",
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "hiring discrim \u2014 {{ employee }}"
+        "textFormat": "hiring discrim — {{ employee }}"
       }
     ]
   },
-  "description": "Compliance signals \u2014 policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
+  "description": "Compliance signals — policy circumvention + hiring discrimination risk. Zero-tolerance: ANY single hiring-discrim event = P0.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -65,7 +65,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y \u2014 Compliance\n\n**Story:** Hiring-discrimination risk (zero tolerance) and policy circumvention by employees. Catches both the rare P0 (any hiring-bias keyword) and the slow grind (employees probing guardrails repeatedly).\n\n**Look for:** any value at all on the hiring panel (should be **0**); top-circumventer leaderboard for names that keep appearing. Live audit log at the bottom shows the actual prompts."
+        "content": "# AI o11y — Compliance\n\n**Story:** Hiring-discrimination risk (zero tolerance) and policy circumvention by employees. Catches both the rare P0 (any hiring-bias keyword) and the slow grind (employees probing guardrails repeatedly).\n\n**Look for:** any value at all on the hiring panel (should be **0**); top-circumventer leaderboard for names that keep appearing. Live audit log at the bottom shows the actual prompts."
       },
       "fieldConfig": {
         "defaults": {},
@@ -177,7 +177,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83d\udea8 Hiring discrimination \u2014 has ANY event fired? (zero tolerance)",
+      "title": "🚨 Hiring discrimination — has ANY event fired? (zero tolerance)",
       "type": "row"
     },
     {
@@ -185,7 +185,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Counts log lines mentioning hiring/protected-class terms (race, gender, age, religion, etc.) in the last hour. The gauge sits at green when zero \u2014 anything red is a P0 violation to investigate immediately.",
+      "description": "Counts log lines mentioning hiring/protected-class terms (race, gender, age, religion, etc.) in the last hour. The gauge sits at green when zero — anything red is a P0 violation to investigate immediately.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -244,7 +244,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Hiring-discrimination events \u2014 should be ZERO (1h)",
+      "title": "🚨 Hiring-discrimination events — should be ZERO (1h)",
       "type": "gauge",
       "transparent": false
     },
@@ -307,7 +307,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udce6 Which specialist agent is producing the hiring risk? (1h)",
+      "title": "📦 Which specialist agent is producing the hiring risk? (1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -321,7 +321,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "\ud83d\udee1 Policy circumvention \u2014 who's bypassing the guardrails?",
+      "title": "🛡 Policy circumvention — who's bypassing the guardrails?",
       "type": "row"
     },
     {
@@ -329,7 +329,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Total sb-security-handler log events in the last hour \u2014 the catch-all signal for policy circumvention. >0 means the security handler had work to do.",
+      "description": "Total sb-security-handler log events in the last hour — the catch-all signal for policy circumvention. >0 means the security handler had work to do.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -393,7 +393,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\u26a0 Policy-circumvention events in the last hour",
+      "title": "⚠ Policy-circumvention events in the last hour",
       "type": "stat",
       "transparent": false
     },
@@ -402,7 +402,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Span count for the request_access service \u2014 these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
+      "description": "Span count for the request_access service — these are the explicit approval-bypass attempts, the most common circumvention pattern in the demo. Sourced from Tempo spanmetrics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -466,7 +466,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd13 Approval-bypass attempts in the last hour",
+      "title": "🔓 Approval-bypass attempts in the last hour",
       "type": "stat",
       "transparent": false
     },
@@ -815,7 +815,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Guardrail events over time \u2014 by specialist",
+      "title": "📈 Guardrail events over time — by specialist",
       "type": "timeseries",
       "transparent": false
     },
@@ -824,7 +824,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Ten users with the most sb-security-handler events in the last hour. The names at the top are the people most often bumping up against your policies \u2014 start any compliance review here.",
+      "description": "Ten users with the most sb-security-handler events in the last hour. The names at the top are the people most often bumping up against your policies — start any compliance review here.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -878,7 +878,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Who's circumventing the most? Top 10 employees (1h)",
+      "title": "🔥 Who's circumventing the most? Top 10 employees (1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -892,7 +892,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "\ud83d\udccb Per-employee scorecard \u2014 which people need a compliance chat?",
+      "title": "📋 Per-employee scorecard — which people need a compliance chat?",
       "type": "row"
     },
     {
@@ -900,7 +900,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 \u00d7 circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
+      "description": "One row per employee with their circumvention count, hiring-risk count, and a synthetic compliance score (100 - 10 × circumventions). Sort by any column; the bottom of the score column is who to follow up with first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1341,7 +1341,7 @@
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udccb Per-employee compliance scorecard \u2014 circumventions (24h), hiring (7d)",
+      "title": "📋 Per-employee compliance scorecard — circumventions (24h), hiring (7d)",
       "transformations": [
         {
           "id": "joinByField",
@@ -1385,7 +1385,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udcdc Forensics \u2014 what did each critical event actually say?",
+      "title": "📜 Forensics — what did each critical event actually say?",
       "type": "row"
     },
     {
@@ -1422,7 +1422,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcdc Live audit log \u2014 every critical compliance event",
+      "title": "📜 Live audit log — every critical compliance event",
       "type": "logs",
       "transparent": false
     }
@@ -1536,7 +1536,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Compliance",
+  "title": "AI o11y — Compliance",
   "uid": "ai-obs-compliance",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

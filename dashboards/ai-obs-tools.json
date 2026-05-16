@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "runaway \u2014 {{ conv_id }} / {{ tool_name }}"
+        "textFormat": "runaway — {{ conv_id }} / {{ tool_name }}"
       }
     ]
   },
-  "description": "Is the agent stuck in a tool-call loop? Top section answers \"is something runaway right now?\"; middle drills into rates and per-session counts; bottom shows tool latency, error rate, and the offending log lines. Source: Tempo span-metrics. Hover the \u2139 icon on any panel for what each number means.",
+  "description": "Is the agent stuck in a tool-call loop? Top section answers \"is something runaway right now?\"; middle drills into rates and per-session counts; bottom shows tool latency, error rate, and the offending log lines. Source: Tempo span-metrics. Hover the ℹ icon on any panel for what each number means.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -157,7 +157,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83d\udea8 Runaway detection \u2014 is the agent stuck in a loop?",
+      "title": "🚨 Runaway detection — is the agent stuck in a loop?",
       "type": "row"
     },
     {
@@ -165,7 +165,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Across all tools, the highest invocation count any single tool received in the last 10 minutes. \u226520 fires the runaway alert \u2014 usually means an agent is hammering the same endpoint in a loop.",
+      "description": "Across all tools, the highest invocation count any single tool received in the last 10 minutes. ≥20 fires the runaway alert — usually means an agent is hammering the same endpoint in a loop.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -230,7 +230,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Max calls to a single tool (10m) \u2014 runaway gauge",
+      "title": "🚨 Max calls to a single tool (10m) — runaway gauge",
       "type": "gauge",
       "transparent": false
     },
@@ -239,7 +239,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 tools by invocation count over the last 10 minutes. The bar at the top is your prime runaway suspect. Note: query is per-tool (service), not per-conversation \u2014 pair with the Top sessions table below to find the offending chat.",
+      "description": "Top 10 tools by invocation count over the last 10 minutes. The bar at the top is your prime runaway suspect. Note: query is per-tool (service), not per-conversation — pair with the Top sessions table below to find the offending chat.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -303,7 +303,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top tools by call count (10m)",
+      "title": "🔥 Top tools by call count (10m)",
       "type": "bargauge",
       "transparent": false
     },
@@ -377,7 +377,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb2 $ per tool call (1h average)",
+      "title": "💲 $ per tool call (1h average)",
       "type": "stat",
       "transparent": false
     },
@@ -391,7 +391,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "\ud83d\udee0 Tool call rate \u2014 by tool, by session",
+      "title": "🛠 Tool call rate — by tool, by session",
       "type": "row"
     },
     {
@@ -399,7 +399,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "5m sliding rate (calls/sec) per tool, filtered by the Tool dropdown. Watch for a tool whose line suddenly climbs and stays climbed \u2014 that's the runaway pattern.",
+      "description": "5m sliding rate (calls/sec) per tool, filtered by the Tool dropdown. Watch for a tool whose line suddenly climbs and stays climbed — that's the runaway pattern.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -741,7 +741,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Tool call rate per tool (calls/min)",
+      "title": "📈 Tool call rate per tool (calls/min)",
       "type": "timeseries",
       "transparent": false
     },
@@ -750,7 +750,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 tools by accumulated invocations over the last 5 minutes, shown as a time series. The label says \"per-conversation\" but Tempo span-metrics here are aggregated per tool, not per chat \u2014 read this as \"which tool is being banged on right now\".",
+      "description": "Top 10 tools by accumulated invocations over the last 5 minutes, shown as a time series. The label says \"per-conversation\" but Tempo span-metrics here are aggregated per tool, not per chat — read this as \"which tool is being banged on right now\".",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1092,7 +1092,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Top 10 tools by call count over time",
+      "title": "📈 Top 10 tools by call count over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -1106,7 +1106,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "\ud83d\udee0 Tool health \u2014 latency + error rate",
+      "title": "🛠 Tool health — latency + error rate",
       "type": "row"
     },
     {
@@ -1189,7 +1189,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 How slow are tool calls? \u2014 latency heatmap",
+      "title": "📈 How slow are tool calls? — latency heatmap",
       "type": "heatmap",
       "transparent": false
     },
@@ -1198,7 +1198,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-tool error fraction (status_code=ERROR \u00f7 total calls) over 5 minutes. Yellow at 5%, red at 20%. A tool that climbs above yellow usually means a downstream dependency is failing.",
+      "description": "Per-tool error fraction (status_code=ERROR ÷ total calls) over 5 minutes. Yellow at 5%, red at 20%. A tool that climbs above yellow usually means a downstream dependency is failing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1264,7 +1264,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Which tool is failing? \u2014 error rate per tool",
+      "title": "⚠ Which tool is failing? — error rate per tool",
       "type": "bargauge",
       "transparent": false
     },
@@ -1278,7 +1278,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "\ud83d\udd25 Top sessions \u2014 where should I investigate first?",
+      "title": "🔥 Top sessions — where should I investigate first?",
       "type": "row"
     },
     {
@@ -1286,7 +1286,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 20 tools by invocation count in the last 10 minutes, sorted descending. Header reads \"sessions\" but the underlying Tempo metric is grouped by service (tool) \u2014 use the conv_id column override only if you pivot the query upstream. For now, treat this as the runaway-tool shortlist.",
+      "description": "Top 20 tools by invocation count in the last 10 minutes, sorted descending. Header reads \"sessions\" but the underlying Tempo metric is grouped by service (tool) — use the conv_id column override only if you pivot the query upstream. For now, treat this as the runaway-tool shortlist.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1659,7 +1659,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top tools by call count \u2014 investigation shortlist (10m)",
+      "title": "🔥 Top tools by call count — investigation shortlist (10m)",
       "type": "table",
       "transparent": false
     },
@@ -1673,7 +1673,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "\ud83d\udcdc Show me the actual error log lines",
+      "title": "📜 Show me the actual error log lines",
       "type": "row"
     },
     {
@@ -1710,7 +1710,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcdc Tool error log stream (Loki)",
+      "title": "📜 Tool error log stream (Loki)",
       "type": "logs",
       "transparent": false
     }
@@ -1824,7 +1824,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Tools (Runaway loops)",
+  "title": "AI o11y — Tools (Runaway loops)",
   "uid": "ai-obs-tools",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

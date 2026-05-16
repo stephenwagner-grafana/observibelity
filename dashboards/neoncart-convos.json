@@ -46,7 +46,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# NeonCart \u2014 AI Operations\n\nLive agent traffic, latency, cost, and model mix. Pick an agent and a time range. Spillover routes Ollama \u2192 Claude when Ollama's in-flight queue saturates; you'll see the Claude haiku line wake up under load."
+        "content": "# NeonCart — AI Operations\n\nLive agent traffic, latency, cost, and model mix. Pick an agent and a time range. Spillover routes Ollama → Claude when Ollama's in-flight queue saturates; you'll see the Claude haiku line wake up under load."
       }
     },
     {
@@ -65,12 +65,12 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "\ud83d\udcde Calls/min \u2014 all agents",
+      "title": "📞 Calls/min — all agents",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Operations per minute (5m rate \u00d7 60) across every NeonCart + SupportBot agent.",
+      "description": "Operations per minute (5m rate × 60) across every NeonCart + SupportBot agent.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -119,12 +119,12 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "\ud83d\udcb8 Cost rate \u2014 $/hr",
+      "title": "💸 Cost rate — $/hr",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Spend rate (5m rate \u00d7 3600) for the selected agent.",
+      "description": "Spend rate (5m rate × 3600) for the selected agent.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -181,12 +181,12 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "\u23f1 p95 TTFT",
+      "title": "⏱ p95 TTFT",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "95th-percentile time-to-first-token across the agent rotation. Green <2s \u00b7 Orange 2-5s \u00b7 Red >5s.",
+      "description": "95th-percentile time-to-first-token across the agent rotation. Green <2s · Orange 2-5s · Red >5s.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -243,12 +243,12 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "\ud83e\uddee Output tokens/min",
+      "title": "🧮 Output tokens/min",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Output-token throughput for the selected agent (5m rate \u00d7 60).",
+      "description": "Output-token throughput for the selected agent (5m rate × 60).",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -310,7 +310,7 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "\ud83d\udcde Calls/min by agent",
+      "title": "📞 Calls/min by agent",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -371,12 +371,12 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "\ud83e\udeaa Model mix \u2014 calls/min by model",
+      "title": "🪪 Model mix — calls/min by model",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Per-model traffic. Watch for Claude haiku spikes \u2014 those are spillover events when Ollama saturates.",
+      "description": "Per-model traffic. Watch for Claude haiku spikes — those are spillover events when Ollama saturates.",
       "gridPos": {
         "h": 9,
         "w": 12,
@@ -461,7 +461,7 @@
     {
       "id": 8,
       "type": "timeseries",
-      "title": "\u23f1 p95 TTFT by agent",
+      "title": "⏱ p95 TTFT by agent",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -517,7 +517,7 @@
     {
       "id": 9,
       "type": "timeseries",
-      "title": "\u23f1 p95 TTFT by model",
+      "title": "⏱ p95 TTFT by model",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -586,7 +586,7 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "\ud83d\udcb8 Cost rate by agent ($/hr)",
+      "title": "💸 Cost rate by agent ($/hr)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -646,7 +646,7 @@
     {
       "id": 11,
       "type": "timeseries",
-      "title": "\ud83d\udcb8 Cost rate by model ($/hr)",
+      "title": "💸 Cost rate by model ($/hr)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -792,8 +792,9 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "NeonCart \u2014 AI Operations",
+  "title": "NeonCart — AI Operations",
   "uid": "neoncart-convos",
   "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-shift-left",
-  "title": "AI o11y \u2014 Shift-Left Demo Agenda",
+  "title": "AI o11y — Shift-Left Demo Agenda",
   "tags": [
     "ai-o11y",
     "demo"
@@ -68,13 +68,13 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# \ud83d\udd04 Shift-Left \u2014 the demo agenda\n\nProduction on the right (deterministic, monitored, Claude-quality). Dev/test on the left (stochastic, exploratory, local Ollama). Each row maps a use case to where it lives on that axis."
+        "content": "# 🔄 Shift-Left — the demo agenda\n\nProduction on the right (deterministic, monitored, Claude-quality). Dev/test on the left (stochastic, exploratory, local Ollama). Each row maps a use case to where it lives on that axis."
       }
     },
     {
       "id": 100,
       "type": "row",
-      "title": "\ud83c\udfaf PROD \u2014 deterministic, observable, automated RCA",
+      "title": "🎯 PROD — deterministic, observable, automated RCA",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -96,7 +96,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**\ud83d\udc2d mice-rca** \u2014 \"show me mice\" classic. NeonCart query \u2192 fan-out to specialists \u2192 OTel trace tells the whole story. **Start the demo here**: it's the deterministic, production-quality flow and the OTel stack reads like a debugger.\n\n**\ud83d\udce8 email-cascade** \u2014 cascade pattern, easy to spot on the trace fan-out.\n\n**\ud83d\udcb0 cost-anomaly-per-user** \u2014 Priya's verbose pastes. Lights up the per-user cost panel."
+        "content": "**🐭 mice-rca** — \"show me mice\" classic. NeonCart query → fan-out to specialists → OTel trace tells the whole story. **Start the demo here**: it's the deterministic, production-quality flow and the OTel stack reads like a debugger.\n\n**📨 email-cascade** — cascade pattern, easy to spot on the trace fan-out.\n\n**💰 cost-anomaly-per-user** — Priya's verbose pastes. Lights up the per-user cost panel."
       }
     },
     {
@@ -159,7 +159,7 @@
     {
       "id": 101,
       "type": "row",
-      "title": "\ud83e\uddea DEV \u2014 stochastic, model-quality probing, AI FinOps",
+      "title": "🧪 DEV — stochastic, model-quality probing, AI FinOps",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -181,7 +181,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**\ud83c\udfaf model-winner** \u2014 every Ollama model in the rotation gets the same gift-finder prompt. Quality vs cost head-to-head on the leaderboard.\n\n**\ud83d\udcca ai-quality-score / quality-trend** \u2014 eval judges over time.\n\n**\ud83e\udd16 hallucination-product-price** \u2014 does the model just make up prices?\n\n**\ud83c\udfa8 brand-voice-drift** \u2014 tone integrity.\n\n**\ud83d\udd10 pii-echo / sensitive-data-leaks** \u2014 what gets through guardrails?"
+        "content": "**🎯 model-winner** — every Ollama model in the rotation gets the same gift-finder prompt. Quality vs cost head-to-head on the leaderboard.\n\n**📊 ai-quality-score / quality-trend** — eval judges over time.\n\n**🤖 hallucination-product-price** — does the model just make up prices?\n\n**🎨 brand-voice-drift** — tone integrity.\n\n**🔐 pii-echo / sensitive-data-leaks** — what gets through guardrails?"
       }
     },
     {
@@ -244,7 +244,7 @@
     {
       "id": 102,
       "type": "row",
-      "title": "\ud83d\udce6 Use-case traffic right now",
+      "title": "📦 Use-case traffic right now",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -315,7 +315,7 @@
     {
       "id": 103,
       "type": "row",
-      "title": "\ud83c\udfc1 Calls per minute, by app",
+      "title": "🏁 Calls per minute, by app",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -328,8 +328,8 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "Calls/min \u2014 NeonCart vs SupportBot",
-      "description": "Specialist calls per minute (5m rate \u00d7 60). Each conversation can produce multiple specialist calls (router \u2192 downstream), so this is upper-bound on real-user convos.",
+      "title": "Calls/min — NeonCart vs SupportBot",
+      "description": "Specialist calls per minute (5m rate × 60). Each conversation can produce multiple specialist calls (router → downstream), so this is upper-bound on real-user convos.",
       "gridPos": {
         "x": 0,
         "y": 34,
@@ -391,5 +391,6 @@
         }
       }
     }
-  ]
+  ],
+  "folderUid": "obs-foundations"
 }

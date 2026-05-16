@@ -28,7 +28,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cascade started \u2014 {{ conv_id }}"
+        "textFormat": "cascade started — {{ conv_id }}"
       }
     ]
   },
@@ -65,7 +65,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y \u2014 Email Cascade\n\n**Story:** A single misbehaving session can drive a runaway loop \u2014 the escalator specialist sends thousands of emails in minutes. The cost stat (top-left) is your immediate damage gauge.\n\n**Look for:** any session in the **\ud83d\udea8 Top 20 runaway sessions** table over **50 emails/10m**, and the live tail at the bottom \u2014 you'll see the tool-call loop in real time."
+        "content": "# AI o11y — Email Cascade\n\n**Story:** A single misbehaving session can drive a runaway loop — the escalator specialist sends thousands of emails in minutes. The cost stat (top-left) is your immediate damage gauge.\n\n**Look for:** any session in the **🚨 Top 20 runaway sessions** table over **50 emails/10m**, and the live tail at the bottom — you'll see the tool-call loop in real time."
       },
       "fieldConfig": {
         "defaults": {},
@@ -177,7 +177,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83d\udea8 Is an email cascade running right now?",
+      "title": "🚨 Is an email cascade running right now?",
       "type": "row"
     },
     {
@@ -185,7 +185,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent in the last hour on the support bot's escalator and ticket-helper agents \u2014 the two specialists that drive the email-cascade runaway. Each full cascade run costs roughly $2.80.",
+      "description": "USD spent in the last hour on the support bot's escalator and ticket-helper agents — the two specialists that drive the email-cascade runaway. Each full cascade run costs roughly $2.80.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -249,7 +249,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 How much have cascades cost us in the last hour?",
+      "title": "💰 How much have cascades cost us in the last hour?",
       "type": "stat",
       "transparent": false
     },
@@ -258,7 +258,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of cascade-related log lines in the last hour from the llm-gateway. Each run produces thousands of lines, so this is a coarse 'are we burning' signal \u2014 not a literal run count.",
+      "description": "Count of cascade-related log lines in the last hour from the llm-gateway. Each run produces thousands of lines, so this is a coarse 'are we burning' signal — not a literal run count.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -320,7 +320,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udce8 Cascade activity in the last hour (log events)",
+      "title": "📨 Cascade activity in the last hour (log events)",
       "type": "stat",
       "transparent": false
     },
@@ -329,7 +329,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Tokens burned by the cascade-driving specialists in the last hour. A single runaway run chews through ~450k tokens \u2014 that's where the $2.80/run comes from.",
+      "description": "Tokens burned by the cascade-driving specialists in the last hour. A single runaway run chews through ~450k tokens — that's where the $2.80/run comes from.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -393,7 +393,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd22 Tokens burned by cascade specialists (1h)",
+      "title": "🔢 Tokens burned by cascade specialists (1h)",
       "type": "stat",
       "transparent": false
     },
@@ -438,7 +438,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Is the conv_runaway alert firing?",
+      "title": "🚨 Is the conv_runaway alert firing?",
       "type": "alertlist",
       "transparent": false
     },
@@ -512,7 +512,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb8 $ per cascade run (last 1h)",
+      "title": "💸 $ per cascade run (last 1h)",
       "type": "stat",
       "transparent": false
     },
@@ -526,7 +526,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "\ud83d\udd0d Which session is going off the rails?",
+      "title": "🔍 Which session is going off the rails?",
       "type": "row"
     },
     {
@@ -534,7 +534,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 sessions by sb-escalator log activity, 5m windows. A cascade looks like one session line shooting straight up while everything else flatlines \u2014 that vertical wall is the runaway.",
+      "description": "Top 10 sessions by sb-escalator log activity, 5m windows. A cascade looks like one session line shooting straight up while everything else flatlines — that vertical wall is the runaway.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -872,7 +872,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Escalator activity per session over time (top 10)",
+      "title": "📈 Escalator activity per session over time (top 10)",
       "type": "timeseries",
       "transparent": false
     },
@@ -954,7 +954,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Emails-per-session distribution \u2014 look for the right-tail outliers",
+      "title": "🔥 Emails-per-session distribution — look for the right-tail outliers",
       "type": "heatmap",
       "transparent": false
     },
@@ -968,7 +968,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "\ud83d\udd25 Which sessions are the worst offenders right now?",
+      "title": "🔥 Which sessions are the worst offenders right now?",
       "type": "row"
     },
     {
@@ -1363,7 +1363,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udea8 Top 20 runaway sessions \u2014 who's blowing past 50 emails in 10m?",
+      "title": "🚨 Top 20 runaway sessions — who's blowing past 50 emails in 10m?",
       "type": "table",
       "transparent": false,
       "transformations": [
@@ -1400,7 +1400,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udcdc Forensics \u2014 what is the cascade actually doing right now?",
+      "title": "📜 Forensics — what is the cascade actually doing right now?",
       "type": "row"
     },
     {
@@ -1408,7 +1408,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of sb-escalator events from the llm-gateway. Read this top-down to watch a cascade actually unfold \u2014 tool calls, retries, ticket creates.",
+      "description": "Live tail of sb-escalator events from the llm-gateway. Read this top-down to watch a cascade actually unfold — tool calls, retries, ticket creates.",
       "gridPos": {
         "h": 11,
         "w": 14,
@@ -1437,7 +1437,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udce8 Live tail \u2014 escalator tool/probe events",
+      "title": "📨 Live tail — escalator tool/probe events",
       "type": "logs",
       "transparent": false
     },
@@ -1446,7 +1446,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines \u2014 when you see that counter ticking up, you're watching the runaway.",
+      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines — when you see that counter ticking up, you're watching the runaway.",
       "gridPos": {
         "h": 11,
         "w": 10,
@@ -1475,7 +1475,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcdc Summarizer burst \u2014 2000-call loop in action",
+      "title": "📜 Summarizer burst — 2000-call loop in action",
       "type": "logs",
       "transparent": false
     }
@@ -1584,7 +1584,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Email Cascade",
+  "title": "AI o11y — Email Cascade",
   "uid": "ai-obs-cascade-spike",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

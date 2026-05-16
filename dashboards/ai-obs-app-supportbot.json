@@ -5291,5 +5291,6 @@
   "timezone": "",
   "title": "AI o11y — SupportBot",
   "uid": "ai-obs-app-supportbot",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

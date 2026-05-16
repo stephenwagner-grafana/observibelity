@@ -46,7 +46,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# NeonCart Demo \u2014 SRE Failure + AI Behavior\n\n**Left:** k3s + pod/service health.  **Right:** AI traffic, errors, and spillover.  Watch the Claude haiku line wake up when Ollama queue saturates and the gateway routes overflow to Anthropic."
+        "content": "# NeonCart Demo — SRE Failure + AI Behavior\n\n**Left:** k3s + pod/service health.  **Right:** AI traffic, errors, and spillover.  Watch the Claude haiku line wake up when Ollama queue saturates and the gateway routes overflow to Anthropic."
       }
     },
     {
@@ -65,7 +65,7 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "\ud83e\udde0 k3s nodes Ready",
+      "title": "🧠 k3s nodes Ready",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -127,7 +127,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "\ud83d\udce6 k6-traffic pods Running",
+      "title": "📦 k6-traffic pods Running",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -189,7 +189,7 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "\ud83d\udd01 Pod restarts (5m)",
+      "title": "🔁 Pod restarts (5m)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -251,7 +251,7 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "\ud83d\udd25 NeonCart errors/min (Loki)",
+      "title": "🔥 NeonCart errors/min (Loki)",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
@@ -327,7 +327,7 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "\ud83e\udeaa Model mix \u2014 calls/min",
+      "title": "🪪 Model mix — calls/min",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -408,7 +408,7 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "\u23f1 p95 TTFT \u2014 Ollama vs Anthropic",
+      "title": "⏱ p95 TTFT — Ollama vs Anthropic",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -509,7 +509,7 @@
     {
       "id": 8,
       "type": "timeseries",
-      "title": "\ud83d\uded2 Add-to-cart events/min by model",
+      "title": "🛒 Add-to-cart events/min by model",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
@@ -565,7 +565,7 @@
     {
       "id": 9,
       "type": "timeseries",
-      "title": "\ud83d\udcb8 Cost rate by system ($/hr)",
+      "title": "💸 Cost rate by system ($/hr)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -708,8 +708,9 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "NeonCart Demo \u2014 SRE Failure + AI Behavior",
+  "title": "NeonCart Demo — SRE Failure + AI Behavior",
   "uid": "neoncart-demo",
   "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

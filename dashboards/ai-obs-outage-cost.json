@@ -24,7 +24,7 @@
         "name": "k3s NotReady",
         "expr": "kube_node_status_condition{cluster=\"k3s\",condition=\"Ready\",status=\"true\"} == 0",
         "step": "1m",
-        "titleFormat": "k3s outage \u2014 {{node}} NotReady",
+        "titleFormat": "k3s outage — {{node}} NotReady",
         "tagKeys": "node"
       },
       {
@@ -38,7 +38,7 @@
         "name": "Loadgen pod down",
         "expr": "kube_pod_status_phase{namespace=\"observibelity\",pod=~\"k6-traffic-.*\",phase!=\"Running\"} == 1",
         "step": "1m",
-        "titleFormat": "Loadgen pod {{phase}} \u2014 {{pod}}",
+        "titleFormat": "Loadgen pod {{phase}} — {{pod}}",
         "tagKeys": "pod,phase"
       },
       {
@@ -175,7 +175,7 @@
       "id": 200,
       "type": "timeseries",
       "title": "",
-      "description": "Live revenue pulse \u2014 dollars added to carts per minute. Flat \u2248 outage.",
+      "description": "Live revenue pulse — dollars added to carts per minute. Flat ≈ outage.",
       "transparent": false,
       "gridPos": {
         "h": 3,
@@ -557,7 +557,7 @@
     {
       "id": 201,
       "type": "row",
-      "title": "\ud83d\udcb0 Revenue right now \u2014 what the engine is making",
+      "title": "💰 Revenue right now — what the engine is making",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -570,8 +570,8 @@
     {
       "id": 202,
       "type": "stat",
-      "title": "Revenue per hour \u2014 right now",
-      "description": "Cart-add events in the last 1 hour \u00d7 avg cart-add value. The pulse of the business.",
+      "title": "Revenue per hour — right now",
+      "description": "Cart-add events in the last 1 hour × avg cart-add value. The pulse of the business.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -645,7 +645,7 @@
     {
       "id": 203,
       "type": "stat",
-      "title": "Revenue \u2014 last 24 hours",
+      "title": "Revenue — last 24 hours",
       "description": "Total cart-add value in the trailing 24 hours.",
       "gridPos": {
         "h": 4,
@@ -713,7 +713,7 @@
       "id": 204,
       "type": "stat",
       "title": "Annualized run rate",
-      "description": "Last 24h revenue \u00d7 365. What this engine grosses if today repeats every day for a year.",
+      "description": "Last 24h revenue × 365. What this engine grosses if today repeats every day for a year.",
       "gridPos": {
         "h": 4,
         "w": 6,
@@ -913,7 +913,7 @@
     {
       "id": 230,
       "type": "row",
-      "title": "\ud83d\udcc9 Missed revenue \u2014 what today's downtime actually cost",
+      "title": "📉 Missed revenue — what today's downtime actually cost",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -927,7 +927,7 @@
       "id": 231,
       "type": "stat",
       "title": "Missed revenue today (last 24h)",
-      "description": "Measured shortfall: (`baseline_atc_per_hour` \u00d7 24h) \u2212 today's actual cart-adds, valued at `avg_atc_value`. Positive = revenue left on the table due to outages, slowdowns, or capacity caps. Negative = you over-performed baseline.",
+      "description": "Measured shortfall: (`baseline_atc_per_hour` × 24h) − today's actual cart-adds, valued at `avg_atc_value`. Positive = revenue left on the table due to outages, slowdowns, or capacity caps. Negative = you over-performed baseline.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -1285,7 +1285,7 @@
     {
       "id": 207,
       "type": "row",
-      "title": "\ud83d\uded1 Projected outage cost \u2014 what a future N-hour outage would cost",
+      "title": "🛑 Projected outage cost — what a future N-hour outage would cost",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1423,7 +1423,7 @@
         "defaults": {
           "unit": "suffix: hours",
           "decimals": 0,
-          "noValue": "\u2014",
+          "noValue": "—",
           "color": {
             "mode": "thresholds"
           },
@@ -1490,7 +1490,7 @@
         "defaults": {
           "unit": "suffix: carts/hr",
           "decimals": 0,
-          "noValue": "\u2014",
+          "noValue": "—",
           "color": {
             "mode": "thresholds"
           },
@@ -1662,7 +1662,7 @@
     {
       "id": 214,
       "type": "row",
-      "title": "\ud83d\udcc8 When the engine ran vs. stopped",
+      "title": "📈 When the engine ran vs. stopped",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1675,8 +1675,8 @@
     {
       "id": 215,
       "type": "state-timeline",
-      "title": "k3s node Ready \u2014 green = engine running, red = revenue stopped",
-      "description": "Each row is a node. Color = Ready status. Red gaps = no scheduling \u2192 loadgen halts \u2192 ATC stops \u2192 revenue stops.",
+      "title": "k3s node Ready — green = engine running, red = revenue stopped",
+      "description": "Each row is a node. Color = Ready status. Red gaps = no scheduling → loadgen halts → ATC stops → revenue stops.",
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -1727,12 +1727,12 @@
               "type": "value",
               "options": {
                 "0": {
-                  "text": "DOWN \u2014 $0/hr",
+                  "text": "DOWN — $0/hr",
                   "color": "#EF4444",
                   "index": 0
                 },
                 "1": {
-                  "text": "UP \u2014 making $",
+                  "text": "UP — making $",
                   "color": "#10B981",
                   "index": 1
                 }
@@ -1762,8 +1762,8 @@
     {
       "id": 216,
       "type": "state-timeline",
-      "title": "Customer journey health \u2014 can shoppers reach checkout?",
-      "description": "1 = every component a customer needs is up (k3s nodes Ready, k6 driving traffic, neoncart serving the website, llm-gateway handling chats). Any one of those breaking drops this to 0 \u2014 customers either can't reach the site or hit an error before checkout. This is the same signal that turns 'Lost revenue' on in the chart below.",
+      "title": "Customer journey health — can shoppers reach checkout?",
+      "description": "1 = every component a customer needs is up (k3s nodes Ready, k6 driving traffic, neoncart serving the website, llm-gateway handling chats). Any one of those breaking drops this to 0 — customers either can't reach the site or hit an error before checkout. This is the same signal that turns 'Lost revenue' on in the chart below.",
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -1849,7 +1849,7 @@
     {
       "id": 217,
       "type": "row",
-      "title": "\ud83d\udcca Revenue per 10-minute block \u2014 what we made, what we missed",
+      "title": "📊 Revenue per 10-minute block — what we made, what we missed",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1862,7 +1862,7 @@
     {
       "id": 218,
       "type": "timeseries",
-      "title": "What we made \u2014 per 10-minute block, stacked by model",
+      "title": "What we made — per 10-minute block, stacked by model",
       "description": "Each bar = total cart-add revenue in a 10-minute window, broken down by which model drove the conversation. Hover a bar to see the model mix. Legend on the right shows trailing 24 h totals.",
       "gridPos": {
         "h": 9,
@@ -2237,8 +2237,8 @@
     {
       "id": 240,
       "type": "timeseries",
-      "title": "Lost revenue \u2014 gated by k3s / critical-pod errors",
-      "description": "Turns ON when an error is firing on k3s or a critical pod (k6-traffic, neoncart, llm-gateway) and stays ON until the error clears. Value per 10-min bar = expected revenue \u00d7 fraction of the window the error was firing. Yin/yang with the 'What we made' chart above \u2014 when one is green, the other should be empty.",
+      "title": "Lost revenue — gated by k3s / critical-pod errors",
+      "description": "Turns ON when an error is firing on k3s or a critical pod (k6-traffic, neoncart, llm-gateway) and stays ON until the error clears. Value per 10-min bar = expected revenue × fraction of the window the error was firing. Yin/yang with the 'What we made' chart above — when one is green, the other should be empty.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -2628,7 +2628,7 @@
     {
       "id": 219,
       "type": "row",
-      "title": "\ud83c\udfaf Where the revenue came from",
+      "title": "🎯 Where the revenue came from",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2641,7 +2641,7 @@
     {
       "id": 220,
       "type": "bargauge",
-      "title": "Revenue mix by model \u2014 last 24h",
+      "title": "Revenue mix by model — last 24h",
       "description": "Which models drove cart-add events. Higher = more revenue contribution.",
       "gridPos": {
         "h": 8,
@@ -2703,7 +2703,7 @@
     {
       "id": 221,
       "type": "bargauge",
-      "title": "Top products by revenue \u2014 last 24h",
+      "title": "Top products by revenue — last 24h",
       "description": "Top 10 SKUs that ended up in carts.",
       "gridPos": {
         "h": 8,
@@ -2765,7 +2765,7 @@
     {
       "id": 222,
       "type": "row",
-      "title": "\ud83d\udca1 Why this dashboard pays for itself",
+      "title": "💡 Why this dashboard pays for itself",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2793,7 +2793,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "### The math, for finance\n\n| Metric | Formula | Why it matters |\n|---|---|---|\n| **Annual run rate** | `(24-hour revenue) \u00d7 365` | What this AI workload contributes to the top line at today's pace |\n| **Loss rate** | `Baseline ATC/hr \u00d7 Avg cart-add value` | The bleed rate the moment the engine stops |\n| **Cost of a single outage** | `Loss rate \u00d7 Outage hours` | The headline number above |\n| **Cost of 99 % uptime SLA** | `Loss rate \u00d7 87.6 hr` | The annual cost of a \"great\" 99 % SLA. Most platforms target 99.9 % (8.76 hr) or 99.99 % (52 min). |\n| **Observability ROI** | `(Cost of outages prevented) / (Annual platform cost)` | If avoiding one 3-hour outage pays for the year, the platform is profit. |\n\n> **The pitch.** The dashboard above shows the engine in production. Every flat spot in the green bars is a moment we made nothing. Observability is what turns those flat spots from \"noticed in next week's QBR\" into \"paged in 90 seconds.\" Multiply by the loss rate to see what each minute of MTTR is worth.\n"
+        "content": "### The math, for finance\n\n| Metric | Formula | Why it matters |\n|---|---|---|\n| **Annual run rate** | `(24-hour revenue) × 365` | What this AI workload contributes to the top line at today's pace |\n| **Loss rate** | `Baseline ATC/hr × Avg cart-add value` | The bleed rate the moment the engine stops |\n| **Cost of a single outage** | `Loss rate × Outage hours` | The headline number above |\n| **Cost of 99 % uptime SLA** | `Loss rate × 87.6 hr` | The annual cost of a \"great\" 99 % SLA. Most platforms target 99.9 % (8.76 hr) or 99.99 % (52 min). |\n| **Observability ROI** | `(Cost of outages prevented) / (Annual platform cost)` | If avoiding one 3-hour outage pays for the year, the platform is profit. |\n\n> **The pitch.** The dashboard above shows the engine in production. Every flat spot in the green bars is a moment we made nothing. Observability is what turns those flat spots from \"noticed in next week's QBR\" into \"paged in 90 seconds.\" Multiply by the loss rate to see what each minute of MTTR is worth.\n"
       }
     }
   ],
@@ -2949,8 +2949,9 @@
     ]
   },
   "timezone": "browser",
-  "title": "AI Obs \u2014 Cost of an Outage (live revenue \u00d7 downtime impact)",
+  "title": "AI Obs — Cost of an Outage (live revenue × downtime impact)",
   "uid": "ai-obs-outage-cost",
   "version": 0,
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

@@ -3223,5 +3223,6 @@
   },
   "title": "NeonCart — AI Observability RCA (ObserVIBElity)",
   "uid": "neoncart-ai-o11y",
-  "description": "NeonCart RCA dashboard. Tool errors, chat latency, mice-rca SQL surface, failing traces. Rewritten to use traces_spanmetrics_* + gen_ai_* (ObserVIBElity convention)."
+  "description": "NeonCart RCA dashboard. Tool errors, chat latency, mice-rca SQL surface, failing traces. Rewritten to use traces_spanmetrics_* + gen_ai_* (ObserVIBElity convention).",
+  "folderUid": "obs-foundations"
 }

@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-gift-finder",
-  "title": "AI Gift Finder \u2014 ATC + Quality",
+  "title": "AI Gift Finder — ATC + Quality",
   "tags": [
     "ai-observability",
     "gift-finder"
@@ -16,7 +16,7 @@
   },
   "timezone": "",
   "refresh": "30s",
-  "description": "Gift-finder demo dashboard. ATC events (per conversation, per model) on the left; built-in heuristic quality eval (pass rate, fail reasons by model) on the right. ATC + quality both ride Loki structured log events emitted by the add_to_cart tool and the nc-gift-finder specialist \u2014 no Prometheus scraping required.",
+  "description": "Gift-finder demo dashboard. ATC events (per conversation, per model) on the left; built-in heuristic quality eval (pass rate, fail reasons by model) on the right. ATC + quality both ride Loki structured log events emitted by the add_to_cart tool and the nc-gift-finder specialist — no Prometheus scraping required.",
   "templating": {
     "list": [
       {
@@ -142,7 +142,7 @@
     {
       "type": "row",
       "id": 1,
-      "title": "\ud83c\udf81 Add-to-Cart (ATC) \u2014 every model, every conversation",
+      "title": "🎁 Add-to-Cart (ATC) — every model, every conversation",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -156,7 +156,7 @@
       "id": 2,
       "type": "stat",
       "title": "ATC events (last 1h)",
-      "description": "Total add-to-cart events the gift-finder triggered in the last hour \u2014 across all conversations and models.",
+      "description": "Total add-to-cart events the gift-finder triggered in the last hour — across all conversations and models.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -217,7 +217,7 @@
     {
       "id": 3,
       "type": "barchart",
-      "title": "ATC by model \u2014 last 1h",
+      "title": "ATC by model — last 1h",
       "description": "How many add-to-carts each underlying model produced. The bigger the bar, the better that model is at recommending gifts the shopper actually wants.",
       "gridPos": {
         "h": 8,
@@ -578,7 +578,7 @@
     {
       "id": 4,
       "type": "timeseries",
-      "title": "ATC events/min \u2014 by source (live vs loadgen)",
+      "title": "ATC events/min — by source (live vs loadgen)",
       "description": "Add-to-cart events per minute split by source. `live` = interactive demo clicks; `loadgen` = continuous k6 traffic. Lets you watch your own demo clicks land in real time without being drowned out by loadgen.",
       "gridPos": {
         "h": 8,
@@ -915,7 +915,7 @@
     {
       "id": 5,
       "type": "table",
-      "title": "Top conversations \u2014 ATCs per persona",
+      "title": "Top conversations — ATCs per persona",
       "description": "Which shoppers added the most items in the last hour. Useful to spot high-converting personas during a live demo.",
       "gridPos": {
         "h": 8,
@@ -1617,7 +1617,7 @@
     {
       "type": "row",
       "id": 10,
-      "title": "\ud83c\udfaf Response Quality \u2014 heuristic eval per turn",
+      "title": "🎯 Response Quality — heuristic eval per turn",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1631,7 +1631,7 @@
       "id": 11,
       "type": "stat",
       "title": "Quality pass rate (last 1h)",
-      "description": "Share of gift-finder turns that returned \u22653 product candidates, at least one within budget, with the reply text mentioning a product. Below 70% means the agent is struggling \u2014 usually the model is too small or the catalog is sparse.",
+      "description": "Share of gift-finder turns that returned ≥3 product candidates, at least one within budget, with the reply text mentioning a product. Below 70% means the agent is struggling — usually the model is too small or the catalog is sparse.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -1704,7 +1704,7 @@
       "id": 12,
       "type": "timeseries",
       "title": "Pass vs fail rate (turns/min)",
-      "description": "Rolling pass/fail trend in turns per minute. Even when API requests are all 2xx, an LLM agent can quietly drift \u2014 this panel catches the drift before users do.",
+      "description": "Rolling pass/fail trend in turns per minute. Even when API requests are all 2xx, an LLM agent can quietly drift — this panel catches the drift before users do.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -2101,7 +2101,7 @@
     {
       "id": 14,
       "type": "barchart",
-      "title": "Fail reasons by model \u2014 last 1h",
+      "title": "Fail reasons by model — last 1h",
       "description": "When the eval fails, why. Reasons: `missing_products` (<3 returned), `over_budget` (none under stated budget), `reply_no_product_mention` (model returned products but didn't name them in the prose).",
       "gridPos": {
         "h": 8,
@@ -2782,5 +2782,6 @@
       ],
       "transparent": false
     }
-  ]
+  ],
+  "folderUid": "obs-foundations"
 }

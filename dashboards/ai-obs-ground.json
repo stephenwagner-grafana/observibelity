@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "halluc \u2014 {{ category }}"
+        "textFormat": "halluc — {{ category }}"
       }
     ]
   },
-  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is \u22652\u00d7 the trailing 4h baseline. Hover the \u2139 icon on any panel for what each number means.",
+  "description": "Is the bot making things up? Watches the LLM gateway for hedging phrases (\"I think\", \"approximately\") and explicit hallucination signals. The hallucination alert fires when the 15m rate is ≥2× the trailing 4h baseline. Hover the ℹ icon on any panel for what each number means.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -65,7 +65,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y \u2014 Groundedness (hallucinations)\n\n**Story:** Is the bot bluffing? Hedging words (\"I think\", \"approximately\", \"made up\") are a proxy for uncalibrated confidence. Compares current 15m rate vs the 4h baseline \u2014 alert fires when the ratio drifts.\n\n**Look for:** baseline-ratio panel **>1.5x** (currently bluffing more than usual), and which specialist is concentrating the failures. Open the log stream to read the exact bluff."
+        "content": "# AI o11y — Groundedness (hallucinations)\n\n**Story:** Is the bot bluffing? Hedging words (\"I think\", \"approximately\", \"made up\") are a proxy for uncalibrated confidence. Compares current 15m rate vs the 4h baseline — alert fires when the ratio drifts.\n\n**Look for:** baseline-ratio panel **>1.5x** (currently bluffing more than usual), and which specialist is concentrating the failures. Open the log stream to read the exact bluff."
       },
       "fieldConfig": {
         "defaults": {},
@@ -177,7 +177,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83d\udea8 Headline \u2014 is the bot hallucinating right now?",
+      "title": "🚨 Headline — is the bot hallucinating right now?",
       "type": "row"
     },
     {
@@ -185,7 +185,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway log lines in the last hour matching hallucination signals (hedging phrases, \"fabricated\", \"cannot find\", \"made up\"). Yellow \u22653, red \u226510 \u2014 a sustained climb means the bot is bluffing.",
+      "description": "Count of gateway log lines in the last hour matching hallucination signals (hedging phrases, \"fabricated\", \"cannot find\", \"made up\"). Yellow ≥3, red ≥10 — a sustained climb means the bot is bluffing.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -250,7 +250,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udea8 Hallucination signals \u2014 last 1h",
+      "title": "🚨 Hallucination signals — last 1h",
       "type": "stat",
       "transparent": false
     },
@@ -259,7 +259,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Current 15m hallucination rate divided by the trailing 4h baseline. 1.0 = normal noise; \u22652.0 = the alert fires. Use to tell \"things are degrading\" from \"things are noisier than usual\".",
+      "description": "Current 15m hallucination rate divided by the trailing 4h baseline. 1.0 = normal noise; ≥2.0 = the alert fires. Use to tell \"things are degrading\" from \"things are noisier than usual\".",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -322,7 +322,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Are we worse than baseline? (15m \u00f7 4h ratio)",
+      "title": "📈 Are we worse than baseline? (15m ÷ 4h ratio)",
       "type": "stat",
       "transparent": false
     },
@@ -331,7 +331,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Current state of the hallucination alert rule. Fires when the 15m hallucination rate climbs to \u22652\u00d7 the 4h baseline.",
+      "description": "Current state of the hallucination alert rule. Fires when the 15m hallucination rate climbs to ≥2× the 4h baseline.",
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -367,7 +367,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 Hallucination alert \u2014 is it firing?",
+      "title": "⚠ Hallucination alert — is it firing?",
       "type": "alertlist",
       "transparent": false
     },
@@ -381,7 +381,7 @@
       },
       "id": 5,
       "panels": [],
-      "title": "\ud83d\udcc8 Rate over time \u2014 current vs baseline",
+      "title": "📈 Rate over time — current vs baseline",
       "type": "row"
     },
     {
@@ -727,7 +727,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udce6 Hallucinations per specialist over time",
+      "title": "📦 Hallucinations per specialist over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -1111,7 +1111,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udcc8 Current 15m rate vs 4h baseline",
+      "title": "📈 Current 15m rate vs 4h baseline",
       "type": "timeseries",
       "transparent": false
     },
@@ -1125,7 +1125,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "\ud83d\udce6 Which specialist is bluffing? \u2014 per-specialist breakdown",
+      "title": "📦 Which specialist is bluffing? — per-specialist breakdown",
       "type": "row"
     },
     {
@@ -1187,7 +1187,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top hallucinating specialists (1h)",
+      "title": "🔥 Top hallucinating specialists (1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -1613,7 +1613,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udccb Per-specialist scoreboard \u2014 fails + pass rate (30m)",
+      "title": "📋 Per-specialist scoreboard — fails + pass rate (30m)",
       "transformations": [
         {
           "id": "joinByField",
@@ -1657,7 +1657,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "\ud83d\udcdc Show me the actual log lines",
+      "title": "📜 Show me the actual log lines",
       "type": "row"
     },
     {
@@ -1665,7 +1665,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway 'sigil generation' line that matched a hedging keyword (window scoped to recent activity). Read the raw prompt and reply \u2014 sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
+      "description": "Live Loki tail of every gateway 'sigil generation' line that matched a hedging keyword (window scoped to recent activity). Read the raw prompt and reply — sometimes \"I think\" is honest hedging, sometimes it's the bot inventing a SKU.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -1694,7 +1694,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcdc Hallucination event log stream (Loki)",
+      "title": "📜 Hallucination event log stream (Loki)",
       "type": "logs",
       "transparent": false
     }
@@ -1808,7 +1808,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Groundedness (Hallucinations)",
+  "title": "AI o11y — Groundedness (Hallucinations)",
   "uid": "ai-obs-ground",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

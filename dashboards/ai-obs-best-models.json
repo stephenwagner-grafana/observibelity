@@ -156,7 +156,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83c\udfc6 Which model is winning right now?",
+      "title": "🏆 Which model is winning right now?",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -165,7 +165,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 models ranked by real Add-to-Cart events in the last hour, parsed from the `atc_event` Loki log stream emitted by the add_to_cart tool. ATC is a real business outcome \u2014 eval scores are theory.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "Top 10 models ranked by real Add-to-Cart events in the last hour, parsed from the `atc_event` Loki log stream emitted by the add_to_cart tool. ATC is a real business outcome — eval scores are theory.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -539,7 +539,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83e\udd16 Which models drove the most Add-to-Carts? (1h)",
+      "title": "🤖 Which models drove the most Add-to-Carts? (1h)",
       "type": "barchart",
       "transparent": false
     },
@@ -614,7 +614,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 ATC leaderboard \u2014 same data, leaderboard view (1h)",
+      "title": "🔥 ATC leaderboard — same data, leaderboard view (1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -628,7 +628,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "\ud83d\udcc8 How is each model trending \u2014 and which is cheapest per ATC?",
+      "title": "📈 How is each model trending — and which is cheapest per ATC?",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -990,7 +990,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Actual USD per Add-to-Cart per model (1h). Numerator is the Prometheus cost rate for the nc-gift-finder specialist (USD/hour); denominator is real ATC events/hour from the Loki `atc_event` log stream. Lowest = best $-efficiency. Join is done in the panel via a `Binary operation` transformation (cost \u00f7 ATC) since the data sources are mixed.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "Actual USD per Add-to-Cart per model (1h). Numerator is the Prometheus cost rate for the nc-gift-finder specialist (USD/hour); denominator is real ATC events/hour from the Loki `atc_event` log stream. Lowest = best $-efficiency. Join is done in the panel via a `Binary operation` transformation (cost ÷ ATC) since the data sources are mixed.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1111,7 +1111,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udcb8 USD per Add-to-Cart (1h, lower is better)",
+      "title": "💸 USD per Add-to-Cart (1h, lower is better)",
       "transformations": [
         {
           "id": "renameByRegex",
@@ -1167,7 +1167,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "\ud83d\udccb The full scorecard \u2014 every metric, every model",
+      "title": "📋 The full scorecard — every metric, every model",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -1176,7 +1176,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per model with every signal you need to pick a winner: real Add-to-Cart events (Loki `atc_event` log stream), conversion rate (ATC \u00f7 LLM calls), p50 latency, and USD per ATC (cost rate \u00f7 ATC count). The Conversion % and USD per ATC columns are computed in the panel via `Binary operation` transformations (Prom + Loki joined by model). Sort by any column. All numbers are 1h windows.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "One row per model with every signal you need to pick a winner: real Add-to-Cart events (Loki `atc_event` log stream), conversion rate (ATC ÷ LLM calls), p50 latency, and USD per ATC (cost rate ÷ ATC count). The Conversion % and USD per ATC columns are computed in the panel via `Binary operation` transformations (Prom + Loki joined by model). Sort by any column. All numbers are 1h windows.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1680,7 +1680,7 @@
           "refId": "D"
         }
       ],
-      "title": "\ud83c\udfc1 Full leaderboard \u2014 ATC, conversion, latency, $ per ATC (1h)",
+      "title": "🏁 Full leaderboard — ATC, conversion, latency, $ per ATC (1h)",
       "transformations": [
         {
           "id": "renameByRegex",
@@ -1757,7 +1757,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "\ud83d\udcb0 Cost vs latency \u2014 what's each model costing and how fast is it?",
+      "title": "💰 Cost vs latency — what's each model costing and how fast is it?",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -1766,7 +1766,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Stacked **USD per hour** by model (5m rate \u00d7 3600). Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes because they're ~10\u00d7 the per-token price of Ollama-local.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "Stacked **USD per hour** by model (5m rate × 3600). Whichever band is widest is currently eating your budget. Anthropic models tend to dominate even at low call volumes because they're ~10× the per-token price of Ollama-local.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2114,7 +2114,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 Spend rate per model (USD/hour)",
+      "title": "💰 Spend rate per model (USD/hour)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2123,7 +2123,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 of gen_ai client request duration per model \u2014 95 out of 100 calls finish faster than this. Spikes here mean tail-latency pain that users will feel.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "p95 of gen_ai client request duration per model — 95 out of 100 calls finish faster than this. Spikes here mean tail-latency pain that users will feel.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2463,7 +2463,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u23f1 How slow is the worst 5% of requests per model? (p95)",
+      "title": "⏱ How slow is the worst 5% of requests per model? (p95)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2477,7 +2477,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "\ud83c\udd9a Ollama vs Claude \u2014 the case for routing to local models",
+      "title": "🆚 Ollama vs Claude — the case for routing to local models",
       "type": "row"
     },
     {
@@ -2485,7 +2485,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD spent per 1M tokens processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom \u2014 which is exactly why routing decisions matter.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "USD spent per 1M tokens processed, last 24h. Higher = pricier per unit of work. Claude lines up at the top, Ollama at the bottom — which is exactly why routing decisions matter.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2883,7 +2883,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb5 USD per 1M tokens \u2014 top 10 models (24h)",
+      "title": "💵 USD per 1M tokens — top 10 models (24h)",
       "type": "table",
       "transparent": false
     },
@@ -3261,7 +3261,7 @@
           "refId": "A"
         }
       ],
-      "title": "Spend by provider (24h) \u2014 Ollama vs Anthropic-Haiku",
+      "title": "Spend by provider (24h) — Ollama vs Anthropic-Haiku",
       "type": "barchart",
       "transparent": false
     },
@@ -3275,7 +3275,7 @@
       },
       "id": 15,
       "panels": [],
-      "title": "\ud83d\udd04 Is the Ollama lockstep rotation actually rotating?",
+      "title": "🔄 Is the Ollama lockstep rotation actually rotating?",
       "type": "row"
     },
     {
@@ -3637,7 +3637,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd04 Lockstep rotation timeline \u2014 one model per 5-minute slice",
+      "title": "🔄 Lockstep rotation timeline — one model per 5-minute slice",
       "type": "timeseries",
       "transparent": false
     }
@@ -3751,7 +3751,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Best Models (ranked by ATC)",
+  "title": "AI o11y — Best Models (ranked by ATC)",
   "uid": "ai-obs-best-models",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

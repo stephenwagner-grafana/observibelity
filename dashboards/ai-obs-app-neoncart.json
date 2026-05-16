@@ -4366,5 +4366,6 @@
   "timezone": "",
   "title": "AI o11y — NeonCart",
   "uid": "ai-obs-app-neoncart",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cc_paste \u2014 {{ employee }} last4={{ last4 }}"
+        "textFormat": "cc_paste — {{ employee }} last4={{ last4 }}"
       }
     ]
   },
-  "description": "Is anyone trying to walk off with customer data? Read top-to-bottom: headline counts \u2192 leaderboard of likely exfilters \u2192 drill into one person \u2192 live Loki stream of the offending lines. Hover the \u2139 icon on any panel for details.",
+  "description": "Is anyone trying to walk off with customer data? Read top-to-bottom: headline counts → leaderboard of likely exfilters → drill into one person → live Loki stream of the offending lines. Hover the ℹ icon on any panel for details.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -65,7 +65,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y \u2014 Data Theft (per-employee exfil)\n\n**Story:** Is anyone trying to walk off with customer data? Read top-to-bottom: headline counts (24h) -> top-10 likely exfilters (10m rolling) -> drill into one person -> live Loki stream of the actual log lines.\n\n**Look for:** any non-zero value in the **\ud83d\udea8 Total exfil-keyword events** or **\ud83d\udd12 Credit-card pastes** stat. If you see >1 employee in the leaderboard pulling away from the pack, that's your prime suspect."
+        "content": "# AI o11y — Data Theft (per-employee exfil)\n\n**Story:** Is anyone trying to walk off with customer data? Read top-to-bottom: headline counts (24h) -> top-10 likely exfilters (10m rolling) -> drill into one person -> live Loki stream of the actual log lines.\n\n**Look for:** any non-zero value in the **🚨 Total exfil-keyword events** or **🔒 Credit-card pastes** stat. If you see >1 employee in the leaderboard pulling away from the pack, that's your prime suspect."
       },
       "fieldConfig": {
         "defaults": {},
@@ -177,7 +177,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83d\udea8 Headline \u2014 is anyone exfiltrating right now?",
+      "title": "🚨 Headline — is anyone exfiltrating right now?",
       "type": "row"
     },
     {
@@ -185,7 +185,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of LLM-gateway log lines in the last hour mentioning exfil-flavoured keywords (export, dump, customer list, SSN, etc.). Treat as a noise-floor sanity check \u2014 leaderboard below tells you WHO. Populates within ~5 min after probes fire keyword-matching traffic.",
+      "description": "Count of LLM-gateway log lines in the last hour mentioning exfil-flavoured keywords (export, dump, customer list, SSN, etc.). Treat as a noise-floor sanity check — leaderboard below tells you WHO. Populates within ~5 min after probes fire keyword-matching traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -250,7 +250,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udea8 Total exfil-keyword events \u2014 last 1h",
+      "title": "🚨 Total exfil-keyword events — last 1h",
       "type": "stat",
       "transparent": false
     },
@@ -324,7 +324,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udc64 How many employees are exfiltrating? (1h)",
+      "title": "👤 How many employees are exfiltrating? (1h)",
       "type": "stat",
       "transparent": false
     },
@@ -333,7 +333,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Hits on credit-card-number regex (cc_paste) in the LLM gateway in the last hour. Any non-zero value is worth a look \u2014 somebody pasted a card.",
+      "description": "Hits on credit-card-number regex (cc_paste) in the LLM gateway in the last hour. Any non-zero value is worth a look — somebody pasted a card.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -398,7 +398,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udd12 Credit-card pastes detected (1h)",
+      "title": "🔒 Credit-card pastes detected (1h)",
       "type": "stat",
       "transparent": false
     },
@@ -407,7 +407,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Current state of the data_theft alert rule. Fires when any single employee triggers \u22655 exfil events in a 10-minute window.",
+      "description": "Current state of the data_theft alert rule. Fires when any single employee triggers ≥5 exfil events in a 10-minute window.",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -443,7 +443,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u26a0 data_theft alert \u2014 is it firing?",
+      "title": "⚠ data_theft alert — is it firing?",
       "type": "alertlist",
       "transparent": false
     },
@@ -457,7 +457,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "\ud83d\udd25 Who's exfiltrating? \u2014 per-employee leaderboard",
+      "title": "🔥 Who's exfiltrating? — per-employee leaderboard",
       "type": "row"
     },
     {
@@ -465,7 +465,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 employees ranked by exfil-keyword event count over the last 10 minutes. The bar at the top is the current prime suspect \u2014 Tim Heidecker's malicious-insider archetype usually parks here.",
+      "description": "Top 10 employees ranked by exfil-keyword event count over the last 10 minutes. The bar at the top is the current prime suspect — Tim Heidecker's malicious-insider archetype usually parks here.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -528,7 +528,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd25 Top 10 likely exfilters right now (10m rolling)",
+      "title": "🔥 Top 10 likely exfilters right now (10m rolling)",
       "type": "bargauge",
       "transparent": false
     },
@@ -875,7 +875,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcc8 Exfil events over time \u2014 top 10 employees",
+      "title": "📈 Exfil events over time — top 10 employees",
       "type": "timeseries",
       "transparent": false
     },
@@ -889,7 +889,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "\ud83d\udd0e Drill into one employee \u2014 what is $persona_id doing?",
+      "title": "🔎 Drill into one employee — what is $persona_id doing?",
       "type": "row"
     },
     {
@@ -897,7 +897,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Two lines for the employee picked in the Employee dropdown: exfil-keyword count (10m window, red zone at \u22655) vs total gateway events (5m). Big gap between them = focused fishing; lines move together = chatty user.",
+      "description": "Two lines for the employee picked in the Employee dropdown: exfil-keyword count (10m window, red zone at ≥5) vs total gateway events (5m). Big gap between them = focused fishing; lines move together = chatty user.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1260,7 +1260,7 @@
           "refId": "B"
         }
       ],
-      "title": "\ud83d\udcc8 $persona_id \u2014 exfil score vs total events over time",
+      "title": "📈 $persona_id — exfil score vs total events over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -1269,7 +1269,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Exfil-keyword event count for the selected employee in the last 10 minutes. Red at \u22655 \u2014 same threshold the data_theft alert uses.",
+      "description": "Exfil-keyword event count for the selected employee in the last 10 minutes. Red at ≥5 — same threshold the data_theft alert uses.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1334,7 +1334,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\ud83d\udea8 $persona_id \u2014 exfil events in last 10m",
+      "title": "🚨 $persona_id — exfil events in last 10m",
       "type": "stat",
       "transparent": false
     },
@@ -1348,7 +1348,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "\ud83d\udd25 Top exfilters table \u2014 exfil count + cc-paste breakdown",
+      "title": "🔥 Top exfilters table — exfil count + cc-paste breakdown",
       "type": "row"
     },
     {
@@ -1790,7 +1790,7 @@
           "refId": "C"
         }
       ],
-      "title": "\ud83d\udd25 Top 20 exfilters \u2014 exfil count + cc-paste hits (1h)",
+      "title": "🔥 Top 20 exfilters — exfil count + cc-paste hits (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -1834,7 +1834,7 @@
       },
       "id": 14,
       "panels": [],
-      "title": "\ud83d\udcdc Show me the actual log lines \u2014 cc_paste + exfil events",
+      "title": "📜 Show me the actual log lines — cc_paste + exfil events",
       "type": "row"
     },
     {
@@ -1842,7 +1842,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every exfil-keyword line from the LLM gateway, filtered to the employee dropdown. Read the raw prompt the user actually typed \u2014 this is the ground truth, not a metric.",
+      "description": "Live Loki tail of every exfil-keyword line from the LLM gateway, filtered to the employee dropdown. Read the raw prompt the user actually typed — this is the ground truth, not a metric.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -1871,7 +1871,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcdc Exfil-keyword log stream (Loki) \u2014 filtered to $persona_id",
+      "title": "📜 Exfil-keyword log stream (Loki) — filtered to $persona_id",
       "type": "logs",
       "transparent": false
     }
@@ -1982,7 +1982,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y \u2014 Data Theft (per-employee exfil)",
+  "title": "AI o11y — Data Theft (per-employee exfil)",
   "uid": "ai-obs-data-theft",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

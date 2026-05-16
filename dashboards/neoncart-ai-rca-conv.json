@@ -43,10 +43,10 @@
       },
       "id": 25,
       "options": {
-        "content": "**Conversation:** `${conversation_id}`\n\n**What the AI sees** (auto-summarized from spans + logs in this conversation):\n\n1. The chat assistant called the `search_products` tool.\n2. Tool dispatched `GET search-service:3000/?q=mice` \u2014 returned **HTTP 500**.\n3. search-service emitted span `db.postgres.query` with status **ERROR**: `failed to query products for category=mice` (Postgres code **42703 / undefined_column**).\n4. The failing SQL referenced a column that doesn't exist in `products` \u2014 symptomatic of a **partially-rolled migration** or **stale schema**.\n\n**Suggested next step:** check `search-service` for the column name vs the live `products` table schema. The Span breakdown panel below shows the failing SQL verbatim.",
+        "content": "**Conversation:** `${conversation_id}`\n\n**What the AI sees** (auto-summarized from spans + logs in this conversation):\n\n1. The chat assistant called the `search_products` tool.\n2. Tool dispatched `GET search-service:3000/?q=mice` — returned **HTTP 500**.\n3. search-service emitted span `db.postgres.query` with status **ERROR**: `failed to query products for category=mice` (Postgres code **42703 / undefined_column**).\n4. The failing SQL referenced a column that doesn't exist in `products` — symptomatic of a **partially-rolled migration** or **stale schema**.\n\n**Suggested next step:** check `search-service` for the column name vs the live `products` table schema. The Span breakdown panel below shows the failing SQL verbatim.",
         "mode": "markdown"
       },
-      "title": "\ud83e\udd16 AI-assisted diagnosis",
+      "title": "🤖 AI-assisted diagnosis",
       "transparent": false,
       "type": "text"
     },
@@ -55,7 +55,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live tail of evaluator and diagnosis log lines scoped to this conversation_id. The eval framework auto-classifies tool errors, hallucinations, and policy issues \u2014 visible here in real time.",
+      "description": "Live tail of evaluator and diagnosis log lines scoped to this conversation_id. The eval framework auto-classifies tool errors, hallucinations, and policy issues — visible here in real time.",
       "gridPos": {
         "h": 6,
         "w": 8,
@@ -83,7 +83,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udd2c AI investigation feed \u2014 eval + diagnosis events for this conversation",
+      "title": "🔬 AI investigation feed — eval + diagnosis events for this conversation",
       "type": "logs"
     },
     {
@@ -377,7 +377,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tokens \u2014 input",
+      "title": "Tokens — input",
       "type": "stat"
     },
     {
@@ -441,7 +441,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tokens \u2014 output",
+      "title": "Tokens — output",
       "type": "stat"
     },
     {
@@ -733,7 +733,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Loki filter on conversation_id. Every log line is also tagged trace_id and span_id \u2014 click 'Inspect \u2192 Trace' on a row to jump back into Tempo.",
+      "description": "Loki filter on conversation_id. Every log line is also tagged trace_id and span_id — click 'Inspect → Trace' on a row to jump back into Tempo.",
       "gridPos": {
         "h": 12,
         "w": 24,
@@ -764,7 +764,7 @@
           "refId": "A"
         }
       ],
-      "title": "Logs \u2014 conversation_id=${conversation_id}",
+      "title": "Logs — conversation_id=${conversation_id}",
       "type": "logs"
     },
     {
@@ -907,8 +907,9 @@
     ]
   },
   "timezone": "browser",
-  "title": "NeonCart \u2014 AI RCA (Single Conversation)",
+  "title": "NeonCart — AI RCA (Single Conversation)",
   "uid": "neoncart-ai-rca-conv",
   "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

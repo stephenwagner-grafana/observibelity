@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "\ud83c\udfae GPU pressure on the bare-metal Ollama host (.240, RTX 5090). Read top\u2192bottom: how busy is the card \u2192 how saturated is VRAM \u2192 how hot is it \u2192 how is request latency tracking GPU pressure. Empty until you set up nvidia-gpu-exporter or Alloy's nvidia integration on .240 \u2014 see the panel descriptions for the metric names expected.",
+  "description": "🎮 GPU pressure on the bare-metal Ollama host (.240, RTX 5090). Read top→bottom: how busy is the card → how saturated is VRAM → how hot is it → how is request latency tracking GPU pressure. Empty until you set up nvidia-gpu-exporter or Alloy's nvidia integration on .240 — see the panel descriptions for the metric names expected.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -140,7 +140,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83c\udfae GPU pressure right now (RTX 5090 on .240)",
+      "title": "🎮 GPU pressure right now (RTX 5090 on .240)",
       "type": "row"
     },
     {
@@ -148,7 +148,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Current GPU compute utilization (%). >80% sustained = the 5090 is the bottleneck and queue depth in Ollama will grow. Source: nvidia_gpu_exporter metric nvidia_smi_utilization_gpu_ratio (\u00d7100).",
+      "description": "Current GPU compute utilization (%). >80% sustained = the 5090 is the bottleneck and queue depth in Ollama will grow. Source: nvidia_gpu_exporter metric nvidia_smi_utilization_gpu_ratio (×100).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -310,7 +310,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "GPU die temperature in \u00b0C. The 5090's thermal limit is around 88\u00b0C; sustained >80\u00b0C means the fans should be ramping. Useful for spotting thermal throttling that could explain latency hiccups.",
+      "description": "GPU die temperature in °C. The 5090's thermal limit is around 88°C; sustained >80°C means the fans should be ramping. Useful for spotting thermal throttling that could explain latency hiccups.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -382,7 +382,7 @@
           "format": "time_series"
         }
       ],
-      "title": "GPU temperature (\u00b0C)",
+      "title": "GPU temperature (°C)",
       "type": "stat",
       "transparent": false
     },
@@ -391,7 +391,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Current GPU power draw \u00d7 $0.12/kWh. The RTX 5090 typically draws 100-400W under load (~$0.012-$0.048/hour). DCGM_FI_DEV_POWER_USAGE is in Watts; nvidia_smi_power_draw_watts is also in Watts.",
+      "description": "Current GPU power draw × $0.12/kWh. The RTX 5090 typically draws 100-400W under load (~$0.012-$0.048/hour). DCGM_FI_DEV_POWER_USAGE is in Watts; nvidia_smi_power_draw_watts is also in Watts.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -465,7 +465,7 @@
           "format": "time_series"
         }
       ],
-      "title": "\u26a1 GPU energy cost (USD/hour)",
+      "title": "⚡ GPU energy cost (USD/hour)",
       "type": "stat",
       "transparent": false
     },
@@ -479,7 +479,7 @@
       },
       "id": 5,
       "panels": [],
-      "title": "\ud83d\udcc8 Pressure over time",
+      "title": "📈 Pressure over time",
       "type": "row"
     },
     {
@@ -916,7 +916,7 @@
           },
           "editorMode": "code",
           "expr": "max(nvidia_gpu_temperature_gpu_celsius)",
-          "legendFormat": "GPU temp \u00b0C",
+          "legendFormat": "GPU temp °C",
           "refId": "C"
         }
       ],
@@ -934,7 +934,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "\u23f1 Ollama latency on .240 (correlates with GPU pressure above)",
+      "title": "⏱ Ollama latency on .240 (correlates with GPU pressure above)",
       "type": "row"
     },
     {
@@ -942,7 +942,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "P95 / P50 / Avg request latency for Ollama calls broken down by model. Compare with the GPU util panel above \u2014 bigger models (mistral:7b, qwen2.5:7b) spike util AND p95 latency at the same time.",
+      "description": "P95 / P50 / Avg request latency for Ollama calls broken down by model. Compare with the GPU util panel above — bigger models (mistral:7b, qwen2.5:7b) spike util AND p95 latency at the same time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1300,7 +1300,7 @@
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_system=\"ollama\"}[5m])))",
-          "legendFormat": "p95 \u2014 {{gen_ai_request_model}}",
+          "legendFormat": "p95 — {{gen_ai_request_model}}",
           "refId": "A"
         }
       ],
@@ -1689,7 +1689,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "\ud83d\udcd6 No data yet? \u2014 set up the GPU exporter on .240",
+      "title": "📖 No data yet? — set up the GPU exporter on .240",
       "type": "row"
     },
     {
@@ -1711,11 +1711,11 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "### Quickest path \u2014 `nvidia_gpu_exporter` + Grafana Alloy\n\nOn `.240`:\n\n```bash\n# 1. Install the exporter (one binary, runs as systemd)\ncurl -sSL https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/latest/download/nvidia_gpu_exporter_$(uname -m | sed s/x86_64/amd64/)_linux.tar.gz \\\n  | sudo tar -C /usr/local/bin -xzf - nvidia_gpu_exporter\n\nsudo tee /etc/systemd/system/nvidia_gpu_exporter.service <<'EOF'\n[Unit]\nDescription=NVIDIA GPU Prometheus Exporter\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/nvidia_gpu_exporter --web.listen-address=:9835\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF\nsudo systemctl enable --now nvidia_gpu_exporter\n\n# Verify\ncurl -s localhost:9835/metrics | head -20\n```\n\n### Ship metrics to Grafana Cloud\n\nUse Alloy (if you already have it for other stuff on .240, just add this; if not, install via `https://github.com/grafana/alloy`):\n\n```alloy\nprometheus.scrape \"nvidia_gpu\" {\n  targets    = [{__address__ = \"localhost:9835\", instance = \"wags-ai-240\"}]\n  forward_to = [prometheus.remote_write.grafana_cloud.receiver]\n  job_name   = \"nvidia_gpu\"\n}\n```\n\nWithin 1 min the panels above will populate. If you'd rather use **DCGM Exporter** (NVIDIA's official, fancier), this dashboard supports both \u2014 the queries fall back from `nvidia_smi_*` to `DCGM_FI_DEV_*` automatically.\n",
+        "content": "### Quickest path — `nvidia_gpu_exporter` + Grafana Alloy\n\nOn `.240`:\n\n```bash\n# 1. Install the exporter (one binary, runs as systemd)\ncurl -sSL https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/latest/download/nvidia_gpu_exporter_$(uname -m | sed s/x86_64/amd64/)_linux.tar.gz \\\n  | sudo tar -C /usr/local/bin -xzf - nvidia_gpu_exporter\n\nsudo tee /etc/systemd/system/nvidia_gpu_exporter.service <<'EOF'\n[Unit]\nDescription=NVIDIA GPU Prometheus Exporter\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/nvidia_gpu_exporter --web.listen-address=:9835\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF\nsudo systemctl enable --now nvidia_gpu_exporter\n\n# Verify\ncurl -s localhost:9835/metrics | head -20\n```\n\n### Ship metrics to Grafana Cloud\n\nUse Alloy (if you already have it for other stuff on .240, just add this; if not, install via `https://github.com/grafana/alloy`):\n\n```alloy\nprometheus.scrape \"nvidia_gpu\" {\n  targets    = [{__address__ = \"localhost:9835\", instance = \"wags-ai-240\"}]\n  forward_to = [prometheus.remote_write.grafana_cloud.receiver]\n  job_name   = \"nvidia_gpu\"\n}\n```\n\nWithin 1 min the panels above will populate. If you'd rather use **DCGM Exporter** (NVIDIA's official, fancier), this dashboard supports both — the queries fall back from `nvidia_smi_*` to `DCGM_FI_DEV_*` automatically.\n",
         "mode": "markdown"
       },
       "pluginVersion": "11.0.0",
-      "title": "Recipe \u2014 installing the exporter on .240",
+      "title": "Recipe — installing the exporter on .240",
       "type": "text",
       "transparent": false
     }
@@ -1755,8 +1755,9 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AI Obs \u2014 GPU Pressure (.240 / RTX 5090)",
+  "title": "AI Obs — GPU Pressure (.240 / RTX 5090)",
   "uid": "ai-obs-gpu",
   "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

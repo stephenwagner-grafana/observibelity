@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-loadgen",
-  "title": "AI o11y \u2014 Loadgen Activity (Ollama-first + spillover process)",
+  "title": "AI o11y — Loadgen Activity (Ollama-first + spillover process)",
   "tags": [
     "ai-observability",
     "loadgen",
@@ -78,7 +78,7 @@
         "name": "Spillover events",
         "expr": "increase(llm_gateway_spillover_total[1m]) > 0",
         "step": "1m",
-        "titleFormat": "Ollama\u2192Claude spillover",
+        "titleFormat": "Ollama→Claude spillover",
         "useValueForTime": false
       }
     ]
@@ -96,13 +96,13 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "## How loadgen routes traffic\n**1.** k6 sends every request to **Ollama** (no static ratio, no probability roll). **2.** Gateway tracks `ollama.in_flight`; once it hits **OLLAMA_SATURATION_THRESHOLD** (8 = NUM_PARALLEL on .240), **3.** New `target=ollama` requests get rerouted to **Claude** \u2014 IF today's running cost is below **`$20`**. **4.** When Claude's daily budget is gone, requests stay on Ollama and accept queue latency.\n_Process, not a ratio. Spillover events + budget burn appear below._"
+        "content": "## How loadgen routes traffic\n**1.** k6 sends every request to **Ollama** (no static ratio, no probability roll). **2.** Gateway tracks `ollama.in_flight`; once it hits **OLLAMA_SATURATION_THRESHOLD** (8 = NUM_PARALLEL on .240), **3.** New `target=ollama` requests get rerouted to **Claude** — IF today's running cost is below **`$20`**. **4.** When Claude's daily budget is gone, requests stay on Ollama and accept queue latency.\n_Process, not a ratio. Spillover events + budget burn appear below._"
       }
     },
     {
       "id": 20,
       "type": "row",
-      "title": "\ud83d\udfe2 Right now \u2014 what the loadgen + gateway are doing",
+      "title": "🟢 Right now — what the loadgen + gateway are doing",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -117,7 +117,7 @@
     {
       "id": 21,
       "type": "stat",
-      "title": "Requests / sec \u2014 Ollama",
+      "title": "Requests / sec — Ollama",
       "description": "5m rolling rate of /v1/complete calls that landed on Ollama.",
       "datasource": {
         "type": "prometheus",
@@ -178,7 +178,7 @@
     {
       "id": 22,
       "type": "stat",
-      "title": "Requests / sec \u2014 Claude (spillover)",
+      "title": "Requests / sec — Claude (spillover)",
       "description": "5m rate of calls that ended up on Anthropic. With claudeFraction=0, every Claude call came from saturation spillover.",
       "datasource": {
         "type": "prometheus",
@@ -244,7 +244,7 @@
       "id": 23,
       "type": "stat",
       "title": "Ollama in-flight (live)",
-      "description": "Concurrent Ollama requests on this gateway pod. Hits the OLLAMA_SATURATION_THRESHOLD (8 by default) \u2192 spillover fires.",
+      "description": "Concurrent Ollama requests on this gateway pod. Hits the OLLAMA_SATURATION_THRESHOLD (8 by default) → spillover fires.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -313,7 +313,7 @@
       "id": 24,
       "type": "stat",
       "title": "Spillover events / hour",
-      "description": "Times the gateway swapped target=ollama \u2192 anthropic because Ollama hit the threshold AND the daily budget had room.",
+      "description": "Times the gateway swapped target=ollama → anthropic because Ollama hit the threshold AND the daily budget had room.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -377,7 +377,7 @@
     {
       "id": 31,
       "type": "stat",
-      "title": "\ud83d\udcb0 Claude spent today",
+      "title": "💰 Claude spent today",
       "description": "Cumulative Anthropic spend (USD) for the current UTC day. The dispatcher denies further spillover once this reaches the budget ceiling.",
       "datasource": {
         "type": "prometheus",
@@ -446,7 +446,7 @@
     {
       "id": 32,
       "type": "stat",
-      "title": "\ud83e\ude99 Budget remaining",
+      "title": "🪙 Budget remaining",
       "description": "$20/day - spent. When this hits 0, spillover stops and saturation-overflow stays on Ollama (with queue latency).",
       "datasource": {
         "type": "prometheus",
@@ -515,7 +515,7 @@
     {
       "id": 33,
       "type": "stat",
-      "title": "\ud83e\uddf0 Tool-strip retries / 5m",
+      "title": "🧰 Tool-strip retries / 5m",
       "description": "When the active Ollama model lacks tool-call support (e.g. tinyllama), the gateway catches the 400 and retries without tools. This counts those silent fallbacks.",
       "datasource": {
         "type": "loki",
@@ -580,7 +580,7 @@
     {
       "id": 40,
       "type": "row",
-      "title": "\ud83c\udf0a The calm beach wave \u2014 request rate by provider",
+      "title": "🌊 The calm beach wave — request rate by provider",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -596,7 +596,7 @@
       "id": 41,
       "type": "timeseries",
       "title": "Rate by provider (req/s)",
-      "description": "Ollama gets everything by default. Claude only shows up when Ollama saturates AND the budget has room. The two lines together prove the spillover process is what determines provider choice \u2014 not a ratio.",
+      "description": "Ollama gets everything by default. Claude only shows up when Ollama saturates AND the budget has room. The two lines together prove the spillover process is what determines provider choice — not a ratio.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -666,7 +666,7 @@
     {
       "id": 50,
       "type": "row",
-      "title": "\ud83d\udea6 Saturation drives spillover",
+      "title": "🚦 Saturation drives spillover",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -779,7 +779,7 @@
       "id": 52,
       "type": "timeseries",
       "title": "Spillover events / minute",
-      "description": "Bar = number of times in the last minute the dispatcher swapped target=ollama \u2192 anthropic. Should rise during Ollama saturation, drop when the budget exhausts.",
+      "description": "Bar = number of times in the last minute the dispatcher swapped target=ollama → anthropic. Should rise during Ollama saturation, drop when the budget exhausts.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -840,8 +840,8 @@
     {
       "id": 61,
       "type": "timeseries",
-      "title": "\ud83d\udcb0 Claude daily spend vs $20 budget",
-      "description": "Cumulative $ spent on Anthropic today. Resets at UTC midnight. The dashed line at $20 is the hard ceiling \u2014 once spent crosses it, the gateway stops spilling for the rest of the UTC day.",
+      "title": "💰 Claude daily spend vs $20 budget",
+      "description": "Cumulative $ spent on Anthropic today. Resets at UTC midnight. The dashed line at $20 is the hard ceiling — once spent crosses it, the gateway stops spilling for the rest of the UTC day.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -937,7 +937,7 @@
     {
       "id": 70,
       "type": "row",
-      "title": "\ud83d\udd04 Ollama rotation \u2014 one model per 5-min window",
+      "title": "🔄 Ollama rotation — one model per 5-min window",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -952,8 +952,8 @@
     {
       "id": 71,
       "type": "timeseries",
-      "title": "Active model \u2014 rate by gen_ai.request.model (Ollama only)",
-      "description": "Per-model request rate. With prewarm + OLLAMA_MAX_LOADED_MODELS=2, each window's model takes over hot \u2014 no cold-load notch at the 5-min boundary.",
+      "title": "Active model — rate by gen_ai.request.model (Ollama only)",
+      "description": "Per-model request rate. With prewarm + OLLAMA_MAX_LOADED_MODELS=2, each window's model takes over hot — no cold-load notch at the 5-min boundary.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -1018,7 +1018,7 @@
     {
       "id": 80,
       "type": "row",
-      "title": "\ud83e\udd16 Who's calling \u2014 load by specialist",
+      "title": "🤖 Who's calling — load by specialist",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -1034,7 +1034,7 @@
       "id": 81,
       "type": "timeseries",
       "title": "Request rate by ai_o11y.specialist",
-      "description": "nc-chatbot, sb-router, nc-gift-finder, etc. \u2014 the specialists doing the actual chatting. baseline.js's scenario table drives the mix.",
+      "description": "nc-chatbot, sb-router, nc-gift-finder, etc. — the specialists doing the actual chatting. baseline.js's scenario table drives the mix.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -1095,7 +1095,7 @@
     {
       "id": 90,
       "type": "row",
-      "title": "\u274c Errors + tail latency",
+      "title": "❌ Errors + tail latency",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -1111,7 +1111,7 @@
       "id": 91,
       "type": "timeseries",
       "title": "Gateway error rate (4xx + 5xx)",
-      "description": "From the gateway access log. Spikes here = real upstream failures. Tool-strip 400s should NOT show \u2014 the gateway catches and retries.",
+      "description": "From the gateway access log. Spikes here = real upstream failures. Tool-strip 400s should NOT show — the gateway catches and retries.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -1173,7 +1173,7 @@
       "id": 92,
       "type": "timeseries",
       "title": "Provider p95 latency",
-      "description": "histogram_quantile p95 over the gen_ai_client_operation_duration_seconds histogram. Wave dips \u2260 latency spikes anymore now that prewarm keeps the next model hot.",
+      "description": "histogram_quantile p95 over the gen_ai_client_operation_duration_seconds histogram. Wave dips ≠ latency spikes anymore now that prewarm keeps the next model hot.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -1231,5 +1231,6 @@
         }
       ]
     }
-  ]
+  ],
+  "folderUid": "obs-foundations"
 }

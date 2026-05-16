@@ -440,5 +440,6 @@
   },
   "timezone": "browser",
   "title": "AI Observability — Apps",
-  "uid": "ai-obs-app-landing"
+  "uid": "ai-obs-app-landing",
+  "folderUid": "obs-foundations"
 }

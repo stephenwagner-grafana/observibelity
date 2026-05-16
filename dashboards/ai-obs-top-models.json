@@ -140,7 +140,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "\ud83c\udfc6 Best models \u2014 composite ranking (ATC \u00d7 Cost \u00d7 Performance \u00d7 Quality)",
+      "title": "🏆 Best models — composite ranking (ATC × Cost × Performance × Quality)",
       "type": "row"
     },
     {
@@ -148,7 +148,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per model, ranked by a composite score that blends business value and cost. Formula:\n  composite = 40\u00b7atc_rate + 30/(1+1000\u00b7cost_per_conv) + 15/(1+p95_latency) + 15\u00b7quality_0_1\nWhere atc_rate is ATC events \u00f7 calls (so a model that converts 10% of its calls scores 4 from that term), cost_per_conv is dollars per call (Ollama\u22480 \u2192 full 30 points, $0.01/call \u2192 ~15 points), p95 is seconds (sub-1s \u2192 ~15, 10s \u2192 ~1.4), and quality is the Sigil business_value_score 0-1. Practical max \u2248 100 for a free, fast, high-converting, high-quality model. Sort by any column.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "One row per model, ranked by a composite score that blends business value and cost. Formula:\n  composite = 40·atc_rate + 30/(1+1000·cost_per_conv) + 15/(1+p95_latency) + 15·quality_0_1\nWhere atc_rate is ATC events ÷ calls (so a model that converts 10% of its calls scores 4 from that term), cost_per_conv is dollars per call (Ollama≈0 → full 30 points, $0.01/call → ~15 points), p95 is seconds (sub-1s → ~15, 10s → ~1.4), and quality is the Sigil business_value_score 0-1. Practical max ≈ 100 for a free, fast, high-converting, high-quality model. Sort by any column.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -795,7 +795,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "\ud83c\udfc6 Composite score"
+            "displayName": "🏆 Composite score"
           }
         ]
       },
@@ -885,7 +885,7 @@
           "refId": "composite"
         }
       ],
-      "title": "\ud83c\udfc1 Top Models leaderboard \u2014 composite score (24h)",
+      "title": "🏁 Top Models leaderboard — composite score (24h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -942,7 +942,7 @@
       },
       "id": 3,
       "panels": [],
-      "title": "\ud83d\udc8e Cost-vs-ATC efficiency \u2014 find the winning quadrant",
+      "title": "💎 Cost-vs-ATC efficiency — find the winning quadrant",
       "type": "row"
     },
     {
@@ -1334,7 +1334,7 @@
           "refId": "cost_per_conv"
         }
       ],
-      "title": "\ud83d\udc8e ATC rate (%) vs Cost per conversation ($) \u2014 per model (24h)",
+      "title": "💎 ATC rate (%) vs Cost per conversation ($) — per model (24h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -1357,7 +1357,7 @@
       },
       "id": 5,
       "panels": [],
-      "title": "\ud83d\udcc8 Per-model trends \u2014 ATC, cost and latency over time",
+      "title": "📈 Per-model trends — ATC, cost and latency over time",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -1708,7 +1708,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\uded2 ATC events/sec per model",
+      "title": "🛒 ATC events/sec per model",
       "type": "timeseries",
       "transparent": false
     },
@@ -1717,7 +1717,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "USD per hour spend per model (5m rate \u00d7 3600). The widest band is currently eating your budget.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "USD per hour spend per model (5m rate × 3600). The widest band is currently eating your budget.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2064,7 +2064,7 @@
           "refId": "A"
         }
       ],
-      "title": "\ud83d\udcb0 Spend rate per model (USD/hour)",
+      "title": "💰 Spend rate per model (USD/hour)",
       "type": "timeseries",
       "transparent": false
     },
@@ -2073,7 +2073,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "p95 latency per model \u2014 95% of requests finish faster than this line. Watch for spikes; users feel tail latency more than averages.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "p95 latency per model — 95% of requests finish faster than this line. Watch for spikes; users feel tail latency more than averages.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2413,7 +2413,7 @@
           "refId": "A"
         }
       ],
-      "title": "\u23f1 P95 latency per model",
+      "title": "⏱ P95 latency per model",
       "type": "timeseries",
       "transparent": false
     }
@@ -2479,7 +2479,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI Obs \u2014 Top Models (ATC \u00d7 Cost \u00d7 Performance)",
+  "title": "AI Obs — Top Models (ATC × Cost × Performance)",
   "uid": "ai-obs-top-models",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }

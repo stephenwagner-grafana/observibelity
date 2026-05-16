@@ -27,7 +27,7 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "Ollama load \u2014 {{__line__}}"
+        "textFormat": "Ollama load — {{__line__}}"
       },
       {
         "datasource": {
@@ -43,11 +43,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "Ollama eviction \u2014 {{__line__}}"
+        "textFormat": "Ollama eviction — {{__line__}}"
       }
     ]
   },
-  "description": "Behind the demo \u2014 the bare-metal RTX 5090 box (wags-ai, 192.168.2.240) that serves every Ollama inference for ObserVIBElity. Captures VRAM thrash organically.",
+  "description": "Behind the demo — the bare-metal RTX 5090 box (wags-ai, 192.168.2.240) that serves every Ollama inference for ObserVIBElity. Captures VRAM thrash organically.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -76,13 +76,13 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "This is a **single Ubuntu box with one RTX 5090** (32 GB VRAM) running every Ollama model in the ObserVIBElity demo \u2014 *eleven* open-source LLMs (llama, qwen, mistral, gemma, phi, tinyllama) rotating through one GPU.\n\n**Story to watch:** the *VRAM by model* panel. When too many models load at once the stack collapses \u2014 Ollama evicts to make room and latency spikes downstream. Nothing staged.\n\n**Why this matters:** Sigil sees evaluations. The Vercel AI SDK sees app-side calls. *Neither* sees GPU temp, per-process VRAM, eviction churn, or Modelfile capability. **AI o11y is what justifies AI spend \u2014 use AI to diagnose AI.**"
+        "content": "This is a **single Ubuntu box with one RTX 5090** (32 GB VRAM) running every Ollama model in the ObserVIBElity demo — *eleven* open-source LLMs (llama, qwen, mistral, gemma, phi, tinyllama) rotating through one GPU.\n\n**Story to watch:** the *VRAM by model* panel. When too many models load at once the stack collapses — Ollama evicts to make room and latency spikes downstream. Nothing staged.\n\n**Why this matters:** Sigil sees evaluations. The Vercel AI SDK sees app-side calls. *Neither* sees GPU temp, per-process VRAM, eviction churn, or Modelfile capability. **AI o11y is what justifies AI spend — use AI to diagnose AI.**"
       },
       "transparent": true
     },
     {
       "id": 1,
-      "title": "\ud83e\udd16 wags-ai right now \u2014 RTX 5090 + Ollama",
+      "title": "🤖 wags-ai right now — RTX 5090 + Ollama",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -95,8 +95,8 @@
     },
     {
       "id": 2,
-      "title": "GPU health \u2014 is this thing happy?",
-      "description": "Green when VRAM<95%, \u22651 model loaded, no throttling, no ECC errors.",
+      "title": "GPU health — is this thing happy?",
+      "description": "Green when VRAM<95%, ≥1 model loaded, no throttling, no ECC errors.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -128,12 +128,12 @@
               "type": "value",
               "options": {
                 "1": {
-                  "text": "\ud83d\udfe2 Healthy",
+                  "text": "🟢 Healthy",
                   "color": "#0F2A1A",
                   "index": 0
                 },
                 "0": {
-                  "text": "\ud83d\udd34 Investigate",
+                  "text": "🔴 Investigate",
                   "color": "#2A0F1A",
                   "index": 1
                 }
@@ -314,7 +314,7 @@
     {
       "id": 5,
       "title": "Electricity cost (range)",
-      "description": "GPU power \u00d7 current time range \u00d7 $kwh_price/kWh \u00d7 PUE $pue. Drag the time picker; watch this update.",
+      "description": "GPU power × current time range × $kwh_price/kWh × PUE $pue. Drag the time picker; watch this update.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -356,7 +356,7 @@
                 "color": "#A78BFA"
               },
               {
-                "value": 5.0,
+                "value": 5,
                 "color": "#F472B6"
               }
             ]
@@ -446,7 +446,7 @@
     {
       "id": 7,
       "title": "GPU temp",
-      "description": "Target <80\u00b0C, hardware throttles around 88\u00b0C.",
+      "description": "Target <80°C, hardware throttles around 88°C.",
       "type": "gauge",
       "datasource": {
         "type": "prometheus",
@@ -511,7 +511,7 @@
     },
     {
       "id": 8,
-      "title": "\ud83d\udcb8 Token economics \u2014 what every million tokens costs to make",
+      "title": "💸 Token economics — what every million tokens costs to make",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -524,8 +524,8 @@
     },
     {
       "id": 14,
-      "title": "$ per 1M output tokens \u2014 live, all-in",
-      "description": "GPU electricity at $kwh_price/kWh \u00d7 PUE $pue + RTX 5090 amortization ($gpu_amort_hourly/hr), divided by output tokens/sec from the gateway. Compare with Claude Haiku 4.5 at $5/1M output (the only Claude model on the post-2026-05-16 retune).",
+      "title": "$ per 1M output tokens — live, all-in",
+      "description": "GPU electricity at $kwh_price/kWh × PUE $pue + RTX 5090 amortization ($gpu_amort_hourly/hr), divided by output tokens/sec from the gateway. Compare with Claude Haiku 4.5 at $5/1M output (the only Claude model on the post-2026-05-16 retune).",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -567,18 +567,18 @@
                 "color": "#1A2A0F"
               },
               {
-                "value": 5.0,
+                "value": 5,
                 "color": "#2A1A0F"
               },
               {
-                "value": 15.0,
+                "value": 15,
                 "color": "#2A0F1A"
               }
             ]
           },
           "unit": "currencyUSD",
           "decimals": 4,
-          "noValue": "\u2014",
+          "noValue": "—",
           "displayName": "$ / 1M output tokens"
         }
       },
@@ -598,7 +598,7 @@
     {
       "id": 15,
       "title": "$/hr right now (all-in)",
-      "description": "GPU electricity \u00d7 PUE + RTX 5090 amortization, regardless of load.",
+      "description": "GPU electricity × PUE + RTX 5090 amortization, regardless of load.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -733,8 +733,8 @@
     },
     {
       "id": 17,
-      "title": "Range cost \u2014 wags-ai (all-in)",
-      "description": "What this rig cost to run for the selected time range. Electricity \u00d7 PUE + amortization.",
+      "title": "Range cost — wags-ai (all-in)",
+      "description": "What this rig cost to run for the selected time range. Electricity × PUE + amortization.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -835,7 +835,7 @@
     },
     {
       "id": 19,
-      "title": "$ per 1M output tokens over time \u2014 idle is expensive, busy is cheap",
+      "title": "$ per 1M output tokens over time — idle is expensive, busy is cheap",
       "description": "Log-scale. Wags-ai's per-million-token cost rises when the rig is idle (amortization keeps ticking, no tokens being made) and drops when load is high. The pink dashed line is Claude Haiku 4.5's $5/1M output (the only Claude model post-2026-05-16).",
       "type": "timeseries",
       "datasource": {
@@ -951,7 +951,7 @@
     },
     {
       "id": 10,
-      "title": "\ud83d\udcbe VRAM occupancy \u2014 watch this for eviction cycles",
+      "title": "💾 VRAM occupancy — watch this for eviction cycles",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -964,7 +964,7 @@
     },
     {
       "id": 11,
-      "title": "VRAM by model (stacked) \u2014 collapse = eviction = the story",
+      "title": "VRAM by model (stacked) — collapse = eviction = the story",
       "description": "Each color is a model in VRAM. The 'other (driver + apps)' band accounts for non-Ollama use so the stack matches the hero VRAM-in-use total.",
       "type": "timeseries",
       "datasource": {
@@ -1055,7 +1055,7 @@
     },
     {
       "id": 12,
-      "title": "Currently loaded models \u2014 the live roster competing for VRAM",
+      "title": "Currently loaded models — the live roster competing for VRAM",
       "description": "Sorted by VRAM resident. Expires_in = seconds until idle-evict.",
       "type": "table",
       "datasource": {
@@ -1203,7 +1203,7 @@
     },
     {
       "id": 13,
-      "title": "Loaded count over time \u2014 watch for the sawtooth of eviction",
+      "title": "Loaded count over time — watch for the sawtooth of eviction",
       "description": "Flat = stable. Every dip is a real eviction event.",
       "type": "timeseries",
       "datasource": {
@@ -1261,7 +1261,7 @@
     },
     {
       "id": 20,
-      "title": "\ud83c\udf21\ufe0f GPU & demo workload",
+      "title": "🌡️ GPU & demo workload",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -1274,7 +1274,7 @@
     },
     {
       "id": 21,
-      "title": "GPU compute vs memory bus \u2014 saturation here is the real bottleneck",
+      "title": "GPU compute vs memory bus — saturation here is the real bottleneck",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -1338,7 +1338,7 @@
     },
     {
       "id": 22,
-      "title": "Power & heat \u2014 is this thing screaming?",
+      "title": "Power & heat — is this thing screaming?",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -1438,14 +1438,14 @@
             "uid": "${datasource_prom}"
           },
           "expr": "max(nvidia_gpu_temperature_gpu_celsius{host=\"wags-ai\"})",
-          "legendFormat": "temp (\u00b0C)"
+          "legendFormat": "temp (°C)"
         }
       ],
       "transparent": true
     },
     {
       "id": 23,
-      "title": "Demo traffic in \u2014 this is what's driving the GPU",
+      "title": "Demo traffic in — this is what's driving the GPU",
       "description": "Requests/sec hitting Ollama from the gateway. Spikes here should match the GPU compute panel.",
       "type": "timeseries",
       "datasource": {
@@ -1500,7 +1500,7 @@
     },
     {
       "id": 30,
-      "title": "\ud83d\udcdc Ollama activity log",
+      "title": "📜 Ollama activity log",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -1513,7 +1513,7 @@
     },
     {
       "id": 31,
-      "title": "Ollama load/unload/error log \u2014 the receipts for every eviction",
+      "title": "Ollama load/unload/error log — the receipts for every eviction",
       "type": "logs",
       "datasource": {
         "type": "loki",
@@ -1549,7 +1549,7 @@
     },
     {
       "id": 50,
-      "title": "\ud83d\udd27 Deep telemetry \u2014 troubleshoot any issue",
+      "title": "🔧 Deep telemetry — troubleshoot any issue",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -1624,7 +1624,7 @@
     },
     {
       "id": 52,
-      "title": "HTTP API p95 latency by endpoint \u2014 Ollama's own clock",
+      "title": "HTTP API p95 latency by endpoint — Ollama's own clock",
       "description": "Server-side timing that Sigil/Vercel SDK can't see. P95 across each endpoint.",
       "type": "timeseries",
       "datasource": {
@@ -1682,7 +1682,7 @@
     },
     {
       "id": 53,
-      "title": "HTTP status codes \u2014 5xx line should be at zero",
+      "title": "HTTP status codes — 5xx line should be at zero",
       "type": "timeseries",
       "datasource": {
         "type": "loki",
@@ -1790,7 +1790,7 @@
     {
       "id": 54,
       "title": "GPU throttle status",
-      "description": "Zero is good \u2014 nothing throttling. Anything above zero in 6h means the GPU was clock-limited.",
+      "description": "Zero is good — nothing throttling. Anything above zero in 6h means the GPU was clock-limited.",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -1822,7 +1822,7 @@
               "type": "value",
               "options": {
                 "0": {
-                  "text": "\u2713 No throttling",
+                  "text": "✓ No throttling",
                   "color": "#86EFAC",
                   "index": 0
                 }
@@ -1867,7 +1867,7 @@
     },
     {
       "id": 55,
-      "title": "Per-runner GPU memory \u2014 each ollama subprocess is one model fighting for space",
+      "title": "Per-runner GPU memory — each ollama subprocess is one model fighting for space",
       "description": "Joined to model names via runner cmdline parsing.",
       "type": "timeseries",
       "datasource": {
@@ -1939,7 +1939,7 @@
     },
     {
       "id": 56,
-      "title": "Disk read throughput \u2014 the cost of a cold model load",
+      "title": "Disk read throughput — the cost of a cold model load",
       "description": "Spikes = a model loaded from NVMe. An 8B Q4 cold-load = ~5 GB read in a few seconds.",
       "type": "timeseries",
       "datasource": {
@@ -2025,7 +2025,7 @@
               "type": "value",
               "options": {
                 "0": {
-                  "text": "0 \u2014 good",
+                  "text": "0 — good",
                   "color": "#86EFAC",
                   "index": 0
                 },
@@ -2153,11 +2153,11 @@
                     "type": "value",
                     "options": {
                       "0": {
-                        "text": "\u2014",
+                        "text": "—",
                         "color": "transparent"
                       },
                       "1": {
-                        "text": "\u2713",
+                        "text": "✓",
                         "color": "#86EFAC"
                       }
                     }
@@ -2179,11 +2179,11 @@
                     "type": "value",
                     "options": {
                       "0": {
-                        "text": "\u2014",
+                        "text": "—",
                         "color": "transparent"
                       },
                       "1": {
-                        "text": "\u2713",
+                        "text": "✓",
                         "color": "#A78BFA"
                       }
                     }
@@ -2205,7 +2205,7 @@
                     "type": "value",
                     "options": {
                       "0": {
-                        "text": "\u2014",
+                        "text": "—",
                         "color": "transparent"
                       },
                       "1": {
@@ -2511,7 +2511,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AI Workstation \u2014 behind the demo (wags-ai)",
+  "title": "AI Workstation — behind the demo (wags-ai)",
   "uid": "ai-obs-wags-ai",
-  "weekStart": ""
+  "weekStart": "",
+  "folderUid": "obs-foundations"
 }
