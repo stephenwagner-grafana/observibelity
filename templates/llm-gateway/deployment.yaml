@@ -57,29 +57,51 @@ spec:
               value: {{ .Values.llmGateway.providers.ollama.baseUrl | default "" | quote }}
             - name: OLLAMA_DEFAULT_MODEL
               value: {{ .Values.llmGateway.providers.ollama.model | default "llama3.1:8b" | quote }}
-            # Lockstep model rotation (see values.yaml + providers/ollama.py).
-            # Every llm-gateway replica reads the same wall clock, so every
-            # call from every Ollama-bound specialist lands on the same model
-            # during a given ``windowSeconds`` window — then they all flip
-            # to the next entry simultaneously.
-            - name: OLLAMA_ROTATION_ENABLED
-              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).enabled | default false | quote }}
-            - name: OLLAMA_ROTATION_WINDOW_SECONDS
-              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).windowSeconds | default 300 | quote }}
-            - name: OLLAMA_ROTATION_MODELS
-              value: {{ (default (list) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).rotation).models) | join "," | quote }}
-            # Prewarm task: pre-loads the next-rotation model and evicts
-            # the previous one on every bucket flip so the daemon keeps
-            # exactly active + next warm (see app/prewarm.py). keepAlive
-            # is the lifetime hint sent on every /api/chat request AND
-            # every prewarm call — both share the same value so the daemon
-            # ages them out together.
-            - name: OLLAMA_PREWARM_ENABLED
-              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).prewarm).enabled | default true | quote }}
-            - name: OLLAMA_PREWARM_TICK_SECONDS
-              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).prewarm).tickSeconds | default 5 | quote }}
+            # Dynamic model-pool scheduler (see values.yaml + app/scheduler.py).
+            # Replaces the old fixed-window rotation with a state machine:
+            # LOADING -> ACTIVE -> DRAINING -> (unload) -> back of queue.
+            # The scheduler aims for OLLAMA_POOL_MIN active models, caps at
+            # OLLAMA_POOL_MAX, drains after OLLAMA_POOL_REQUESTS_PER_LIFECYCLE
+            # completions, and consults a GPU sensor every
+            # OLLAMA_POOL_TICK_INTERVAL_S seconds.
+            - name: OLLAMA_POOL_ENABLED
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).enabled | default true | quote }}
+            - name: OLLAMA_POOL_MIN
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).min | default 2 | quote }}
+            - name: OLLAMA_POOL_MAX
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).max | default 4 | quote }}
+            - name: OLLAMA_POOL_REQUESTS_PER_LIFECYCLE
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).requestsPerLifecycle | default 100 | quote }}
+            - name: OLLAMA_POOL_SESSION_IDLE_TIMEOUT_S
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).sessionIdleTimeoutS | default 600 | quote }}
+            - name: OLLAMA_POOL_TICK_INTERVAL_S
+              value: {{ (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).tickIntervalS | default 10 | quote }}
+            - name: OLLAMA_POOL_MODELS
+              value: {{ (default (list) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).models) | join "," | quote }}
+            # GPU sensor — Prometheus base URL + (optional) bearer token
+            # the scheduler queries for live VRAM%, GPU util%, TTFT p95.
+            # On any failure the sensor returns a "hold" snapshot so the
+            # scheduler stays inert on bad data.
+            - name: OLLAMA_POOL_PROMETHEUS_URL
+              value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).prometheusUrl | default "" | quote }}
+            {{- with (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).bearerTokenSecret }}
+            - name: OLLAMA_POOL_PROMETHEUS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . }}
+                  key: token
+                  optional: true
+            {{- end }}
+            - name: OLLAMA_POOL_VRAM_TOTAL_GB
+              value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).vramTotalGb | default 32 | quote }}
+            - name: OLLAMA_POOL_CAPACITY
+              value: {{ (default (dict) (default (dict) (default (dict) .Values.llmGateway.providers.ollama).pool).gpuSensor).capacity | default 8 | quote }}
+            # keepAlive — sent on every /api/chat request AND the scheduler
+            # warm-up POST when a model is loaded. Pair with the daemon's
+            # OLLAMA_KEEP_ALIVE so per-request hints and daemon defaults
+            # agree (parallel agent is lowering the .240 daemon to 5m).
             - name: OLLAMA_KEEP_ALIVE
-              value: {{ (default (dict) .Values.llmGateway.providers.ollama).keepAlive | default "30m" | quote }}
+              value: {{ (default (dict) .Values.llmGateway.providers.ollama).keepAlive | default "5m" | quote }}
             - name: LLM_GATEWAY_DEFAULT_PROVIDER
               value: {{ .Values.llmGateway.defaultProvider | default "anthropic" | quote }}
             # Per-call provider timeout. Default is 60s; for the .240 5090

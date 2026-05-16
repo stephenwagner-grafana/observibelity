@@ -10,6 +10,22 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
+// Honor 429 + Retry-After from llm-gateway. When both providers are at
+// capacity the gateway returns 429 with a Retry-After header (seconds);
+// we sleep for that interval to yield the VU so retry storms don't pile
+// up. We do NOT retry the same request — k6's constant-arrival-rate
+// will simply admit the next iteration when the VU becomes free.
+function postWithBackoff(url, body, params) {
+  const r = http.post(url, body, params);
+  if (r.status === 429) {
+    let retryAfter = parseFloat(r.headers['Retry-After'] || '5');
+    if (isNaN(retryAfter) || retryAfter < 0.1) retryAfter = 5;
+    if (retryAfter > 30) retryAfter = 30;  // cap so cycles don't go silly long
+    sleep(retryAfter);
+  }
+  return r;
+}
+
 export const options = {
   scenarios: {
     '{{ name }}_leaderboard': {
@@ -68,7 +84,7 @@ export function fire() {
     'ai_o11y-group-by': '{{ group_by }}',
     'ai_o11y-category': category,
   };
-  const res = http.post(`${BASE_URL}/chat`, payload, { headers });
+  const res = postWithBackoff(`${BASE_URL}/chat`, payload, { headers });
   check(res, { 'request accepted': (r) => r.status < 500 });
   sleep(1);
 }

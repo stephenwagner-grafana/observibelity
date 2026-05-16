@@ -6,6 +6,21 @@ event, and returns the model's response with usage attached.
 
 OTel spans wrap every call so traces, metrics, and logs share trace_id —
 that's how the dashboard joins "this expensive call" to "this slow tool".
+
+Routing model (tiered-sampler redesign):
+
+* **Default lane** — loadgen + non-interactive callers. Each request rolls
+  a die: ``P(target=anthropic) == claude_sample_rate(default_spend_today)``.
+  The sample rate is 10% under $40 of spend and decays by 10x for every
+  additional $20 of spend. The dice IS the admission — there is no
+  fallback between providers. If the dice says Ollama and Ollama is full,
+  the caller gets a 429. A $200 sanity sentinel hard-stops Claude.
+* **Interactive lane** — ``ai_o11y.traffic_origin == "interactive"`` OR the
+  ``X-Traffic-Origin: interactive`` header. Bypasses admission entirely and
+  always routes to Claude. Spend tracked separately + uncapped.
+
+Admission tests live in ``app.admission`` as pure functions; this module
+wires the dispatcher to them.
 """
 from __future__ import annotations
 
@@ -13,12 +28,14 @@ import asyncio
 import json
 import logging
 import os
+import random
 import time
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, Response
 from opentelemetry import metrics, trace
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
@@ -31,6 +48,16 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
+from .admission import (
+    CLAUDE_SANITY_SENTINEL_USD,
+    REASON_CLAUDE_NOT_SAMPLED,
+    REASON_OLLAMA_POOL_EMPTY,
+    REASON_OLLAMA_SATURATED,
+    claude_admit_default,
+    claude_sample_rate,
+    claude_sample_tier,
+    ollama_admit,
+)
 from .pricing import compute_cost, load_pricing_overrides
 from .providers import (
     CompleteRequest,
@@ -44,7 +71,7 @@ from .sigil import (
     init_sigil,
     shutdown as sigil_shutdown,
 )
-from .prewarm import maybe_start_prewarm
+from .scheduler import maybe_start_scheduler
 
 log = logging.getLogger("llm_gateway")
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
@@ -201,23 +228,34 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception:  # noqa: BLE001 — telemetry must never block boot
         log.exception("Sigil init failed; generation events disabled")
 
-    # Start the Ollama prewarm task — preloads the next-rotation model into
-    # VRAM during the current model's 5-min window so the flip is seamless
-    # (zero cold-load latency at the boundary). Requires the daemon to allow
-    # at least 2 loaded models (OLLAMA_MAX_LOADED_MODELS=2) on .240.
+    # Start the Ollama model-pool scheduler — replaces the old fixed-window
+    # rotation with a state machine (LOADING -> ACTIVE -> DRAINING). Pool
+    # targets pool_min ACTIVE models, caps at pool_max, drains a model
+    # after requests_per_lifecycle completions. tick() runs every 10s and
+    # consults a GPUSensor (Prometheus DCGM/nvidia metrics + the gateway's
+    # own TTFT histogram) to decide add/hold/drain. See app/scheduler.py.
+    def _ollama_in_flight() -> int:
+        provider = _provider_state.get("ollama")
+        return int(getattr(provider, "in_flight", 0) or 0)
+
     try:
-        app.state.prewarm_task = maybe_start_prewarm()
-    except Exception:  # noqa: BLE001 — prewarm must never block boot
-        log.exception("prewarm init failed; rotation flips will see cold loads")
-        app.state.prewarm_task = None
+        app.state.scheduler = maybe_start_scheduler(in_flight_getter=_ollama_in_flight)
+    except Exception:  # noqa: BLE001 — scheduler must never block boot
+        log.exception("scheduler init failed; Ollama pool will be empty")
+        app.state.scheduler = None
+    # Expose to OTel observable-gauge callbacks (background metrics thread).
+    _scheduler_state["scheduler"] = app.state.scheduler
 
     log.info(
-        "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s claude_budget=$%.2f/day",
+        "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s "
+        "claude_sentinel=$%.2f/day claude_sample_base=%.3f claude_tier_base=$%.2f",
         list(providers.keys()),
         DEFAULT_PROVIDER,
         PRICING_CONFIG_PATH,
         ROUTING_CONFIG_PATH,
-        _CLAUDE_DAILY_BUDGET_USD,
+        CLAUDE_SANITY_SENTINEL_USD,
+        claude_sample_rate(0.0),
+        float(os.environ.get("CLAUDE_SAMPLE_TIER_BASE", "40.0")),
     )
     yield
     # Flush + close the Sigil client on shutdown so in-flight generation
@@ -226,13 +264,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         sigil_shutdown()
     except Exception:  # noqa: BLE001
         log.exception("Sigil shutdown failed")
-    # Stop the prewarm ticker before the event loop tears down.
-    prewarm_task = getattr(app.state, "prewarm_task", None)
-    if prewarm_task is not None:
+    # Stop the scheduler ticker before the event loop tears down.
+    scheduler = getattr(app.state, "scheduler", None)
+    if scheduler is not None:
         try:
-            await prewarm_task.stop()
+            await scheduler.stop()
         except Exception:  # noqa: BLE001
-            log.exception("prewarm shutdown failed")
+            log.exception("scheduler shutdown failed")
 
 
 app = FastAPI(
@@ -399,14 +437,110 @@ GEN_AI_TTFT = _meter.create_histogram(
     unit="s",
 )
 
-# Spillover + Claude-budget metrics — OTel-native so they flow through the
+# Admission + Claude-spend metrics — OTel-native so they flow through the
 # collector → Grafana Cloud Prometheus alongside gen_ai.*. Names use dots
-# here; the Prometheus serializer converts them to underscores, so the
-# dashboard's `llm_gateway_spillover_total` etc. PromQL keeps working.
+# here; the Prometheus serializer converts them to underscores.
+#
+# DEPRECATED: spillover counter. The "ollama-first + spillover" model has
+# been retired in favor of admission-controlled coin-flip routing. Kept as
+# an always-zero counter so existing dashboards still parse it cleanly;
+# remove once every downstream panel has migrated to admission.* metrics.
 SPILLOVER_TOTAL = _meter.create_counter(
     name="llm_gateway.spillover.total",
-    description="Times the dispatcher swapped a target=ollama request to "
-                "anthropic because Ollama was at the saturation threshold.",
+    description="DEPRECATED. Always 0 since the admission-routing redesign "
+                "retired ollama-first+spillover. Use llm_gateway.admission.* "
+                "instead.",
+)
+
+# Per-request admission outcome. ``decision ∈ {admit, deny}``, one row per
+# admission test (so a denied primary + admitted secondary emits two rows).
+# Lane lets the dashboard split default vs interactive even though admission
+# only actually runs for the default lane today.
+ADMISSION_TOTAL = _meter.create_counter(
+    name="llm_gateway.admission.total",
+    description="Admission decisions, one per provider tested. "
+                "Labels: provider, decision (admit|deny), lane (default|interactive).",
+)
+
+# Per-request DENY breakdown by reason. Emitted exactly once per /v1/complete
+# call that ends in a 429. Live reasons under the tiered-sampler model:
+# ollama_saturated, claude_not_sampled (the "dice picked Ollama AND Ollama
+# was full" hint), claude_sanity_sentinel ($200 paranoia ceiling).
+# Legacy reasons (claude_overpace, claude_daily_cap_reached, both) are kept
+# in the back-compat enum but never emitted live.
+ADMISSION_DENIED = _meter.create_counter(
+    name="llm_gateway.admission.denied",
+    description="Admission denials by reason. "
+                "Live reasons: ollama_saturated, claude_not_sampled, "
+                "claude_sanity_sentinel. Lane: default|interactive.",
+)
+
+# DEPRECATED: linear-pace observable. The tiered-sampler model replaced the
+# linear pacing check; this gauge is kept as a flat 0 so any dashboard panel
+# that still queries the series stays parseable. Remove once dashboards
+# migrate to llm_gateway.claude.sample.rate.
+def _observe_claude_pace(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    return [Observation(0.0, {})]
+
+
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.pace.usd",
+    description="DEPRECATED. Always 0 since the tiered-sampler redesign "
+                "retired linear pacing. Use llm_gateway.claude.sample.rate "
+                "instead.",
+    callbacks=[_observe_claude_pace],
+)
+
+
+# Current Claude sample probability, given today's default-lane spend.
+# Reads off the same ledger the dispatcher rolls against, so this gauge is
+# the live "what fraction of default-lane requests are trying Claude
+# right now" signal for dashboards.
+def _observe_claude_sample_rate(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    _maybe_reset_daily_counters()
+    return [Observation(
+        float(claude_sample_rate(_claude_default_spend_today)), {}
+    )]
+
+
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.sample.rate",
+    description="Probability that the next default-lane request will try "
+                "Claude. 10% under $40 of today's default-lane spend; "
+                "/10x per additional $20 above $40.",
+    callbacks=[_observe_claude_sample_rate],
+)
+
+
+# Integer tier index for the sample-rate step function. 0 == base (10%),
+# 1 == /10 (1%), 2 == /100 (0.1%), … Useful for state-timeline panels.
+def _observe_claude_sample_tier(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    _maybe_reset_daily_counters()
+    return [Observation(
+        int(claude_sample_tier(_claude_default_spend_today)), {}
+    )]
+
+
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.sample.tier",
+    description="Discrete tier index for the Claude sample-rate step "
+                "function. 0 == base rate, each +1 step divides the rate "
+                "by 10.",
+    callbacks=[_observe_claude_sample_tier],
+)
+
+# Histogram of the retry_after_s value we *told* callers to wait when 429ing
+# them. Server-side "how patient are callers told to be" signal. Bucket
+# boundaries cover the typical Ollama queue-drain range (<5s) through to
+# midnight rollover (worst case for the hard-cap reason ~86k s).
+CALLER_WAIT_SECONDS = _meter.create_histogram(
+    name="llm_gateway.caller.wait.seconds",
+    description="Retry-After seconds returned to a caller in a 429 admission "
+                "denial. Server-side view of caller wait time.",
+    unit="s",
 )
 
 
@@ -414,6 +548,11 @@ SPILLOVER_TOTAL = _meter.create_counter(
 # lifespan handler at startup. The observable-gauge callbacks below read
 # from it instead of the FastAPI request-scoped state.
 _provider_state: dict[str, Provider] = {}
+
+# Module-level holder for the OllamaScheduler (populated by lifespan). The
+# pool/scheduler observable-gauge callbacks read from it on the background
+# metrics thread so they don't reach into FastAPI request state.
+_scheduler_state: dict[str, "object | None"] = {"scheduler": None}
 
 
 def _observe_ollama_in_flight(options):  # type: ignore[no-untyped-def]
@@ -427,16 +566,55 @@ def _observe_ollama_in_flight(options):  # type: ignore[no-untyped-def]
 
 
 def _observe_claude_daily_spend(options):  # type: ignore[no-untyped-def]
-    """Callback: report today's cumulative Claude spend in USD."""
+    """Callback: report today's cumulative Claude spend (both lanes summed).
+
+    Retained for backwards compat with existing dashboards that read
+    ``llm_gateway_claude_daily_spend_usd``. The lane-specific gauges
+    (default / interactive) are the canonical signals going forward.
+    """
     from opentelemetry.metrics import Observation
-    _maybe_reset_budget_day()
-    return [Observation(float(_claude_daily_spent_usd), {})]
+    _maybe_reset_daily_counters()
+    total = _claude_default_spend_today + _claude_interactive_spend_today
+    return [Observation(float(total), {})]
+
+
+def _observe_claude_default_spend(options):  # type: ignore[no-untyped-def]
+    """Callback: report today's default-lane Claude spend (subject to cap)."""
+    from opentelemetry.metrics import Observation
+    _maybe_reset_daily_counters()
+    return [Observation(float(_claude_default_spend_today), {})]
+
+
+def _observe_claude_interactive_spend(options):  # type: ignore[no-untyped-def]
+    """Callback: report today's interactive-lane Claude spend (informational)."""
+    from opentelemetry.metrics import Observation
+    _maybe_reset_daily_counters()
+    return [Observation(float(_claude_interactive_spend_today), {})]
 
 
 def _observe_claude_daily_budget(options):  # type: ignore[no-untyped-def]
-    """Callback: report the configured daily Claude budget ceiling."""
+    """Callback: report the legacy budget gauge value (back-compat).
+
+    DEPRECATED under the tiered-sampler model — there's no longer a daily
+    *budget* per se, just a $200 sanity sentinel. We return the sentinel
+    here so any dashboard panel that still keys off this series shows a
+    sensible ceiling instead of a stale $20.
+    """
     from opentelemetry.metrics import Observation
-    return [Observation(float(_CLAUDE_DAILY_BUDGET_USD), {})]
+    return [Observation(float(CLAUDE_SANITY_SENTINEL_USD), {})]
+
+
+def _observe_claude_daily_cap(options):  # type: ignore[no-untyped-def]
+    """Callback: report the default-lane hard ceiling (sanity sentinel).
+
+    DEPRECATED — under the tiered-sampler model there is no daily *cap*;
+    the sampler decays the rate to vanishingly small instead of slamming
+    a door. The number reported here is the sanity sentinel ($200), the
+    paranoia ceiling that hard-stops Claude if something pathological
+    drives spend that high.
+    """
+    from opentelemetry.metrics import Observation
+    return [Observation(float(CLAUDE_SANITY_SENTINEL_USD), {})]
 
 
 _meter.create_observable_gauge(
@@ -446,102 +624,515 @@ _meter.create_observable_gauge(
 )
 _meter.create_observable_gauge(
     name="llm_gateway.claude.daily.spend.usd",
-    description="Cumulative Anthropic spend (USD) for the current UTC day; resets at midnight.",
+    description="Cumulative Anthropic spend (USD) for the current UTC day — "
+                "sum of default and interactive lanes; resets at midnight. "
+                "Retained for back-compat; prefer the lane-specific gauges.",
     callbacks=[_observe_claude_daily_spend],
 )
 _meter.create_observable_gauge(
+    name="llm_gateway.claude.default.spend.usd",
+    description="Default-lane Anthropic spend (USD) for the current UTC day. "
+                "Drives the tiered Claude sample rate — each $20 above $40 "
+                "cuts the sampling probability by 10x.",
+    callbacks=[_observe_claude_default_spend],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.interactive.spend.usd",
+    description="Interactive-lane Anthropic spend (USD) for the current UTC "
+                "day. Informational only — not subject to admission.",
+    callbacks=[_observe_claude_interactive_spend],
+)
+_meter.create_observable_gauge(
     name="llm_gateway.claude.daily.budget.usd",
-    description="Configured daily Anthropic budget ceiling (USD).",
+    description="DEPRECATED back-compat gauge. Reports the sanity sentinel "
+                "($200), not a real daily budget — the tiered-sampler model "
+                "retired the hard cap. Migrate dashboards to "
+                "llm_gateway.claude.sample.rate.",
     callbacks=[_observe_claude_daily_budget],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.claude.daily.cap.usd",
+    description="DEPRECATED back-compat gauge. Reports the sanity sentinel "
+                "($200) — the paranoia ceiling that hard-stops Claude. Not "
+                "an operating limit. Use llm_gateway.claude.sample.rate "
+                "for the real throttling signal.",
+    callbacks=[_observe_claude_daily_cap],
+)
+
+
+# ---- Ollama model-pool scheduler gauges -----------------------------------
+# These callbacks read the latest scheduler state on each collection cycle.
+# Every gauge falls back to a safe zero when the scheduler isn't running
+# (boot races, unit tests with no Helm wiring) so panels never go NaN.
+
+def _get_scheduler():
+    """Return the running OllamaScheduler instance, or None when disabled."""
+    return _scheduler_state.get("scheduler")
+
+
+def _scheduler_on_request_complete(
+    request: Request, provider_name: str, req: "CompleteRequest"
+) -> None:
+    """Bump the scheduler's per-model request counter after a completion.
+
+    Safe to call from any error path — no-ops when the scheduler isn't
+    running, the provider wasn't Ollama, or no model_override was pinned
+    (the latter shouldn't happen post-pinning but we guard anyway).
+    """
+    if provider_name != "ollama":
+        return
+    scheduler = getattr(request.app.state, "scheduler", None) or _get_scheduler()
+    if scheduler is None:
+        return
+    model = getattr(req, "model_override", None)
+    if not model:
+        return
+    try:
+        from .sigil import _derive_session_id  # local import: avoid cycle
+        session_id = _derive_session_id(req)
+    except Exception:  # noqa: BLE001
+        session_id = ""
+    try:
+        scheduler.on_request_complete(session_id, model)
+    except Exception:  # noqa: BLE001
+        log.exception("scheduler.on_request_complete failed")
+
+
+def _observe_ollama_pool_size(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    value = 0
+    if sched is not None:
+        value = int(sched.snapshot_for_metrics()["loaded"])
+    return [Observation(value, {})]
+
+
+def _observe_ollama_pool_min(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    value = int(getattr(sched, "pool_min", 0) or 0)
+    return [Observation(value, {})]
+
+
+def _observe_ollama_pool_max(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    value = int(getattr(sched, "pool_max", 0) or 0)
+    return [Observation(value, {})]
+
+
+def _observe_ollama_model_state(options):  # type: ignore[no-untyped-def]
+    """Per-model state indicator. Emits one Observation per (model, state) pair.
+
+    Every state row for every loaded model is reported on each cycle as a
+    0/1 indicator so PromQL panels can use ``last_over_time(... ==1)`` to
+    show "which state is this model in right now". A model not currently
+    loaded emits nothing at all (no row), so the metric naturally tracks
+    pool churn.
+    """
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    obs: list = []
+    if sched is None:
+        return obs
+    info = sched.snapshot_for_metrics()
+    for entry in info.get("models", []):
+        current = entry["state"]
+        for state in ("loading", "active", "draining"):
+            obs.append(
+                Observation(
+                    1 if state == current else 0,
+                    {"model": entry["name"], "state": state},
+                )
+            )
+    return obs
+
+
+def _observe_ollama_model_requests_served(options):  # type: ignore[no-untyped-def]
+    """Per-model current-cycle request counter (0..requests_per_lifecycle)."""
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    obs: list = []
+    if sched is None:
+        return obs
+    for entry in sched.snapshot_for_metrics().get("models", []):
+        obs.append(
+            Observation(int(entry["requests_served"]), {"model": entry["name"]})
+        )
+    return obs
+
+
+def _observe_ollama_model_assigned_sessions(options):  # type: ignore[no-untyped-def]
+    """Per-model sticky-session count (== unique users currently pinned)."""
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    obs: list = []
+    if sched is None:
+        return obs
+    for entry in sched.snapshot_for_metrics().get("models", []):
+        obs.append(
+            Observation(
+                int(entry["assigned_sessions"]), {"model": entry["name"]}
+            )
+        )
+    return obs
+
+
+def _observe_ollama_scheduler_verdict(options):  # type: ignore[no-untyped-def]
+    """Verdict from the last tick — 0=add, 1=hold, 2=drain."""
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    verdict = "hold"
+    if sched is not None:
+        verdict = str(sched.snapshot_for_metrics().get("verdict") or "hold")
+    code = {"add": 0, "hold": 1, "drain": 2}.get(verdict, 1)
+    return [Observation(code, {})]
+
+
+def _observe_ollama_gpu_vram_pct(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    snap = None
+    if sched is not None:
+        snap = sched.snapshot_for_metrics().get("snapshot")
+    value = float(getattr(snap, "vram_pct", 0.0) or 0.0)
+    return [Observation(value, {})]
+
+
+def _observe_ollama_gpu_util_pct(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    snap = None
+    if sched is not None:
+        snap = sched.snapshot_for_metrics().get("snapshot")
+    value = float(getattr(snap, "gpu_util_pct", 0.0) or 0.0)
+    return [Observation(value, {})]
+
+
+def _observe_ollama_ttft_p95(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    snap = None
+    if sched is not None:
+        snap = sched.snapshot_for_metrics().get("snapshot")
+    value = float(getattr(snap, "ttft_p95_s", 0.0) or 0.0)
+    return [Observation(value, {})]
+
+
+def _observe_ollama_queue_depth(options):  # type: ignore[no-untyped-def]
+    from opentelemetry.metrics import Observation
+    sched = _get_scheduler()
+    value = 0
+    if sched is not None:
+        value = int(sched.snapshot_for_metrics().get("queue_depth") or 0)
+    return [Observation(value, {})]
+
+
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.pool.size",
+    description="Count of Ollama models currently LOADED (ACTIVE+DRAINING+LOADING).",
+    callbacks=[_observe_ollama_pool_size],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.pool.min",
+    description="Configured minimum pool size — scheduler loads aggressively below this.",
+    callbacks=[_observe_ollama_pool_min],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.pool.max",
+    description="Configured maximum pool size — scheduler refuses to load above this.",
+    callbacks=[_observe_ollama_pool_max],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.model.state",
+    description="Per-model state indicator (0|1). Labels: model, state in "
+                "{loading,active,draining}. Only loaded models emit rows.",
+    callbacks=[_observe_ollama_model_state],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.model.requests_served",
+    description="Per-model current-cycle request count (0..requests_per_lifecycle). "
+                "Resets to 0 on every (re)load.",
+    callbacks=[_observe_ollama_model_requests_served],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.model.assigned_sessions",
+    description="Per-model count of sticky-pinned conversation sessions.",
+    callbacks=[_observe_ollama_model_assigned_sessions],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.scheduler.verdict",
+    description="Verdict from the most recent scheduler tick: 0=add, 1=hold, 2=drain.",
+    callbacks=[_observe_ollama_scheduler_verdict],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.gpu.vram_pct",
+    description="Most recent GPU VRAM utilization seen by the scheduler (%).",
+    callbacks=[_observe_ollama_gpu_vram_pct],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.gpu.util_pct",
+    description="Most recent 5m-avg GPU compute utilization seen by the scheduler (%).",
+    callbacks=[_observe_ollama_gpu_util_pct],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.ttft.p95_seconds",
+    description="Most recent 5m-window TTFT p95 (seconds) seen by the scheduler.",
+    callbacks=[_observe_ollama_ttft_p95],
+)
+_meter.create_observable_gauge(
+    name="llm_gateway.ollama.queue.depth",
+    description="Number of candidate models waiting to be loaded into the pool.",
+    callbacks=[_observe_ollama_queue_depth],
 )
 
 
 tracer = trace.get_tracer("llm_gateway")
 
 
-# Daily Claude budget — enforced as a hard ceiling on actual USD spent. No
-# ratios, no rate caps, no random pickers: just a running tally of real cost
-# emitted by the Anthropic provider. Spillover is permitted only while
-# today's tally is below CLAUDE_DAILY_BUDGET_USD; once the budget is
-# exhausted, requests that would have spilled stay on Ollama and accept
-# whatever queue latency follows.
+# Legacy "daily budget" env var. Under the tiered-sampler model this no
+# longer drives behavior — the sample-rate curve is fixed by
+# CLAUDE_SAMPLE_TIER_BASE/WIDTH/BASE_RATE, and the hard stop is the
+# CLAUDE_SANITY_SENTINEL_USD ceiling. We still READ the env var so existing
+# Helm values that set CLAUDE_DAILY_BUDGET_USD don't error, and so the
+# deprecated llm_gateway.claude.daily.budget.usd gauge has a value to
+# emit. Default ($20) is preserved for historical compatibility but is
+# strictly informational now.
 _CLAUDE_DAILY_BUDGET_USD = float(os.environ.get("CLAUDE_DAILY_BUDGET_USD", "20.0"))
-_claude_daily_spent_usd: float = 0.0
+
+# Split daily ledger: default-lane spend (cap-bearing) + interactive-lane
+# spend (informational). The legacy ``_claude_daily_spent_usd`` symbol is
+# the SUM of the two — exposed for back-compat with the old gauge.
+_claude_default_spend_today: float = 0.0
+_claude_interactive_spend_today: float = 0.0
 _claude_budget_day_utc: str = ""
 
 
-def _maybe_reset_budget_day() -> None:
-    """Roll the daily ledger over at UTC midnight."""
-    global _claude_daily_spent_usd, _claude_budget_day_utc
-    from datetime import datetime, timezone  # local import: keep boot light
+def _maybe_reset_daily_counters() -> None:
+    """Roll the per-lane daily ledger over at UTC midnight."""
+    global _claude_default_spend_today, _claude_interactive_spend_today
+    global _claude_budget_day_utc
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     if today != _claude_budget_day_utc:
-        _claude_daily_spent_usd = 0.0
+        _claude_default_spend_today = 0.0
+        _claude_interactive_spend_today = 0.0
         _claude_budget_day_utc = today
 
 
-def _claude_spillover_allowed() -> bool:
-    """True iff today's cumulative Claude spend hasn't hit the budget ceiling."""
-    _maybe_reset_budget_day()
-    return _claude_daily_spent_usd < _CLAUDE_DAILY_BUDGET_USD
+# Backwards-compat alias — pre-existing helpers in other modules may still
+# import the old name. Forwards to the lane-aware reset.
+def _maybe_reset_budget_day() -> None:
+    """Deprecated alias for ``_maybe_reset_daily_counters``."""
+    _maybe_reset_daily_counters()
 
 
-def _record_claude_spend(usd: float) -> None:
-    """Add a completed Claude call's USD cost to today's tally."""
-    global _claude_daily_spent_usd
-    _maybe_reset_budget_day()
-    _claude_daily_spent_usd += max(0.0, usd)
+def _record_claude_spend(usd: float, *, lane: str) -> None:
+    """Add a completed Claude call's USD cost to today's tally for ``lane``.
+
+    ``lane`` ∈ {"default", "interactive"}. Negative values are clamped to 0
+    (cost calc shouldn't ever produce negatives, but belt-and-suspenders).
+    """
+    global _claude_default_spend_today, _claude_interactive_spend_today
+    _maybe_reset_daily_counters()
+    delta = max(0.0, float(usd))
+    if lane == "interactive":
+        _claude_interactive_spend_today += delta
+    else:
+        _claude_default_spend_today += delta
 
 
 def claude_budget_state() -> dict[str, float | str]:
-    """Snapshot of the running budget — exposed via /metrics for the dashboard."""
-    _maybe_reset_budget_day()
+    """Snapshot of the running ledger — exposed via /metrics for the dashboard.
+
+    The ``budget_usd`` / ``remaining_usd`` fields are kept for back-compat
+    with anything that polls this dict; under the tiered-sampler model the
+    real signal is ``sample_rate`` (the live probability that a default-lane
+    request will try Claude). The legacy fields report the sanity sentinel
+    as if it were a budget so old callers see a sane shape.
+    """
+    _maybe_reset_daily_counters()
+    total_spent = _claude_default_spend_today + _claude_interactive_spend_today
+    rate = claude_sample_rate(_claude_default_spend_today)
     return {
-        "budget_usd": _CLAUDE_DAILY_BUDGET_USD,
-        "spent_usd": _claude_daily_spent_usd,
-        "remaining_usd": max(0.0, _CLAUDE_DAILY_BUDGET_USD - _claude_daily_spent_usd),
+        "budget_usd": CLAUDE_SANITY_SENTINEL_USD,
+        "spent_usd": total_spent,
+        "default_spent_usd": _claude_default_spend_today,
+        "interactive_spent_usd": _claude_interactive_spend_today,
+        "remaining_usd": max(
+            0.0, CLAUDE_SANITY_SENTINEL_USD - _claude_default_spend_today
+        ),
+        "sample_rate": float(rate),
+        "sample_tier": int(claude_sample_tier(_claude_default_spend_today)),
+        "sanity_sentinel_usd": CLAUDE_SANITY_SENTINEL_USD,
         "day_utc": _claude_budget_day_utc,
     }
 
 
-def _select_provider(
-    request: Request, name: str | None
-) -> tuple[str, Provider, bool]:
-    """Pick a provider — with saturation-based spillover to Claude.
+def _detect_lane(req: CompleteRequest, request: Request) -> str:
+    """Return ``"interactive"`` iff this call is interactive-lane, else ``"default"``.
 
-    Returns ``(provider_name, provider, spilled_over)``. When the chosen
-    target is Ollama and the OllamaProvider reports ``is_saturated``, the
-    dispatcher swaps to Anthropic IF the rolling per-minute Claude budget
-    has room (see :data:`_CLAUDE_SPILLOVER_RPM`). Otherwise the request
-    stays on Ollama and accepts whatever queue latency follows.
+    Two routes into the interactive lane (both honored):
 
-    ``spilled_over`` flags the swap so the /v1/complete span can annotate it
-    for dashboards that want to correlate spillover with Ollama latency.
+    * Body field: ``ai_o11y.traffic_origin == "interactive"``.
+    * Header: ``X-Traffic-Origin: interactive`` (case-insensitive value).
+
+    Header form lets non-Python clients tag traffic without rebuilding their
+    request body; the body form is the canonical channel for in-cluster
+    callers that already carry the ``ai_o11y`` dict.
+    """
+    body_origin = (req.ai_o11y.get("traffic_origin") or "").strip().lower()
+    if body_origin == "interactive":
+        return "interactive"
+    header_origin = (request.headers.get("x-traffic-origin") or "").strip().lower()
+    if header_origin == "interactive":
+        return "interactive"
+    return "default"
+
+
+def _sample_target() -> str:
+    """Roll the tiered Claude sampler → ``"anthropic"`` or ``"ollama"``.
+
+    Reads today's default-lane Claude spend from the module-level ledger
+    and asks ``claude_sample_rate`` for the current probability of trying
+    Claude. Wrapped so unit tests can mock ``random.random`` without
+    monkey-patching main.py internals.
+
+    Behavior:
+      * At $0 spend → 10% Claude.
+      * At $50 spend → 1% Claude.
+      * At $200+ → effectively 0% (sanity sentinel will deny anyway).
+    """
+    _maybe_reset_daily_counters()
+    rate = claude_sample_rate(_claude_default_spend_today)
+    return "anthropic" if random.random() < rate else "ollama"
+
+
+# Kept for back-compat with any external test that imports it. New code
+# should call _sample_target. The legacy 50/50 coin flip is no longer the
+# routing primitive — but unit tests in the repo still reference this name.
+def _coin_flip() -> str:
+    """DEPRECATED. Forwards to ``_sample_target`` for routing parity.
+
+    The original 50/50 coin flip was replaced by the tiered Claude
+    sampler. The function name is preserved so existing imports don't
+    break; new code should use ``_sample_target`` directly.
+    """
+    return _sample_target()
+
+
+def _ollama_admission_state(request: Request) -> dict:
+    """Build the state-dict ``ollama_admit`` expects."""
+    providers: dict[str, Provider] = request.app.state.providers
+    ollama_provider = providers.get("ollama")
+    return {
+        "in_flight": int(getattr(ollama_provider, "in_flight", 0) or 0),
+        "saturation_threshold": int(
+            getattr(ollama_provider, "_saturation_threshold", 0)
+            or os.environ.get("OLLAMA_SATURATION_THRESHOLD", "8")
+        ),
+    }
+
+
+def _claude_admission_state() -> dict:
+    """Build the state-dict ``claude_admit_default`` expects."""
+    _maybe_reset_daily_counters()
+    return {
+        "default_spend_usd": _claude_default_spend_today,
+        "sentinel_usd": CLAUDE_SANITY_SENTINEL_USD,
+    }
+
+
+def _route_default_lane(
+    request: Request,
+) -> tuple[str, Provider, dict] | tuple[None, None, dict]:
+    """Run the tiered-sampler routing for the default lane.
+
+    Returns either:
+
+    * ``(provider_name, provider, debug)`` when the chosen target admits.
+      ``debug`` carries which provider the dice landed on + sample-rate
+      context for span attributes.
+    * ``(None, None, debug)`` when admission refuses. There is no fallback
+      between providers under the tiered-sampler model — if the dice
+      picks Ollama and Ollama is full, the dispatcher returns 429.
+      ``debug`` carries the deny reason + retry_after_s.
     """
     providers: dict[str, Provider] = request.app.state.providers
-    target = name or request.app.state.default_provider
-    provider = providers.get(target)
-    if provider is None:
-        # Fall back to anything healthy rather than 503-ing the specialist.
-        if providers:
-            target, provider = next(iter(providers.items()))
-        else:
-            raise HTTPException(status_code=503, detail="No LLM providers loaded.")
+    _maybe_reset_daily_counters()
+    spend = _claude_default_spend_today
+    rate = claude_sample_rate(spend)
+    target = _sample_target()
 
-    # Spillover: Ollama is at capacity and there's room in the daily budget.
-    spilled = False
-    if target == "ollama" and "anthropic" in providers:
-        ollama_provider = providers.get("ollama")
-        if (
-            ollama_provider is not None
-            and getattr(ollama_provider, "is_saturated", False)
-            and _claude_spillover_allowed()
-        ):
-            target = "anthropic"
-            provider = providers["anthropic"]
-            spilled = True
-            SPILLOVER_TOTAL.add(1, {"reason": "ollama_saturated"})
-    return target, provider, spilled
+    debug: dict = {
+        "primary_provider_tried": target,
+        # Kept for back-compat with the body schema; the tiered-sampler
+        # model has no secondary — empty string signals "not attempted".
+        "secondary_provider_tried": "",
+        "primary_reason": "",
+        "secondary_reason": "",
+        "primary_wait_s": 0.0,
+        "secondary_wait_s": 0.0,
+        "sample_rate": float(rate),
+        "sample_tier": int(claude_sample_tier(spend)),
+        "default_spend_usd": float(spend),
+    }
+
+    if target == "anthropic":
+        if "anthropic" not in providers:
+            # Anthropic provider not loaded (config missing or disabled).
+            # Surface that as a deny so the dispatcher can 429 cleanly.
+            debug["primary_reason"] = "anthropic_unavailable"
+            debug["primary_wait_s"] = 1.0
+            ADMISSION_TOTAL.add(
+                1,
+                {"provider": "anthropic", "decision": "deny", "lane": "default"},
+            )
+            return None, None, debug
+        admitted, wait_s, reason = claude_admit_default(_claude_admission_state())
+        debug["primary_wait_s"] = wait_s
+        debug["primary_reason"] = reason
+        ADMISSION_TOTAL.add(
+            1,
+            {
+                "provider": "anthropic",
+                "decision": "admit" if admitted else "deny",
+                "lane": "default",
+            },
+        )
+        if admitted:
+            return "anthropic", providers["anthropic"], debug
+        return None, None, debug
+
+    # target == ollama
+    if "ollama" not in providers:
+        debug["primary_reason"] = "ollama_unavailable"
+        debug["primary_wait_s"] = 1.0
+        ADMISSION_TOTAL.add(
+            1, {"provider": "ollama", "decision": "deny", "lane": "default"}
+        )
+        return None, None, debug
+    admitted, wait_s, reason = ollama_admit(_ollama_admission_state(request))
+    debug["primary_wait_s"] = wait_s
+    # If Ollama denies and the dice didn't pick Claude, tag the reason as
+    # ``claude_not_sampled`` to disambiguate "we rolled Ollama, it was
+    # full" from "we rolled Ollama because the dice never offered Claude
+    # at this spend tier". Wire behavior is identical — the label is
+    # informational for the dashboard.
+    if not admitted:
+        debug["primary_reason"] = REASON_CLAUDE_NOT_SAMPLED
+    else:
+        debug["primary_reason"] = reason
+    ADMISSION_TOTAL.add(
+        1,
+        {
+            "provider": "ollama",
+            "decision": "admit" if admitted else "deny",
+            "lane": "default",
+        },
+    )
+    if admitted:
+        return "ollama", providers["ollama"], debug
+    return None, None, debug
 
 
 @app.get("/health", response_class=PlainTextResponse)
@@ -575,13 +1166,114 @@ async def metrics() -> Response:
 async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
     """The one route specialists call. Routes → costs → emits event → returns.
 
-    Per-request ``provider_override`` lets callers pin a specific provider
-    (e.g. the loadgen's 80/20 Ollama vs Claude split). When unset we fall
-    back to the gateway's configured default provider.
+    Lane detection runs first:
+
+    * Interactive lane (``ai_o11y.traffic_origin == "interactive"`` OR the
+      ``X-Traffic-Origin: interactive`` header) bypasses admission and is
+      forced to Claude. Spend goes onto the interactive ledger, which is
+      NOT subject to the daily cap.
+    * Default lane runs a coin-flip + dual admission test. If neither
+      provider admits, the dispatcher returns HTTP 429 with a Retry-After
+      header and JSON body describing which gate refused.
+
+    The legacy ``provider_override`` field is no longer honored for routing
+    — interactive auto-pins to Claude, default goes through admission. The
+    field stays on the request schema for backwards-compat (callers can
+    keep sending it without erroring out).
     """
-    provider_name, provider, _spilled_over = _select_provider(
-        request, name=req.provider_override
-    )
+    lane = _detect_lane(req, request)
+    providers: dict[str, Provider] = request.app.state.providers
+    admission_debug: dict = {}
+
+    if lane == "interactive":
+        # Interactive bypasses admission entirely and always lands on Claude.
+        # Track the admit-decision on the metric for visibility (lane label
+        # makes it distinguishable from default-lane admits).
+        provider = providers.get("anthropic")
+        if provider is None:
+            # Fall back to whatever is available — interactive should never
+            # 503 just because Anthropic config is missing.
+            if not providers:
+                raise HTTPException(
+                    status_code=503, detail="No LLM providers loaded."
+                )
+            provider_name, provider = next(iter(providers.items()))
+        else:
+            provider_name = "anthropic"
+        ADMISSION_TOTAL.add(
+            1,
+            {
+                "provider": provider_name,
+                "decision": "admit",
+                "lane": "interactive",
+            },
+        )
+    else:
+        # Default lane — tiered Claude sampler + single-provider admission.
+        provider_name, provider, admission_debug = _route_default_lane(request)
+        # If admission landed on Ollama, ask the model-pool scheduler which
+        # concrete model this conversation should pin to. Sticky routing
+        # means the first request in a session picks the model; every
+        # subsequent request for the same session_id reuses it — even
+        # while the model is DRAINING — until the session expires.
+        if provider is not None and provider_name == "ollama":
+            scheduler = getattr(request.app.state, "scheduler", None)
+            if scheduler is not None:
+                from .sigil import _derive_session_id  # local import: avoid cycle
+                _session_id_for_route = _derive_session_id(req)
+                chosen = scheduler.route(_session_id_for_route)
+                if chosen is None:
+                    # Scheduler is up but the pool is currently empty —
+                    # next tick (≤10s) will load the first queued model.
+                    # Tell the caller to retry shortly. The existing
+                    # 429-emitting branch below stamps the deny counter +
+                    # caller-wait histogram, so we only need to set state.
+                    provider = None
+                    admission_debug["primary_reason"] = REASON_OLLAMA_POOL_EMPTY
+                    admission_debug["primary_wait_s"] = 5.0
+                else:
+                    # Pin the chosen model onto the request so the Ollama
+                    # provider serves THIS specific model instead of the
+                    # provider's static default (or the retired rotation
+                    # ticker). model_override always wins inside the
+                    # provider, which is exactly what we need here.
+                    req.model_override = req.model_override or chosen
+                    admission_debug["scheduler_model"] = chosen
+        if provider is None:
+            # Admission refused → HTTP 429. No fallback between providers
+            # under the tiered-sampler model; the dice IS the admission.
+            denied_reason = (
+                admission_debug.get("primary_reason") or REASON_OLLAMA_SATURATED
+            )
+            retry_after = float(admission_debug.get("primary_wait_s", 0.0) or 0.0)
+            ADMISSION_DENIED.add(
+                1, {"reason": denied_reason, "lane": "default"}
+            )
+            CALLER_WAIT_SECONDS.record(
+                retry_after, {"lane": "default", "reason": denied_reason}
+            )
+            body = {
+                "reason": denied_reason,
+                "retry_after_s": round(retry_after, 3),
+                "primary_provider_tried": admission_debug.get(
+                    "primary_provider_tried", ""
+                ),
+                # Kept for body-schema back-compat; the tiered-sampler model
+                # never tries a second provider so this is always empty.
+                "secondary_provider_tried": admission_debug.get(
+                    "secondary_provider_tried", ""
+                ),
+                "sample_rate": admission_debug.get("sample_rate", 0.0),
+                "sample_tier": admission_debug.get("sample_tier", 0),
+            }
+            # Retry-After header is integer seconds per RFC 7231; round up
+            # so callers don't immediately retry into the same denial.
+            retry_after_header = max(1, int(retry_after + 0.999))
+            return JSONResponse(
+                status_code=429,
+                content=body,
+                headers={"Retry-After": str(retry_after_header)},
+            )
 
     with tracer.start_as_current_span("llm_gateway.complete") as span:
         # gen_ai.* span attrs follow OTel GenAI semantic conventions; the
@@ -591,11 +1283,21 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         from .sigil import _derive_session_id  # local import: avoid cycle
         _session_id = _derive_session_id(req)
         span.set_attribute("gen_ai.system", provider_name)
-        if _spilled_over:
-            # Marks requests that landed on Anthropic only because Ollama
-            # was at capacity — the dashboard correlates this with the
-            # OLLAMA_SATURATION_THRESHOLD + Claude budget exhaustion.
-            span.set_attribute("llm_gateway.spillover", "ollama_saturated")
+        span.set_attribute("llm_gateway.lane", lane)
+        if admission_debug:
+            # Annotate which provider the coin flip picked + any deny
+            # reasons that happened on the way to the eventual admit. Lets
+            # the dashboard correlate "primary denied, secondary admitted"
+            # with downstream latency or error spikes.
+            span.set_attribute(
+                "llm_gateway.admission.primary",
+                str(admission_debug.get("primary_provider_tried", "")),
+            )
+            if admission_debug.get("primary_reason"):
+                span.set_attribute(
+                    "llm_gateway.admission.primary_reason",
+                    str(admission_debug["primary_reason"]),
+                )
         span.set_attribute("gen_ai.operation.name", "chat")
         span.set_attribute(
             "gen_ai.request.model",
@@ -672,6 +1374,10 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 log.warning(
                     "provider %s timed out after %.1fs", provider_name, _PROVIDER_TIMEOUT_S
                 )
+                # Scheduler bookkeeping: the model still answered (badly).
+                # Count this as a lifecycle increment so a sick model walks
+                # itself off the pool instead of saturating it forever.
+                _scheduler_on_request_complete(request, provider_name, req)
                 raise HTTPException(
                     status_code=504,
                     detail=f"{provider_name}: timed out after {_PROVIDER_TIMEOUT_S:.0f}s",
@@ -680,11 +1386,18 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
                 span.record_exception(exc)
                 span.set_attribute("error", True)
                 log.exception("provider %s failed", provider_name)
+                _scheduler_on_request_complete(request, provider_name, req)
                 raise HTTPException(status_code=502, detail=f"{provider_name}: {exc}")
         duration_seconds = time.monotonic() - start_time
         span.set_attribute("llm_gateway.streaming.used", streaming_used)
         if streaming_used and ttft_ms is not None:
             span.set_attribute("gen_ai.server.time_to_first_token", ttft_ms / 1000.0)
+
+        # Scheduler bookkeeping: bump the per-model request counter so the
+        # state machine knows to flip ACTIVE -> DRAINING at the lifecycle
+        # boundary (default 100 requests). No-op when the call didn't go
+        # to Ollama.
+        _scheduler_on_request_complete(request, provider_name, req)
 
         # Compute cost and stitch it back onto the response payload.
         cost = compute_cost(
@@ -703,14 +1416,14 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         span.set_attribute("gen_ai.usage.cost.total_usd", cost["total_usd"])
         span.set_attribute("gen_ai.response.finish_reasons", [resp.finish_reason])
 
-        # Add the just-completed call's USD to the daily Claude ledger so
-        # the spillover decision in _select_provider can deny further
-        # spillover once we hit the day's budget ceiling. The OTel
-        # observable-gauge callbacks (see _observe_claude_daily_spend /
-        # _observe_ollama_in_flight) read this state on each collection
-        # cycle, so no explicit .set() is needed here.
+        # Add the just-completed call's USD to the per-lane Claude ledger.
+        # Default-lane spend feeds back into the tiered sampler — each $20
+        # of additional spend above $40 cuts the next request's Claude
+        # sample rate by 10x. Interactive-lane spend is informational only.
+        # The OTel observable-gauge callbacks (see _observe_claude_*) read
+        # this state on each collection cycle, so no explicit .set() needed.
         if provider_name == "anthropic":
-            _record_claude_spend(float(cost["total_usd"]))
+            _record_claude_spend(float(cost["total_usd"]), lane=lane)
 
         # Prometheus counters.
         labels_full = dict(

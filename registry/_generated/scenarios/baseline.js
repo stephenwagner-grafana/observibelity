@@ -36,7 +36,23 @@
 //        kubectl rollout restart -n observibelity deployment/k6-traffic
 
 import http from 'k6/http';
-import { check } from 'k6';
+import { check, sleep } from 'k6';
+
+// Honor 429 + Retry-After from llm-gateway. When both providers are at
+// capacity the gateway returns 429 with a Retry-After header (seconds);
+// we sleep for that interval to yield the VU so retry storms don't pile
+// up. We do NOT retry the same request — k6's ramping-arrival-rate
+// will simply admit the next iteration when the VU becomes free.
+function postWithBackoff(url, body, params) {
+  const r = http.post(url, body, params);
+  if (r.status === 429) {
+    let retryAfter = parseFloat(r.headers['Retry-After'] || '5');
+    if (isNaN(retryAfter) || retryAfter < 0.1) retryAfter = 5;
+    if (retryAfter > 30) retryAfter = 30;  // cap so cycles don't go silly long
+    sleep(retryAfter);
+  }
+  return r;
+}
 
 // Smoothed (round 2) 2026-05-15: replaced flat-line constant-arrival-rate +
 // 180s duration with a long-running `ramping-arrival-rate` driving a
@@ -506,16 +522,19 @@ export default function () {
     : sc.app;
   const url = (app === 'supportbot' ? SUPPORTBOT_URL : NEONCART_URL) + '/chat';
 
-  const routing = pickModelRouting(sc.persona);
+  // 2026-05-16: provider_override + model_override retired from baseline.js.
+  // The gateway now decides provider via coin flip + admission control, and
+  // returns 429 + Retry-After when both providers are saturated. The
+  // postWithBackoff helper above honors the retry-after, yielding the VU so
+  // the natural next k6 iteration on ramping-arrival-rate picks up.
+  // pickModelRouting / CLAUDE_MODELS are kept above for reference but no
+  // longer applied — keeping the surrounding comment block intact for the
+  // cost-math history.
   const payloadObj = {
     message: msg,
     usecase: sc.usecase,
     persona_id: sc.persona,
-    provider_override: routing.provider_override,
   };
-  if (routing.model_override) {
-    payloadObj.model_override = routing.model_override;
-  }
   const payload = JSON.stringify(payloadObj);
 
   const params = {
@@ -524,13 +543,11 @@ export default function () {
       'X-Persona-Id': sc.persona,
       'X-AI-O11Y-Usecase': sc.usecase,
       'X-AI-O11Y-Traffic-Origin': 'continuous',
-      'X-Provider-Override': routing.provider_override,
-      'X-Model-Override': routing.model_override || '',
     },
     timeout: '30s',
   };
 
-  const r = http.post(url, payload, params);
+  const r = postWithBackoff(url, payload, params);
   // Many demo scenarios are intentionally error-prone (mice-rca, injection,
   // exfil). Accept any well-formed HTTP response so the loadgen keeps running.
   check(r, { 'response received': (res) => res.status > 0 && res.status < 600 });

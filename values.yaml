@@ -108,53 +108,67 @@ llmGateway:
       # configured. Per-request callers can still pin a specific model via
       # ``model_override`` on the request body — that always wins.
       model: ""
-      # keepAlive is sent on EVERY /api/chat request AND every prewarm
-      # call, so the active + next-rotation models share an aging clock
-      # with the daemon. Tune up if you want pre-warmed models to linger
-      # across flips on daemons with higher MAX_LOADED_MODELS budgets.
-      keepAlive: "30m"
-      # Prewarm — keeps exactly the active + next rotation models loaded
-      # in VRAM. On every bucket flip, the llm-gateway pre-loads the next
-      # model and evicts the previous one. See app/prewarm.py. Disable to
-      # fall back to the raw "cold-load every 5 min" behaviour.
-      prewarm:
-        enabled: true
-        tickSeconds: 5
-      # Lockstep model rotation — every Ollama-bound specialist in the
-      # cluster uses the SAME model in a 5-minute window, then they all
-      # flip together. The pod-side trick is ``int(time.time()) //
-      # windowSeconds``: every llm-gateway replica computes the same bucket
-      # value at the same wall-clock instant, so no leader-election or
-      # shared state is needed.
+      # keepAlive is sent on EVERY /api/chat request AND the scheduler's
+      # one-shot warm-up call when a model moves out of the queue. Lower
+      # values let Ollama age idle models out of VRAM after the scheduler
+      # stops sending them traffic (DRAINING -> unloaded). The parallel
+      # .240 systemd config sets OLLAMA_KEEP_ALIVE=5m on the daemon; this
+      # value should track that so per-request hints and daemon defaults
+      # agree.
+      keepAlive: "5m"
+      # Dynamic model pool — replaces the old fixed-window rotation. The
+      # llm-gateway runs a scheduler tick every 10s that decides whether
+      # to load the next queued model, hold steady, or force-drain the
+      # most-loaded one. Per-conversation routing is sticky: the first
+      # request in a session picks a random ACTIVE model and every
+      # subsequent request in that session reuses it (even after the
+      # model drains) until the session is idle for sessionIdleTimeoutS.
       #
-      # Why: mimics how real teams A/B-test LLMs hour-over-hour, makes the
-      # Model Winner dashboard show meaningful per-model slices, and avoids
-      # OLLAMA_MAX_LOADED_MODELS thrashing on the GPU host.
-      rotation:
+      # The pool aims for `min` ACTIVE models, caps at `max`. VRAM is a
+      # hard ceiling — a 30B model won't fit alongside a second 30B in
+      # the 50% VRAM cap, so the pool naturally adapts to the model mix.
+      #
+      # gpuSensor configures the Prometheus data source the scheduler
+      # reads to decide add/hold/drain. Leave the URL empty to run with
+      # no GPU sensing (the scheduler defaults to "hold" so it neither
+      # loads aggressively nor force-drains).
+      pool:
         enabled: true
-        # 5-minute window × 12 models = 60-minute cycle that aligns with
-        # wall-clock hours. Each model occupies the same 5-min slot every
-        # hour (00:00, 00:05, 00:10 ...), giving the Model Winner dashboard
-        # clean hourly bands. With prewarm.enabled=true the gateway loads
-        # the next model BEFORE the flip and evicts the previous one
-        # after, keeping the daemon at exactly 2 warm models — pair with
-        # OLLAMA_MAX_LOADED_MODELS=2 on the .240 desktop to enforce that
-        # cap at the daemon layer too.
-        windowSeconds: 300
-        # 12-model rotation, 0.5B → 14B, 11 tool-capable + 1 deliberate
-        # no-tool model (tinyllama) for the "smallest-fast" demo slot.
-        # Order in this list is the *seed pool* — actual per-hour order is a
-        # deterministic shuffle in ``providers/ollama.py:shuffle_models_by_hour``
-        # (and ``prewarm.py`` mirrors), so each UTC hour the rotation runs the
-        # same 12 models in a fresh random order. Pods stay lockstep because
-        # the shuffle seed is the hour bucket.
+        min: 2
+        max: 4
+        # After this many completed requests, an ACTIVE model flips to
+        # DRAINING. Sessions already pinned to it continue to be served;
+        # new sessions get routed to the next ACTIVE model.
+        requestsPerLifecycle: 100
+        # Idle timeout for sticky session pins (seconds). After 10 minutes
+        # of no activity a session drops its pin; when a DRAINING model
+        # loses its last pin the scheduler unloads it and pushes the name
+        # to the back of the queue.
+        sessionIdleTimeoutS: 600
+        # How often the scheduler evaluates GPU state + queue (seconds).
+        tickIntervalS: 10
+        gpuSensor:
+          # Prometheus base URL the scheduler queries for live VRAM /
+          # compute / TTFT. Leave empty to disable GPU-driven decisions.
+          # In-cluster Mimir / Grafana Cloud Prom-compat works here.
+          prometheusUrl: ""
+          # Optional bearer token; ignored when empty. Wire to a Secret
+          # if the data source enforces auth.
+          bearerTokenSecret: ""
+          # Total VRAM on the GPU host. Used to compute "next model fits
+          # with 2GB cushion" decisions. 32GB matches the .240 RTX 5090.
+          vramTotalGb: 32
+          # Ollama daemon NUM_PARALLEL — backlog is in-flight - capacity.
+          capacity: 8
+        # 11-model seed pool. The scheduler pops from the front, runs the
+        # model until it's served `requestsPerLifecycle` calls, then drains
+        # it. Drained models go to the back of the queue, so the cycle
+        # eventually visits every entry.
         #
         # Tool support matters: nc-chatbot/sb-router send `tools` on every
-        # call. Models that lack tool support 400 with "does not support tools".
-        # The gateway catches that error and retries without tools (silent
-        # degradation — the caller gets a plain-chat answer). All listed
-        # models EXCEPT tinyllama support tool calls natively, so only
-        # ~1/12 of the rotation triggers the retry path.
+        # call. Models that lack tool support 400 with "does not support
+        # tools" and the provider transparently retries without tools.
+        # All listed models EXCEPT tinyllama support tool calls natively.
         #
         # Deliberately excluded:
         #   - llama3.2:*, gemma2:*, phi3:mini — no native tool support and
@@ -163,6 +177,8 @@ llmGateway:
         #   - qwen3:4b, qwen3:30b-a3b-thinking — hybrid thinking models,
         #     emit chain-of-thought before every reply (slow + noisy).
         #   - llava:7b, qwen3-vl:30b — vision-only, not relevant to chat.
+        #   - command-r:latest — 32B dense at ~86 tok/s warm produced
+        #     ~370 timeouts/min during testing.
         models:
           - qwen2.5:0.5b                              # 0.5B Qwen2.5
           - tinyllama:1.1b                            # 1.1B Llama (NO tools)
@@ -176,9 +192,6 @@ llmGateway:
           - granite3.1-dense:8b                       # 8B IBM Granite dense
           - mistral-nemo:12b                          # 12B Mistral Nemo
           - qwen2.5:14b                               # 14B Qwen2.5
-          # command-r:latest deliberately excluded — 32B dense at ~86 tok/s
-          # warm produced ~370 timeouts/min during its slot. qwen2.5:14b
-          # takes the 12th seat instead — fast enough to sustain VU pressure.
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
@@ -320,9 +333,9 @@ k6:
   # actually working (without blowing the Anthropic budget on the 2% slice).
   cycle_seconds: 5        # 5s rest between full scenario loops (was 10/30)
   default_rate: "5m"      # default rate per scenario if not specified
-  vus: 180                # virtual users per scenario — calibrated to push the
-                          # 5090 toward ~80% GPU utilization without timeouts.
-                          # Paired with OLLAMA_NUM_PARALLEL=8 + MAX_LOADED_MODELS=1.
+  vus: 60                 # virtual users per scenario — casual demo load.
+                          # ~3-5 req/s total across all scenarios. Pairs with the
+                          # 2-4 model dynamic Ollama pool + 10% tiered Claude sampling.
   # Hash-based ratio picker retired 2026-05-16. The gateway routes
   # target=ollama to Anthropic ONLY when Ollama is saturated AND today's
   # Claude budget has room (see CLAUDE_DAILY_BUDGET_USD on llm-gateway).
