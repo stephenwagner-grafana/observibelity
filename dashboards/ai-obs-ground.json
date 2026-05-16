@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -1689,7 +1689,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | user_id=~\".+@.+\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"sigil generation\" |~ \"(?i)(I think|I believe|maybe|might|probably|I.m not (sure|certain)|approximately|fabric|hallucinat|made up|cannot find)\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json |~ \"\\\"user.id\\\": \\\"\" |~ \".+@.+\"",
           "queryType": "range",
           "refId": "A"
         }

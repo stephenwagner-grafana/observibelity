@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -241,7 +241,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "USD",
@@ -314,7 +314,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator|sb-ticket-helper)\\\"\" [1h]))",
           "legendFormat": "runs",
           "queryType": "range",
           "refId": "A"
@@ -385,7 +385,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "tokens",
@@ -504,7 +504,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\"}[1h]))\n/\nclamp_min(\n  sum(count_over_time({service_namespace=\"observibelity\",container=\"acme-bot-api\"} |~ \"email-cascade.*idx=1/2000\" [1h])), 1\n)",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))\n/\nclamp_min(\n  sum(count_over_time({service_namespace=\"observibelity\",container=\"acme-bot-api\"} |~ \"email-cascade.*idx=1/2000\" [1h])), 1\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "USD / run",
@@ -866,7 +866,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" | user_id=~\".*@.*\" [5m])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [5m])))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -948,7 +948,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" | user_id=~\".*@.*\" [5m]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [5m]))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -1357,7 +1357,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\" | user_id=~\".*@.*\" [10m])))",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [10m])))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -1432,7 +1432,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-escalator\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -1470,7 +1470,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-ticket-helper\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-ticket-helper)\\\"\"",
           "queryType": "range",
           "refId": "A"
         }

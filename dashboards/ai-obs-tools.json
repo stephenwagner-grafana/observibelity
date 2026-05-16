@@ -74,7 +74,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -369,7 +369,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\"}[5m])) * 3600\n/\nclamp_min(\n  sum(rate(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) * 3600,\n  1\n)",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",gen_ai_system!=\"\"}[5m])) * 3600\n/\nclamp_min(\n  sum(rate(traces_spanmetrics_calls_total{service=~\"create_expense|create_ticket|geo_lookup|get_employee.*|get_inventory|get_order_history|get_product|get_ticket|kb_search|list_tickets|place_order|search_products|request_access|reset_password|update_ticket\"}[5m])) * 3600,\n  1\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "USD / tool call",

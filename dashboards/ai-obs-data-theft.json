@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -316,7 +316,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "count(sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])) > 0)",
+          "expr": "count(sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])) > 0)",
           "legendFormat": "employees",
           "refId": "A",
           "instant": false,
@@ -522,7 +522,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [10m])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\".*@\" [10m])))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -869,7 +869,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [5m])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\".*@\" [5m])))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -1244,7 +1244,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=\"$persona_id\" [10m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\"\" |~ \"$persona_id\" [10m]))",
           "legendFormat": "exfil score",
           "queryType": "range",
           "refId": "A"
@@ -1254,7 +1254,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" | user_id=\"$persona_id\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\"\" |~ \"$persona_id\" [5m]))",
           "legendFormat": "total events",
           "queryType": "range",
           "refId": "B"
@@ -1326,7 +1326,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=\"$persona_id\" [10m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\"\" |~ \"$persona_id\" [10m]))",
           "legendFormat": "events",
           "refId": "A",
           "instant": false,
@@ -1764,7 +1764,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}} exfil",
           "queryType": "range",
           "refId": "A"
@@ -1774,7 +1774,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}} total",
           "queryType": "range",
           "refId": "B"
@@ -1784,7 +1784,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [1h])))",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|\\\\b4\\\\d{15}\\\\b|\\\\b5\\\\d{15}\\\\b)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}} cc",
           "queryType": "range",
           "refId": "C"
@@ -1866,7 +1866,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\"$persona_id\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(export|download|copy|paste|dump|extract|forward|email me|send me|give me|leak|exfil|steal|theft|secret|password|database|customer.*list|user.*data|cc|credit card|ssn|api[ -]?key|salary|hr.*data)\" |~ \"(?i)(data.theft|exfil)\" |~ \"\\\"user.id\\\": \\\"\" |~ \"$persona_id\"",
           "queryType": "range",
           "refId": "A"
         }

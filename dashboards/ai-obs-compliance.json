@@ -94,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -385,7 +385,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(policy.circumvention|hiring.discrimination|approval.bypass|sensitive.data.leak)\" [1h]))",
           "legendFormat": "events",
           "refId": "A",
           "instant": false,
@@ -809,7 +809,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(policy.circumvention|hiring.discrimination|approval.bypass|sensitive.data.leak)\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -872,7 +872,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [1h])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(policy.circumvention|hiring.discrimination|approval.bypass|sensitive.data.leak)\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
@@ -1315,7 +1315,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(policy.circumvention|hiring.discrimination|approval.bypass|sensitive.data.leak)\" |~ \"\\\"user.id\\\": \\\".*@\" [24h]))",
           "legendFormat": "security events",
           "queryType": "range",
           "refId": "A"
@@ -1325,7 +1325,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" | json | ai_o11y_specialist=~\"sb-.*\" | user_id=~\".*@.*\" [7d]))",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(hiring|candidate|race|gender|age|disability|religion)\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [7d]))",
           "legendFormat": "hiring risk events",
           "queryType": "range",
           "refId": "B"
@@ -1335,7 +1335,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "100 - 10 * sum by (user_id) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"sb-security-handler\" | user_id=~\".*@.*\" [24h]))",
+          "expr": "100 - 10 * sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(policy.circumvention|hiring.discrimination|approval.bypass|sensitive.data.leak)\" |~ \"\\\"user.id\\\": \\\".*@\" [24h]))",
           "legendFormat": "compliance score",
           "queryType": "range",
           "refId": "C"
@@ -1417,7 +1417,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"sb-security-handler|sb-hiring-helper\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(policy.circumvention|hiring.discrimination|approval.bypass|sensitive.data.leak)\"",
           "queryType": "range",
           "refId": "A"
         }

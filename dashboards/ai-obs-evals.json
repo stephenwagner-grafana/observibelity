@@ -74,7 +74,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -218,7 +218,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",status=\"failed\"}[1h]))",
+          "expr": "sum(increase(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",passed=\"false\"}[1h]))",
           "legendFormat": "toxicity / hate failures",
           "refId": "A",
           "instant": false,
@@ -235,7 +235,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 Sigil evaluators ranked by `status=\"failed\"` runs in the last 24h. The longest bars are the evaluators tripping most often — investigate those first.",
+      "description": "Top 10 Sigil evaluators ranked by `status=\"failed\"` runs in the last 24h. The longest bars are the evaluators tripping most often \u2014 investigate those first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -599,7 +599,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\",status=\"failed\"}[24h])))",
+          "expr": "topk(10, sum by (evaluator) (increase(sigil_eval_scores_total{service_namespace=\"observibelity\",passed=\"false\"}[24h])))",
           "legendFormat": "{{evaluator}}",
           "instant": true,
           "range": false,
@@ -719,7 +719,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_agent_name) (\n  rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\",status=\"success\"}[1h])\n)\n/\nclamp_min(\n  sum by (gen_ai_agent_name) (\n    rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\"}[1h])\n  ), 0.0001\n)",
+          "expr": "sum by (gen_ai_agent_name) (\n  rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\",passed=\"true\"}[1h])\n)\n/\nclamp_min(\n  sum by (gen_ai_agent_name) (\n    rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\"}[1h])\n  ), 0.0001\n)",
           "legendFormat": "{{gen_ai_agent_name}}",
           "range": true,
           "refId": "A"
@@ -1077,7 +1077,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",status=\"failed\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",passed=\"false\"}[5m]))",
           "legendFormat": "toxicity",
           "range": true,
           "refId": "A"
@@ -1087,7 +1087,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*hallucinat.*|.*ground.*|.*factual.*\",status=\"failed\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*hallucinat.*|.*ground.*|.*factual.*\",passed=\"false\"}[5m]))",
           "legendFormat": "hallucination",
           "range": true,
           "refId": "B"
@@ -1097,7 +1097,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*pii.*|.*secret.*|.*leak.*\",status=\"failed\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*pii.*|.*secret.*|.*leak.*\",passed=\"false\"}[5m]))",
           "legendFormat": "pii",
           "range": true,
           "refId": "C"
@@ -1107,7 +1107,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_executions_total{service_namespace=\"observibelity\",evaluator=~\".*injection.*|.*jailbreak.*|.*prompt.*\",status=\"failed\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*injection.*|.*jailbreak.*|.*prompt.*\",passed=\"false\"}[5m]))",
           "legendFormat": "prompt injection",
           "range": true,
           "refId": "D"
@@ -1135,7 +1135,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One-glance evaluator scoreboard from `sigil_eval_executions_total`: total runs in the last hour, failures in the last hour, and failure rate per evaluator. Sorted by failures descending — top rows are the evaluators tripping most often.",
+      "description": "One-glance evaluator scoreboard from `sigil_eval_executions_total`: total runs in the last hour, failures in the last hour, and failure rate per evaluator. Sorted by failures descending \u2014 top rows are the evaluators tripping most often.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1659,7 +1659,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\",status=\"failed\"}[1h])))",
+          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_scores_total{service_namespace=\"observibelity\",passed=\"false\"}[1h])))",
           "legendFormat": "{{evaluator}}",
           "instant": true,
           "range": false,
