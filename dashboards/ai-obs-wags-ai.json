@@ -101,7 +101,7 @@
       "targets": [{
         "refId": "A",
         "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
-        "expr": "(max(nvidia_gpu_memory_used_bytes{host=\"wags-ai\"}) / max(nvidia_gpu_memory_total_bytes{host=\"wags-ai\"}) < bool 0.95) * (max(ollama_loaded_models{host=\"wags-ai\"}) >= bool 1) * (sum(nvidia_gpu_clock_event_reason_active{host=\"wags-ai\", reason!=\"gpu_idle\"}) == bool 0) * (max(nvidia_gpu_ecc_errors_uncorrected_volatile_total{host=\"wags-ai\"}) == bool 0)"
+        "expr": "vector(scalar(max(nvidia_gpu_memory_used_bytes{host=\"wags-ai\"}) / max(nvidia_gpu_memory_total_bytes{host=\"wags-ai\"}) < bool 0.95) * scalar(max(ollama_loaded_models{host=\"wags-ai\"}) >= bool 1) * scalar(sum(nvidia_gpu_clock_event_reason_active{host=\"wags-ai\", reason!=\"gpu_idle\"}) == bool 0) * scalar((max(nvidia_gpu_ecc_errors_uncorrected_volatile_total{host=\"wags-ai\"}) == bool 0) or vector(1)))"
       }],
       "transparent": true
     },
@@ -620,7 +620,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [{"type": "value", "options": {"0": {"text": "0 — good", "color": "#86EFAC", "index": 0}}}],
+          "mappings": [{"type": "value", "options": {"0": {"text": "0 — good", "color": "#86EFAC", "index": 0}, "-1": {"text": "N/A on consumer GPU", "color": "#4B5563", "index": 1}}}],
           "color": {"mode": "thresholds"},
           "thresholds": {"mode": "absolute", "steps": [
             {"value": null, "color": "#86EFAC"},
@@ -629,7 +629,7 @@
           "unit": "short"
         }
       },
-      "targets": [{"refId": "A", "datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "max(nvidia_gpu_ecc_errors_uncorrected_volatile_total{host=\"wags-ai\"})"}],
+      "targets": [{"refId": "A", "datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "max(nvidia_gpu_ecc_errors_uncorrected_volatile_total{host=\"wags-ai\"}) or vector(-1)"}],
       "transparent": true
     },
     {
