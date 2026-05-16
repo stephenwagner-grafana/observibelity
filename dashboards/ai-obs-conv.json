@@ -23,7 +23,7 @@
         "iconColor": "yellow",
         "name": "Brand drift fires",
         "target": {
-          "expr": "{container=\"llm-gateway\"} |~ \"brand_drift\"",
+          "expr": "{container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"brand_drift\"",
           "queryType": "range",
           "refId": "Annotations"
         },
@@ -93,7 +93,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -228,7 +228,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h]))\n/\nclamp_min(\n  count(count by (session_id) (gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\"})),\n  1\n)",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h]))\n/\nclamp_min(\n  count(count by (session_id) (gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"})),\n  1\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "USD / conversation",
@@ -236,7 +236,7 @@
           "refId": "A"
         }
       ],
-      "title": "💬 $ per conversation (last 1h)",
+      "title": "\ud83d\udcac $ per conversation (last 1h)",
       "type": "stat",
       "transparent": false
     },
@@ -315,7 +315,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(refund|return|policy)\" | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) / (sum(count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=\"nc-chatbot\" [15m])) + 1)",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(refund|return|policy)\" |~ \"nc-chatbot\" [15m])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"nc-chatbot\" [15m])) + 1)",
           "legendFormat": "fail rate",
           "queryType": "range",
           "refId": "A"
@@ -662,7 +662,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(refund|return)\" | json | ai_o11y_specialist=\"nc-chatbot\" | user_id=~\".*@(gmail|hotmail|yahoo)\\\\..*\" [5m]))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(refund|return)\" |~ \"nc-chatbot\" | regexp `\"user.id\":\\s*\"(?P<user_id>[^\"]+)\"` | user_id =~ \".+@(gmail|hotmail|yahoo)\\\\..+\" [5m])))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
@@ -734,7 +734,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)refund\" | json | ai_o11y_specialist=\"nc-chatbot\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)refund\" |~ \"nc-chatbot\" [1h]))",
           "legendFormat": "violations",
           "refId": "A",
           "instant": false,
@@ -1093,7 +1093,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
           "legendFormat": "frustration events",
           "queryType": "range",
           "refId": "A"
@@ -1103,7 +1103,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
           "legendFormat": "addressed",
           "queryType": "range",
           "refId": "B"
@@ -1175,7 +1175,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "1 - (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
+          "expr": "1 - (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
           "legendFormat": "unaddressed rate",
           "queryType": "range",
           "refId": "A"
@@ -1589,7 +1589,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "current",
@@ -1601,7 +1601,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "baseline",
@@ -1613,7 +1613,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "-2\u03c3",
@@ -1687,7 +1687,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\"}[1m])))[6h:1m]))",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "drift",
@@ -2149,7 +2149,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\"}[5m])) * 3600",
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[5m])) * 3600",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} cost rate",
@@ -2161,7 +2161,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\"}[1h])))",
+          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} p95 latency",
@@ -2173,7 +2173,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\"}[1h])) * 60",
+          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} avg output rate",

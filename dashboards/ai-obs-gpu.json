@@ -57,7 +57,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -212,7 +212,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "avg(nvidia_smi_utilization_gpu_ratio) * 100 or avg(DCGM_FI_DEV_GPU_UTIL) or vector(0)",
+          "expr": "avg(nvidia_gpu_utilization_gpu_ratio) * 100",
           "instant": false,
           "legendFormat": "GPU util",
           "refId": "A",
@@ -293,7 +293,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "(sum(nvidia_smi_memory_used_bytes) / sum(nvidia_smi_memory_total_bytes)) * 100 or (sum(DCGM_FI_DEV_FB_USED) / (sum(DCGM_FI_DEV_FB_USED) + sum(DCGM_FI_DEV_FB_FREE))) * 100 or vector(0)",
+          "expr": "(sum(nvidia_gpu_memory_used_bytes) / sum(nvidia_gpu_memory_total_bytes)) * 100",
           "instant": false,
           "legendFormat": "VRAM",
           "refId": "A",
@@ -374,7 +374,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "max(nvidia_smi_temperature_gpu) or max(DCGM_FI_DEV_GPU_TEMP) or vector(0)",
+          "expr": "max(nvidia_gpu_temperature_gpu_celsius)",
           "instant": false,
           "legendFormat": "GPU temp",
           "refId": "A",
@@ -457,7 +457,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "(sum(nvidia_smi_power_draw_watts) or sum(DCGM_FI_DEV_POWER_USAGE) or vector(0)) / 1000 * 0.12",
+          "expr": "sum(nvidia_gpu_power_draw_watts) / 1000 * 0.12",
           "instant": false,
           "legendFormat": "USD/hour",
           "refId": "A",
@@ -895,7 +895,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "avg(nvidia_smi_utilization_gpu_ratio) * 100 or avg(DCGM_FI_DEV_GPU_UTIL)",
+          "expr": "avg(nvidia_gpu_utilization_gpu_ratio) * 100",
           "legendFormat": "GPU util %",
           "refId": "A"
         },
@@ -905,7 +905,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "(sum(nvidia_smi_memory_used_bytes) / sum(nvidia_smi_memory_total_bytes)) * 100 or (sum(DCGM_FI_DEV_FB_USED) / (sum(DCGM_FI_DEV_FB_USED) + sum(DCGM_FI_DEV_FB_FREE))) * 100",
+          "expr": "(sum(nvidia_gpu_memory_used_bytes) / sum(nvidia_gpu_memory_total_bytes)) * 100",
           "legendFormat": "VRAM %",
           "refId": "B"
         },
@@ -915,7 +915,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "max(nvidia_smi_temperature_gpu) or max(DCGM_FI_DEV_GPU_TEMP)",
+          "expr": "max(nvidia_gpu_temperature_gpu_celsius)",
           "legendFormat": "GPU temp \u00b0C",
           "refId": "C"
         }
@@ -1299,7 +1299,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_provider_name=\"ollama\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_system=\"ollama\"}[5m])))",
           "legendFormat": "p95 \u2014 {{gen_ai_request_model}}",
           "refId": "A"
         }
@@ -1670,7 +1670,7 @@
             "uid": "${datasource_prom}"
           },
           "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", gen_ai_provider_name=\"ollama\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", gen_ai_system=\"ollama\"}[5m])) * 60",
           "legendFormat": "{{gen_ai_request_model}}",
           "refId": "A"
         }
