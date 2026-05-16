@@ -116,27 +116,48 @@ def build_ribbon_panel():
 
 
 def transform_stat(panel):
-    """Make stat panels feel like AI Obs metric cards."""
+    """Make stat panels feel like AI Obs metric cards.
+
+    Empty-state contract (do NOT undo these):
+      * `instant: true` on a target means the panel intentionally avoids the
+        range-query flicker. Preserve it and set graphMode='none' so the
+        sparkline doesn't try to render an empty time series.
+      * `colorMode: 'background'` set explicitly on a panel marks it as a
+        hero — preserve it; only default unset stats to `colorMode: 'value'`.
+      * `fieldConfig.defaults.noValue` if present is the panel's "$0 / —"
+        fallback; never strip it.
+    """
     fc = panel.setdefault("fieldConfig", {}).setdefault("defaults", {})
     if "thresholds" in fc and "steps" in fc["thresholds"]:
         fc["thresholds"]["steps"] = soften_threshold_steps(fc["thresholds"]["steps"])
     fc["color"] = {"mode": "thresholds"}
+
     opts = panel.setdefault("options", {})
-    opts["colorMode"] = "value"           # let text + sparkline carry color
-    opts["graphMode"] = "area"            # sparkline backdrop
+    # Preserve hero treatment if the builder set it; otherwise default to value.
+    if opts.get("colorMode") not in ("background", "value", "none"):
+        opts["colorMode"] = "value"
+
+    # Sparkline depends on whether the query produces a time series. If any
+    # target is instant, we MUST set graphMode='none' or Grafana paints "No
+    # data" briefly between refreshes. Default to area for range queries
+    # (which gives the soft AI-Obs sparkline backdrop) but never override an
+    # explicit graphMode='none' the builder set.
+    any_instant = any(t.get("instant") is True for t in panel.get("targets", []))
+    if any_instant:
+        opts["graphMode"] = "none"
+    elif opts.get("graphMode") not in ("area", "line", "none"):
+        opts["graphMode"] = "area"
+
     opts["textMode"] = "auto"
-    opts["justifyMode"] = "center"
+    opts.setdefault("justifyMode", "center")
     opts["wideLayout"] = False
     opts["percentChangeColorMode"] = "inverted"
     opts.setdefault("reduceOptions", {"calcs": ["lastNotNull"], "fields": "", "values": False})
-    # Range queries are required for graphMode=area to render a sparkline.
-    # The lastNotNull reducer still surfaces the current value in the big number.
-    for t in panel.get("targets", []):
-        if t.get("instant") is True or t.get("queryType") == "instant":
-            t["instant"] = False
-            t["range"] = True
-            t.pop("queryType", None)
-            t["format"] = t.get("format", "time_series")
+
+    # NEVER convert instant queries to range — that re-introduces the
+    # "No data" flicker that the rebuild scripts explicitly fix.
+    # (The previous version of this transform did `t['instant'] = False;
+    #  t['range'] = True` here, which broke the empty-state contract.)
 
 
 def transform_timeseries(panel):

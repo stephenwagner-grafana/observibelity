@@ -459,14 +459,16 @@ y += 8
 P.append(row(207, "🛑 Projected outage cost — what a future N-hour outage would cost", y))
 y += 1
 
-# Markdown explainer — plain English, no math symbols
+# Top sub-row: markdown explainer (8w) + hero (16w). Hero satisfies the
+# hero.too-small lint rule by being ≥ 12w × 8h. Tunables move to a 2nd
+# sub-row below at 6w × 4h each (full status palette).
 explainer = """### What this means
 
 When the engine is **healthy**, customers add roughly **${baseline_atc_per_hour} carts an hour**, each worth about **\\$${avg_atc_value}**.
 
 That's the revenue you make every hour the lights are on.
 
-When the engine **stops for ${outage_hours} hours**, that hourly revenue evaporates. The orange number to the right is the bill.
+When the engine **stops for ${outage_hours} hours**, that hourly revenue evaporates. The red number to the right is the bill.
 
 ---
 
@@ -475,46 +477,49 @@ Even a "great" **99 % uptime SLA** still allows **87.6 hours of downtime per yea
 > **The four boxes at the top of the page tune the math.** Drag them to your own numbers and the whole page updates live."""
 P.append(text_panel(208, explainer, x=0, y=y, w=8, h=8))
 
-# HERO: outage cost — dynamic title with var interpolation
+# HERO: outage cost — 16w × 8h, dynamic title, pure status palette so
+# color.mixed-tracks doesn't fire (muted → warning → danger).
 outage_cost_expr = "${baseline_atc_per_hour} * ${avg_atc_value} * ${outage_hours}"
 P.append(stat_panel(
     pid=209, title="A ${outage_hours}-hour outage costs", expr=outage_cost_expr,
-    ds=PROM_DS, x=8, y=y, w=8, h=8,
+    ds=PROM_DS, x=8, y=y, w=16, h=8,
     color_mode="background", graph="none", text_mode="value", instant=True,
     description="What an outage of `${outage_hours}` hours, at the healthy cart-add rate of `${baseline_atc_per_hour}/hr` and an average cart value of `\\$${avg_atc_value}`, would cost in lost cart-add revenue.",
     thresholds=[
-        {"color": "#F472B6", "value": None},
-        {"color": "#FB923C", "value": 50_000},
-        {"color": "#EF4444", "value": 200_000},
+        {"color": "#9CA3AF", "value": None},     # status.muted at 0
+        {"color": "#F59E0B", "value": 50_000},   # status.warning amber
+        {"color": "#EF4444", "value": 200_000},  # status.danger red
     ],
 ))
 
-# Right side: 2x2 grid of human-friendly stats
-# (16, 22, 4, 4) Outage length
+# 2nd sub-row: 4 tunables / supporting stats, each 6w × 4h.
+y_sub = y + 8
+
+# (0, +8, 6w × 4h) Outage length
 P.append(stat_panel(
     pid=211, title="Outage length", expr="vector(${outage_hours})",
-    ds=PROM_DS, x=16, y=y, w=4, h=4,
+    ds=PROM_DS, x=0, y=y_sub, w=6, h=4,
     color_mode="none", graph="none", text_mode="value", instant=True,
     unit="none", decimals=0, custom_unit=" hours",
     description="Tune this with the textbox at the top of the page.",
     no_value="—",
 ))
 
-# (20, 22, 4, 4) Healthy rate (carts/hour)
+# (6, +8, 6w × 4h) Healthy rate (carts/hour)
 P.append(stat_panel(
     pid=212, title="Healthy rate", expr="vector(${baseline_atc_per_hour})",
-    ds=PROM_DS, x=20, y=y, w=4, h=4,
+    ds=PROM_DS, x=6, y=y_sub, w=6, h=4,
     color_mode="none", graph="none", text_mode="value", instant=True,
     unit="none", decimals=0, custom_unit=" carts/hr",
     description="What the engine adds to carts every hour when everything's working. Tune at the top.",
     no_value="—",
 ))
 
-# (16, 26, 4, 4) Bleeding rate
+# (12, +8, 6w × 4h) Bleeding rate
 loss_rate_expr = "${baseline_atc_per_hour} * ${avg_atc_value}"
 P.append(stat_panel(
     pid=210, title="Bleeding rate (per hour down)", expr=loss_rate_expr,
-    ds=PROM_DS, x=16, y=y+4, w=4, h=4,
+    ds=PROM_DS, x=12, y=y_sub, w=6, h=4,
     color_mode="value", graph="none", instant=True,
     description="What you lose for every hour the engine is down.",
     thresholds=[
@@ -522,20 +527,20 @@ P.append(stat_panel(
     ],
 ))
 
-# (20, 26, 4, 4) Annual exposure at 99% SLA
+# (18, +8, 6w × 4h) Annual exposure at 99% SLA
 annual_99pct_expr = "${baseline_atc_per_hour} * ${avg_atc_value} * (${annual_hours} * 0.01)"
 P.append(stat_panel(
     pid=213, title="Annual cost of a 99% SLA", expr=annual_99pct_expr,
-    ds=PROM_DS, x=20, y=y+4, w=4, h=4,
+    ds=PROM_DS, x=18, y=y_sub, w=6, h=4,
     color_mode="value", graph="none", instant=True,
     description="A 99 % uptime SLA still allows 87.6 hours of downtime per year. This is what those hours cost.",
     thresholds=[
-        {"color": "#FB923C", "value": None},
+        {"color": "#F59E0B", "value": None},   # status.warning amber (pure track)
     ],
 ))
 
-# Row 3 header
-y += 8
+# Row 3 header — projected-cost row is now 12 tall (hero 8 + tunables 4)
+y += 12
 P.append(row(214, "📈 When the engine ran vs. stopped", y))
 y += 1
 
@@ -673,7 +678,10 @@ P.append({
         "defaults": {
             "unit": "currencyUSD",
             "decimals": 0,
-            "color": {"mode": "palette-classic"},
+            # palette-classic-by-name keeps "claude-haiku" the same hue across
+            # every panel + across time-window changes; per-model byName
+            # overrides from the aesthetic pass pin the exact hex.
+            "color": {"mode": "palette-classic-by-name"},
             "custom": {
                 "drawStyle": "bars",
                 "fillOpacity": 95,

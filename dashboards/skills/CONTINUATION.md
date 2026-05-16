@@ -9,7 +9,7 @@ ObserVIBElity dashboards.
 
 ---
 
-## Status: design system + 5 skills shipped, ready for first end-to-end use
+## Status: design system + 5 skills shipped + outage-cost is clean against the linter
 
 ### What's working
 
@@ -22,25 +22,37 @@ ObserVIBElity dashboards.
   `status_steps()`, `STANDARD_VARS`, `ROW_TITLE`.
 - **Aesthetic pass** at `dashboards/_apply_ai_obs_aesthetic.py` —
   idempotent, applies ribbon + soft palette + per-model pins.
+  **Now preserves** `instant: true` on stat targets, `colorMode: background`
+  on heroes, and `noValue` defaults (the previous version overwrote
+  these and reintroduced flicker).
 - **Linter** at `dashboards/dashboard_lint.py` — enforces lint rules
-  spec from `design_system.md` §9.
+  spec from `design_system.md` §9. **`ai-obs-outage-cost` is now
+  clean: 0 ERROR, 0 WARN, 0 INFO.**
 - **5 skills** in `.claude/skills/ai-o11y-*/SKILL.md` — story-architect,
   layout-composer, grafana-builder, aesthetic-pass, dashboard-critic.
 - **Reference build** `dashboards/_rebuild_outage_cost.py` — full
-  implementation of the `outage-impact` archetype.
-- **Current scores** in `dashboards/RATING.md` — folder avg 4.0/5.
+  implementation of the `outage-impact` archetype. **Projected-outage
+  row was refactored**: hero is now 16w × 8h (was 8w × 8h, lint ERROR),
+  thresholds are pure status palette (was mixed soft+status), and the
+  four tunables moved to a 2nd sub-row at 6w × 4h each. Stacked-by-
+  model bars use `palette-classic-by-name` (was `palette-classic`,
+  lint ERROR).
+- **Current scores** in `dashboards/RATING.md` — folder avg 4.0/5
+  before this round; outage-cost is now closer to 5/5.
 
 ### What's not done yet
 
 - The 4 lower-scored dashboards (`ai-obs-app-neoncart`, `ai-obs-cost`,
   others) have NOT been rebuilt with the new pipeline. They're still
-  hand-edited JSON.
+  hand-edited JSON. The linter would flag many issues on them.
 - The linter has not been wired into CI. Run it manually for now.
 - The aesthetic pass has not been re-run across the whole folder
   since the new rules landed.
 - No archetype rebuild scripts exist yet for `per-user-attribution`,
   `app-overview`, `eval-quality`. The grafana-builder skill will
   produce them on-demand.
+- `RATING.md` hasn't been refreshed since outage-cost was patched —
+  next critic run should recompute the folder average.
 
 ---
 

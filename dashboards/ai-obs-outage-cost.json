@@ -591,9 +591,8 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [1h])) * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -625,9 +624,9 @@
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -667,9 +666,8 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -694,8 +692,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -735,9 +733,8 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value} * 365",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -762,8 +759,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -803,9 +800,8 @@
           "refId": "A",
           "expr": "sum(rate({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [5m])) * 60 * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -830,8 +826,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -871,9 +867,8 @@
           "refId": "A",
           "expr": "vector(${avg_atc_value})",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -898,8 +893,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -952,9 +947,8 @@
           "refId": "A",
           "expr": "(${baseline_atc_per_hour} * 24 - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h]))) * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -986,9 +980,9 @@
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1028,9 +1022,8 @@
           "refId": "A",
           "expr": "(${baseline_atc_per_hour} - sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [1h]))) * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1063,8 +1056,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1104,9 +1097,8 @@
           "refId": "A",
           "expr": "(sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) / (${baseline_atc_per_hour} * 24)) * 100",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1139,8 +1131,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1180,9 +1172,8 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * 24 * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1207,8 +1198,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1248,9 +1239,8 @@
           "refId": "A",
           "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event source=loadgen\" [24h])) * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1275,8 +1265,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1323,7 +1313,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "### What this means\n\nWhen the engine is **healthy**, customers add roughly **${baseline_atc_per_hour} carts an hour**, each worth about **\\$${avg_atc_value}**.\n\nThat's the revenue you make every hour the lights are on.\n\nWhen the engine **stops for ${outage_hours} hours**, that hourly revenue evaporates. The orange number to the right is the bill.\n\n---\n\nEven a \"great\" **99 % uptime SLA** still allows **87.6 hours of downtime per year**. At this engine's rate, that's millions of dollars you'll never see.\n\n> **The four boxes at the top of the page tune the math.** Drag them to your own numbers and the whole page updates live."
+        "content": "### What this means\n\nWhen the engine is **healthy**, customers add roughly **${baseline_atc_per_hour} carts an hour**, each worth about **\\$${avg_atc_value}**.\n\nThat's the revenue you make every hour the lights are on.\n\nWhen the engine **stops for ${outage_hours} hours**, that hourly revenue evaporates. The red number to the right is the bill.\n\n---\n\nEven a \"great\" **99 % uptime SLA** still allows **87.6 hours of downtime per year**. At this engine's rate, that's millions of dollars you'll never see.\n\n> **The four boxes at the top of the page tune the math.** Drag them to your own numbers and the whole page updates live."
       }
     },
     {
@@ -1333,7 +1323,7 @@
       "description": "What an outage of `${outage_hours}` hours, at the healthy cart-add rate of `${baseline_atc_per_hour}/hr` and an average cart value of `\\$${avg_atc_value}`, would cost in lost cart-add revenue.",
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 16,
         "x": 8,
         "y": 25
       },
@@ -1350,9 +1340,8 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * ${avg_atc_value} * ${outage_hours}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1367,11 +1356,11 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#F472B6",
+                "color": "#9CA3AF",
                 "value": null
               },
               {
-                "color": "#FB923C",
+                "color": "#F59E0B",
                 "value": 50000
               },
               {
@@ -1384,9 +1373,9 @@
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1409,9 +1398,9 @@
       "description": "Tune this with the textbox at the top of the page.",
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 25
+        "w": 6,
+        "x": 0,
+        "y": 33
       },
       "datasource": {
         "type": "prometheus",
@@ -1426,9 +1415,8 @@
           "refId": "A",
           "expr": "vector(${outage_hours})",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1452,9 +1440,9 @@
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1477,9 +1465,9 @@
       "description": "What the engine adds to carts every hour when everything's working. Tune at the top.",
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 25
+        "w": 6,
+        "x": 6,
+        "y": 33
       },
       "datasource": {
         "type": "prometheus",
@@ -1494,9 +1482,8 @@
           "refId": "A",
           "expr": "vector(${baseline_atc_per_hour})",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1520,9 +1507,9 @@
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1545,9 +1532,9 @@
       "description": "What you lose for every hour the engine is down.",
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 29
+        "w": 6,
+        "x": 12,
+        "y": 33
       },
       "datasource": {
         "type": "prometheus",
@@ -1562,9 +1549,8 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * ${avg_atc_value}",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1589,8 +1575,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1613,9 +1599,9 @@
       "description": "A 99 % uptime SLA still allows 87.6 hours of downtime per year. This is what those hours cost.",
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 29
+        "w": 6,
+        "x": 18,
+        "y": 33
       },
       "datasource": {
         "type": "prometheus",
@@ -1630,9 +1616,8 @@
           "refId": "A",
           "expr": "${baseline_atc_per_hour} * ${avg_atc_value} * (${annual_hours} * 0.01)",
           "legendFormat": "",
-          "instant": false,
-          "range": true,
-          "format": "time_series"
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
@@ -1647,7 +1632,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#FB923C",
+                "color": "#F59E0B",
                 "value": null
               }
             ]
@@ -1657,8 +1642,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "inverted",
         "reduceOptions": {
@@ -1682,7 +1667,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 37
       },
       "collapsed": false,
       "panels": []
@@ -1696,7 +1681,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 34
+        "y": 38
       },
       "datasource": {
         "type": "prometheus",
@@ -1783,7 +1768,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 34
+        "y": 38
       },
       "datasource": {
         "type": "prometheus",
@@ -1869,7 +1854,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 45
       },
       "collapsed": false,
       "panels": []
@@ -1883,7 +1868,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 46
       },
       "datasource": {
         "type": "loki",
@@ -1907,7 +1892,7 @@
           "unit": "currencyUSD",
           "decimals": 0,
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "bars",
@@ -2258,7 +2243,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 55
       },
       "datasource": {
         "type": "prometheus",
@@ -2648,7 +2633,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 59
+        "y": 63
       },
       "collapsed": false,
       "panels": []
@@ -2662,7 +2647,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 60
+        "y": 64
       },
       "datasource": {
         "type": "loki",
@@ -2724,7 +2709,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 60
+        "y": 64
       },
       "datasource": {
         "type": "loki",
@@ -2785,7 +2770,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 68
+        "y": 72
       },
       "collapsed": false,
       "panels": []
@@ -2799,7 +2784,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 69
+        "y": 73
       },
       "options": {
         "mode": "markdown",
