@@ -150,6 +150,45 @@ now_epoch=$(date +%s)
     done
   fi
 
+  # Runner subprocess → model mapping. Lets per-process GPU memory chart
+  # display model names instead of opaque PIDs.
+  # The runner cmdline references the BLOB digest, but /api/ps returns the
+  # MANIFEST digest. Bridge with the on-disk manifest files (one per model).
+  echo "# HELP ollama_runner_info Maps an ollama runner subprocess PID to its model"
+  echo "# TYPE ollama_runner_info gauge"
+
+  MANIFEST_ROOT="${OLLAMA_MANIFEST_ROOT:-/usr/share/ollama/.ollama/models/manifests/registry.ollama.ai/library}"
+
+  # Build blob_digest_prefix → "model:tag" lookup from manifests
+  BLOB_MAP=""
+  if [ -d "${MANIFEST_ROOT}" ]; then
+    BLOB_MAP=$(
+      find "${MANIFEST_ROOT}" -mindepth 2 -maxdepth 2 -type f 2>/dev/null | while read -r mf; do
+        model=$(basename "$(dirname "${mf}")")
+        tag=$(basename "${mf}")
+        blob=$(jq -r '.layers[] | select(.mediaType == "application/vnd.ollama.image.model") | .digest' "${mf}" 2>/dev/null | head -1)
+        blob="${blob#sha256:}"
+        [ -z "${blob}" ] && continue
+        printf '%s\t%s:%s\n' "${blob:0:12}" "${model}" "${tag}"
+      done
+    )
+  fi
+
+  for pid_dir in /proc/[0-9]*/; do
+    pid=$(basename "${pid_dir}")
+    cmdline=$(tr '\0' ' ' < "${pid_dir}cmdline" 2>/dev/null || continue)
+    case "${cmdline}" in
+      *"ollama runner --model"*)
+        digest_full=$(echo "${cmdline}" | sed -n 's/.*sha256-\([0-9a-f]*\).*/\1/p')
+        [ -z "${digest_full}" ] && continue
+        digest_prefix="${digest_full:0:12}"
+        model_name=$(echo "${BLOB_MAP}" | awk -v d="${digest_prefix}" -F'\t' '$1 == d { print $2; exit }')
+        [ -z "${model_name}" ] && model_name="unknown"
+        echo "ollama_runner_info{pid=\"${pid}\",model=\"${model_name}\",digest=\"${digest_prefix}\"} 1"
+        ;;
+    esac
+  done
+
   # /api/tags — every model installed on disk
   echo "# HELP ollama_installed_model_info Static info for an installed model"
   echo "# TYPE ollama_installed_model_info gauge"
