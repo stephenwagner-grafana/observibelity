@@ -44,6 +44,7 @@ from .sigil import (
     init_sigil,
     shutdown as sigil_shutdown,
 )
+from .prewarm import maybe_start_prewarm
 
 log = logging.getLogger("llm_gateway")
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
@@ -192,6 +193,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception:  # noqa: BLE001 — telemetry must never block boot
         log.exception("Sigil init failed; generation events disabled")
 
+    # Start the Ollama prewarm task — preloads the next-rotation model into
+    # VRAM during the current model's 5-min window so the flip is seamless
+    # (zero cold-load latency at the boundary). Requires the daemon to allow
+    # at least 2 loaded models (OLLAMA_MAX_LOADED_MODELS=2) on .240.
+    try:
+        app.state.prewarm_task = maybe_start_prewarm()
+    except Exception:  # noqa: BLE001 — prewarm must never block boot
+        log.exception("prewarm init failed; rotation flips will see cold loads")
+        app.state.prewarm_task = None
+
     log.info(
         "llm-gateway ready: providers=%s default=%s pricing=%s routing=%s",
         list(providers.keys()),
@@ -206,6 +217,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         sigil_shutdown()
     except Exception:  # noqa: BLE001
         log.exception("Sigil shutdown failed")
+    # Stop the prewarm ticker before the event loop tears down.
+    prewarm_task = getattr(app.state, "prewarm_task", None)
+    if prewarm_task is not None:
+        try:
+            await prewarm_task.stop()
+        except Exception:  # noqa: BLE001
+            log.exception("prewarm shutdown failed")
 
 
 app = FastAPI(

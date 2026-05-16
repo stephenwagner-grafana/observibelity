@@ -175,7 +175,21 @@ def _build_config() -> Optional[Any]:
         insecure=insecure,
         auth=auth,
     )
-    return ClientConfig(generation_export=export)
+
+    # Suppress sigil_sdk's auto-emitted gen_ai_client_* metrics by handing it
+    # a NoOpMeter. The SDK records duration/token/TTFT histograms with
+    # ``gen_ai.provider.name`` instead of the OTel semconv ``gen_ai.system``
+    # — which surfaces in the Grafana Cloud AI Observability plugin as
+    # "value" / "unknown" provider series alongside our canonical emits from
+    # main.py. We already record the same histograms with the right label
+    # set, so silencing the SDK's duplicate eliminates the dirty series
+    # without losing any data the plugin actually queries.
+    from opentelemetry.metrics import NoOpMeter  # local: avoid import cycle
+
+    return ClientConfig(
+        generation_export=export,
+        meter=NoOpMeter("llm-gateway-sigil-noop"),
+    )
 
 
 def init_sigil(service_name: str = "llm-gateway") -> None:
