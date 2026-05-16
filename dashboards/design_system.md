@@ -276,8 +276,229 @@ Hard to define, easy to spot. Before shipping:
 
 ---
 
+## 7. Semantic panel taxonomy
+
+Every panel on a curated dashboard MUST identify with one of these named
+**semantic kinds**. The kind drives palette, sizing, calc, and lint rules.
+Rebuild scripts should set `panel.title` and use the matching `SIZE` and
+`UNIT` constants from `_design_tokens.py`.
+
+| Kind                    | Story stage   | Typical panel type | Size      | Color track | Notes                                                              |
+|-------------------------|---------------|--------------------|-----------|-------------|--------------------------------------------------------------------|
+| `revenue.hero`          | business      | stat               | 12w × 8h  | status      | One per "revenue right now" row. `colorMode: background`.          |
+| `revenue.kpi`           | business      | stat               | 6w × 4h   | status      | Supporting headline (24h total, run rate, etc.).                   |
+| `revenue.flow.actual`   | business      | timeseries (bars)  | 24w × 9h  | per-model   | 10-min buckets stacked by model; `step: "10m"`.                    |
+| `revenue.flow.missed`   | business      | timeseries (bars)  | 24w × 8h  | status      | Same 10-min step; single danger color; only fires when error gate. |
+| `journey.health`        | customer      | state-timeline     | 12w × 7h  | status      | 0/1 strip with value mappings (locked-out / can shop).             |
+| `journey.start_vs_end`  | customer      | bargauge / table   | 12w × 8h  | per-model   | "Started journeys" vs "completed checkouts" by persona/model.      |
+| `journey.abandoned`     | customer      | stat               | 6w × 4h   | status      | Count or % of journeys that errored before checkout.               |
+| `engine.state`          | technical     | state-timeline     | 12w × 7h  | status      | k3s nodes / critical pods Ready state.                             |
+| `engine.errors_table`   | technical     | table              | 24w × 8h  | status      | Top firing alerts. Soft palette, no full-saturation cells.         |
+| `engine.deploys`        | technical     | annotations layer  | n/a       | muted       | Deploys + restarts shown as vertical markers across the day.       |
+| `ai.cost_per_call`      | ai economics  | stat               | 6w × 4h   | soft        | `$/call` rolled up; unit = currencyUSD, decimals=4 if < $0.10.     |
+| `ai.cost_per_mtoken`    | ai economics  | bargauge           | 12w × 8h  | soft        | `$/1M tokens` per model. Gradient blue → orange.                   |
+| `ai.token_flow`         | ai economics  | timeseries (bars)  | 24w × 9h  | per-model   | tokens/min stacked by model.                                       |
+| `ai.model_mix`          | ai economics  | bargauge           | 12w × 8h  | per-model   | Share of calls/tokens by model (24h).                              |
+| `ai.judge_pass_rate`    | ai economics  | stat               | 6w × 4h   | status      | Eval/judge pass rate %.                                            |
+| `action.runbook`        | action        | text (markdown)    | 24w × 10h | none        | The "what to do now" block. ROI math, links to runbooks/alerts.    |
+| `action.alert_routes`   | action        | table              | 24w × 6h  | status      | Routes + on-call rotation. Sparingly decorated.                    |
+| `header.ribbon`         | (all)         | timeseries (bars)  | 24w × 3h  | soft        | `transparent: true`. The top accent strip.                         |
+| `header.row`            | (all)         | row                | 24w × 1h  | n/a         | Emoji-prefixed section title.                                      |
+| `callout.insight`       | (any)         | text (markdown)    | 8w × 8h   | none        | `transparent: true`. Plain-English story beside a hero.            |
+
+**Rule of one kind per panel** — `panel.description` SHOULD start with the
+kind in brackets so the linter can parse it: `[revenue.hero] What the
+engine is making right now.` This is optional in v1 but required for the
+strict linter mode.
+
+---
+
+## 8. Dashboard archetype catalog
+
+Named layouts. When asked to build a dashboard, pick the archetype first;
+then the layout composer fills in the rows from the panel taxonomy.
+
+### 8.1 `outage-impact` — the headline business dashboard
+
+Used for: **outage cost, executive demo**. Reference: `ai-obs-outage-cost`.
+
+```
+y=0   header.ribbon                                      24w × 3h
+y=3   ⟨header.row⟩ 💰 Revenue right now                  24w × 1h
+y=4   revenue.hero (12w) | revenue.kpi×4 (12w stacked)    24w × 8h
+y=12  ⟨header.row⟩ 📉 Missed revenue today               24w × 1h
+y=13  revenue.kpi×5 row                                   24w × 8h
+y=21  ⟨header.row⟩ 🛑 Projected outage cost              24w × 1h
+y=22  callout.insight | revenue.hero | revenue.kpi×4    24w × 8h
+y=30  ⟨header.row⟩ 📈 When the engine ran vs. stopped    24w × 1h
+y=31  engine.state | journey.health                       24w × 7h
+y=38  ⟨header.row⟩ 📊 Revenue per 10-minute block        24w × 1h
+y=39  revenue.flow.actual (stacked by model)              24w × 9h
+y=48  revenue.flow.missed                                 24w × 8h
+y=56  ⟨header.row⟩ 🤖 AI model economics                 24w × 1h
+y=57  ai.model_mix | ai.cost_per_mtoken                   24w × 8h
+y=65  ⟨header.row⟩ 💡 Why this pays for itself           24w × 1h
+y=66  action.runbook                                      24w × 10h
+```
+
+### 8.2 `per-user-attribution` — "who's costing us money?"
+
+Used for: **per-user cost analysis, FinOps view**. Reference: `ai-obs-cost`.
+
+```
+header.ribbon
+⟨🧑 Who's spending right now⟩
+   journey.start_vs_end | revenue.kpi (top spender / top abuser)
+⟨📊 Cost per user — 24h leaderboard⟩
+   ai.cost_per_call (per-user table, 24w)
+⟨🤖 What models are they running⟩
+   ai.model_mix | ai.cost_per_mtoken
+⟨💡 Action⟩
+   action.runbook (with redirect routes)
+```
+
+### 8.3 `app-overview` — landing page for one app (e.g. NeonCart)
+
+Used for: **app-level demo entry**. Reference: `ai-obs-app-neoncart`.
+
+```
+header.ribbon
+⟨💰 What the app is making⟩
+   revenue.hero | revenue.kpi×3
+⟨💬 Conversations & specialists⟩
+   journey.start_vs_end (the convo bar chart) | ai.judge_pass_rate
+⟨🤖 Model mix & cost⟩
+   ai.model_mix | ai.cost_per_mtoken | ai.token_flow
+⟨📈 Healthy operation⟩
+   engine.state | engine.errors_table
+⟨💡 Action⟩
+   action.alert_routes
+```
+
+### 8.4 `eval-quality` — judge results and toxicity
+
+Used for: **evaluator dashboards, quality monitoring**. Reference: `ai-obs-evals`.
+
+```
+header.ribbon
+⟨🎯 Today's quality⟩
+   ai.judge_pass_rate (hero) | revenue.kpi (eval volume)
+⟨📊 Pass / fail by judge⟩
+   bargauge (per judge, stacked by pass/fail)
+⟨🤖 Per-model quality⟩
+   ai.model_mix (recolored by pass/fail) | table per-model breakdown
+⟨💡 Action⟩
+   action.runbook (link to failing examples)
+```
+
+### 8.5 `landing` — folder-level navigator
+
+Used for: **directory of dashboards within a folder**. Reference: `ai-obs-app-landing`.
+
+```
+header.ribbon
+N × big rectangular "card" text panels, each linking to a dashboard.
+No data queries. Pure navigation.
+```
+
+### Picking an archetype
+
+| If the brief says…                              | Archetype              |
+|-------------------------------------------------|------------------------|
+| "outage cost / lost revenue / SLA impact"       | `outage-impact`        |
+| "who's the most expensive user"                 | `per-user-attribution` |
+| "show me how NeonCart / SupportBot is doing"    | `app-overview`         |
+| "is the LLM giving good answers"                | `eval-quality`         |
+| "I just want a landing page"                    | `landing`              |
+
+---
+
+## 9. Lint rules spec
+
+Enforced automatically by [`dashboard_lint.py`](dashboard_lint.py). Three
+severity levels: **ERROR** (must fix before push), **WARN** (should fix),
+**INFO** (nudge).
+
+### Story-arc rules
+
+- **ERROR `arc.row-order`** — row titles must follow the canonical 5-stage
+  order. Custom rows are allowed but must declare their stage via the row
+  title's emoji (`💰`, `👥`, `📈`, `🤖`, `💡` — one of the five canonical
+  emojis). Out-of-order rows are an ERROR.
+- **WARN `arc.missing-action`** — every dashboard SHOULD end with a `💡 …`
+  action row.
+- **INFO `arc.too-long`** — > 7 rows on a single dashboard suggests it
+  should be split.
+
+### Hero rules
+
+- **ERROR `hero.too-small`** — first non-row panel under a row header
+  MUST be `w ≥ 12` and `h ≥ 8` if its type is `stat` and its title doesn't
+  contain "tunable" / "ref".
+- **WARN `hero.no-color-mode`** — the hero stat SHOULD set
+  `options.colorMode = "background"`.
+- **WARN `hero.no-description`** — every stat panel needs a description.
+
+### Color rules
+
+- **ERROR `color.rainbow-on-quantitative`** — any panel with
+  `color.mode = "palette-classic"` AND `type` in {timeseries, bargauge,
+  barchart, table} is ERROR (use thresholds or `palette-classic-by-name`).
+- **WARN `color.mixed-tracks`** — if thresholds steps mix soft palette
+  hexes (`#8AB8FF`, `#A78BFA`, etc.) AND status palette hexes (`#10B981`,
+  `#EF4444`), WARN.
+- **INFO `color.model-pin-missing`** — if a query has `legendFormat`
+  matching a known model name and no `byName` override pinning its color,
+  INFO suggest the pin.
+
+### Unit rules
+
+- **WARN `unit.exponential`** — any stat whose default unit is `short` or
+  blank AND whose typical value > 1e6, WARN to suggest currencyUSD /
+  customUnit.
+- **WARN `unit.per-token`** — any unit string containing `/token` (without
+  the `/1M` prefix), WARN.
+- **WARN `unit.degenerate-hours`** — `unit: "h"` shows `"3.0 hour"`; WARN
+  to use `customUnit: " hours"` instead.
+
+### Empty-state rules
+
+- **WARN `query.flicker-risk`** — stat panel + Loki target with `[1h]` or
+  `[5m]` range AND `range: true` (instead of `instant: true`), WARN to
+  set `instant: true` + `noValue`.
+- **INFO `query.no-novalue`** — stat panel without a `fieldConfig.defaults.noValue`,
+  INFO.
+
+### Tenant-specific rules
+
+- **ERROR `loki.clamp-min`** — LogQL queries using `clamp_min(...)` ERROR
+  (not supported on this tenant).
+- **ERROR `loki.rate-interval-var`** — LogQL queries using
+  `$__rate_interval` ERROR (use literal `[1m]`).
+
+### Aesthetic-pass rules
+
+- **ERROR `aesthetic.no-ribbon`** — first panel must be `id=100`
+  (the ribbon) or there must be a panel at `y=0, h=3` that's transparent.
+- **WARN `aesthetic.transparent-panel`** — non-ribbon non-callout panel
+  with `transparent: true` is WARN (loses the elevated card feel).
+
+### Running the linter
+
+```bash
+python3 dashboards/dashboard_lint.py dashboards/ai-obs-outage-cost.json
+# exit code 0 = clean / WARN-only; non-zero = at least one ERROR
+```
+
+The linter is the LAST step before `dashboards-sync.sh push`. CI should
+fail if any ERROR fires.
+
+---
+
 ## Companion files
 
 - **[`_design_tokens.py`](_design_tokens.py)** — Python constants for generators
 - **[`_apply_ai_obs_aesthetic.py`](_apply_ai_obs_aesthetic.py)** — the last-step aesthetic pass
-- **[`_rebuild_outage_cost.py`](_rebuild_outage_cost.py)** — reference implementation
+- **[`_rebuild_outage_cost.py`](_rebuild_outage_cost.py)** — reference implementation of the `outage-impact` archetype
+- **[`dashboard_lint.py`](dashboard_lint.py)** — automated linter
+- **[`skills/README.md`](skills/README.md)** — index of the 5 Claude skills that drive the lifecycle
