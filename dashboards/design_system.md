@@ -4,6 +4,10 @@ The look-and-feel contract for every curated dashboard in the `observibelity`
 Grafana folder. Built on Grafana dark mode; refined into a polished "executive
 demo" style that tells a business story instead of dumping metrics.
 
+> **Read [`skills/NARRATIVE.md`](skills/NARRATIVE.md) first.** This file is
+> the *visual half* of that narrative. The story is upstream of the visuals;
+> the visuals serve the story.
+
 > Generators should import [`_design_tokens.py`](_design_tokens.py) for the
 > constants and run [`_apply_ai_obs_aesthetic.py`](_apply_ai_obs_aesthetic.py)
 > as the last build step.
@@ -495,10 +499,85 @@ fail if any ERROR fires.
 
 ---
 
+## 10. Conceptual primitives (the framings that drive the visuals)
+
+These are the load-bearing ideas from
+[`skills/NARRATIVE.md`](skills/NARRATIVE.md). Every dashboard ultimately
+illustrates one or more of these. If a panel can't be traced back to one
+of these primitives, ask whether it belongs in the demo at all.
+
+### 10.1 The four primitives of observability
+
+Classical o11y has three primitives. AI o11y adds a fourth.
+
+| Primitive            | Atomic unit                    | Where you see it in dashboards |
+|----------------------|--------------------------------|--------------------------------|
+| **Metric datapoint** | a scalar at an instant         | every `stat` and `timeseries` panel |
+| **Log line**         | a structured text event        | Loki queries, log-derived counts (e.g. ATC events) |
+| **Span**             | a unit of work in a trace      | OTel + Tempo deep-links |
+| **Conversation**     | a semantic execution graph     | every panel that drills into a conversation row — the convo bar charts, journey panels, eval breakdowns |
+
+A **conversation** has: prompts, tools, evals, tokens, model decisions,
+traces, user intent, business outcomes. Every AI o11y dashboard should
+have *at least one panel* where the audience can see "this is a
+conversation, not just data." If your dashboard doesn't, you may be
+visualizing logs in disguise.
+
+### 10.2 The shift-left axis
+
+There is a single conceptual axis that runs through everything:
+
+```
+   LEFT                                                    RIGHT
+   ─────────────────────────────────────────────────────────────
+   subjective                                          objective
+   experimental                                        production
+   dev                                                 prod
+   non-deterministic                                   deterministic
+```
+
+**The job of AI o11y is to move things rightward** — turn ambiguous AI
+behavior into measurable operational systems. Treat the four axes as
+correlated; reach for the same vocabulary across panels.
+
+Visually, the shift-left motion should appear as a recurring motif —
+the existing soft-palette ribbon (blue → purple → pink → orange) doubles
+as a "subjective → objective" gradient and can be reused as an
+intentional cue.
+
+### 10.3 The recursive loop
+
+The demo's punchline is recursion:
+
+1. **classical o11y → systems get healthier** (the old story)
+2. **o11y → AI systems get healthier** (the new frontier — this demo)
+3. **AI in o11y → observability itself gets smarter** (the recursive payoff)
+
+The dashboards collectively should make all three loops visible: the
+traditional RCA panels (loop 1), the AI-economics + conversation panels
+(loop 2), and the AI-assisted-investigation panels (loop 3). A dashboard
+that supports only one loop is fine; one that obscures the recursion is
+a problem.
+
+### 10.4 Verbatim framings (quote these, don't paraphrase)
+
+- "A conversation is the base unit of AI observability."
+- "AI changes the nature of telemetry itself."
+- "Observability optimized systems; now it optimizes AI."
+- "Using AI to optimize observability, while using observability to optimize AI."
+- "Shift-left turns subjective AI behavior into measurable operational systems."
+
+These appear in `NARRATIVE.md` and the spoken `DEMO_SCRIPT.md`. The
+design system's job is to make sure the visuals don't undercut them.
+
+---
+
 ## Companion files
 
+- **[`skills/NARRATIVE.md`](skills/NARRATIVE.md)** — the *vision* (read first)
+- **[`skills/DEMO_SCRIPT.md`](skills/DEMO_SCRIPT.md)** — the *spoken script*
 - **[`_design_tokens.py`](_design_tokens.py)** — Python constants for generators
 - **[`_apply_ai_obs_aesthetic.py`](_apply_ai_obs_aesthetic.py)** — the last-step aesthetic pass
 - **[`_rebuild_outage_cost.py`](_rebuild_outage_cost.py)** — reference implementation of the `outage-impact` archetype
 - **[`dashboard_lint.py`](dashboard_lint.py)** — automated linter
-- **[`skills/README.md`](skills/README.md)** — index of the 5 Claude skills that drive the lifecycle
+- **[`skills/README.md`](skills/README.md)** — index of the 6 Claude skills that drive the lifecycle

@@ -1,15 +1,81 @@
 # Continuation note — for the next Claude chat
 
 This file is the "where we left off" handoff. Update it whenever a chat
-ends with in-flight work; read it at the start of every new chat about
-ObserVIBElity dashboards.
+ends with in-flight work; **read it at the start of every new chat
+about the AI o11y demo**.
 
 > **Last updated**: 2026-05-16 by Claude Opus 4.7
 > **Last commit on `main`**: see `git log --oneline -5`
 
 ---
 
-## Status: design system + 5 skills shipped + outage-cost is clean against the linter
+## 🚨 Major direction change — read this first
+
+This is **no longer** "a set of Grafana dashboards." It is an
+**AI-native observability presentation system**.
+
+**Story is upstream of dashboards.** Tomorrow's primary task is NOT to
+build dashboards — it is to write the **spoken demo script**, identify
+**wow moments**, and only then decide which dashboards support each
+beat.
+
+The dashboards compile from the story, not the reverse.
+
+**Two new artifacts** are now the top-level source of truth, ordered:
+
+1. [`NARRATIVE.md`](NARRATIVE.md) — the *vision* (theses, framings,
+   demo flow, wow moments). **Read first.**
+2. [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md) — the *spoken script* (6 acts,
+   ~7 min). **The artifact tomorrow's work edits.**
+3. [`README.md`](README.md) — pipeline + skill index (now 6 skills, the
+   new `ai-o11y-demo-narrator` is upstream of all the others).
+4. `../design_system.md` — visual contract (now includes §10
+   conceptual primitives mirroring NARRATIVE.md).
+
+A new 6th skill, `ai-o11y-demo-narrator`, owns the spoken script and
+hands beats to `story-architect` when a dashboard rebuild is implied.
+
+---
+
+## The verbatim framings (do not paraphrase)
+
+1. *"A conversation is the base unit of AI observability."*
+2. *"AI changes the nature of telemetry itself."*
+3. *"Observability optimized systems; now it optimizes AI."*
+4. *"Using AI to optimize observability, while using observability to optimize AI."*
+5. *"Shift-left turns subjective AI behavior into measurable operational systems."*
+
+These are load-bearing. The script's opening line is the core thesis
+*verbatim*. The conversation primitive is also spoken verbatim at first
+use.
+
+---
+
+## Tomorrow's priorities (in order)
+
+1. **Write the actual spoken demo script.** Fill in `DEMO_SCRIPT.md`
+   beyond the v0 scaffold. Lock the prose for each act.
+2. **Tighten the emotional arc.** Where exactly do the two wow moments
+   land? (Currently: act 3 convo drill-down + act 4 missed-revenue.)
+3. **Refine the conceptual explanations.** Each of the verbatim
+   framings should be one short sentence in delivery. Practice each.
+4. **Decide which existing dashboards serve which beat.** Cross-
+   reference against `dashboards/` + `RATING.md`. Three buckets:
+   - **Keep as-is** — already fits a beat well.
+   - **Rebuild** — fits a beat conceptually but doesn't land. Route
+     through `ai-o11y-story-architect` after the beat is locked.
+   - **Retire** — doesn't fit any beat in the 7-min flow. Move out of
+     the curated folder; keep accessible for ad-hoc deep dives.
+5. **Evolve the skills around the finalized narrative.** Once the
+   script is locked, each skill's "when to use" prose may need a
+   tightening pass.
+6. **Identify the demo's fallback paths.** Especially act 5 (the
+   AI-investigation moment) — what if Grafana Assistant misfires
+   live? Pre-record a backup.
+
+---
+
+## Status: design system + 6 skills shipped + outage-cost is clean against the linter
 
 ### What's working
 
@@ -94,22 +160,30 @@ when answers arrive.
 
 | Where | What |
 |---|---|
-| `dashboards/design_system.md` | The full spec |
+| **`dashboards/skills/NARRATIVE.md`** | **Project vision — read FIRST** |
+| **`dashboards/skills/DEMO_SCRIPT.md`** | **The spoken script — read SECOND** |
+| `dashboards/skills/README.md` | Skill index (6 skills) |
+| `dashboards/design_system.md` | Visual contract spec |
 | `dashboards/_design_tokens.py` | Python constants |
 | `dashboards/_apply_ai_obs_aesthetic.py` | Aesthetic pass |
 | `dashboards/dashboard_lint.py` | Linter |
-| `dashboards/RATING.md` | Current scores |
+| `dashboards/RATING.md` | Current dashboard scores |
 | `dashboards/_rebuild_outage_cost.py` | Reference build |
-| `dashboards/skills/README.md` | Skill index |
-| `.claude/skills/ai-o11y-*/SKILL.md` | The 5 skill specs |
+| `.claude/skills/ai-o11y-demo-narrator/SKILL.md` | Narrator skill (NEW — upstream of everything) |
+| `.claude/skills/ai-o11y-{story-architect,layout-composer,grafana-builder,aesthetic-pass,dashboard-critic}/SKILL.md` | The 5 downstream skills |
 
 ---
 
 ## Quick "I'm a new chat, what do I do?" runbook
 
-1. Read this file (`CONTINUATION.md`).
-2. Read `dashboards/skills/README.md` for the pipeline.
-3. Read `dashboards/design_system.md` for the rules.
-4. Check `git log -5` and `git status` for in-flight work.
-5. Skim `dashboards/RATING.md` to see which dashboards need help most.
-6. Ask the user what they want — then route to the right skill.
+1. **Read `NARRATIVE.md`** — understand the demo's vision.
+2. **Read `DEMO_SCRIPT.md`** — understand the current spoken script.
+3. **Read this file (`CONTINUATION.md`)** — understand where we left off.
+4. Read `README.md` for the pipeline.
+5. Read `design_system.md` §10 for the conceptual primitives.
+6. Check `git log -5` and `git status` for in-flight work.
+7. Skim `RATING.md` to see which dashboards need help.
+8. Ask the user what they want — route to the right skill.
+
+If the user asks "what should I work on today?" — the answer is almost
+always **the spoken script** until it's locked. Dashboards are downstream.
