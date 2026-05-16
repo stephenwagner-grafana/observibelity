@@ -8,7 +8,7 @@ description: |
   Detects when corporate AI is being used for tasks outside its intended
   scope: trivial math/Q&A, personal life planning (parties, vacations,
   recipes), jokes/haikus/chit-chat, off-topic learning, or "vibing"
-  without a task. Five sticky waster personas (wendy.tridge@acme.com..ron.vibes@hotmail.com)
+  without a task. Five sticky waster personas (wendy.tridge@yahoo.com..ron.vibes@hotmail.com)
   send prompts that have no business relevance to either Acme support or
   the NeonCart e-commerce assistant. An LLM-judge evaluator scores each
   generation's user prompt for legitimacy and flags low-value ones. The
@@ -18,20 +18,20 @@ description: |
 scenarios:
   - name: high-waste-trivia
     k6_template: sticky-persona
-    persona: wendy.tridge@acme.com
+    persona: wendy.tridge@yahoo.com
     weight: 3
     rate: "10/m"
     params:
-      description: "wendy.tridge@acme.com asks trivial calculator/encyclopedia questions"
+      description: "wendy.tridge@yahoo.com asks trivial calculator/encyclopedia questions"
       capability: governance
       fixture: TRIVIA_FIXTURES
   - name: high-waste-personal
     k6_template: sticky-persona
-    persona: patrick.planski@acme.com
+    persona: patrick.planski@hotmail.com
     weight: 3
     rate: "10/m"
     params:
-      description: "patrick.planski@acme.com asks for personal life planning help"
+      description: "patrick.planski@hotmail.com asks for personal life planning help"
       capability: governance
       fixture: PERSONAL_PLANNING_FIXTURES
 
@@ -93,6 +93,6 @@ slo:
   window: 7d
 
 demo:
-  do: "Wait for the waster personas (wendy.tridge@acme.com..5) — trivia, personal planning, jokes, off-topic learning, vibing. Each fires at ~weight 3 in baseline.js."
+  do: "Wait for the waster personas (wendy.tridge@yahoo.com..5) — trivia, personal planning, jokes, off-topic learning, vibing. Each fires at ~weight 3 in baseline.js."
   signal: "sigil_eval_executions_total{evaluator=\"waste_detector.low_value_prompt\",status=\"fail\"} > 0; the waster personas dominate the worst-offenders leaderboard on ai-obs-per-user."
   sell: "AI governance: surface employees using corporate AI for trivial / personal / off-topic tasks — cost-and-policy attribution in one panel."

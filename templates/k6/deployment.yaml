@@ -49,7 +49,7 @@ spec:
                 for script in /etc/k6/scripts/*.js; do
                   if [ -f "$script" ]; then
                     echo "starting $(basename "$script")"
-                    k6 run --quiet --no-summary "$script" >/tmp/k6-$$-$(basename "$script").log 2>&1 &
+                    k6 run --quiet --no-summary --address ":0" "$script" >/tmp/k6-$$-$(basename "$script").log 2>&1 &
                   fi
                 done
                 wait

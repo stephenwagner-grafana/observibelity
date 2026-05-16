@@ -41,13 +41,20 @@ const BASE_URL = __ENV.TARGET_URL || 'http://{{ app }}.observibelity.svc.cluster
 // `message_templates` in scenario `params` with keyword-rich phrases so
 // dashboard Loki regex panels can match the offender stream.
 const PATTERN_MESSAGES = {{ message_templates }};
-const BASELINE_PERSONAS = ['base.a@acme.com', 'base.b@acme.com', 'base.c@acme.com', 'base.d@acme.com'];
+// Domain policy: SupportBot users are @acme.com employees; NeonCart users
+// are public consumer domains. The per-app filler lists below keep that
+// separation in baseline traffic so dashboards reading user.id stay
+// internally consistent.
+const BASELINE_PERSONAS = '{{ app }}' === 'supportbot'
+  ? ['base.a@acme.com', 'base.b@acme.com', 'base.c@acme.com', 'base.d@acme.com']
+  : ['base.a@gmail.com', 'base.b@hotmail.com', 'base.c@yahoo.com', 'base.d@aim.com'];
 
 export function fireOffender() {
   const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];
   const payload = JSON.stringify({
     message: msg,
     persona_id: '{{ persona_id }}',
+    usecase: '{{ name }}',
     session_id: `s-{{ persona_id }}-${Date.now()}`,
     metadata: {
       usecase: '{{ name }}',
@@ -71,6 +78,7 @@ export function fireBaseline() {
   const payload = JSON.stringify({
     message: 'help me with my order please',
     persona_id: persona,
+    usecase: '{{ name }}',
     session_id: `s-${persona}-${Date.now()}`,
     metadata: { usecase: '{{ name }}', archetype: 'per-user-pattern' },
   });

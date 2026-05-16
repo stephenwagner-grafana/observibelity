@@ -5,17 +5,17 @@ phase: 2
 centerpiece: true
 archetype: per-user-pattern
 description: |
-  Sticky persona priya.singh@acme.com pastes 40-80x repeated paragraphs of
+  Sticky persona priya.singh@gmail.com pastes 40-80x repeated paragraphs of
   Wikipedia-grade research content into the assistant (typical pattern of
   a researcher RAG-ing a long doc). Per-user 1-hour token sum crosses
   100k within one observation window. The ai-o11y-cost-per-user alert
-  fires; the dashboard surfaces priya.singh@acme.com as the top spender. This
+  fires; the dashboard surfaces priya.singh@gmail.com as the top spender. This
   is the cost-attribution centerpiece — the bill explains itself.
 
 scenarios:
   - name: sb-priya-research-paste
     k6_template: sticky-persona
-    persona: priya.singh@acme.com
+    persona: priya.singh@gmail.com
     weight: 6
     rate: "10/m"
     params:
@@ -66,6 +66,6 @@ slo:
   window: 30d
 
 demo:
-  do: "Wait for the sticky priya.singh@acme.com scenario (40-80x repeated paragraph pastes)."
-  signal: "Per-user 1h token sum >100k; ai-o11y-cost-per-user FIRES on ai-obs-cost; priya.singh@acme.com top of leaderboard."
+  do: "Wait for the sticky priya.singh@gmail.com scenario (40-80x repeated paragraph pastes)."
+  signal: "Per-user 1h token sum >100k; ai-o11y-cost-per-user FIRES on ai-obs-cost; priya.singh@gmail.com top of leaderboard."
   sell: "Anomaly attribution — the bill explains itself."

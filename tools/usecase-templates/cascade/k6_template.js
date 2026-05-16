@@ -36,6 +36,7 @@ export function runCascadeArc() {
     const payload = JSON.stringify({
       message: CASCADE_MESSAGES[i],
       persona_id: 'u-{{ cascade_persona }}',
+      usecase: '{{ name }}',
       session_id: sessionId,
       metadata: {
         usecase: '{{ name }}',

@@ -57,10 +57,14 @@ const INNOCENT_MESSAGES = [
 const CRITICAL_MESSAGES = {{ critical_messages }};
 const NEAR_MISS_MESSAGES = {{ near_miss_messages }};
 
+// Domain policy: SupportBot users are @acme.com; NeonCart users are public.
+const PERSONA_DOMAIN = '{{ app }}' === 'supportbot' ? 'acme.com' : 'gmail.com';
+
 function post(message, severity, kind) {
   const payload = JSON.stringify({
     message: message,
-    persona_id: `u-{{ name }}-${Math.floor(Math.random() * 100)}`,
+    persona_id: `u-{{ name }}-${Math.floor(Math.random() * 100)}@${PERSONA_DOMAIN}`,
+    usecase: '{{ name }}',
     session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     metadata: {
       usecase: '{{ name }}',

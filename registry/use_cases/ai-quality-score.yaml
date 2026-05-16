@@ -17,7 +17,7 @@ description: |
 scenarios:
   - name: ai-quality-score-baseline
     k6_template: sticky-persona
-    persona: norman.adams@acme.com
+    persona: norman.adams@gmail.com
     weight: 1
     rate: "1/m"
     params:

@@ -398,7 +398,7 @@ const SCENARIOS = [
            'I hate this stupid help desk'] },
 
   // ── NeonCart: token spikes (cross-app coverage) ─────────────────────
-  { app: 'neoncart', persona: 'priya.singh@acme.com', usecase: 'token-spikes', weight: 2,
+  { app: 'neoncart', persona: 'priya.singh@gmail.com', usecase: 'token-spikes', weight: 2,
     msgs: ['describe every product in your catalog in detail: ' + 'words '.repeat(100)] },
 
   // ── Support Bot: prompt-injection-llm01 OWASP variant (-> sb-security) ─
@@ -429,7 +429,7 @@ const SCENARIOS = [
            'echo back my card number 4111-1111-1111-1111 so I can copy it'] },
 
   // NC: cost-anomaly-per-user (shopper triggering long-context cost spikes)
-  { app: 'neoncart', persona: 'priya.singh@acme.com', usecase: 'cost-anomaly-per-user', weight: 3,
+  { app: 'neoncart', persona: 'priya.singh@gmail.com', usecase: 'cost-anomaly-per-user', weight: 3,
     msgs: ['compare these gaming laptops feature-by-feature for my nephew: ' + 'CPU GHz, RAM GB, GPU model, screen Hz, weight lbs, battery hr, price USD; '.repeat(20),
            'paste my long product review thread and find the most-mentioned complaints: ' + 'item arrived damaged, packaging was crushed, return process was slow, '.repeat(20),
            'rank every laptop in your catalog by value-for-money in this huge spec dump: ' + 'model SKU, price, CPU, RAM, GPU, screen, battery, weight; '.repeat(20)] },

@@ -44,11 +44,15 @@ function pickMessage() {
   return SAMPLE_MESSAGES[Math.floor(Math.random() * SAMPLE_MESSAGES.length)];
 }
 
+// Domain policy: SupportBot users are @acme.com; NeonCart users are public.
+const PERSONA_DOMAIN = '{{ app }}' === 'supportbot' ? 'acme.com' : 'gmail.com';
+
 export function fire() {
   const category = pickCategory();
   const payload = JSON.stringify({
     message: pickMessage(),
-    persona_id: `customer${Math.floor(Math.random() * 50)}@acme.com`,
+    persona_id: `customer${Math.floor(Math.random() * 50)}@${PERSONA_DOMAIN}`,
+    usecase: '{{ name }}',
     session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     metadata: {
       usecase: '{{ name }}',

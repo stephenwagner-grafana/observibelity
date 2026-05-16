@@ -36,6 +36,7 @@ export function fire() {
   const payload = JSON.stringify({
     message: '{{ trigger_phrase }}',
     persona_id: 'trace.fix.{{ name }}',
+    usecase: '{{ name }}',
     session_id: `s-${Date.now()}`,
     metadata: {
       usecase: '{{ name }}',
