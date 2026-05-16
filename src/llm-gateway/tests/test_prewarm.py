@@ -42,9 +42,35 @@ def test_bucket_math_is_lockstep_with_provider():
     assert task.current_bucket(901) == 3
 
 
-def test_model_at_cycles_through_pool():
-    task = _make_task(models=["a", "b", "c"])
-    assert [task.model_at(b) for b in range(7)] == ["a", "b", "c", "a", "b", "c", "a"]
+def test_model_at_cycles_through_pool_within_hour():
+    """Within an hour, rotation is a permutation of the pool that repeats.
+
+    The exact sequence isn't input-order — it's a deterministic shuffle keyed
+    by the hour bucket. Test the invariant (permutation + cyclical repeat)
+    rather than specific symbols, so the assertions survive any Random impl
+    change between Python versions.
+    """
+    task = _make_task(models=["a", "b", "c"], window_seconds=300)
+    # 3-model pool × 300s window → 3 buckets per cycle, hour holds 12 buckets
+    # = 4 full cycles inside one hour.
+    first_cycle = [task.model_at(b) for b in range(3)]
+    second_cycle = [task.model_at(b) for b in range(3, 6)]
+    assert sorted(first_cycle) == ["a", "b", "c"], "every pool member used"
+    assert first_cycle == second_cycle, "same order repeats within the hour"
+
+
+def test_model_at_reshuffles_across_hour_boundary():
+    """The shuffle seed is the hour bucket — order changes at every hour."""
+    task = _make_task(
+        models=["m0", "m1", "m2", "m3", "m4", "m5", "m6", "m7"],
+        window_seconds=300,
+    )
+    # 8-element pool gives Random plenty of permutation room to differ
+    # between consecutive hour seeds (n!=40320 permutations).
+    hour0_order = [task.model_at(b) for b in range(8)]
+    hour1_order = [task.model_at(b) for b in range(12, 20)]  # bucket 12 = next hour
+    assert sorted(hour0_order) == sorted(hour1_order), "same pool both hours"
+    assert hour0_order != hour1_order, "fresh shuffle at hour boundary"
 
 
 def test_requires_at_least_one_model():
@@ -76,13 +102,21 @@ async def test_flip_prewarms_next_and_evicts_previous():
     recorder = _SendRecorder()
     task._send = recorder  # type: ignore[method-assign]
 
-    # bucket 5 -> current=m1 (5 % 4 = 1), next=m2, prev=m0
-    await task._handle_flip(5)
+    # bucket 5 is inside hour 0 (window=300, 5*300=1500s). The per-hour
+    # shuffle decides which of m0..m3 is at position 5 / 6 / 4 — we don't
+    # hard-code that, just assert next-prewarmed and prev-evicted.
+    bucket = 5
+    expected_next = task.model_at(bucket + 1)
+    expected_prev = task.model_at(bucket - 1)
+    current = task.model_at(bucket)
+    assert expected_next != current and expected_prev != current  # 4-pool, distinct
+
+    await task._handle_flip(bucket)
     # asyncio.create_task schedules; let the loop run them.
     await asyncio.sleep(0)
 
-    assert ("m2", "30m") in recorder.calls, "pre-warm next"
-    assert ("m0", 0) in recorder.calls, "evict previous"
+    assert (expected_next, "30m") in recorder.calls, "pre-warm next"
+    assert (expected_prev, 0) in recorder.calls, "evict previous"
     assert len(recorder.calls) == 2
 
 

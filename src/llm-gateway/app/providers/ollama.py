@@ -27,6 +27,7 @@ from __future__ import annotations
 import json as _json
 import logging
 import os
+import random as _random
 import time
 from typing import Any
 
@@ -43,6 +44,29 @@ DEFAULT_BASE_URL = "http://localhost:11434"
 DEFAULT_TIMEOUT = 120.0
 DEFAULT_ROTATION_WINDOW_SECONDS = 300  # 5 minutes
 DEFAULT_KEEP_ALIVE = "30m"  # match prewarm task + daemon-side OLLAMA_KEEP_ALIVE
+_NO_TOOLS_MARKER = "does not support tools"
+
+
+class _NoToolsError(Exception):
+    """Internal signal: Ollama 400'd with the "does not support tools" marker.
+
+    Caught inside the provider to drive a one-shot retry with the tools field
+    stripped from the payload. Never propagates out of the provider.
+    """
+
+
+def shuffle_models_by_hour(models: list[str], hour_bucket: int) -> list[str]:
+    """Return the rotation models deterministically shuffled per hour.
+
+    Every pod that calls this with the same hour_bucket produces the same
+    order — lockstep within the hour. At each UTC hour boundary the seed
+    changes and the rotation order is freshly randomized; all pods flip
+    to the new order simultaneously because hour_bucket increments at the
+    same wall-clock instant everywhere.
+    """
+    shuffled = list(models)
+    _random.Random(hour_bucket).shuffle(shuffled)
+    return shuffled
 
 
 def _parse_rotation_models(raw: str | None) -> list[str]:
@@ -108,11 +132,20 @@ class OllamaProvider(Provider):
         Bucket id is ``floor(epoch_seconds / window)`` — identical across every
         pod that calls this at the same instant, which is what makes the
         rotation cluster-wide *lockstep* without any coordination.
+
+        Within each UTC hour the rotation order is a deterministic shuffle
+        of ``rotation_models`` seeded by the hour bucket (see
+        ``shuffle_models_by_hour``). At the hour boundary all pods reshuffle
+        simultaneously and the new order takes effect.
         """
         if not self.rotation_enabled or not self.rotation_models:
             return self.model, 0
-        bucket = int(time.time()) // self.rotation_window
-        model = self.rotation_models[bucket % len(self.rotation_models)]
+        now = int(time.time())
+        bucket = now // self.rotation_window
+        hour_bucket = now // 3600
+        position = (now % 3600) // self.rotation_window
+        shuffled = shuffle_models_by_hour(self.rotation_models, hour_bucket)
+        model = shuffled[position % len(shuffled)]
         return model, bucket
 
     @staticmethod
@@ -180,8 +213,27 @@ class OllamaProvider(Provider):
             payload["tools"] = req.tools
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            r = await client.post(f"{self.base_url}/api/chat", json=payload)
-            r.raise_for_status()
+            try:
+                r = await client.post(f"{self.base_url}/api/chat", json=payload)
+                r.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                # If Ollama 400s because the active rotation model doesn't
+                # support tool-calling, strip the tools field and retry once.
+                # The specialist gets a no-tool answer instead of an error;
+                # the demo stays alive across the no-tool half of the pool.
+                if not (
+                    exc.response.status_code == 400
+                    and "tools" in payload
+                    and _NO_TOOLS_MARKER in (exc.response.text or "")
+                ):
+                    raise
+                log.info(
+                    "ollama 400 (no-tools): retrying without tools, model=%s",
+                    payload.get("model"),
+                )
+                payload_no_tools = {k: v for k, v in payload.items() if k != "tools"}
+                r = await client.post(f"{self.base_url}/api/chat", json=payload_no_tools)
+                r.raise_for_status()
             data = r.json()
 
         message = data.get("message", {}) or {}
@@ -257,19 +309,32 @@ class OllamaProvider(Provider):
         if req.tools:
             payload["tools"] = req.tools
 
-        text_parts: list[str] = []
-        tool_calls_raw: list[dict] = []
-        prompt_eval_count = 0
-        eval_count = 0
-        done_reason: str | None = None
-        last_model = model
-        start = time.monotonic()
-        ttft_ms: float | None = None
+        async def _consume(client, send_payload):
+            """Stream /api/chat with send_payload; return result state.
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            Returns a 7-tuple (text_parts, tool_calls_raw, prompt_eval_count,
+            eval_count, done_reason, last_model, ttft_ms) — or raises
+            ``_NoToolsError`` if Ollama 400s with the "does not support tools"
+            marker, signalling the caller to retry without tools.
+            """
+            text_parts: list[str] = []
+            tool_calls_raw: list[dict] = []
+            prompt_eval_count = 0
+            eval_count = 0
+            done_reason: str | None = None
+            last_model_local = send_payload.get("model")
+            start = time.monotonic()
+            ttft_ms: float | None = None
             async with client.stream(
-                "POST", f"{self.base_url}/api/chat", json=payload
+                "POST", f"{self.base_url}/api/chat", json=send_payload
             ) as r:
+                if r.status_code == 400 and "tools" in send_payload:
+                    body = (await r.aread()).decode("utf-8", errors="replace")
+                    if _NO_TOOLS_MARKER in body:
+                        raise _NoToolsError()
+                    # Other 400 — re-raise via raise_for_status with the body
+                    # already drained, otherwise httpx would try to read it.
+                    r.raise_for_status()
                 r.raise_for_status()
                 async for line in r.aiter_lines():
                     if not line:
@@ -284,23 +349,37 @@ class OllamaProvider(Provider):
                         if ttft_ms is None:
                             ttft_ms = (time.monotonic() - start) * 1000.0
                         text_parts.append(piece)
-                    # Tool calls can appear on any chunk in newer Ollama
-                    # builds; collect them as they show up.
                     tc = msg.get("tool_calls") or []
                     if tc:
                         tool_calls_raw.extend(tc)
                     if chunk.get("model"):
-                        last_model = chunk["model"]
+                        last_model_local = chunk["model"]
                     if chunk.get("done"):
                         prompt_eval_count = int(chunk.get("prompt_eval_count", 0) or 0)
                         eval_count = int(chunk.get("eval_count", 0) or 0)
                         done_reason = chunk.get("done_reason")
-                        # Final chunk may also carry the full tool_calls list.
                         final_msg = chunk.get("message") or {}
                         final_tc = final_msg.get("tool_calls") or []
                         if final_tc and not tool_calls_raw:
                             tool_calls_raw.extend(final_tc)
                         break
+            return (
+                text_parts, tool_calls_raw, prompt_eval_count, eval_count,
+                done_reason, last_model_local, ttft_ms,
+            )
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                (text_parts, tool_calls_raw, prompt_eval_count, eval_count,
+                 done_reason, last_model, ttft_ms) = await _consume(client, payload)
+            except _NoToolsError:
+                log.info(
+                    "ollama 400 (no-tools, streaming): retrying without tools, model=%s",
+                    payload.get("model"),
+                )
+                payload_no_tools = {k: v for k, v in payload.items() if k != "tools"}
+                (text_parts, tool_calls_raw, prompt_eval_count, eval_count,
+                 done_reason, last_model, ttft_ms) = await _consume(client, payload_no_tools)
 
         tool_calls = [
             {

@@ -44,6 +44,8 @@ import time
 
 import httpx
 
+from .providers.ollama import shuffle_models_by_hour
+
 log = logging.getLogger("llm_gateway.prewarm")
 
 
@@ -108,7 +110,18 @@ class PrewarmTask:
         return int(ts) // self.window
 
     def model_at(self, bucket: int) -> str:
-        return self.models[bucket % len(self.models)]
+        """Resolve the rotation model at a given bucket.
+
+        Mirrors ``OllamaProvider._current_rotation_model``: within each UTC
+        hour the rotation order is a deterministic shuffle of ``self.models``
+        seeded by the hour bucket; at hour boundaries the order reshuffles
+        and every pod (provider + prewarm) flips simultaneously.
+        """
+        bucket_start = bucket * self.window
+        hour_bucket = bucket_start // 3600
+        position = (bucket_start % 3600) // self.window
+        shuffled = shuffle_models_by_hour(self.models, hour_bucket)
+        return shuffled[position % len(shuffled)]
 
     # -- I/O ------------------------------------------------------------
     async def _send(self, model: str, *, keep_alive: str | int) -> None:
