@@ -15,13 +15,25 @@ mkdir -p "${DEST_DIR}"
 # Columns chosen to cover the VRAM-thrash demo + general GPU health.
 QUERY="index,uuid,name,driver_version,pstate,\
 utilization.gpu,utilization.memory,utilization.encoder,utilization.decoder,\
-memory.total,memory.used,memory.free,\
+memory.total,memory.used,memory.free,memory.reserved,\
 temperature.gpu,temperature.memory,\
 power.draw,power.limit,enforced.power.limit,\
 clocks.current.graphics,clocks.current.memory,clocks.current.sm,\
 fan.speed,pcie.link.gen.current,pcie.link.width.current,\
 encoder.stats.sessionCount,encoder.stats.averageFps,\
-ecc.errors.uncorrected.volatile.total"
+ecc.errors.uncorrected.volatile.total,\
+compute_cap,vbios_version"
+
+# clocks_event_reasons.* are 0/1 active flags (deprecated alias: clocks_throttle_reasons)
+THROTTLE_QUERY="index,\
+clocks_event_reasons.gpu_idle,\
+clocks_event_reasons.applications_clocks_setting,\
+clocks_event_reasons.sw_power_cap,\
+clocks_event_reasons.hw_slowdown,\
+clocks_event_reasons.hw_thermal_slowdown,\
+clocks_event_reasons.hw_power_brake_slowdown,\
+clocks_event_reasons.sw_thermal_slowdown,\
+clocks_event_reasons.sync_boost"
 
 {
   echo "# HELP nvidia_smi_collector_up 1 when nvidia-smi succeeded"
@@ -39,19 +51,21 @@ ecc.errors.uncorrected.volatile.total"
 
   while IFS=',' read -r idx uuid name driver pstate \
       util_gpu util_mem util_enc util_dec \
-      mem_total mem_used mem_free \
+      mem_total mem_used mem_free mem_reserved \
       temp_gpu temp_mem \
       power_draw power_limit power_enforced \
       clk_graphics clk_memory clk_sm \
       fan_speed pcie_gen pcie_width \
       enc_sessions enc_avg_fps \
-      ecc_uncorr_vol; do
+      ecc_uncorr_vol \
+      compute_cap vbios; do
     # trim whitespace from each field
     for var in idx uuid name driver pstate util_gpu util_mem util_enc util_dec \
-               mem_total mem_used mem_free temp_gpu temp_mem \
+               mem_total mem_used mem_free mem_reserved \
+               temp_gpu temp_mem \
                power_draw power_limit power_enforced \
                clk_graphics clk_memory clk_sm fan_speed pcie_gen pcie_width \
-               enc_sessions enc_avg_fps ecc_uncorr_vol; do
+               enc_sessions enc_avg_fps ecc_uncorr_vol compute_cap vbios; do
       eval "$var=\"\${$var## }\""
       eval "$var=\"\${$var%% }\""
     done
@@ -79,7 +93,40 @@ ecc.errors.uncorrected.volatile.total"
     v=$(n2n "${enc_sessions}") && echo "nvidia_gpu_encoder_sessions{${L}} $v"
     v=$(n2n "${enc_avg_fps}") && echo "nvidia_gpu_encoder_average_fps{${L}} $v"
     v=$(n2n "${ecc_uncorr_vol}") && echo "nvidia_gpu_ecc_errors_uncorrected_volatile_total{${L}} $v"
+    v=$(n2n "${mem_reserved}") && echo "nvidia_gpu_memory_reserved_bytes{${L}} $((v * 1048576))"
+    echo "nvidia_gpu_build_info{${L},compute_cap=\"${compute_cap}\",vbios=\"${vbios}\"} 1"
   done <<< "${OUT}"
+
+  # Throttle / event reasons — emit as 0/1 active flags so a state-timeline
+  # in Grafana lights up the exact moment a GPU stops running at full clock.
+  echo "# HELP nvidia_gpu_clock_event_reason_active 1 when a given clock-throttle reason is currently active"
+  echo "# TYPE nvidia_gpu_clock_event_reason_active gauge"
+  if THR=$(nvidia-smi --query-gpu="${THROTTLE_QUERY}" --format=csv,noheader 2>/dev/null); then
+    while IFS=',' read -r idx gpu_idle apps_clks sw_pcap hw_slow hw_therm hw_pbrake sw_therm sync_boost; do
+      idx="${idx// /}"
+      Lt="gpu=\"${idx}\""
+      for pair in \
+        "gpu_idle:${gpu_idle}" \
+        "applications_clocks_setting:${apps_clks}" \
+        "sw_power_cap:${sw_pcap}" \
+        "hw_slowdown:${hw_slow}" \
+        "hw_thermal_slowdown:${hw_therm}" \
+        "hw_power_brake_slowdown:${hw_pbrake}" \
+        "sw_thermal_slowdown:${sw_therm}" \
+        "sync_boost:${sync_boost}" \
+      ; do
+        reason="${pair%%:*}"
+        val="${pair#*:}"
+        val="${val## }"; val="${val%% }"
+        case "${val}" in
+          "Active")   bin=1 ;;
+          "Not Active") bin=0 ;;
+          *) bin=0 ;;
+        esac
+        echo "nvidia_gpu_clock_event_reason_active{${Lt},reason=\"${reason}\"} ${bin}"
+      done
+    done <<< "${THR}"
+  fi
 
   # Per-process GPU usage (key for AI-justifies-AI demo: shows ollama owning all VRAM)
   echo "# HELP nvidia_gpu_process_used_memory_bytes Per-process GPU memory used"

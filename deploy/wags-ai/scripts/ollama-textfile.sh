@@ -75,6 +75,81 @@ now_epoch=$(date +%s)
     echo "ollama_loaded_models 0"
   fi
 
+  # /api/show — capabilities + architecture details Sigil/Vercel SDK never see.
+  # Cheap call (~5ms each) but we cache per-model in a state file to skip cold models.
+  echo "# HELP ollama_model_capability 1 when this loaded model advertises the capability"
+  echo "# TYPE ollama_model_capability gauge"
+  echo "# HELP ollama_model_context_length Maximum context length supported by the model"
+  echo "# TYPE ollama_model_context_length gauge"
+  echo "# HELP ollama_model_embedding_length Hidden / embedding dimensionality"
+  echo "# TYPE ollama_model_embedding_length gauge"
+  echo "# HELP ollama_model_block_count Transformer block / layer count"
+  echo "# TYPE ollama_model_block_count gauge"
+  echo "# HELP ollama_model_attention_head_count Self-attention head count"
+  echo "# TYPE ollama_model_attention_head_count gauge"
+  echo "# HELP ollama_model_attention_head_count_kv KV-attention head count (GQA group size for KV)"
+  echo "# TYPE ollama_model_attention_head_count_kv gauge"
+  echo "# HELP ollama_model_parameter_count Reported parameter count from model_info"
+  echo "# TYPE ollama_model_parameter_count gauge"
+  echo "# HELP ollama_model_vocab_size Tokenizer vocabulary size"
+  echo "# TYPE ollama_model_vocab_size gauge"
+  echo "# HELP ollama_model_has_system_prompt 1 if a system prompt is baked into the modelfile"
+  echo "# TYPE ollama_model_has_system_prompt gauge"
+  echo "# HELP ollama_model_has_template 1 if the modelfile sets a chat template"
+  echo "# TYPE ollama_model_has_template gauge"
+
+  if [ -n "${PS}" ]; then
+    echo "${PS}" | jq -r '.models[]?.name' | while read -r mname; do
+      [ -z "${mname}" ] && continue
+      SHOW=$(curl -sS -m 3 -X POST "${OLLAMA_URL}/api/show" -d "{\"name\":\"${mname}\"}" 2>/dev/null) || continue
+      # Capabilities (array of strings)
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.capabilities // [])[] | "ollama_model_capability{model=\"" + $m + "\",capability=\"" + . + "\"} 1"
+      '
+      # Architecture-dependent keys (llama.*, qwen2.*, gemma2.*, phi3.*, ...)
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {}) as $mi |
+        ($mi | keys[] | select(test("\\.context_length$"))) as $k | $k | select(. != null) |
+        "ollama_model_context_length{model=\"" + $m + "\"} \($mi[.])"
+      '
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {}) as $mi |
+        ($mi | keys[] | select(test("\\.embedding_length$"))) as $k | $k | select(. != null) |
+        "ollama_model_embedding_length{model=\"" + $m + "\"} \($mi[.])"
+      '
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {}) as $mi |
+        ($mi | keys[] | select(test("\\.block_count$"))) as $k | $k | select(. != null) |
+        "ollama_model_block_count{model=\"" + $m + "\"} \($mi[.])"
+      '
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {}) as $mi |
+        ($mi | keys[] | select(test("\\.attention\\.head_count$"))) as $k | $k | select(. != null) |
+        "ollama_model_attention_head_count{model=\"" + $m + "\"} \($mi[.])"
+      '
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {}) as $mi |
+        ($mi | keys[] | select(test("\\.attention\\.head_count_kv$"))) as $k | $k | select(. != null) |
+        "ollama_model_attention_head_count_kv{model=\"" + $m + "\"} \($mi[.])"
+      '
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {}) as $mi |
+        ($mi | keys[] | select(test("\\.vocab_size$"))) as $k | $k | select(. != null) |
+        "ollama_model_vocab_size{model=\"" + $m + "\"} \($mi[.])"
+      '
+      # general.parameter_count from model_info is the real-deal count
+      echo "${SHOW}" | jq -r --arg m "${mname}" '
+        (.model_info // {})["general.parameter_count"] // empty |
+        "ollama_model_parameter_count{model=\"" + $m + "\"} \(.)"
+      '
+      # System prompt / template presence (booleans → 0/1)
+      hs=$(echo "${SHOW}" | jq -r '(.system // "") | length > 0 | if . then 1 else 0 end')
+      ht=$(echo "${SHOW}" | jq -r '(.template // "") | length > 0 | if . then 1 else 0 end')
+      echo "ollama_model_has_system_prompt{model=\"${mname}\"} ${hs}"
+      echo "ollama_model_has_template{model=\"${mname}\"} ${ht}"
+    done
+  fi
+
   # /api/tags — every model installed on disk
   echo "# HELP ollama_installed_model_info Static info for an installed model"
   echo "# TYPE ollama_installed_model_info gauge"

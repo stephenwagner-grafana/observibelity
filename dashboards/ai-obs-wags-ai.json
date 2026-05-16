@@ -1517,6 +1517,821 @@
         }
       ],
       "transparent": true
+    },
+    {
+      "id": 50,
+      "title": "🔧 Deep telemetry — troubleshoot any issue",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 60
+      },
+      "collapsed": false,
+      "panels": [],
+      "transparent": true
+    },
+    {
+      "id": 51,
+      "title": "HTTP API request rate by endpoint",
+      "description": "Derived from Ollama GIN access logs. Spike on /api/chat means actual inference traffic; spikes on /api/ps mean health-check pressure.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_logs}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 61
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_logs}"
+          },
+          "expr": "sum by (path) (rate({host=\"wags-ai\", unit=\"ollama.service\"} |~ `\\[GIN\\]` | pattern `<_> | <status> | <_> | <_> | <_> <path>` [$__rate_interval]))",
+          "legendFormat": "{{path}}"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 52,
+      "title": "HTTP API p95 latency by endpoint",
+      "description": "Server-side latency that Sigil/Vercel SDK can't see — Ollama's own measurement of each request.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_logs}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 61
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never"
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_logs}"
+          },
+          "expr": "quantile_over_time(0.95, {host=\"wags-ai\", unit=\"ollama.service\"} |~ `\\[GIN\\]` | pattern `<_> | <status> | <duration> | <_> | <_> <path>` | unwrap duration(duration) [$__rate_interval]) by (path)",
+          "legendFormat": "p95 {{path}}"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 53,
+      "title": "HTTP status codes",
+      "description": "5xx = Ollama internal error. 4xx = bad request (e.g., model not loaded, wrong shape). Watch the 5xx line — it should be flat at zero.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_logs}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 69
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "lineWidth": 0,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^5.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^4.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^2.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_logs}"
+          },
+          "expr": "sum by (status) (rate({host=\"wags-ai\", unit=\"ollama.service\"} |~ `\\[GIN\\]` | pattern `<_> | <status> | <_> | <_> | <_> <_>` [$__rate_interval]))",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 54,
+      "title": "GPU clock-event reasons (throttle state)",
+      "description": "Lights up when the GPU is throttled for any reason. hw_thermal / hw_power_brake = real problems. gpu_idle = expected when no workload.",
+      "type": "state-timeline",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 69
+      },
+      "options": {
+        "showValue": "never",
+        "alignValue": "left",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 80
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "#F472B6",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": " ",
+                  "index": 0
+                },
+                "1": {
+                  "text": "active",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max by (reason) (nvidia_gpu_clock_event_reason_active{host=\"wags-ai\"})",
+          "legendFormat": "{{reason}}"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 55,
+      "title": "Per-process GPU memory (ollama runners + others)",
+      "description": "Each Ollama runner subprocess holds one model. Watch for runner spawns/exits — they correlate with model load/unload.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 77
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "decbytes"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (pid, process_name) (nvidia_gpu_process_used_memory_bytes{host=\"wags-ai\"})",
+          "legendFormat": "{{process_name}} ({{pid}})"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 56,
+      "title": "Disk read throughput (model-load cost)",
+      "description": "When Ollama loads a model from disk, this spikes. Cold loads = several hundred MB/s for a few seconds.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 86
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never"
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "Bps"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (device) (rate(node_disk_read_bytes_total{host=\"wags-ai\", device=~\"nvme.*|sd.*\"}[$__rate_interval]))",
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 57,
+      "title": "ECC + driver-reserved memory",
+      "description": "Volatile ECC error counter (should stay flat). Driver-reserved is overhead that's not available for models.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 86
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never"
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max(nvidia_gpu_ecc_errors_uncorrected_volatile_total{host=\"wags-ai\"})",
+          "legendFormat": "ECC uncorrected"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max(nvidia_gpu_memory_reserved_bytes{host=\"wags-ai\"})",
+          "legendFormat": "driver reserved"
+        }
+      ],
+      "transparent": true
+    },
+    {
+      "id": 58,
+      "title": "Model architecture & capabilities (Sigil can't see this)",
+      "description": "From /api/show. Capabilities tell you which models support tool calls, vision, or embeddings. Context length / vocab / parameter count are what Sigil's prompt-token metrics imply but never reveal directly.",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 93
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "Params",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Context"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "gradient-gauge"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Vocab"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Params"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tools"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "✓",
+                        "color": "#86EFAC"
+                      },
+                      "0": {
+                        "text": "—",
+                        "color": "transparent"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Vision"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "✓",
+                        "color": "#A78BFA"
+                      },
+                      "0": {
+                        "text": "—",
+                        "color": "transparent"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "System prompt"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "yes",
+                        "color": "#FB923C"
+                      },
+                      "0": {
+                        "text": "—",
+                        "color": "transparent"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "joinByLabels",
+          "options": {
+            "value": "model",
+            "join": []
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "model": "Model",
+              "Value #CTX": "Context",
+              "Value #VOC": "Vocab",
+              "Value #PRM": "Params",
+              "Value #HC": "Heads",
+              "Value #BLK": "Layers",
+              "Value #TOOLS": "Tools",
+              "Value #VISION": "Vision",
+              "Value #SYS": "System prompt"
+            },
+            "excludeByName": {
+              "host": true,
+              "cluster": true,
+              "instance": true,
+              "job": true,
+              "Time": true,
+              "capability": true
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "CTX",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "ollama_model_context_length{host=\"wags-ai\"}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "VOC",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "ollama_model_vocab_size{host=\"wags-ai\"}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "PRM",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "ollama_model_parameter_count{host=\"wags-ai\"}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "HC",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "ollama_model_attention_head_count{host=\"wags-ai\"}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "BLK",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "ollama_model_block_count{host=\"wags-ai\"}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "TOOLS",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max by (model) (ollama_model_capability{host=\"wags-ai\", capability=\"tools\"}) or on() (max by (model) (ollama_model_capability{host=\"wags-ai\"}) * 0)",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "VISION",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "max by (model) (ollama_model_capability{host=\"wags-ai\", capability=\"vision\"}) or on() (max by (model) (ollama_model_capability{host=\"wags-ai\"}) * 0)",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "SYS",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "ollama_model_has_system_prompt{host=\"wags-ai\"}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transparent": true
     }
   ],
   "refresh": "30s",
