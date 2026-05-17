@@ -15,8 +15,9 @@ Rows, top to bottom:
   5. The path ahead (five nav cards + axis)
   6. Last-24h KPI strip (six stat panels, savings hero)
 
-TODO: populate nav cards 501-505 with real child dashboard titles + links once
-the 5 views are briefed.
+Premium design system (v2): slate-950 canvas, slate-900 cards, sky-400 signature
+color for the AI moment, gradient borders via mask-composite, Geist + Inter +
+JetBrains Mono typography.
 """
 import json
 from pathlib import Path
@@ -101,9 +102,9 @@ def text_panel(*, pid, content, x, y, w, h, title="", transparent=True, mode="ma
     """Markdown or HTML text panel.
 
     `mode` controls how Grafana renders the content. Grafana's text panel
-    accepts "markdown" and "html". Inline HTML inside a markdown panel
-    generally renders, but for the spectrum / signal-stack / singularity /
-    axis blocks we use mode="html" to guarantee the inline styles render.
+    accepts "markdown" and "html". For the v2 premium design system all text
+    panels use mode="html" to guarantee the inline styles and gradient borders
+    render correctly.
     """
     return {
         "id": pid,
@@ -139,15 +140,14 @@ def stat_panel(*, pid, title, expr, x, y, w, h, unit="none", custom_unit=None,
                thresholds=None, graph="area", description=""):
     """Standard KPI-strip stat panel.
 
-    Uses thresholds-mode coloring so single-step thresholds give a flat fill
-    of the desired palette color. `instant=True` keeps the panel stable
-    between refreshes (no range-query flicker).
+    Uses thresholds-mode coloring. The base step (noValue) is slate-500
+    (#64748B) so empty panels render muted gray, not danger red. Caller can
+    pass `thresholds` to override the full step list.
     """
-    # Use Grafana's standard customUnit field per design system §2.5 so the
-    # text renders cleanly after the value. A range query (instant=False)
-    # gives the aesthetic pass enough time series to render the sparkline;
-    # noValue handles the warmup window.
-    threshold_steps = thresholds or [{"color": color, "value": None}]
+    threshold_steps = thresholds or [
+        {"color": "#64748B", "value": None},
+        {"color": color, "value": 0},
+    ]
     defaults = {
         "unit": unit,
         "decimals": decimals,
@@ -192,117 +192,204 @@ def stat_panel(*, pid, title, expr, x, y, w, h, unit="none", custom_unit=None,
 
 # ---------- content blocks ----------
 
-WELCOME_TITLE_MD = """<div style="text-align: center; padding: 1rem;">
-
-# AI Observability with Grafana Labs
-
-### Where conversations join the OTel stack
-
-</div>
-"""
-
-# Note: no em dashes anywhere. Sentences separated by periods.
-THESIS_MD = """<div style="text-align: center; font-size: 1.3em; padding: 1rem; color: #cbd5e1;">
-
-AI changed the time-to-value of observability.
-Now observability changes the time-to-value of AI.
-
-</div>
-"""
+# Font import line used at the top of every text panel (so styles work even
+# if Grafana's text plugin doesn't cache the @import across panels).
+FONT_IMPORT = (
+    "@import url('https://fonts.googleapis.com/css2?"
+    "family=Geist:wght@400;600;700;800&"
+    "family=Inter:wght@400;500;600&"
+    "family=JetBrains+Mono:wght@500;600&display=swap');"
+)
 
 
-def spectrum_html(left_label, right_label):
-    return (
-        '<div style="padding: 0.5rem;">\n'
-        '  <div style="display: flex; justify-content: space-between; '
-        'font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;">\n'
-        f'    <span>{left_label}</span>\n'
-        f'    <span>{right_label}</span>\n'
-        '  </div>\n'
-        '  <div style="height: 12px; border-radius: 6px; '
-        'background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, '
-        '#F472B6 66%, #FB923C 100%);"></div>\n'
-        '</div>\n'
-    )
-
-
-SIGNAL_STACK_HTML = """<div style="padding: 1.5rem; text-align: center; font-family: monospace;">
-
-<div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
-  <span style="padding: 0.5rem 1rem; border-radius: 4px; background: rgba(138, 184, 255, 0.15); color: #8AB8FF; border: 1px solid #8AB8FF;">Metrics</span>
-  <span style="padding: 0.5rem 1rem; border-radius: 4px; background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid #A78BFA;">Logs</span>
-  <span style="padding: 0.5rem 1rem; border-radius: 4px; background: rgba(244, 114, 182, 0.15); color: #F472B6; border: 1px solid #F472B6;">Traces</span>
-  <span style="padding: 0.5rem 1rem; border-radius: 4px; background: rgba(251, 146, 60, 0.15); color: #FB923C; border: 1px solid #FB923C;">Profiles</span>
-</div>
-
-<div style="font-size: 2em; color: #F472B6; margin: 0.5rem 0;">&darr;</div>
-
-<div>
-  <span style="padding: 0.6rem 1.2rem; border-radius: 6px; background: rgba(252, 165, 165, 0.2); color: #FCA5A5; border: 2px solid #FCA5A5; font-weight: bold;">Conversations</span>
-</div>
-
-<p style="color: #9ca3af; font-size: 0.9em; margin-top: 1.5rem; max-width: 700px; margin-left: auto; margin-right: auto;">
-Metrics, logs, traces, profiles. The four classical signals of OpenTelemetry. The fifth signal, conversations, branches from traces.
-</p>
-
+WELCOME_TITLE_HTML = f"""<style>
+{FONT_IMPORT}
+.hero-wrap{{position:relative;font-family:'Geist',Inter,system-ui,sans-serif;padding:48px 40px 56px;text-align:center;color:#F8FAFC;background:radial-gradient(120% 100% at 50% 0%,rgba(56,189,248,0.10) 0%,rgba(2,6,23,0) 60%),linear-gradient(180deg,#0F172A 0%,#020617 100%);border-radius:16px;overflow:hidden;}}
+.hero-wrap::before{{content:'';position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.45),rgba(167,139,250,0.35));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}}
+.hero-eyebrow{{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.24em;color:#38BDF8;text-transform:uppercase;margin-bottom:14px;}}
+.hero-title{{font-size:54px;font-weight:800;letter-spacing:-0.025em;line-height:1.05;margin:0;text-shadow:0 0 36px rgba(56,189,248,0.25);}}
+.hero-title .ai{{background:linear-gradient(135deg,#38BDF8 0%,#A78BFA 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}}
+.hero-sub{{font-family:Inter,system-ui,sans-serif;font-size:18px;font-weight:400;color:#94A3B8;margin:14px 0 28px;}}
+.hero-rule{{width:120px;height:2px;margin:0 auto;background:linear-gradient(90deg,#38BDF8,#F472B6);border-radius:1px;box-shadow:0 0 12px rgba(56,189,248,0.5);}}
+@keyframes shimmer{{0%,100%{{opacity:0.65}}50%{{opacity:1}}}}
+.hero-rule{{animation:shimmer 4s ease-in-out infinite;}}
+</style>
+<div class="hero-wrap">
+  <div class="hero-eyebrow">Grafana Labs. Observability for AI.</div>
+  <h1 class="hero-title"><span class="ai">AI Observability</span><br/>with Grafana Labs</h1>
+  <p class="hero-sub">Where conversations join the OTel stack.</p>
+  <div class="hero-rule"></div>
 </div>
 """
 
 
-SINGULARITY_HTML = """<div style="padding: 1rem;">
-
-<p style="font-size: 1.1em; color: #e2e8f0; line-height: 1.6;">
-From a conversation, you can walk down to the trace that produced it, the tool the model called, the database it queried, the error on Postgres, and the SQL itself.
-</p>
-
-<p style="font-size: 1.1em; color: #f9a8d4; line-height: 1.6; font-weight: 500;">
-Observability is the control plane for AI systems.
-</p>
-
-<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; font-family: monospace; font-size: 0.9em;">
-  <span style="padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(103, 232, 249, 0.15); color: #67E8F9; border: 1px solid #67E8F9;">Conversation</span>
-  <span style="color: #64748b;">&rarr;</span>
-  <span style="padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(138, 184, 255, 0.15); color: #8AB8FF; border: 1px solid #8AB8FF;">Trace</span>
-  <span style="color: #64748b;">&rarr;</span>
-  <span style="padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid #A78BFA;">Tool call</span>
-  <span style="color: #64748b;">&rarr;</span>
-  <span style="padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(244, 114, 182, 0.15); color: #F472B6; border: 1px solid #F472B6;">DB error</span>
-  <span style="color: #64748b;">&rarr;</span>
-  <span style="padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(251, 146, 60, 0.15); color: #FB923C; border: 1px solid #FB923C;">SQL</span>
-</div>
-
-</div>
-"""
-
-
-INSIGHT_CALLOUT_MD = """<div style="padding: 1rem; font-size: 0.95em; color: #cbd5e1; line-height: 1.6;">
-
-One observability stack.
-Five signals.
-Every layer of an AI system, queryable from the same place.
-
-</div>
-"""
-
-
-def nav_card_md(n):
-    return (
-        '<div style="padding: 1rem; text-align: center;">\n\n'
-        f"### View {n}\n\n"
-        '<p style="color: #9ca3af; font-size: 0.85em;">\n'
-        "(brief pending)\n"
-        "</p>\n\n"
-        "</div>\n"
-    )
-
-
-AXIS_HTML = """<div style="padding: 0 0.5rem;">
-  <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;">
-    <span>Deterministic. Objective. Production. Customer facing.</span>
-    <span>Subjective. Probabilistic. Development. Internal.</span>
+THESIS_HTML = f"""<style>
+{FONT_IMPORT}
+.thesis-card{{position:relative;font-family:'Geist',Inter,system-ui,sans-serif;padding:32px 36px;background:linear-gradient(180deg,rgba(15,23,42,0.6) 0%,rgba(2,6,23,0.4) 100%);border-radius:14px;color:#F8FAFC;display:flex;align-items:center;gap:24px;}}
+.thesis-card::before{{content:'';position:absolute;left:0;top:24px;bottom:24px;width:4px;border-radius:2px;background:linear-gradient(180deg,#38BDF8,#A78BFA);box-shadow:0 0 18px rgba(56,189,248,0.45);}}
+.thesis-eyebrow{{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.22em;color:#38BDF8;text-transform:uppercase;}}
+.thesis-text{{font-size:22px;font-weight:500;line-height:1.45;letter-spacing:-0.01em;color:#E2E8F0;margin:8px 0 0;}}
+.thesis-text .now{{color:#38BDF8;font-weight:700;}}
+</style>
+<div class="thesis-card">
+  <div>
+    <div class="thesis-eyebrow">The Thesis</div>
+    <p class="thesis-text">AI changed the time to value of observability. <span class="now">Now observability changes the time to value of AI.</span></p>
   </div>
-  <div style="height: 10px; border-radius: 5px; background: linear-gradient(90deg, #FB923C 0%, #F472B6 33%, #A78BFA 66%, #8AB8FF 100%);"></div>
-  <p style="text-align: center; font-size: 0.8em; color: #64748b; margin-top: 0.3rem;">Five views move right to left across this axis.</p>
+</div>
+"""
+
+
+def spectrum_html(left_label, right_label, ai_pct, eng_pct):
+    """v2 spectrum card. Gradient track, two position markers (orange AI on
+    left side, sky Engineering on right side), tick marks at 25/50/75%.
+    """
+    return f"""<style>
+{FONT_IMPORT}
+.spec-card{{font-family:Inter,system-ui,sans-serif;padding:22px 24px 26px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;position:relative;color:#F8FAFC;}}
+.spec-card::after{{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}}
+.spec-head{{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;}}
+.spec-head .left{{color:#FB923C;}}
+.spec-head .right{{color:#38BDF8;}}
+.spec-track{{position:relative;height:28px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 18px rgba(56,189,248,0.15);}}
+.spec-track .tick{{position:absolute;top:-4px;width:1px;height:36px;background:rgba(255,255,255,0.16);}}
+.spec-track .tick.t25{{left:25%;}}.spec-track .tick.t50{{left:50%;}}.spec-track .tick.t75{{left:75%;}}
+.spec-marker{{position:absolute;top:-9px;width:12px;height:12px;border-radius:50%;background:#F8FAFC;box-shadow:0 0 0 3px #0F172A,0 0 14px rgba(255,255,255,0.6);transform:translateX(-50%);}}
+.spec-marker.eng{{background:#38BDF8;box-shadow:0 0 0 3px #0F172A,0 0 16px rgba(56,189,248,0.8);}}
+.spec-marker .lbl{{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;color:#F8FAFC;white-space:nowrap;text-transform:uppercase;}}
+</style>
+<div class="spec-card">
+  <div class="spec-head"><span class="left">{left_label}</span><span class="right">{right_label}</span></div>
+  <div class="spec-track">
+    <span class="tick t25"></span><span class="tick t50"></span><span class="tick t75"></span>
+    <span class="spec-marker eng" style="left:{eng_pct}%"><span class="lbl">Engineering</span></span>
+    <span class="spec-marker ai" style="left:{ai_pct}%"><span class="lbl">AI today</span></span>
+  </div>
+</div>
+"""
+
+
+SIGNAL_STACK_HTML = f"""<style>
+{FONT_IMPORT}
+.sig-wrap{{font-family:'Geist',Inter,system-ui,sans-serif;padding:32px 40px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:14px;color:#F8FAFC;position:relative;}}
+.sig-wrap::after{{content:'';position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}}
+.sig-row{{position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding:0 12px;}}
+.sig-row::before{{content:'';position:absolute;top:50%;left:8%;right:8%;height:1px;background:linear-gradient(90deg,rgba(138,184,255,0.4),rgba(167,139,250,0.4),rgba(244,114,182,0.4),rgba(251,146,60,0.4));z-index:0;}}
+.sig-node{{position:relative;z-index:1;padding:12px 22px;border-radius:10px;background:#0F172A;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;letter-spacing:0.10em;font-weight:600;text-transform:uppercase;}}
+.sig-node.metrics{{color:#8AB8FF;box-shadow:0 0 0 1px rgba(138,184,255,0.45),0 0 22px rgba(138,184,255,0.18);}}
+.sig-node.logs{{color:#A78BFA;box-shadow:0 0 0 1px rgba(167,139,250,0.45),0 0 22px rgba(167,139,250,0.18);}}
+.sig-node.traces{{color:#F472B6;box-shadow:0 0 0 1px rgba(244,114,182,0.55),0 0 24px rgba(244,114,182,0.25);}}
+.sig-node.profiles{{color:#FB923C;box-shadow:0 0 0 1px rgba(251,146,60,0.45),0 0 22px rgba(251,146,60,0.18);}}
+.sig-branch{{position:relative;display:flex;justify-content:center;}}
+.sig-branch::before{{content:'';position:absolute;left:50%;top:-32px;width:2px;height:28px;background:linear-gradient(180deg,rgba(244,114,182,0.5),rgba(56,189,248,0.8));}}
+.sig-branch::after{{content:'';position:absolute;left:50%;top:-8px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #38BDF8;transform:translateX(-50%);}}
+.sig-conv{{padding:16px 28px;border-radius:12px;background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(167,139,250,0.10));font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.10em;font-weight:700;text-transform:uppercase;color:#38BDF8;box-shadow:0 0 0 2px rgba(56,189,248,0.55),0 0 40px rgba(56,189,248,0.30);}}
+.sig-caption{{margin-top:32px;text-align:center;font-family:Inter,system-ui,sans-serif;font-size:14px;color:#94A3B8;line-height:1.6;}}
+.sig-caption .new{{color:#38BDF8;font-weight:600;}}
+</style>
+<div class="sig-wrap">
+  <div class="sig-row">
+    <div class="sig-node metrics">Metrics</div>
+    <div class="sig-node logs">Logs</div>
+    <div class="sig-node traces">Traces</div>
+    <div class="sig-node profiles">Profiles</div>
+  </div>
+  <div class="sig-branch"><div class="sig-conv">Conversations</div></div>
+  <div class="sig-caption">Metrics, logs, traces, profiles. The four classical signals of OpenTelemetry. <span class="new">The fifth signal, conversations,</span> branches from traces.</div>
+</div>
+"""
+
+
+# Singularity (panel 401): two-column inside the panel. Pull-quote on left,
+# vertical ladder on right. Emoji rendered via HTML entity codes so JSON
+# serialization is safe (resolves to: speech-balloon, compass, hammer-wrench,
+# warning, math-S).
+SINGULARITY_HTML = f"""<style>
+{FONT_IMPORT}
+.walk{{font-family:Inter,system-ui,sans-serif;padding:24px 28px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:14px;color:#F8FAFC;position:relative;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start;}}
+.walk::after{{content:'';position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}}
+.walk-quote{{font-size:16px;line-height:1.6;color:#CBD5E1;border-left:4px solid;border-image:linear-gradient(180deg,#38BDF8,#A78BFA) 1;padding-left:18px;margin:0;}}
+.walk-quote .punch{{display:block;margin-top:14px;color:#38BDF8;font-weight:700;font-family:'Geist',Inter,system-ui,sans-serif;font-size:18px;letter-spacing:-0.01em;}}
+.walk-ladder{{display:flex;flex-direction:column;gap:6px;min-width:200px;}}
+.walk-step{{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#1E293B;border:1px solid rgba(148,163,184,0.10);}}
+.walk-step .ico{{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:14px;}}
+.walk-step .lbl{{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.10em;text-transform:uppercase;color:#F8FAFC;}}
+.walk-step.s1 .ico{{background:rgba(56,189,248,0.15);color:#38BDF8;box-shadow:inset 0 0 0 1px rgba(56,189,248,0.30);}}
+.walk-step.s2 .ico{{background:rgba(138,184,255,0.15);color:#8AB8FF;box-shadow:inset 0 0 0 1px rgba(138,184,255,0.30);}}
+.walk-step.s3 .ico{{background:rgba(167,139,250,0.15);color:#A78BFA;box-shadow:inset 0 0 0 1px rgba(167,139,250,0.30);}}
+.walk-step.s4 .ico{{background:rgba(244,114,182,0.15);color:#F472B6;box-shadow:inset 0 0 0 1px rgba(244,114,182,0.30);}}
+.walk-step.s5 .ico{{background:rgba(251,146,60,0.15);color:#FB923C;box-shadow:inset 0 0 0 1px rgba(251,146,60,0.30);}}
+.walk-arrow{{display:grid;place-items:center;height:12px;color:#475569;font-size:12px;font-family:'JetBrains Mono',monospace;}}
+</style>
+<div class="walk">
+  <p class="walk-quote">From a conversation, you can walk down to the trace that produced it, the tool the model called, the database it queried, the error on Postgres, and the SQL itself.<span class="punch">Observability is the control plane for AI systems.</span></p>
+  <div class="walk-ladder">
+    <div class="walk-step s1"><span class="ico">&#128172;</span><span class="lbl">Conversation</span></div>
+    <div class="walk-arrow">v</div>
+    <div class="walk-step s2"><span class="ico">&#129517;</span><span class="lbl">Trace</span></div>
+    <div class="walk-arrow">v</div>
+    <div class="walk-step s3"><span class="ico">&#128736;</span><span class="lbl">Tool call</span></div>
+    <div class="walk-arrow">v</div>
+    <div class="walk-step s4"><span class="ico">&#9888;</span><span class="lbl">DB error</span></div>
+    <div class="walk-arrow">v</div>
+    <div class="walk-step s5"><span class="ico">&#119826;</span><span class="lbl">SQL</span></div>
+  </div>
+</div>
+"""
+
+
+INSIGHT_CALLOUT_HTML = f"""<style>
+{FONT_IMPORT}
+.callout{{font-family:Inter,system-ui,sans-serif;padding:24px 20px;color:#CBD5E1;}}
+.callout-eyebrow{{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.22em;color:#38BDF8;text-transform:uppercase;margin-bottom:18px;}}
+.callout-line{{font-size:17px;font-weight:500;line-height:1.5;color:#F8FAFC;margin:0 0 10px;}}
+.callout-line.muted{{color:#94A3B8;font-weight:400;font-size:15px;}}
+</style>
+<div class="callout">
+  <div class="callout-eyebrow">What this enables</div>
+  <p class="callout-line">One observability stack.</p>
+  <p class="callout-line">Five signals.</p>
+  <p class="callout-line muted">Every layer of an AI system, queryable from the same place.</p>
+</div>
+"""
+
+
+def nav_card_html(num, title, accent, accent_glow):
+    """v2 nav card with numbered badge in accent color and gradient border.
+
+    `num` is a string like "01". `accent` is the hex stop, `accent_glow` is the
+    rgba shadow companion.
+    """
+    return f"""<style>
+{FONT_IMPORT}
+.nav-card{{font-family:Inter,system-ui,sans-serif;padding:22px 20px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;color:#F8FAFC;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:space-between;}}
+.nav-card::after{{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--accent,#38BDF8),rgba(148,163,184,0.10));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}}
+.nav-num{{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--accent,#38BDF8);text-shadow:0 0 18px var(--accent-glow,rgba(56,189,248,0.30));}}
+.nav-title{{font-family:'Geist',Inter,system-ui,sans-serif;font-size:16px;font-weight:600;color:#F8FAFC;margin:14px 0 6px;letter-spacing:-0.01em;}}
+.nav-sub{{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#64748B;}}
+</style>
+<div class="nav-card" style="--accent:{accent};--accent-glow:{accent_glow};">
+  <div class="nav-num">{num}</div>
+  <div>
+    <div class="nav-title">{title}</div>
+    <div class="nav-sub">Brief pending</div>
+  </div>
+</div>
+"""
+
+
+AXIS_HTML = f"""<style>
+{FONT_IMPORT}
+.axis-wrap{{font-family:Inter,system-ui,sans-serif;padding:8px 12px 4px;color:#94A3B8;}}
+.axis-head{{display:flex;justify-content:space-between;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px;}}
+.axis-head .left{{color:#FB923C;}}.axis-head .right{{color:#38BDF8;}}
+.axis-bar{{height:32px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 6px 24px rgba(56,189,248,0.18);}}
+.axis-foot{{text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#64748B;margin-top:8px;}}
+</style>
+<div class="axis-wrap">
+  <div class="axis-head"><span class="left">Deterministic. Objective. Production.</span><span class="right">Subjective. Probabilistic. Development.</span></div>
+  <div class="axis-bar"></div>
+  <div class="axis-foot">Five views move right to left across this axis.</div>
 </div>
 """
 
@@ -316,46 +403,47 @@ P.append(ribbon_panel())  # 100
 
 P.append(text_panel(
     pid=101,
-    content=WELCOME_TITLE_MD,
+    content=WELCOME_TITLE_HTML,
     x=0, y=3, w=24, h=6,
     transparent=True,
-    mode="markdown",
+    mode="html",
 ))
 
 P.append(text_panel(
     pid=102,
-    content=THESIS_MD,
+    content=THESIS_HTML,
     x=0, y=9, w=24, h=5,
     transparent=True,
-    mode="markdown",
+    mode="html",
 ))
 
 # Row 2: The four spectra
 P.append(row_panel(
     pid=200,
-    title="🧭 The four spectra. Engineering loves the right side. AI lives on the left. Observability is the bridge.",
+    title="The four spectra. Engineering loves the right side. AI lives on the left. Observability is the bridge.",
     y=14,
 ))
 
+# (pid, left_label, right_label, x, ai_pct, eng_pct)
 SPECTRA = [
-    (201, "Production",      "Development",   0),
-    (202, "Customer facing", "Internal",      6),
-    (203, "Deterministic",   "Probabilistic", 12),
-    (204, "Objective",       "Subjective",    18),
+    (201, "Production",      "Development",   0,  18, 82),
+    (202, "Customer facing", "Internal",      6,  22, 78),
+    (203, "Deterministic",   "Probabilistic", 12, 15, 85),
+    (204, "Objective",       "Subjective",    18, 20, 80),
 ]
-for pid, left, right, x in SPECTRA:
+for pid, left, right, x, ai_pct, eng_pct in SPECTRA:
     P.append(text_panel(
         pid=pid,
-        content=spectrum_html(left, right),
+        content=spectrum_html(left, right, ai_pct, eng_pct),
         x=x, y=15, w=6, h=4,
-        transparent=True,
+        transparent=False,
         mode="html",
     ))
 
 # Row 3: The fifth signal
 P.append(row_panel(
     pid=300,
-    title="🔭 The fifth signal. Conversations branch from traces. Every conversation is a trace, but not every trace is a conversation.",
+    title="The fifth signal. Conversations branch from traces. Every conversation is a trace, but not every trace is a conversation.",
     y=19,
 ))
 
@@ -370,7 +458,7 @@ P.append(text_panel(
 # Row 4: The singularity
 P.append(row_panel(
     pid=400,
-    title="🧶 The singularity. From any conversation, walk down to the SQL that broke.",
+    title="The singularity. From any conversation, walk down to the SQL that broke.",
     y=29,
 ))
 
@@ -384,29 +472,35 @@ P.append(text_panel(
 
 P.append(text_panel(
     pid=402,
-    content=INSIGHT_CALLOUT_MD,
+    content=INSIGHT_CALLOUT_HTML,
     x=16, y=30, w=8, h=8,
     transparent=True,
-    title="What this enables",
-    mode="markdown",
+    title="",
+    mode="html",
 ))
 
 # Row 5: The path ahead
 P.append(row_panel(
     pid=500,
-    title="🗺 The path ahead. Five views, one journey.",
+    title="The path ahead. Five views, one journey.",
     y=38,
 ))
 
-# Five nav cards. Spec puts them at x=2,6,10,14,18 (2-col gutter on each side).
-for idx, x in enumerate([2, 6, 10, 14, 18], start=1):
-    pid = 500 + idx
+# (pid, x, num, title, accent, accent_glow)
+NAV_CARDS = [
+    (501, 2,  "01", "View one",   "#FB923C", "rgba(251,146,60,0.30)"),
+    (502, 6,  "02", "View two",   "#F472B6", "rgba(244,114,182,0.30)"),
+    (503, 10, "03", "View three", "#A78BFA", "rgba(167,139,250,0.30)"),
+    (504, 14, "04", "View four",  "#8AB8FF", "rgba(138,184,255,0.30)"),
+    (505, 18, "05", "View five",  "#38BDF8", "rgba(56,189,248,0.30)"),
+]
+for pid, x, num, title, accent, glow in NAV_CARDS:
     P.append(text_panel(
         pid=pid,
-        content=nav_card_md(idx),
+        content=nav_card_html(num, title, accent, glow),
         x=x, y=39, w=4, h=6,
         transparent=False,
-        mode="markdown",
+        mode="html",
     ))
 
 P.append(text_panel(
@@ -420,61 +514,59 @@ P.append(text_panel(
 # Row 6: Highlights from the last 24 hours
 P.append(row_panel(
     pid=600,
-    title="📊 Highlights from the last 24 hours. Live signals from a real AI system.",
+    title="Highlights from the last 24 hours. Live signals from a real AI system.",
     y=47,
 ))
 
-# 601: Tokens served
+# Cost expressions: split by token_type with a fallback for the unlabelled case.
+ANTHROPIC_EXPR = (
+    '(sum(increase(gen_ai_client_token_usage_total{token_type="input"}[24h])) / 1000000 * 3 '
+    '+ sum(increase(gen_ai_client_token_usage_total{token_type="output"}[24h])) / 1000000 * 15) '
+    'or sum(increase(gen_ai_client_token_usage_total[24h])) / 1000000 * 5.4'
+)
+LOCAL_COST_EXPR = 'sum(increase(gen_ai_client_token_usage_total[24h])) / 1000000 * 0.20'
+SAVINGS_EXPR = (
+    '100 * (1 - (' + LOCAL_COST_EXPR + ') / '
+    'clamp_min((' + ANTHROPIC_EXPR + '), 0.001))'
+)
+
+# 601: Tokens served. unit=short auto-formats 203233030 as "203 Mil".
 P.append(stat_panel(
     pid=601,
     title="Tokens served (24h)",
     expr="sum(increase(gen_ai_client_token_usage_total[24h]))",
     x=0, y=48, w=4, h=4,
-    unit="none", custom_unit=" tokens", decimals=0,
+    unit="short", decimals=0,
     no_value="0",
     color=PALETTE["blue"],
     description="Total LLM tokens (input + output) the platform processed in the trailing 24 hours.",
 ))
 
-# 602: Cost local marginal
+# 602: Cost local marginal. Uses LOCAL_COST_EXPR.
 P.append(stat_panel(
     pid=602,
     title="Cost, local marginal",
-    expr='sum(increase(gen_ai_client_cost_usd_total{gen_ai_system="ollama"}[24h]))',
+    expr=LOCAL_COST_EXPR,
     x=4, y=48, w=4, h=4,
     unit="currencyUSD", decimals=2,
     no_value="0",
-    color=PALETTE["cyan"],
-    description="What the on-prem Ollama traffic cost over the last 24h (electricity + amortization, per the local cost model).",
+    color="#38BDF8",
+    description="What the on-prem traffic cost over the last 24h at a $0.20/Mtok all-in rate (electricity + amortization).",
 ))
 
-# 603: Cost equivalent Anthropic
+# 603: Cost equivalent Anthropic. Uses ANTHROPIC_EXPR with token-type split.
 P.append(stat_panel(
     pid=603,
     title="Cost, equivalent Anthropic",
-    expr=(
-        'sum(increase(gen_ai_client_token_usage_total{token_type="output"}[24h])) * 0.000015 '
-        '+ sum(increase(gen_ai_client_token_usage_total{token_type="input"}[24h])) * 0.000003'
-    ),
+    expr=ANTHROPIC_EXPR,
     x=8, y=48, w=4, h=4,
     unit="currencyUSD", decimals=2,
     no_value="0",
     color=PALETTE["purple"],
-    description="What the same 24h of token volume would have cost on Anthropic Claude Sonnet (priced at $3 / $15 per 1M input/output tokens).",
+    description="What the same 24h of token volume would have cost on Anthropic Claude Sonnet ($3/$15 per 1M input/output tokens; falls back to a $5.40/Mtok blend when token_type is absent).",
 ))
 
-# 604: Savings HERO. Pure status palette (danger -> warning -> healthy).
-# PromQL clamp_min IS supported on this tenant (the LogQL-only rule does not
-# apply to Prometheus).
-SAVINGS_EXPR = (
-    "100 * (1 - ("
-    'sum(increase(gen_ai_client_cost_usd_total{gen_ai_system="ollama"}[24h])) '
-    "/ clamp_min("
-    '(sum(increase(gen_ai_client_token_usage_total{token_type="output"}[24h])) * 0.000015 '
-    '+ sum(increase(gen_ai_client_token_usage_total{token_type="input"}[24h])) * 0.000003)'
-    ", 0.001)"
-    "))"
-)
+# 604: Savings HERO. Bright sky-blue when >= 90%, never red.
 P.append(stat_panel(
     pid=604,
     title="Savings",
@@ -484,29 +576,30 @@ P.append(stat_panel(
     no_value="...",
     color_mode="background",
     thresholds=[
-        {"color": STATUS["danger"],  "value": None},
-        {"color": STATUS["warning"], "value": 50},
-        {"color": STATUS["healthy"], "value": 90},
+        {"color": "#64748B", "value": None},   # noValue: muted slate-500
+        {"color": "#0EA5E9", "value": 0},      # sub-90%: sky-500
+        {"color": "#38BDF8", "value": 90},     # 90%+: bright sky-400 (hero)
     ],
-    description="Percent saved by running local marginal Ollama vs the equivalent Anthropic cost. 90% or better is healthy.",
+    description="Percent saved by running local vs the equivalent Anthropic cost over the last 24h. 90% or better lights up sky-blue.",
 ))
 
-# 605: Conversations (24h)
+# 605: Conversations. unit=short auto-formats large counts.
 P.append(stat_panel(
     pid=605,
     title="Conversations (24h)",
     expr="sum(increase(sigil_eval_executions_total[24h]))",
     x=16, y=48, w=4, h=4,
-    unit="none", custom_unit=" conversations", decimals=0,
+    unit="short", decimals=0,
     no_value="0",
     color=PALETTE["pink"],
     description="Total evaluated conversations in the last 24h, as recorded by the Sigil evaluator pipeline.",
 ))
 
-# 606: Evaluations passed (%)
+# 606: Evaluations passed (%). The Sigil status label uses "success" not
+# "pass" on this tenant; query both for portability.
 EVAL_PASS_EXPR = (
     "100 * ("
-    'sum(increase(sigil_eval_executions_total{status="pass"}[24h])) '
+    "sum(increase(sigil_eval_executions_total{status=~\"success|pass\"}[24h])) "
     "/ clamp_min(sum(increase(sigil_eval_executions_total[24h])), 1)"
     ")"
 )
@@ -518,7 +611,7 @@ P.append(stat_panel(
     unit="percent", decimals=1,
     no_value="0",
     color=PALETTE["mint"],
-    description="Percentage of Sigil evaluator runs in the trailing 24h that returned status=pass.",
+    description="Percentage of Sigil evaluator runs in the trailing 24h whose status was success.",
 ))
 
 
@@ -580,7 +673,7 @@ dashboard = {
 # as elevated cards. Mark them with a sentinel that survives the aesthetic
 # pass: set transparent=True AND tag the panel with a custom field the
 # aesthetic pass cannot see. The post-aesthetic step in the build pipeline
-# (see _rebuild_ai_obs_welcome_post.sh or the docs) re-flips these three.
+# re-flips these three.
 NARRATIVE_TRANSPARENT_IDS = {101, 102, 506}
 
 DASH_PATH.write_text(json.dumps(dashboard, indent=2) + "\n")

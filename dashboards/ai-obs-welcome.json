@@ -141,13 +141,13 @@
         "y": 3
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"text-align: center; padding: 1rem;\">\n\n# AI Observability with Grafana Labs\n\n### Where conversations join the OTel stack\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.hero-wrap{position:relative;font-family:'Geist',Inter,system-ui,sans-serif;padding:48px 40px 56px;text-align:center;color:#F8FAFC;background:radial-gradient(120% 100% at 50% 0%,rgba(56,189,248,0.10) 0%,rgba(2,6,23,0) 60%),linear-gradient(180deg,#0F172A 0%,#020617 100%);border-radius:16px;overflow:hidden;}\n.hero-wrap::before{content:'';position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.45),rgba(167,139,250,0.35));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.hero-eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.24em;color:#38BDF8;text-transform:uppercase;margin-bottom:14px;}\n.hero-title{font-size:54px;font-weight:800;letter-spacing:-0.025em;line-height:1.05;margin:0;text-shadow:0 0 36px rgba(56,189,248,0.25);}\n.hero-title .ai{background:linear-gradient(135deg,#38BDF8 0%,#A78BFA 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}\n.hero-sub{font-family:Inter,system-ui,sans-serif;font-size:18px;font-weight:400;color:#94A3B8;margin:14px 0 28px;}\n.hero-rule{width:120px;height:2px;margin:0 auto;background:linear-gradient(90deg,#38BDF8,#F472B6);border-radius:1px;box-shadow:0 0 12px rgba(56,189,248,0.5);}\n@keyframes shimmer{0%,100%{opacity:0.65}50%{opacity:1}}\n.hero-rule{animation:shimmer 4s ease-in-out infinite;}\n</style>\n<div class=\"hero-wrap\">\n  <div class=\"hero-eyebrow\">Grafana Labs. Observability for AI.</div>\n  <h1 class=\"hero-title\"><span class=\"ai\">AI Observability</span><br/>with Grafana Labs</h1>\n  <p class=\"hero-sub\">Where conversations join the OTel stack.</p>\n  <div class=\"hero-rule\"></div>\n</div>\n"
       }
     },
     {
@@ -162,19 +162,19 @@
         "y": 9
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"text-align: center; font-size: 1.3em; padding: 1rem; color: #cbd5e1;\">\n\nAI changed the time-to-value of observability.\nNow observability changes the time-to-value of AI.\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.thesis-card{position:relative;font-family:'Geist',Inter,system-ui,sans-serif;padding:32px 36px;background:linear-gradient(180deg,rgba(15,23,42,0.6) 0%,rgba(2,6,23,0.4) 100%);border-radius:14px;color:#F8FAFC;display:flex;align-items:center;gap:24px;}\n.thesis-card::before{content:'';position:absolute;left:0;top:24px;bottom:24px;width:4px;border-radius:2px;background:linear-gradient(180deg,#38BDF8,#A78BFA);box-shadow:0 0 18px rgba(56,189,248,0.45);}\n.thesis-eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.22em;color:#38BDF8;text-transform:uppercase;}\n.thesis-text{font-size:22px;font-weight:500;line-height:1.45;letter-spacing:-0.01em;color:#E2E8F0;margin:8px 0 0;}\n.thesis-text .now{color:#38BDF8;font-weight:700;}\n</style>\n<div class=\"thesis-card\">\n  <div>\n    <div class=\"thesis-eyebrow\">The Thesis</div>\n    <p class=\"thesis-text\">AI changed the time to value of observability. <span class=\"now\">Now observability changes the time to value of AI.</span></p>\n  </div>\n</div>\n"
       }
     },
     {
       "id": 200,
       "type": "row",
-      "title": "\ud83e\udded The four spectra. Engineering loves the right side. AI lives on the left. Observability is the bridge.",
+      "title": "The four spectra. Engineering loves the right side. AI lives on the left. Observability is the bridge.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -202,7 +202,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Production</span>\n    <span>Development</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.spec-card{font-family:Inter,system-ui,sans-serif;padding:22px 24px 26px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;position:relative;color:#F8FAFC;}\n.spec-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.spec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;}\n.spec-head .left{color:#FB923C;}\n.spec-head .right{color:#38BDF8;}\n.spec-track{position:relative;height:28px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 18px rgba(56,189,248,0.15);}\n.spec-track .tick{position:absolute;top:-4px;width:1px;height:36px;background:rgba(255,255,255,0.16);}\n.spec-track .tick.t25{left:25%;}.spec-track .tick.t50{left:50%;}.spec-track .tick.t75{left:75%;}\n.spec-marker{position:absolute;top:-9px;width:12px;height:12px;border-radius:50%;background:#F8FAFC;box-shadow:0 0 0 3px #0F172A,0 0 14px rgba(255,255,255,0.6);transform:translateX(-50%);}\n.spec-marker.eng{background:#38BDF8;box-shadow:0 0 0 3px #0F172A,0 0 16px rgba(56,189,248,0.8);}\n.spec-marker .lbl{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;color:#F8FAFC;white-space:nowrap;text-transform:uppercase;}\n</style>\n<div class=\"spec-card\">\n  <div class=\"spec-head\"><span class=\"left\">Production</span><span class=\"right\">Development</span></div>\n  <div class=\"spec-track\">\n    <span class=\"tick t25\"></span><span class=\"tick t50\"></span><span class=\"tick t75\"></span>\n    <span class=\"spec-marker eng\" style=\"left:82%\"><span class=\"lbl\">Engineering</span></span>\n    <span class=\"spec-marker ai\" style=\"left:18%\"><span class=\"lbl\">AI today</span></span>\n  </div>\n</div>\n"
       }
     },
     {
@@ -223,7 +223,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Customer facing</span>\n    <span>Internal</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.spec-card{font-family:Inter,system-ui,sans-serif;padding:22px 24px 26px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;position:relative;color:#F8FAFC;}\n.spec-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.spec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;}\n.spec-head .left{color:#FB923C;}\n.spec-head .right{color:#38BDF8;}\n.spec-track{position:relative;height:28px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 18px rgba(56,189,248,0.15);}\n.spec-track .tick{position:absolute;top:-4px;width:1px;height:36px;background:rgba(255,255,255,0.16);}\n.spec-track .tick.t25{left:25%;}.spec-track .tick.t50{left:50%;}.spec-track .tick.t75{left:75%;}\n.spec-marker{position:absolute;top:-9px;width:12px;height:12px;border-radius:50%;background:#F8FAFC;box-shadow:0 0 0 3px #0F172A,0 0 14px rgba(255,255,255,0.6);transform:translateX(-50%);}\n.spec-marker.eng{background:#38BDF8;box-shadow:0 0 0 3px #0F172A,0 0 16px rgba(56,189,248,0.8);}\n.spec-marker .lbl{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;color:#F8FAFC;white-space:nowrap;text-transform:uppercase;}\n</style>\n<div class=\"spec-card\">\n  <div class=\"spec-head\"><span class=\"left\">Customer facing</span><span class=\"right\">Internal</span></div>\n  <div class=\"spec-track\">\n    <span class=\"tick t25\"></span><span class=\"tick t50\"></span><span class=\"tick t75\"></span>\n    <span class=\"spec-marker eng\" style=\"left:78%\"><span class=\"lbl\">Engineering</span></span>\n    <span class=\"spec-marker ai\" style=\"left:22%\"><span class=\"lbl\">AI today</span></span>\n  </div>\n</div>\n"
       }
     },
     {
@@ -244,7 +244,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Deterministic</span>\n    <span>Probabilistic</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.spec-card{font-family:Inter,system-ui,sans-serif;padding:22px 24px 26px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;position:relative;color:#F8FAFC;}\n.spec-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.spec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;}\n.spec-head .left{color:#FB923C;}\n.spec-head .right{color:#38BDF8;}\n.spec-track{position:relative;height:28px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 18px rgba(56,189,248,0.15);}\n.spec-track .tick{position:absolute;top:-4px;width:1px;height:36px;background:rgba(255,255,255,0.16);}\n.spec-track .tick.t25{left:25%;}.spec-track .tick.t50{left:50%;}.spec-track .tick.t75{left:75%;}\n.spec-marker{position:absolute;top:-9px;width:12px;height:12px;border-radius:50%;background:#F8FAFC;box-shadow:0 0 0 3px #0F172A,0 0 14px rgba(255,255,255,0.6);transform:translateX(-50%);}\n.spec-marker.eng{background:#38BDF8;box-shadow:0 0 0 3px #0F172A,0 0 16px rgba(56,189,248,0.8);}\n.spec-marker .lbl{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;color:#F8FAFC;white-space:nowrap;text-transform:uppercase;}\n</style>\n<div class=\"spec-card\">\n  <div class=\"spec-head\"><span class=\"left\">Deterministic</span><span class=\"right\">Probabilistic</span></div>\n  <div class=\"spec-track\">\n    <span class=\"tick t25\"></span><span class=\"tick t50\"></span><span class=\"tick t75\"></span>\n    <span class=\"spec-marker eng\" style=\"left:85%\"><span class=\"lbl\">Engineering</span></span>\n    <span class=\"spec-marker ai\" style=\"left:15%\"><span class=\"lbl\">AI today</span></span>\n  </div>\n</div>\n"
       }
     },
     {
@@ -265,13 +265,13 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Objective</span>\n    <span>Subjective</span>\n  </div>\n  <div style=\"height: 12px; border-radius: 6px; background: linear-gradient(90deg, #8AB8FF 0%, #A78BFA 33%, #F472B6 66%, #FB923C 100%);\"></div>\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.spec-card{font-family:Inter,system-ui,sans-serif;padding:22px 24px 26px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;position:relative;color:#F8FAFC;}\n.spec-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.spec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;}\n.spec-head .left{color:#FB923C;}\n.spec-head .right{color:#38BDF8;}\n.spec-track{position:relative;height:28px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 4px 18px rgba(56,189,248,0.15);}\n.spec-track .tick{position:absolute;top:-4px;width:1px;height:36px;background:rgba(255,255,255,0.16);}\n.spec-track .tick.t25{left:25%;}.spec-track .tick.t50{left:50%;}.spec-track .tick.t75{left:75%;}\n.spec-marker{position:absolute;top:-9px;width:12px;height:12px;border-radius:50%;background:#F8FAFC;box-shadow:0 0 0 3px #0F172A,0 0 14px rgba(255,255,255,0.6);transform:translateX(-50%);}\n.spec-marker.eng{background:#38BDF8;box-shadow:0 0 0 3px #0F172A,0 0 16px rgba(56,189,248,0.8);}\n.spec-marker .lbl{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.14em;color:#F8FAFC;white-space:nowrap;text-transform:uppercase;}\n</style>\n<div class=\"spec-card\">\n  <div class=\"spec-head\"><span class=\"left\">Objective</span><span class=\"right\">Subjective</span></div>\n  <div class=\"spec-track\">\n    <span class=\"tick t25\"></span><span class=\"tick t50\"></span><span class=\"tick t75\"></span>\n    <span class=\"spec-marker eng\" style=\"left:80%\"><span class=\"lbl\">Engineering</span></span>\n    <span class=\"spec-marker ai\" style=\"left:20%\"><span class=\"lbl\">AI today</span></span>\n  </div>\n</div>\n"
       }
     },
     {
       "id": 300,
       "type": "row",
-      "title": "\ud83d\udd2d The fifth signal. Conversations branch from traces. Every conversation is a trace, but not every trace is a conversation.",
+      "title": "The fifth signal. Conversations branch from traces. Every conversation is a trace, but not every trace is a conversation.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -299,13 +299,13 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1.5rem; text-align: center; font-family: monospace;\">\n\n<div style=\"display: flex; justify-content: space-around; margin-bottom: 1rem;\">\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(138, 184, 255, 0.15); color: #8AB8FF; border: 1px solid #8AB8FF;\">Metrics</span>\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid #A78BFA;\">Logs</span>\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(244, 114, 182, 0.15); color: #F472B6; border: 1px solid #F472B6;\">Traces</span>\n  <span style=\"padding: 0.5rem 1rem; border-radius: 4px; background: rgba(251, 146, 60, 0.15); color: #FB923C; border: 1px solid #FB923C;\">Profiles</span>\n</div>\n\n<div style=\"font-size: 2em; color: #F472B6; margin: 0.5rem 0;\">&darr;</div>\n\n<div>\n  <span style=\"padding: 0.6rem 1.2rem; border-radius: 6px; background: rgba(252, 165, 165, 0.2); color: #FCA5A5; border: 2px solid #FCA5A5; font-weight: bold;\">Conversations</span>\n</div>\n\n<p style=\"color: #9ca3af; font-size: 0.9em; margin-top: 1.5rem; max-width: 700px; margin-left: auto; margin-right: auto;\">\nMetrics, logs, traces, profiles. The four classical signals of OpenTelemetry. The fifth signal, conversations, branches from traces.\n</p>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.sig-wrap{font-family:'Geist',Inter,system-ui,sans-serif;padding:32px 40px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:14px;color:#F8FAFC;position:relative;}\n.sig-wrap::after{content:'';position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.sig-row{position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding:0 12px;}\n.sig-row::before{content:'';position:absolute;top:50%;left:8%;right:8%;height:1px;background:linear-gradient(90deg,rgba(138,184,255,0.4),rgba(167,139,250,0.4),rgba(244,114,182,0.4),rgba(251,146,60,0.4));z-index:0;}\n.sig-node{position:relative;z-index:1;padding:12px 22px;border-radius:10px;background:#0F172A;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;letter-spacing:0.10em;font-weight:600;text-transform:uppercase;}\n.sig-node.metrics{color:#8AB8FF;box-shadow:0 0 0 1px rgba(138,184,255,0.45),0 0 22px rgba(138,184,255,0.18);}\n.sig-node.logs{color:#A78BFA;box-shadow:0 0 0 1px rgba(167,139,250,0.45),0 0 22px rgba(167,139,250,0.18);}\n.sig-node.traces{color:#F472B6;box-shadow:0 0 0 1px rgba(244,114,182,0.55),0 0 24px rgba(244,114,182,0.25);}\n.sig-node.profiles{color:#FB923C;box-shadow:0 0 0 1px rgba(251,146,60,0.45),0 0 22px rgba(251,146,60,0.18);}\n.sig-branch{position:relative;display:flex;justify-content:center;}\n.sig-branch::before{content:'';position:absolute;left:50%;top:-32px;width:2px;height:28px;background:linear-gradient(180deg,rgba(244,114,182,0.5),rgba(56,189,248,0.8));}\n.sig-branch::after{content:'';position:absolute;left:50%;top:-8px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #38BDF8;transform:translateX(-50%);}\n.sig-conv{padding:16px 28px;border-radius:12px;background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(167,139,250,0.10));font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;letter-spacing:0.10em;font-weight:700;text-transform:uppercase;color:#38BDF8;box-shadow:0 0 0 2px rgba(56,189,248,0.55),0 0 40px rgba(56,189,248,0.30);}\n.sig-caption{margin-top:32px;text-align:center;font-family:Inter,system-ui,sans-serif;font-size:14px;color:#94A3B8;line-height:1.6;}\n.sig-caption .new{color:#38BDF8;font-weight:600;}\n</style>\n<div class=\"sig-wrap\">\n  <div class=\"sig-row\">\n    <div class=\"sig-node metrics\">Metrics</div>\n    <div class=\"sig-node logs\">Logs</div>\n    <div class=\"sig-node traces\">Traces</div>\n    <div class=\"sig-node profiles\">Profiles</div>\n  </div>\n  <div class=\"sig-branch\"><div class=\"sig-conv\">Conversations</div></div>\n  <div class=\"sig-caption\">Metrics, logs, traces, profiles. The four classical signals of OpenTelemetry. <span class=\"new\">The fifth signal, conversations,</span> branches from traces.</div>\n</div>\n"
       }
     },
     {
       "id": 400,
       "type": "row",
-      "title": "\ud83e\uddf6 The singularity. From any conversation, walk down to the SQL that broke.",
+      "title": "The singularity. From any conversation, walk down to the SQL that broke.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -333,13 +333,13 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem;\">\n\n<p style=\"font-size: 1.1em; color: #e2e8f0; line-height: 1.6;\">\nFrom a conversation, you can walk down to the trace that produced it, the tool the model called, the database it queried, the error on Postgres, and the SQL itself.\n</p>\n\n<p style=\"font-size: 1.1em; color: #f9a8d4; line-height: 1.6; font-weight: 500;\">\nObservability is the control plane for AI systems.\n</p>\n\n<div style=\"display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; font-family: monospace; font-size: 0.9em;\">\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(103, 232, 249, 0.15); color: #67E8F9; border: 1px solid #67E8F9;\">Conversation</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(138, 184, 255, 0.15); color: #8AB8FF; border: 1px solid #8AB8FF;\">Trace</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(167, 139, 250, 0.15); color: #A78BFA; border: 1px solid #A78BFA;\">Tool call</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(244, 114, 182, 0.15); color: #F472B6; border: 1px solid #F472B6;\">DB error</span>\n  <span style=\"color: #64748b;\">&rarr;</span>\n  <span style=\"padding: 0.4rem 0.8rem; border-radius: 4px; background: rgba(251, 146, 60, 0.15); color: #FB923C; border: 1px solid #FB923C;\">SQL</span>\n</div>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.walk{font-family:Inter,system-ui,sans-serif;padding:24px 28px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:14px;color:#F8FAFC;position:relative;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start;}\n.walk::after{content:'';position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(135deg,rgba(56,189,248,0.30),rgba(167,139,250,0.20));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.walk-quote{font-size:16px;line-height:1.6;color:#CBD5E1;border-left:4px solid;border-image:linear-gradient(180deg,#38BDF8,#A78BFA) 1;padding-left:18px;margin:0;}\n.walk-quote .punch{display:block;margin-top:14px;color:#38BDF8;font-weight:700;font-family:'Geist',Inter,system-ui,sans-serif;font-size:18px;letter-spacing:-0.01em;}\n.walk-ladder{display:flex;flex-direction:column;gap:6px;min-width:200px;}\n.walk-step{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#1E293B;border:1px solid rgba(148,163,184,0.10);}\n.walk-step .ico{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:14px;}\n.walk-step .lbl{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.10em;text-transform:uppercase;color:#F8FAFC;}\n.walk-step.s1 .ico{background:rgba(56,189,248,0.15);color:#38BDF8;box-shadow:inset 0 0 0 1px rgba(56,189,248,0.30);}\n.walk-step.s2 .ico{background:rgba(138,184,255,0.15);color:#8AB8FF;box-shadow:inset 0 0 0 1px rgba(138,184,255,0.30);}\n.walk-step.s3 .ico{background:rgba(167,139,250,0.15);color:#A78BFA;box-shadow:inset 0 0 0 1px rgba(167,139,250,0.30);}\n.walk-step.s4 .ico{background:rgba(244,114,182,0.15);color:#F472B6;box-shadow:inset 0 0 0 1px rgba(244,114,182,0.30);}\n.walk-step.s5 .ico{background:rgba(251,146,60,0.15);color:#FB923C;box-shadow:inset 0 0 0 1px rgba(251,146,60,0.30);}\n.walk-arrow{display:grid;place-items:center;height:12px;color:#475569;font-size:12px;font-family:'JetBrains Mono',monospace;}\n</style>\n<div class=\"walk\">\n  <p class=\"walk-quote\">From a conversation, you can walk down to the trace that produced it, the tool the model called, the database it queried, the error on Postgres, and the SQL itself.<span class=\"punch\">Observability is the control plane for AI systems.</span></p>\n  <div class=\"walk-ladder\">\n    <div class=\"walk-step s1\"><span class=\"ico\">&#128172;</span><span class=\"lbl\">Conversation</span></div>\n    <div class=\"walk-arrow\">v</div>\n    <div class=\"walk-step s2\"><span class=\"ico\">&#129517;</span><span class=\"lbl\">Trace</span></div>\n    <div class=\"walk-arrow\">v</div>\n    <div class=\"walk-step s3\"><span class=\"ico\">&#128736;</span><span class=\"lbl\">Tool call</span></div>\n    <div class=\"walk-arrow\">v</div>\n    <div class=\"walk-step s4\"><span class=\"ico\">&#9888;</span><span class=\"lbl\">DB error</span></div>\n    <div class=\"walk-arrow\">v</div>\n    <div class=\"walk-step s5\"><span class=\"ico\">&#119826;</span><span class=\"lbl\">SQL</span></div>\n  </div>\n</div>\n"
       }
     },
     {
       "id": 402,
       "type": "text",
-      "title": "What this enables",
+      "title": "",
       "transparent": false,
       "gridPos": {
         "h": 8,
@@ -348,19 +348,19 @@
         "y": 30
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem; font-size: 0.95em; color: #cbd5e1; line-height: 1.6;\">\n\nOne observability stack.\nFive signals.\nEvery layer of an AI system, queryable from the same place.\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.callout{font-family:Inter,system-ui,sans-serif;padding:24px 20px;color:#CBD5E1;}\n.callout-eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.22em;color:#38BDF8;text-transform:uppercase;margin-bottom:18px;}\n.callout-line{font-size:17px;font-weight:500;line-height:1.5;color:#F8FAFC;margin:0 0 10px;}\n.callout-line.muted{color:#94A3B8;font-weight:400;font-size:15px;}\n</style>\n<div class=\"callout\">\n  <div class=\"callout-eyebrow\">What this enables</div>\n  <p class=\"callout-line\">One observability stack.</p>\n  <p class=\"callout-line\">Five signals.</p>\n  <p class=\"callout-line muted\">Every layer of an AI system, queryable from the same place.</p>\n</div>\n"
       }
     },
     {
       "id": 500,
       "type": "row",
-      "title": "\ud83d\uddfa The path ahead. Five views, one journey.",
+      "title": "The path ahead. Five views, one journey.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -382,13 +382,13 @@
         "y": 39
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 1\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.nav-card{font-family:Inter,system-ui,sans-serif;padding:22px 20px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;color:#F8FAFC;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:space-between;}\n.nav-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--accent,#38BDF8),rgba(148,163,184,0.10));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.nav-num{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--accent,#38BDF8);text-shadow:0 0 18px var(--accent-glow,rgba(56,189,248,0.30));}\n.nav-title{font-family:'Geist',Inter,system-ui,sans-serif;font-size:16px;font-weight:600;color:#F8FAFC;margin:14px 0 6px;letter-spacing:-0.01em;}\n.nav-sub{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#64748B;}\n</style>\n<div class=\"nav-card\" style=\"--accent:#FB923C;--accent-glow:rgba(251,146,60,0.30);\">\n  <div class=\"nav-num\">01</div>\n  <div>\n    <div class=\"nav-title\">View one</div>\n    <div class=\"nav-sub\">Brief pending</div>\n  </div>\n</div>\n"
       }
     },
     {
@@ -403,13 +403,13 @@
         "y": 39
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 2\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.nav-card{font-family:Inter,system-ui,sans-serif;padding:22px 20px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;color:#F8FAFC;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:space-between;}\n.nav-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--accent,#38BDF8),rgba(148,163,184,0.10));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.nav-num{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--accent,#38BDF8);text-shadow:0 0 18px var(--accent-glow,rgba(56,189,248,0.30));}\n.nav-title{font-family:'Geist',Inter,system-ui,sans-serif;font-size:16px;font-weight:600;color:#F8FAFC;margin:14px 0 6px;letter-spacing:-0.01em;}\n.nav-sub{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#64748B;}\n</style>\n<div class=\"nav-card\" style=\"--accent:#F472B6;--accent-glow:rgba(244,114,182,0.30);\">\n  <div class=\"nav-num\">02</div>\n  <div>\n    <div class=\"nav-title\">View two</div>\n    <div class=\"nav-sub\">Brief pending</div>\n  </div>\n</div>\n"
       }
     },
     {
@@ -424,13 +424,13 @@
         "y": 39
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 3\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.nav-card{font-family:Inter,system-ui,sans-serif;padding:22px 20px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;color:#F8FAFC;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:space-between;}\n.nav-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--accent,#38BDF8),rgba(148,163,184,0.10));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.nav-num{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--accent,#38BDF8);text-shadow:0 0 18px var(--accent-glow,rgba(56,189,248,0.30));}\n.nav-title{font-family:'Geist',Inter,system-ui,sans-serif;font-size:16px;font-weight:600;color:#F8FAFC;margin:14px 0 6px;letter-spacing:-0.01em;}\n.nav-sub{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#64748B;}\n</style>\n<div class=\"nav-card\" style=\"--accent:#A78BFA;--accent-glow:rgba(167,139,250,0.30);\">\n  <div class=\"nav-num\">03</div>\n  <div>\n    <div class=\"nav-title\">View three</div>\n    <div class=\"nav-sub\">Brief pending</div>\n  </div>\n</div>\n"
       }
     },
     {
@@ -445,13 +445,13 @@
         "y": 39
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 4\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.nav-card{font-family:Inter,system-ui,sans-serif;padding:22px 20px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;color:#F8FAFC;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:space-between;}\n.nav-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--accent,#38BDF8),rgba(148,163,184,0.10));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.nav-num{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--accent,#38BDF8);text-shadow:0 0 18px var(--accent-glow,rgba(56,189,248,0.30));}\n.nav-title{font-family:'Geist',Inter,system-ui,sans-serif;font-size:16px;font-weight:600;color:#F8FAFC;margin:14px 0 6px;letter-spacing:-0.01em;}\n.nav-sub{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#64748B;}\n</style>\n<div class=\"nav-card\" style=\"--accent:#8AB8FF;--accent-glow:rgba(138,184,255,0.30);\">\n  <div class=\"nav-num\">04</div>\n  <div>\n    <div class=\"nav-title\">View four</div>\n    <div class=\"nav-sub\">Brief pending</div>\n  </div>\n</div>\n"
       }
     },
     {
@@ -466,13 +466,13 @@
         "y": 39
       },
       "options": {
-        "mode": "markdown",
+        "mode": "html",
         "code": {
           "language": "plaintext",
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 1rem; text-align: center;\">\n\n### View 5\n\n<p style=\"color: #9ca3af; font-size: 0.85em;\">\n(brief pending)\n</p>\n\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.nav-card{font-family:Inter,system-ui,sans-serif;padding:22px 20px;background:linear-gradient(180deg,#0F172A 0%,#0B1220 100%);border-radius:12px;color:#F8FAFC;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:space-between;}\n.nav-card::after{content:'';position:absolute;inset:0;border-radius:12px;padding:1px;background:linear-gradient(135deg,var(--accent,#38BDF8),rgba(148,163,184,0.10));-webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}\n.nav-num{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--accent,#38BDF8);text-shadow:0 0 18px var(--accent-glow,rgba(56,189,248,0.30));}\n.nav-title{font-family:'Geist',Inter,system-ui,sans-serif;font-size:16px;font-weight:600;color:#F8FAFC;margin:14px 0 6px;letter-spacing:-0.01em;}\n.nav-sub{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#64748B;}\n</style>\n<div class=\"nav-card\" style=\"--accent:#38BDF8;--accent-glow:rgba(56,189,248,0.30);\">\n  <div class=\"nav-num\">05</div>\n  <div>\n    <div class=\"nav-title\">View five</div>\n    <div class=\"nav-sub\">Brief pending</div>\n  </div>\n</div>\n"
       }
     },
     {
@@ -493,13 +493,13 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"padding: 0 0.5rem;\">\n  <div style=\"display: flex; justify-content: space-between; font-size: 0.85em; color: #9ca3af; margin-bottom: 0.4rem;\">\n    <span>Deterministic. Objective. Production. Customer facing.</span>\n    <span>Subjective. Probabilistic. Development. Internal.</span>\n  </div>\n  <div style=\"height: 10px; border-radius: 5px; background: linear-gradient(90deg, #FB923C 0%, #F472B6 33%, #A78BFA 66%, #8AB8FF 100%);\"></div>\n  <p style=\"text-align: center; font-size: 0.8em; color: #64748b; margin-top: 0.3rem;\">Five views move right to left across this axis.</p>\n</div>\n"
+        "content": "<style>\n@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');\n.axis-wrap{font-family:Inter,system-ui,sans-serif;padding:8px 12px 4px;color:#94A3B8;}\n.axis-head{display:flex;justify-content:space-between;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px;}\n.axis-head .left{color:#FB923C;}.axis-head .right{color:#38BDF8;}\n.axis-bar{height:32px;border-radius:8px;background:linear-gradient(90deg,#FB923C 0%,#F472B6 33%,#A78BFA 66%,#38BDF8 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 6px 24px rgba(56,189,248,0.18);}\n.axis-foot{text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#64748B;margin-top:8px;}\n</style>\n<div class=\"axis-wrap\">\n  <div class=\"axis-head\"><span class=\"left\">Deterministic. Objective. Production.</span><span class=\"right\">Subjective. Probabilistic. Development.</span></div>\n  <div class=\"axis-bar\"></div>\n  <div class=\"axis-foot\">Five views move right to left across this axis.</div>\n</div>\n"
       }
     },
     {
       "id": 600,
       "type": "row",
-      "title": "\ud83d\udcca Highlights from the last 24 hours. Live signals from a real AI system.",
+      "title": "Highlights from the last 24 hours. Live signals from a real AI system.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -539,7 +539,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
+          "unit": "short",
           "decimals": 0,
           "noValue": "0",
           "color": {
@@ -549,13 +549,14 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#8AB8FF",
+                "color": "#64748B",
                 "value": null
+              },
+              {
+                "color": "#8AB8FF",
+                "value": 0
               }
             ]
-          },
-          "custom": {
-            "customUnit": " tokens"
           }
         },
         "overrides": []
@@ -583,7 +584,7 @@
       "id": 602,
       "type": "stat",
       "title": "Cost, local marginal",
-      "description": "What the on-prem Ollama traffic cost over the last 24h (electricity + amortization, per the local cost model).",
+      "description": "What the on-prem traffic cost over the last 24h at a $0.20/Mtok all-in rate (electricity + amortization).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -601,7 +602,7 @@
             "uid": "${datasource_prom}"
           },
           "refId": "A",
-          "expr": "sum(increase(gen_ai_client_cost_usd_total{gen_ai_system=\"ollama\"}[24h]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_total[24h])) / 1000000 * 0.20",
           "legendFormat": "",
           "instant": false,
           "range": true
@@ -619,8 +620,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#67E8F9",
+                "color": "#64748B",
                 "value": null
+              },
+              {
+                "color": "#38BDF8",
+                "value": 0
               }
             ]
           }
@@ -650,7 +655,7 @@
       "id": 603,
       "type": "stat",
       "title": "Cost, equivalent Anthropic",
-      "description": "What the same 24h of token volume would have cost on Anthropic Claude Sonnet (priced at $3 / $15 per 1M input/output tokens).",
+      "description": "What the same 24h of token volume would have cost on Anthropic Claude Sonnet ($3/$15 per 1M input/output tokens; falls back to a $5.40/Mtok blend when token_type is absent).",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -668,7 +673,7 @@
             "uid": "${datasource_prom}"
           },
           "refId": "A",
-          "expr": "sum(increase(gen_ai_client_token_usage_total{token_type=\"output\"}[24h])) * 0.000015 + sum(increase(gen_ai_client_token_usage_total{token_type=\"input\"}[24h])) * 0.000003",
+          "expr": "(sum(increase(gen_ai_client_token_usage_total{token_type=\"input\"}[24h])) / 1000000 * 3 + sum(increase(gen_ai_client_token_usage_total{token_type=\"output\"}[24h])) / 1000000 * 15) or sum(increase(gen_ai_client_token_usage_total[24h])) / 1000000 * 5.4",
           "legendFormat": "",
           "instant": false,
           "range": true
@@ -686,8 +691,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#A78BFA",
+                "color": "#64748B",
                 "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 0
               }
             ]
           }
@@ -717,7 +726,7 @@
       "id": 604,
       "type": "stat",
       "title": "Savings",
-      "description": "Percent saved by running local marginal Ollama vs the equivalent Anthropic cost. 90% or better is healthy.",
+      "description": "Percent saved by running local vs the equivalent Anthropic cost over the last 24h. 90% or better lights up sky-blue.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -735,7 +744,7 @@
             "uid": "${datasource_prom}"
           },
           "refId": "A",
-          "expr": "100 * (1 - (sum(increase(gen_ai_client_cost_usd_total{gen_ai_system=\"ollama\"}[24h])) / clamp_min((sum(increase(gen_ai_client_token_usage_total{token_type=\"output\"}[24h])) * 0.000015 + sum(increase(gen_ai_client_token_usage_total{token_type=\"input\"}[24h])) * 0.000003), 0.001)))",
+          "expr": "100 * (1 - (sum(increase(gen_ai_client_token_usage_total[24h])) / 1000000 * 0.20) / clamp_min(((sum(increase(gen_ai_client_token_usage_total{token_type=\"input\"}[24h])) / 1000000 * 3 + sum(increase(gen_ai_client_token_usage_total{token_type=\"output\"}[24h])) / 1000000 * 15) or sum(increase(gen_ai_client_token_usage_total[24h])) / 1000000 * 5.4), 0.001))",
           "legendFormat": "",
           "instant": false,
           "range": true
@@ -753,15 +762,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#EF4444",
+                "color": "#64748B",
                 "value": null
               },
               {
-                "color": "#F59E0B",
-                "value": 50
+                "color": "#0EA5E9",
+                "value": 0
               },
               {
-                "color": "#10B981",
+                "color": "#38BDF8",
                 "value": 90
               }
             ]
@@ -818,7 +827,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
+          "unit": "short",
           "decimals": 0,
           "noValue": "0",
           "color": {
@@ -828,13 +837,14 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#F472B6",
+                "color": "#64748B",
                 "value": null
+              },
+              {
+                "color": "#F472B6",
+                "value": 0
               }
             ]
-          },
-          "custom": {
-            "customUnit": " conversations"
           }
         },
         "overrides": []
@@ -862,7 +872,7 @@
       "id": 606,
       "type": "stat",
       "title": "Evaluations passed (24h)",
-      "description": "Percentage of Sigil evaluator runs in the trailing 24h that returned status=pass.",
+      "description": "Percentage of Sigil evaluator runs in the trailing 24h whose status was success.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -880,7 +890,7 @@
             "uid": "${datasource_prom}"
           },
           "refId": "A",
-          "expr": "100 * (sum(increase(sigil_eval_executions_total{status=\"pass\"}[24h])) / clamp_min(sum(increase(sigil_eval_executions_total[24h])), 1))",
+          "expr": "100 * (sum(increase(sigil_eval_executions_total{status=~\"success|pass\"}[24h])) / clamp_min(sum(increase(sigil_eval_executions_total[24h])), 1))",
           "legendFormat": "",
           "instant": false,
           "range": true
@@ -898,8 +908,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#86EFAC",
+                "color": "#64748B",
                 "value": null
+              },
+              {
+                "color": "#86EFAC",
+                "value": 0
               }
             ]
           }
