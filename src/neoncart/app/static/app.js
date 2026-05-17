@@ -481,17 +481,23 @@
 
   // Hero gift-finder card on the homepage. Clicking any `[data-gift-prompt]`
   // chip opens the chat widget and immediately fires that prompt — the
-  // gift-finder route picks it up via the keyword detector. The `[data-gift-open]`
-  // CTA just opens the widget (no auto-send) so the user can compose freely.
+  // gift-finder route picks it up via the keyword detector. Chips can
+  // optionally carry `data-usecase` to pin a demo use case (e.g. the PC
+  // gaming nephew chip pins cross-gen-retrieval-drift). The
+  // `[data-gift-open]` CTA just opens the widget (no auto-send) so the
+  // user can compose freely.
   document.querySelectorAll("[data-gift-prompt], [data-gift-open]").forEach((btn) => {
     btn.addEventListener("click", (evt) => {
       evt.preventDefault();
       const prompt = btn.dataset.giftPrompt;
+      const opts = {};
+      if (btn.dataset.usecase) opts.usecase = btn.dataset.usecase;
+      if (btn.dataset.agent) opts.agent = btn.dataset.agent;
       setOpen(true);
       if (prompt) {
         // Give the panel layout a tick before submit so the typing
         // indicator + bubble animate cleanly.
-        setTimeout(() => sendMessage(prompt), 120);
+        setTimeout(() => sendMessage(prompt, opts), 120);
       } else if (input) {
         setTimeout(() => input.focus(), 200);
       }

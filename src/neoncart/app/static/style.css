@@ -209,6 +209,28 @@ a:hover { text-decoration: underline; }
   border-color: var(--accent-color);
   transform: translateY(-1px);
 }
+/* Demo-scenario chip — flagged so SE eyes find it during a live demo.
+   Amber dot indicator, slightly bolder tint, otherwise the same shape. */
+.nc-hero__chip--demo {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.55);
+  color: var(--text);
+  position: relative;
+}
+.nc-hero__chip--demo::before {
+  content: "";
+  width: 7px; height: 7px;
+  margin-right: 0.18rem;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.65);
+  display: inline-block;
+}
+.nc-hero__chip--demo:hover {
+  background: #f59e0b;
+  color: #1f2937;
+  border-color: #f59e0b;
+}
 
 /* Top-nav AI Gift Finder button — magenta pill living next to Cart. */
 .nc-nav__gift-btn {
