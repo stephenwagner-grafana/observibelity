@@ -711,21 +711,34 @@ class OllamaScheduler:
             await self._warmup_async(name)
 
     async def _warmup_async(self, model: str) -> None:
-        """Fire a 1-token POST to /api/generate so Ollama loads weights.
+        """Fire a tiny /api/chat POST so Ollama actually GPU-loads weights.
+
+        Without this, the FIRST real /v1/complete after promotion eats ~3s of
+        model-load time as TTFT. We POST to /api/chat (same endpoint real
+        traffic uses) with the same ``num_ctx`` (so the KV-cache aligns with
+        subsequent requests instead of being thrown away).
 
         Fire-and-forget: errors are logged and dropped. Failure here doesn't
         un-promote the model — the first real /v1/complete will re-attempt.
+        Short 5s timeout so a stuck daemon doesn't stall the scheduler tick.
         """
+        # Read OLLAMA_NUM_CTX at call time (not import time) so tests that
+        # tweak the env var see the override. The ollama provider applies
+        # the same default if the env is unset.
+        try:
+            num_ctx = int(os.environ.get("OLLAMA_NUM_CTX", "2048"))
+        except ValueError:
+            num_ctx = 2048
         payload = {
             "model": model,
-            "prompt": "hi",
+            "messages": [{"role": "user", "content": "."}],
             "stream": False,
             "keep_alive": self.keep_alive,
-            "options": {"num_predict": 1},
+            "options": {"num_predict": 1, "num_ctx": num_ctx},
         }
         try:
-            async with httpx.AsyncClient(timeout=self.http_timeout_s) as client:
-                r = await client.post(f"{self.base_url}/api/generate", json=payload)
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                r = await client.post(f"{self.base_url}/api/chat", json=payload)
                 if r.status_code >= 400:
                     log.warning(
                         "scheduler warmup failed: model=%s status=%s body=%s",

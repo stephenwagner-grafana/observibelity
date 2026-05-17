@@ -44,6 +44,17 @@ DEFAULT_BASE_URL = "http://localhost:11434"
 DEFAULT_TIMEOUT = 120.0
 DEFAULT_ROTATION_WINDOW_SECONDS = 300  # 5 minutes
 DEFAULT_KEEP_ALIVE = "30m"  # match prewarm task + daemon-side OLLAMA_KEEP_ALIVE
+# Cap Ollama's context window. The daemon defaults to num_ctx=8192, which makes
+# prefill ~4x slower than necessary for our typical 200-1500-token inputs.
+# Specialists send 200-1500 input tokens + up to 1500 max_tokens output ->
+# total context need rarely exceeds 3000. 2048 covers the vast majority; rare
+# overflows get truncated which is fine for the demo. Bump to 4096 via the env
+# var if truncation shows up in logs.
+DEFAULT_NUM_CTX = 2048
+try:
+    OLLAMA_NUM_CTX = int(os.environ.get("OLLAMA_NUM_CTX", str(DEFAULT_NUM_CTX)))
+except ValueError:
+    OLLAMA_NUM_CTX = DEFAULT_NUM_CTX
 _NO_TOOLS_MARKER = "does not support tools"
 # Saturation threshold: when this many requests are in-flight on a single
 # gateway pod, the dispatcher treats Ollama as "at capacity" and routes
@@ -228,7 +239,11 @@ class OllamaProvider(Provider):
             "messages": self._flatten_messages(req.messages),
             "stream": False,
             "keep_alive": self.keep_alive,
-            "options": {"num_predict": req.max_tokens, "temperature": 0.7},
+            "options": {
+                "num_predict": req.max_tokens,
+                "temperature": 0.7,
+                "num_ctx": OLLAMA_NUM_CTX,
+            },
         }
         if req.tools:
             payload["tools"] = req.tools
@@ -329,7 +344,11 @@ class OllamaProvider(Provider):
             "messages": self._flatten_messages(req.messages),
             "stream": True,
             "keep_alive": self.keep_alive,
-            "options": {"num_predict": req.max_tokens, "temperature": 0.7},
+            "options": {
+                "num_predict": req.max_tokens,
+                "temperature": 0.7,
+                "num_ctx": OLLAMA_NUM_CTX,
+            },
         }
         if req.tools:
             payload["tools"] = req.tools

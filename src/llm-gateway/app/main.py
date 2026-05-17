@@ -1217,28 +1217,38 @@ async def complete(req: CompleteRequest, request: Request) -> CompleteResponse:
         # subsequent request for the same session_id reuses it — even
         # while the model is DRAINING — until the session expires.
         if provider is not None and provider_name == "ollama":
-            scheduler = getattr(request.app.state, "scheduler", None)
-            if scheduler is not None:
-                from .sigil import _derive_session_id  # local import: avoid cycle
-                _session_id_for_route = _derive_session_id(req)
-                chosen = scheduler.route(_session_id_for_route)
-                if chosen is None:
-                    # Scheduler is up but the pool is currently empty —
-                    # next tick (≤10s) will load the first queued model.
-                    # Tell the caller to retry shortly. The existing
-                    # 429-emitting branch below stamps the deny counter +
-                    # caller-wait histogram, so we only need to set state.
-                    provider = None
-                    admission_debug["primary_reason"] = REASON_OLLAMA_POOL_EMPTY
-                    admission_debug["primary_wait_s"] = 5.0
-                else:
-                    # Pin the chosen model onto the request so the Ollama
-                    # provider serves THIS specific model instead of the
-                    # provider's static default (or the retired rotation
-                    # ticker). model_override always wins inside the
-                    # provider, which is exactly what we need here.
-                    req.model_override = req.model_override or chosen
-                    admission_debug["scheduler_model"] = chosen
+            # sb-router fast-path: it sends a tiny 12-token classification
+            # prompt to pick a downstream specialist — no need for a big
+            # model AND no need for sticky session pinning (each request
+            # is inherently 1-turn). Pin straight to the fastest pool model
+            # so its TTFT collapses from 800-1800ms to ~50-100ms.
+            if req.specialist == "sb-router":
+                req.model_override = req.model_override or "qwen2.5:0.5b"
+                admission_debug["scheduler_model"] = req.model_override
+                admission_debug["sb_router_fastpath"] = True
+            else:
+                scheduler = getattr(request.app.state, "scheduler", None)
+                if scheduler is not None:
+                    from .sigil import _derive_session_id  # local import: avoid cycle
+                    _session_id_for_route = _derive_session_id(req)
+                    chosen = scheduler.route(_session_id_for_route)
+                    if chosen is None:
+                        # Scheduler is up but the pool is currently empty —
+                        # next tick (≤10s) will load the first queued model.
+                        # Tell the caller to retry shortly. The existing
+                        # 429-emitting branch below stamps the deny counter +
+                        # caller-wait histogram, so we only need to set state.
+                        provider = None
+                        admission_debug["primary_reason"] = REASON_OLLAMA_POOL_EMPTY
+                        admission_debug["primary_wait_s"] = 5.0
+                    else:
+                        # Pin the chosen model onto the request so the Ollama
+                        # provider serves THIS specific model instead of the
+                        # provider's static default (or the retired rotation
+                        # ticker). model_override always wins inside the
+                        # provider, which is exactly what we need here.
+                        req.model_override = req.model_override or chosen
+                        admission_debug["scheduler_model"] = chosen
         if provider is None:
             # Admission refused → HTTP 429. No fallback between providers
             # under the tiered-sampler model; the dice IS the admission.

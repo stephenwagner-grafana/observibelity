@@ -112,6 +112,13 @@ spec:
             # agree (parallel agent is lowering the .240 daemon to 5m).
             - name: OLLAMA_KEEP_ALIVE
               value: {{ (default (dict) .Values.llmGateway.providers.ollama).keepAlive | default "5m" | quote }}
+            # Cap Ollama's per-request context window. The daemon defaults to
+            # num_ctx=8192, which makes prefill ~4x slower than necessary for
+            # our typical 200-1500-token inputs. 2048 covers the vast majority
+            # of specialist calls (200-1500 in + up to 1500 out). Bump to 4096
+            # if truncation shows up in logs.
+            - name: OLLAMA_NUM_CTX
+              value: {{ (default (dict) .Values.llmGateway.providers.ollama).numCtx | default 2048 | quote }}
             - name: LLM_GATEWAY_DEFAULT_PROVIDER
               value: {{ .Values.llmGateway.defaultProvider | default "anthropic" | quote }}
             # Per-call provider timeout. Default is 60s; for the .240 5090

@@ -116,6 +116,12 @@ llmGateway:
       # value should track that so per-request hints and daemon defaults
       # agree.
       keepAlive: "5m"
+      # Cap Ollama's per-request context window. The daemon defaults to
+      # num_ctx=8192, which makes prefill ~4x slower than necessary for our
+      # typical 200-1500-token inputs. 2048 covers the vast majority of
+      # specialist calls (200-1500 in + up to 1500 out). Bump to 4096 if
+      # truncation shows up in logs.
+      numCtx: 2048
       # Dynamic model pool — replaces the old fixed-window rotation. The
       # llm-gateway runs a scheduler tick every 10s that decides whether
       # to load the next queued model, hold steady, or force-drain the
