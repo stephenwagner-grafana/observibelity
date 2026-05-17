@@ -183,8 +183,14 @@ class NcGiftFinder(Specialist):
         # back to the model that produced the recommendation.
         chosen_model = result.get("model") or ""
 
-        if result.get("tool_calls"):
-            for tc in result["tool_calls"]:
+        # Loop tool rounds — Claude may chain (broad search -> SKU verify ->
+        # final reply). Cap at 4 rounds so a buggy model can't pile up tool
+        # calls indefinitely; in practice gift-finder takes 2-3.
+        for _round in range(4):
+            tcs = result.get("tool_calls") or []
+            if not tcs:
+                break
+            for tc in tcs:
                 tool_args = tc.get("input") or tc.get("args") or {}
                 # When the agent calls add_to_cart, decorate its args with
                 # the model+agent labels so the tool's counter and log line
@@ -263,8 +269,6 @@ class NcGiftFinder(Specialist):
                     }
                 )
             result = await self.call_gateway(messages, req)
-            for tc in result.get("tool_calls", []) or []:
-                all_tool_calls.append(tc)
 
         # Even if the model never called search_products (e.g. ran out of
         # tokens or refused), surface a category nav hint when the user
