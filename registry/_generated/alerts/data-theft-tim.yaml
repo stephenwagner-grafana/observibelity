@@ -12,6 +12,6 @@ groups:
       route: security@acme.local
     annotations:
       summary: "Data Theft \u2014 Tim Heidecker (malicious insider): data_theft firing"
-      description: Tim Heidecker (persona tim.lin@acme.com) is the loadgen archetype for a
-        malicious-
+      description: Tim Heidecker (persona tim.lin@acme.com) is the loadgen archetype
+        for a malicious-
       runbook: registry/use_cases/data-theft-tim.yaml

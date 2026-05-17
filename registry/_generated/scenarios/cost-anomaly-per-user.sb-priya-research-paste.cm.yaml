@@ -9,33 +9,53 @@ metadata:
 data:
   cost-anomaly-per-user.sb-priya-research-paste.js: "// k6 scenario template: per-user-pattern\
     \ archetype\n// Generated for use case: cost-anomaly-per-user\n// App target:\
-    \           both\n// Persona:              priya.singh@acme.com\n// Pattern signature:\
-    \    default\n//\n// Sticky persona priya.singh@acme.com sends 1 messages,\n// each\
-    \ matching the pattern signature. Rate is 6x baseline\n// so the persona surfaces\
-    \ on the leaderboard.\n\nimport http from 'k6/http';\nimport { check, sleep }\
-    \ from 'k6/check';\n\nexport const options = {\n  scenarios: {\n    'cost-anomaly-per-user_offender':\
+    \           both\n// Persona:              priya.singh@gmail.com\n// Pattern signature:\
+    \    default\n//\n// Sticky persona u-priya.singh@gmail.com sends 1 messages,\n\
+    // each matching the pattern signature. Rate is 6x baseline\n// so the persona\
+    \ surfaces on the leaderboard.\n\nimport http from 'k6/http';\nimport { check,\
+    \ sleep } from 'k6';\n\n// Honor 429 + Retry-After from llm-gateway. When both\
+    \ providers are at\n// capacity the gateway returns 429 with a Retry-After header\
+    \ (seconds);\n// we sleep for that interval to yield the VU so retry storms don't\
+    \ pile\n// up. We do NOT retry the same request \u2014 k6's constant-arrival-rate\n\
+    // will simply admit the next iteration when the VU becomes free.\nfunction postWithBackoff(url,\
+    \ body, params) {\n  const r = http.post(url, body, params);\n  if (r.status ===\
+    \ 429) {\n    let retryAfter = parseFloat(r.headers['Retry-After'] || '5');\n\
+    \    if (isNaN(retryAfter) || retryAfter < 0.1) retryAfter = 5;\n    if (retryAfter\
+    \ > 30) retryAfter = 30;  // cap so cycles don't go silly long\n    sleep(retryAfter);\n\
+    \  }\n  return r;\n}\n\nexport const options = {\n  scenarios: {\n    'cost-anomaly-per-user_offender':\
     \ {\n      executor: 'constant-arrival-rate',\n      rate: 6,\n      timeUnit:\
-    \ '1m',\n      duration: '24h',\n      preAllocatedVUs: 2,\n      maxVUs: 4,\n\
+    \ '1m',\n      duration: '60s',\n      preAllocatedVUs: 4,\n      maxVUs: 12,\n\
     \      exec: 'fireOffender',\n    },\n    'cost-anomaly-per-user_baseline': {\n\
-    \      executor: 'constant-arrival-rate',\n      rate: 1,\n      timeUnit: '1m',\n\
-    \      duration: '24h',\n      preAllocatedVUs: 4,\n      maxVUs: 8,\n      exec:\
+    \      executor: 'constant-arrival-rate',\n      rate: 6,\n      timeUnit: '1m',\n\
+    \      duration: '60s',\n      preAllocatedVUs: 4,\n      maxVUs: 16,\n      exec:\
     \ 'fireBaseline',\n    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL || 'http://both.observibelity.svc.cluster.local';\n\
-    const PATTERN_MESSAGES = [\n  'help me with my order please',\n];\nconst BASELINE_PERSONAS\
-    \ = ['base.a@acme.com', 'base.b@acme.com', 'base.c@acme.com', 'base.d@acme.com'];\n\nexport function fireOffender()\
-    \ {\n  const msg = PATTERN_MESSAGES[Math.floor(Math.random() * PATTERN_MESSAGES.length)];\n\
-    \  const payload = JSON.stringify({\n    message: msg,\n    user_id: 'priya.singh@acme.com',\n\
-    \    session_id: `s-priya.singh-${Date.now()}`,\n    metadata: {\n      usecase:\
-    \ 'cost-anomaly-per-user',\n      archetype: 'per-user-pattern',\n      pattern_signature:\
-    \ 'default',\n    },\n  });\n  const headers = {\n    'Content-Type': 'application/json',\n\
-    \    'ai_o11y-usecase': 'cost-anomaly-per-user',\n    'ai_o11y-archetype': 'per-user-pattern',\n\
-    \    'ai_o11y-persona': 'priya.singh@acme.com',\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
-    \ payload, { headers });\n  check(res, { 'request accepted': (r) => r.status <\
-    \ 500 });\n  sleep(1);\n}\n\nexport function fireBaseline() {\n  const persona\
-    \ = BASELINE_PERSONAS[Math.floor(Math.random() * BASELINE_PERSONAS.length)];\n\
-    \  const payload = JSON.stringify({\n    message: 'help me with my order please',\n\
-    \    user_id: persona,\n    session_id: `s-${persona}-${Date.now()}`,\n    metadata:\
+    // PATTERN_MESSAGES is a JSON array literal rendered from `message_templates`\n\
+    // (a list) when the YAML supplies one, falling back to a single-element list\n\
+    // containing `help me with my order please`. Use-case authors should override\n\
+    // `message_templates` in scenario `params` with keyword-rich phrases so\n// dashboard\
+    \ Loki regex panels can match the offender stream.\nconst PATTERN_MESSAGES = [\"\
+    help me with my order please\"];\n// Domain policy: SupportBot users are @acme.com\
+    \ employees; NeonCart users\n// are public consumer domains. The per-app filler\
+    \ lists below keep that\n// separation in baseline traffic so dashboards reading\
+    \ user.id stay\n// internally consistent.\nconst BASELINE_PERSONAS = 'both' ===\
+    \ 'supportbot'\n  ? ['base.a@acme.com', 'base.b@acme.com', 'base.c@acme.com',\
+    \ 'base.d@acme.com']\n  : ['base.a@gmail.com', 'base.b@hotmail.com', 'base.c@yahoo.com',\
+    \ 'base.d@aim.com'];\n\nexport function fireOffender() {\n  const msg = PATTERN_MESSAGES[Math.floor(Math.random()\
+    \ * PATTERN_MESSAGES.length)];\n  const payload = JSON.stringify({\n    message:\
+    \ msg,\n    persona_id: 'priya.singh@gmail.com',\n    usecase: 'cost-anomaly-per-user',\n\
+    \    session_id: `s-priya.singh@gmail.com-${Math.floor(Date.now() / 30000)}`,\n\
+    \    metadata: {\n      usecase: 'cost-anomaly-per-user',\n      archetype: 'per-user-pattern',\n\
+    \      pattern_signature: 'default',\n    },\n  });\n  const headers = {\n   \
+    \ 'Content-Type': 'application/json',\n    'ai_o11y-usecase': 'cost-anomaly-per-user',\n\
+    \    'ai_o11y-archetype': 'per-user-pattern',\n    'X-Persona-Id': 'priya.singh@gmail.com',\n\
+    \  };\n  const res = postWithBackoff(`${BASE_URL}/chat`, payload, { headers });\n\
+    \  check(res, { 'request accepted': (r) => r.status < 500 });\n  sleep(1);\n}\n\
+    \nexport function fireBaseline() {\n  const persona = BASELINE_PERSONAS[Math.floor(Math.random()\
+    \ * BASELINE_PERSONAS.length)];\n  const payload = JSON.stringify({\n    message:\
+    \ 'help me with my order please',\n    persona_id: persona,\n    usecase: 'cost-anomaly-per-user',\n\
+    \    session_id: `s-${persona}-${Math.floor(Date.now() / 30000)}`,\n    metadata:\
     \ { usecase: 'cost-anomaly-per-user', archetype: 'per-user-pattern' },\n  });\n\
     \  const headers = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase':\
     \ 'cost-anomaly-per-user',\n    'ai_o11y-archetype': 'per-user-pattern',\n   \
-    \ 'ai_o11y-persona': persona,\n  };\n  http.post(`${BASE_URL}/chat`, payload,\
+    \ 'X-Persona-Id': persona,\n  };\n  postWithBackoff(`${BASE_URL}/chat`, payload,\
     \ { headers });\n  sleep(1);\n}"

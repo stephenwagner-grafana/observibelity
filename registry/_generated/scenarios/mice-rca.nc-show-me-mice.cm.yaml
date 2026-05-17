@@ -13,19 +13,29 @@ data:
     // Rate: ~1 request per minute. Goal is one trace per minute that produces\n//\
     \ the structured error span identified by `trace_filter`. The compiler\n// substitutes\
     \ Jinja variables and writes the final scenario to\n// loadgen/scenarios/mice-rca.js.\n\
-    \nimport http from 'k6/http';\nimport { check, sleep } from 'k6/check';\n\nexport\
-    \ const options = {\n  scenarios: {\n    'mice-rca_trace_and_fix': {\n      executor:\
-    \ 'constant-arrival-rate',\n      rate: 1,\n      timeUnit: '1m',\n      duration:\
-    \ '24h',\n      preAllocatedVUs: 1,\n      maxVUs: 2,\n      exec: 'fire',\n \
-    \   },\n  },\n  thresholds: {\n    // We expect the error - don't fail the scenario\
-    \ on 5xx.\n    http_req_failed: ['rate<1.0'],\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL\
-    \ || 'http://neoncart.observibelity.svc.cluster.local';\n\nexport function fire()\
-    \ {\n  const payload = JSON.stringify({\n    message: 'trigger this trace',\n\
-    \    user_id: 'mice.rca@gmail.com',\n    session_id: `s-${Date.now()}`,\n  \
-    \  metadata: {\n      usecase: 'mice-rca',\n      archetype: 'trace-and-fix',\n\
-    \    },\n  });\n\n  const headers = {\n    'Content-Type': 'application/json',\n\
-    \    'ai_o11y-usecase': 'mice-rca',\n    'ai_o11y-archetype': 'trace-and-fix',\n\
-    \    'ai_o11y-trace-filter': 'default',\n    'X-Trigger-Phrase': 'trigger this\
-    \ trace',\n  };\n\n  const res = http.post(`${BASE_URL}/chat`, payload, { headers\
-    \ });\n\n  check(res, {\n    'trace span emitted': (r) => r.headers['X-Trace-Id']\
-    \ !== undefined,\n  });\n\n  sleep(1);\n}"
+    \nimport http from 'k6/http';\nimport { check, sleep } from 'k6';\n\n// Honor\
+    \ 429 + Retry-After from llm-gateway. When both providers are at\n// capacity\
+    \ the gateway returns 429 with a Retry-After header (seconds);\n// we sleep for\
+    \ that interval to yield the VU so retry storms don't pile\n// up. We do NOT retry\
+    \ the same request \u2014 k6's constant-arrival-rate\n// will simply admit the\
+    \ next iteration when the VU becomes free.\nfunction postWithBackoff(url, body,\
+    \ params) {\n  const r = http.post(url, body, params);\n  if (r.status === 429)\
+    \ {\n    let retryAfter = parseFloat(r.headers['Retry-After'] || '5');\n    if\
+    \ (isNaN(retryAfter) || retryAfter < 0.1) retryAfter = 5;\n    if (retryAfter\
+    \ > 30) retryAfter = 30;  // cap so cycles don't go silly long\n    sleep(retryAfter);\n\
+    \  }\n  return r;\n}\n\nexport const options = {\n  scenarios: {\n    'mice-rca_trace_and_fix':\
+    \ {\n      executor: 'constant-arrival-rate',\n      rate: 6,\n      timeUnit:\
+    \ '1m',\n      duration: '60s',\n      preAllocatedVUs: 1,\n      maxVUs: 2,\n\
+    \      exec: 'fire',\n    },\n  },\n  thresholds: {\n    // We expect the error\
+    \ - don't fail the scenario on 5xx.\n    http_req_failed: ['rate<1.0'],\n  },\n\
+    };\n\nconst BASE_URL = __ENV.TARGET_URL || 'http://neoncart.observibelity.svc.cluster.local';\n\
+    \nexport function fire() {\n  const payload = JSON.stringify({\n    message: 'trigger\
+    \ this trace',\n    persona_id: 'trace.fix.mice-rca',\n    usecase: 'mice-rca',\n\
+    \    session_id: `s-${Math.floor(Date.now() / 30000)}`,\n    metadata: {\n   \
+    \   usecase: 'mice-rca',\n      archetype: 'trace-and-fix',\n    },\n  });\n\n\
+    \  const headers = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase':\
+    \ 'mice-rca',\n    'ai_o11y-archetype': 'trace-and-fix',\n    'ai_o11y-trace-filter':\
+    \ 'default',\n    'X-Trigger-Phrase': 'trigger this trace',\n  };\n\n  const res\
+    \ = postWithBackoff(`${BASE_URL}/chat`, payload, { headers });\n\n  check(res,\
+    \ {\n    'trace span emitted': (r) => r.headers['X-Trace-Id'] !== undefined,\n\
+    \  });\n\n  sleep(1);\n}"

@@ -12,24 +12,36 @@ data:
     \         supportbot\n// Rank by:              category\n// Grouped by:      \
     \     category\n//\n// Generates baseline traffic at 10/min spread across\n//\
     \ every category in CATEGORIES so the leaderboard always has signal.\n\nimport\
-    \ http from 'k6/http';\nimport { check, sleep } from 'k6/check';\n\nexport const\
-    \ options = {\n  scenarios: {\n    'bad-question-askers_leaderboard': {\n    \
-    \  executor: 'constant-arrival-rate',\n      rate: 10,\n      timeUnit: '1m',\n\
-    \      duration: '24h',\n      preAllocatedVUs: 4,\n      maxVUs: 12,\n      exec:\
-    \ 'fire',\n    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL || 'http://supportbot.observibelity.svc.cluster.local';\n\
-    const CATEGORIES = [\"general\"];\n\nconst SAMPLE_MESSAGES = [\n  'summarize this\
-    \ support thread',\n  'what is your return policy',\n  'help me pick a plan',\n\
-    \  'i want a refund please',\n  'compare your top three skus',\n  'reset my password',\n\
-    ];\n\nfunction pickCategory() {\n  return CATEGORIES[Math.floor(Math.random()\
-    \ * CATEGORIES.length)];\n}\n\nfunction pickMessage() {\n  return SAMPLE_MESSAGES[Math.floor(Math.random()\
-    \ * SAMPLE_MESSAGES.length)];\n}\n\nexport function fire() {\n  const category\
-    \ = pickCategory();\n  const payload = JSON.stringify({\n    message: pickMessage(),\n\
-    \    user_id: `customer${Math.floor(Math.random() * 50)}@acme.com`,\n    session_id:\
-    \ `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,\n    metadata:\
-    \ {\n      usecase: 'bad-question-askers',\n      archetype: 'leaderboard',\n\
-    \      group_by: 'category',\n      category: category,\n    },\n  });\n  const\
-    \ headers = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase':\
-    \ 'bad-question-askers',\n    'ai_o11y-archetype': 'leaderboard',\n    'ai_o11y-group-by':\
-    \ 'category',\n    'ai_o11y-category': category,\n  };\n  const res = http.post(`${BASE_URL}/chat`,\
-    \ payload, { headers });\n  check(res, { 'request accepted': (r) => r.status <\
-    \ 500 });\n  sleep(1);\n}"
+    \ http from 'k6/http';\nimport { check, sleep } from 'k6';\n\n// Honor 429 + Retry-After\
+    \ from llm-gateway. When both providers are at\n// capacity the gateway returns\
+    \ 429 with a Retry-After header (seconds);\n// we sleep for that interval to yield\
+    \ the VU so retry storms don't pile\n// up. We do NOT retry the same request \u2014\
+    \ k6's constant-arrival-rate\n// will simply admit the next iteration when the\
+    \ VU becomes free.\nfunction postWithBackoff(url, body, params) {\n  const r =\
+    \ http.post(url, body, params);\n  if (r.status === 429) {\n    let retryAfter\
+    \ = parseFloat(r.headers['Retry-After'] || '5');\n    if (isNaN(retryAfter) ||\
+    \ retryAfter < 0.1) retryAfter = 5;\n    if (retryAfter > 30) retryAfter = 30;\
+    \  // cap so cycles don't go silly long\n    sleep(retryAfter);\n  }\n  return\
+    \ r;\n}\n\nexport const options = {\n  scenarios: {\n    'bad-question-askers_leaderboard':\
+    \ {\n      executor: 'constant-arrival-rate',\n      rate: 10,\n      timeUnit:\
+    \ '1m',\n      duration: '60s',\n      preAllocatedVUs: 4,\n      maxVUs: 12,\n\
+    \      exec: 'fire',\n    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL ||\
+    \ 'http://supportbot.observibelity.svc.cluster.local';\nconst CATEGORIES = [\"\
+    general\"];\n\nconst SAMPLE_MESSAGES = [\n  'summarize this support thread',\n\
+    \  'what is your return policy',\n  'help me pick a plan',\n  'i want a refund\
+    \ please',\n  'compare your top three skus',\n  'reset my password',\n];\n\nfunction\
+    \ pickCategory() {\n  return CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];\n\
+    }\n\nfunction pickMessage() {\n  return SAMPLE_MESSAGES[Math.floor(Math.random()\
+    \ * SAMPLE_MESSAGES.length)];\n}\n\n// Domain policy: SupportBot users are @acme.com;\
+    \ NeonCart users are public.\nconst PERSONA_DOMAIN = 'supportbot' === 'supportbot'\
+    \ ? 'acme.com' : 'gmail.com';\n\nexport function fire() {\n  const category =\
+    \ pickCategory();\n  const persona = `customer${Math.floor(Math.random() * 50)}@${PERSONA_DOMAIN}`;\n\
+    \  const payload = JSON.stringify({\n    message: pickMessage(),\n    persona_id:\
+    \ persona,\n    usecase: 'bad-question-askers',\n    session_id: `s-${persona}-${Math.floor(Date.now()\
+    \ / 30000)}`,\n    metadata: {\n      usecase: 'bad-question-askers',\n      archetype:\
+    \ 'leaderboard',\n      group_by: 'category',\n      category: category,\n   \
+    \ },\n  });\n  const headers = {\n    'Content-Type': 'application/json',\n  \
+    \  'ai_o11y-usecase': 'bad-question-askers',\n    'ai_o11y-archetype': 'leaderboard',\n\
+    \    'ai_o11y-group-by': 'category',\n    'ai_o11y-category': category,\n  };\n\
+    \  const res = postWithBackoff(`${BASE_URL}/chat`, payload, { headers });\n  check(res,\
+    \ { 'request accepted': (r) => r.status < 500 });\n  sleep(1);\n}"

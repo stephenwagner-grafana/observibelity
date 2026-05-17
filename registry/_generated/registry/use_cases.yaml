@@ -56,7 +56,8 @@ use_cases:
   phase: 2
   centerpiece: true
   archetype: per-user-pattern
-  description: Sticky persona jordan.finn@acme.com pastes 4 per hour fake Q4 board content
+  description: Sticky persona jordan.finn@acme.com pastes 4 per hour fake Q4 board
+    content
   scenario_count: 1
   evaluator_count: 2
   alert_count: 1
@@ -68,12 +69,26 @@ use_cases:
   phase: 2
   centerpiece: true
   archetype: per-user-pattern
-  description: Sticky persona priya.singh@acme.com pastes 40-80x repeated paragraphs of
+  description: Sticky persona priya.singh@gmail.com pastes 40-80x repeated paragraphs
+    of
   scenario_count: 1
   evaluator_count: 2
   alert_count: 1
   has_slo: true
   source: registry/use_cases/cost-anomaly-per-user.yaml
+- name: cross-gen-retrieval-drift
+  title: "Cross-generation retrieval drift \u2014 wildcard family match picks the\
+    \ wrong year"
+  app: neoncart
+  phase: 2
+  centerpiece: false
+  archetype: trace-and-fix
+  description: Manual-only demo. A shopper opens the chat widget and clicks the
+  scenario_count: 0
+  evaluator_count: 1
+  alert_count: 1
+  has_slo: false
+  source: registry/use_cases/cross-gen-retrieval-drift.yaml
 - name: customer-frustration
   title: "Customer Frustration \u2014 detect and route"
   app: neoncart
@@ -92,7 +107,8 @@ use_cases:
   phase: 2
   centerpiece: true
   archetype: per-user-pattern
-  description: Tim Heidecker (persona tim.lin@acme.com) is the loadgen archetype for a malicious-
+  description: Tim Heidecker (persona tim.lin@acme.com) is the loadgen archetype for
+    a malicious-
   scenario_count: 1
   evaluator_count: 2
   alert_count: 1

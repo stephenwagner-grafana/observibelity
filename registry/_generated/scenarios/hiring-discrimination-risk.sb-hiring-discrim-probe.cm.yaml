@@ -13,30 +13,48 @@ data:
     \ signal:      default\n//\n// Three streams:\n//  - critical: ~1/hr - should\
     \ fire the alert\n//  - near_miss: ~3/hr - visible, no alert\n//  - innocent:\
     \ filler so the dashboard timeline has shape\n\nimport http from 'k6/http';\n\
-    import { check, sleep } from 'k6/check';\n\nexport const options = {\n  scenarios:\
-    \ {\n    'hiring-discrimination-risk_critical': {\n      executor: 'constant-arrival-rate',\n\
-    \      rate: 1,\n      timeUnit: '1h',\n      duration: '24h',\n      preAllocatedVUs:\
-    \ 1,\n      maxVUs: 2,\n      exec: 'fireCritical',\n    },\n    'hiring-discrimination-risk_near_miss':\
+    import { check, sleep } from 'k6';\n\n// Honor 429 + Retry-After from llm-gateway.\
+    \ When both providers are at\n// capacity the gateway returns 429 with a Retry-After\
+    \ header (seconds);\n// we sleep for that interval to yield the VU so retry storms\
+    \ don't pile\n// up. We do NOT retry the same request \u2014 k6's constant-arrival-rate\n\
+    // will simply admit the next iteration when the VU becomes free.\nfunction postWithBackoff(url,\
+    \ body, params) {\n  const r = http.post(url, body, params);\n  if (r.status ===\
+    \ 429) {\n    let retryAfter = parseFloat(r.headers['Retry-After'] || '5');\n\
+    \    if (isNaN(retryAfter) || retryAfter < 0.1) retryAfter = 5;\n    if (retryAfter\
+    \ > 30) retryAfter = 30;  // cap so cycles don't go silly long\n    sleep(retryAfter);\n\
+    \  }\n  return r;\n}\n\nexport const options = {\n  scenarios: {\n    'hiring-discrimination-risk_critical':\
+    \ {\n      executor: 'constant-arrival-rate',\n      rate: 1,\n      timeUnit:\
+    \ '1h',\n      duration: '60s',\n      preAllocatedVUs: 1,\n      maxVUs: 2,\n\
+    \      exec: 'fireCritical',\n    },\n    'hiring-discrimination-risk_near_miss':\
     \ {\n      executor: 'constant-arrival-rate',\n      rate: 3,\n      timeUnit:\
-    \ '1h',\n      duration: '24h',\n      preAllocatedVUs: 1,\n      maxVUs: 2,\n\
+    \ '1h',\n      duration: '60s',\n      preAllocatedVUs: 1,\n      maxVUs: 2,\n\
     \      exec: 'fireNearMiss',\n    },\n    'hiring-discrimination-risk_innocent':\
     \ {\n      executor: 'constant-arrival-rate',\n      rate: 6,\n      timeUnit:\
-    \ '1m',\n      duration: '24h',\n      preAllocatedVUs: 2,\n      maxVUs: 4,\n\
+    \ '1m',\n      duration: '60s',\n      preAllocatedVUs: 4,\n      maxVUs: 12,\n\
     \      exec: 'fireInnocent',\n    },\n  },\n};\n\nconst BASE_URL = __ENV.TARGET_URL\
     \ || 'http://supportbot.observibelity.svc.cluster.local';\nconst INNOCENT_MESSAGES\
     \ = [\n  'how do I reset my password',\n  'what is your support hours',\n  'where\
-    \ do I find my order history',\n];\n\nfunction post(message, severity, kind) {\n\
-    \  const payload = JSON.stringify({\n    message: message,\n    user_id: `applicant${Math.floor(Math.random()\
-    \ * 100)}@acme.com`,\n    session_id: `s-${Date.now()}-${Math.random().toString(36).slice(2,\
-    \ 7)}`,\n    metadata: {\n      usecase: 'hiring-discrimination-risk',\n     \
-    \ archetype: 'single-event-severity',\n      severity: severity,\n      kind:\
-    \ kind,\n    },\n  });\n  const headers = {\n    'Content-Type': 'application/json',\n\
-    \    'ai_o11y-usecase': 'hiring-discrimination-risk',\n    'ai_o11y-archetype':\
-    \ 'single-event-severity',\n    'ai_o11y-severity': severity,\n    'ai_o11y-kind':\
-    \ kind,\n  };\n  const res = http.post(`${BASE_URL}/chat`, payload, { headers\
-    \ });\n  check(res, { 'request accepted': (r) => r.status < 500 });\n  sleep(1);\n\
-    }\n\nexport function fireCritical() {\n  post('TRIGGER_CRITICAL: default', 'critical',\
-    \ 'critical');\n}\n\nexport function fireNearMiss() {\n  post('TRIGGER_NEAR_MISS:\
-    \ looks like default but is benign', 'low', 'near_miss');\n}\n\nexport function\
-    \ fireInnocent() {\n  const msg = INNOCENT_MESSAGES[Math.floor(Math.random() *\
-    \ INNOCENT_MESSAGES.length)];\n  post(msg, 'info', 'innocent');\n}"
+    \ do I find my order history',\n];\n// CRITICAL_MESSAGES / NEAR_MISS_MESSAGES\
+    \ are JSON arrays rendered from the\n// scenario `params` keys `critical_messages`\
+    \ / `near_miss_messages`. Override\n// these in the use-case YAML with keyword-rich\
+    \ phrases so dashboard Loki\n// regex panels match the critical and near-miss\
+    \ streams.\nconst CRITICAL_MESSAGES = [\"TRIGGER_CRITICAL: default\"];\nconst\
+    \ NEAR_MISS_MESSAGES = [\"TRIGGER_NEAR_MISS: looks like default but is benign\"\
+    ];\n\n// Domain policy: SupportBot users are @acme.com; NeonCart users are public.\n\
+    const PERSONA_DOMAIN = 'supportbot' === 'supportbot' ? 'acme.com' : 'gmail.com';\n\
+    \nfunction post(message, severity, kind) {\n  const persona = `u-hiring-discrimination-risk-${Math.floor(Math.random()\
+    \ * 100)}@${PERSONA_DOMAIN}`;\n  const payload = JSON.stringify({\n    message:\
+    \ message,\n    persona_id: persona,\n    usecase: 'hiring-discrimination-risk',\n\
+    \    session_id: `s-${persona}-${Math.floor(Date.now() / 30000)}`,\n    metadata:\
+    \ {\n      usecase: 'hiring-discrimination-risk',\n      archetype: 'single-event-severity',\n\
+    \      severity: severity,\n      kind: kind,\n    },\n  });\n  const headers\
+    \ = {\n    'Content-Type': 'application/json',\n    'ai_o11y-usecase': 'hiring-discrimination-risk',\n\
+    \    'ai_o11y-archetype': 'single-event-severity',\n    'ai_o11y-severity': severity,\n\
+    \    'ai_o11y-kind': kind,\n  };\n  const res = postWithBackoff(`${BASE_URL}/chat`,\
+    \ payload, { headers });\n  check(res, { 'request accepted': (r) => r.status <\
+    \ 500 });\n  sleep(1);\n}\n\nexport function fireCritical() {\n  const msg = CRITICAL_MESSAGES[Math.floor(Math.random()\
+    \ * CRITICAL_MESSAGES.length)];\n  post(msg, 'critical', 'critical');\n}\n\nexport\
+    \ function fireNearMiss() {\n  const msg = NEAR_MISS_MESSAGES[Math.floor(Math.random()\
+    \ * NEAR_MISS_MESSAGES.length)];\n  post(msg, 'low', 'near_miss');\n}\n\nexport\
+    \ function fireInnocent() {\n  const msg = INNOCENT_MESSAGES[Math.floor(Math.random()\
+    \ * INNOCENT_MESSAGES.length)];\n  post(msg, 'info', 'innocent');\n}"
