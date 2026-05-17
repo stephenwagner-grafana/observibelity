@@ -187,6 +187,10 @@ class Specialist(ABC):
                 "X-Caller": self.NAME,
                 "X-Persona-Id": req.persona_id or "",
             }
+            if req.usecase:
+                # Tools opt into per-usecase behavior (e.g. search_products'
+                # cross-gen retrieval-drift demo mode) by reading this header.
+                headers["X-Usecase"] = req.usecase
             resp = await self.client.post(tool_url, json=args, headers=headers)
             resp.raise_for_status()
             return resp.json()

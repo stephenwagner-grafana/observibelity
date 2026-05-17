@@ -9,6 +9,7 @@ configurable retries.
 from __future__ import annotations
 
 import asyncio
+import inspect
 import os
 from abc import ABC, abstractmethod
 from typing import ClassVar
@@ -60,6 +61,13 @@ class Tool(ABC):
             if self.CACHE_TTL_SEC > 0
             else None
         )
+        # Subclasses opt in to per-usecase behavior by declaring a ``usecase``
+        # parameter on their ``execute`` method. We detect that once and only
+        # forward the header value to tools that actually use it — keeps the
+        # 17 other tools unchanged.
+        self._execute_accepts_usecase = (
+            "usecase" in inspect.signature(self.execute).parameters
+        )
         self._db_engine = None
         self._sessionmaker: async_sessionmaker[AsyncSession] | None = None
         if self.BACKING_TABLES:
@@ -89,13 +97,21 @@ class Tool(ABC):
         args: BaseModel,
         session: AsyncSession | None = None,
     ) -> BaseModel:
-        """Subclass entrypoint. Performs the actual work."""
+        """Subclass entrypoint. Performs the actual work.
+
+        Tools that want per-use-case behavior (e.g. search_products' cross-
+        gen retrieval-drift wildcard mode) opt in by declaring an extra
+        ``usecase: str | None = None`` parameter on their override — the
+        base class introspects the signature and only forwards the
+        ``X-Usecase`` header value to those tools.
+        """
 
     # ── orchestration ────────────────────────────────────────────────────
     async def invoke(
         self,
         args: BaseModel,
         caller: str | None = None,
+        usecase: str | None = None,
     ) -> BaseModel:
         """Public entrypoint — wraps :meth:`execute` with cross-cutting concerns."""
         with tracer.start_as_current_span(f"tool.{self.NAME}") as span:
@@ -104,6 +120,8 @@ class Tool(ABC):
             span.set_attribute("ai_o11y.tool.idempotent", self.IDEMPOTENT)
             if caller is not None:
                 span.set_attribute("ai_o11y.tool.caller", caller)
+            if usecase:
+                span.set_attribute("ai_o11y.usecase", usecase)
 
             if not self.authorize(caller):
                 span.set_attribute("error", True)
@@ -112,9 +130,13 @@ class Tool(ABC):
                     f"{caller!r} not authorized for {self.NAME}"
                 )
 
-            # Cache check (only for non-side-effect tools)
+            # Cache check (only for non-side-effect tools). The cache key
+            # includes the usecase so demo-mode invocations don't poison the
+            # normal cached results (or vice-versa).
             if self._cache is not None and not self.SIDE_EFFECT:
                 key = self.cache_key(args)
+                if usecase:
+                    key = f"{key}::usecase={usecase}"
                 if key in self._cache:
                     span.set_attribute("ai_o11y.tool.cache_hit", True)
                     return self._cache[key]
@@ -125,17 +147,21 @@ class Tool(ABC):
 
             # Concurrency limit + timeout + retries
             last_exc: BaseException | None = None
+            extra: dict = {"usecase": usecase} if self._execute_accepts_usecase else {}
             async with self._sema:
                 for attempt in range(max_attempts):
                     try:
                         async with asyncio.timeout(self.TIMEOUT_SEC):
                             if self._sessionmaker is not None:
                                 async with self._sessionmaker() as session:
-                                    result = await self.execute(args, session)
+                                    result = await self.execute(args, session, **extra)
                             else:
-                                result = await self.execute(args, None)
+                                result = await self.execute(args, None, **extra)
                         if self._cache is not None and not self.SIDE_EFFECT:
-                            self._cache[self.cache_key(args)] = result
+                            cache_key = self.cache_key(args)
+                            if usecase:
+                                cache_key = f"{cache_key}::usecase={usecase}"
+                            self._cache[cache_key] = result
                         span.set_attribute("ai_o11y.tool.attempts", attempt + 1)
                         return result
                     except Exception as exc:  # noqa: BLE001 — re-raised below

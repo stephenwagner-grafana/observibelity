@@ -1,0 +1,86 @@
+name: cross-gen-retrieval-drift
+title: "Cross-generation retrieval drift — wildcard family match picks the wrong year"
+app: neoncart
+phase: 2
+centerpiece: false
+archetype: trace-and-fix
+description: |
+  Manual-only demo. A shopper opens the chat widget and clicks the
+  "30 yo nephew, big into PC gaming" suggestion chip. The gift-finder
+  agent retrieves a 2026 DDR5 Corsair Dominator, then makes a second
+  search_products call passing the full 2026 SKU as the query to "verify
+  pricing" (a believable token-economy / family-matching pattern). The
+  tool truncates the SKU at the family delimiter, runs a wildcard SQL
+  (`sku LIKE '%64GB.DDR%'`), ranks by historical_popularity, and returns
+  a 2023 DDR4 record at the top. The agent then writes a recommendation
+  card rationalising the DDR4-2023 price as a "trending deal" — sounds
+  plausible, but the AI silently inherited the wrong generation's
+  context. The audience can read the whole story in one trace:
+    Span 1: search_products(query="ram") → 4 normal hits incl. the 2026 DDR5
+    Span 2: search_products(query="1004-corsair-0072-64GB.DDR5-2026-…")
+            → normalized_query="%64GB.DDR%" → 4 candidates → DDR4-2023 wins
+    Span 3: LLM rationalises DDR4-2023 pricing as a discount on DDR5
+  The fix is real-world too: tighten retrieval normalisation, never
+  rank by historical_popularity across generations, or anchor on the
+  literal SKU when the caller passed one.
+
+# Manual only. The bug is gated server-side: /chat ignores this usecase
+# when traffic_origin=continuous (loadgen), so k6 cannot trigger it.
+scenarios: []
+
+evaluators:
+  - name: cross-gen-retrieval-drift.year_mismatch
+    kind: rule
+    severity: high
+    spec: |
+      span.attributes["ai_o11y.usecase"] == "cross-gen-retrieval-drift"
+      and span.attributes["retrieval.query_year"] != null
+      and span.attributes["retrieval.selected_year"] != null
+      and span.attributes["retrieval.query_year"]
+          != span.attributes["retrieval.selected_year"]
+    params:
+      target: trace
+      tool: search_products
+
+dashboard:
+  uid: ai-obs-app-neoncart
+  title: "NeonCart — App Overview"
+  panels_from_template: trace-and-fix
+  extra_panels: []
+  folder: ai-observability
+
+alerts:
+  - name: cross-gen-retrieval-drift.detection
+    condition: |
+      sum(
+        count_over_time(
+          {namespace="observibelity",service_name="search-products"}
+          |~ "cross-gen-retrieval-drift" [5m]
+        )
+      ) > 0
+    severity: medium
+    route: ai-quality@acme.local
+    duration: 1m
+
+demo:
+  do: |
+    Open neoncart.wombatwags.com → click "Chat with NeonCart" →
+    click the "🎮 30 yo nephew, big into PC gaming" suggestion chip.
+    The card the bot returns will be a Corsair Dominator at an oddly
+    low price — that's the trigger.
+  signal: |
+    Tempo trace has TWO search_products spans tagged
+    ai_o11y.usecase=cross-gen-retrieval-drift. Second span carries
+    retrieval.query_year=2026, retrieval.selected_year=2023,
+    retrieval.normalized_query="%64GB.DDR%",
+    retrieval.candidates (4 SKUs), retrieval.selection_strategy=
+    "historical_popularity". The
+    cross-gen-retrieval-drift.year_mismatch evaluator fails on that
+    span; the matching alert fires within ~1 min.
+  sell: |
+    Retrieval ambiguity is the bug AI buyers fear most — fuzzy SKU
+    matching + popularity ranking quietly crossed product generations
+    and the agent's recommendation inherited the wrong price context.
+    One trace shows the truncation, the wildcard SQL, the ranking
+    choice, and the LLM's plausible-sounding rationalisation — the
+    kind of failure metrics alone never catch.

@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/cross-gen-retrieval-drift.yaml",
+  "name": "cross-gen-retrieval-drift.year_mismatch",
+  "kind": "rule",
+  "severity": "high",
+  "expression": "span.attributes[\"ai_o11y.usecase\"] == \"cross-gen-retrieval-drift\"\nand span.attributes[\"retrieval.query_year\"] != null\nand span.attributes[\"retrieval.selected_year\"] != null\nand span.attributes[\"retrieval.query_year\"]\n    != span.attributes[\"retrieval.selected_year\"]\n",
+  "tags": [
+    "use_case:cross-gen-retrieval-drift",
+    "app:neoncart",
+    "archetype:trace-and-fix",
+    "phase:2"
+  ],
+  "params": {
+    "target": "trace",
+    "tool": "search_products"
+  }
+}

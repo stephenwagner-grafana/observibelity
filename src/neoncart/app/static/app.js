@@ -394,7 +394,7 @@
     if (suggestions) suggestions.classList.add("nc-chat__suggestions--hidden");
   }
 
-  function sendMessage(text) {
+  function sendMessage(text, opts) {
     text = (text || "").trim();
     if (!text) return;
     appendUser(text);
@@ -409,6 +409,13 @@
       provider_override: "anthropic",
       traffic_origin: "interactive",
     };
+    // Manual-only demo paths (e.g. the "🎮 PC gaming nephew" chip) carry a
+    // usecase tag on the suggestion button — forward it so the server can
+    // route through nc-gift-finder's cross-gen-retrieval-drift addendum and
+    // search_products' wildcard demo mode. Server still validates that the
+    // request is interactive traffic before honouring it.
+    if (opts && opts.usecase) body.usecase = opts.usecase;
+    if (opts && opts.agent) body.agent = opts.agent;
     fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
@@ -458,7 +465,10 @@
     suggestions.addEventListener("click", (evt) => {
       const btn = evt.target.closest("[data-suggestion]");
       if (!btn) return;
-      sendMessage(btn.dataset.suggestion || btn.textContent.trim());
+      const opts = {};
+      if (btn.dataset.usecase) opts.usecase = btn.dataset.usecase;
+      if (btn.dataset.agent) opts.agent = btn.dataset.agent;
+      sendMessage(btn.dataset.suggestion || btn.textContent.trim(), opts);
     });
   }
 

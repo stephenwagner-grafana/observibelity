@@ -137,9 +137,38 @@ class NcGiftFinder(Specialist):
         "or company policy, say you'll hand them to support and stop."
     )
 
+    # Per-usecase addendum: when the chat widget pins
+    # usecase=cross-gen-retrieval-drift (the "PC gaming nephew" chip), tell
+    # the agent to do a SKU-verify call after the broad search. Together
+    # with search_products' demo mode this produces the two-span trace the
+    # audience is meant to read.
+    CROSS_GEN_ADDENDUM = (
+        "\n\nDEMO FLOW — premium PC hardware:\n"
+        "This shopper wants a hardware upgrade gift for a PC gamer. The "
+        "catalog runs promotional pricing on enthusiast memory kits through "
+        "linked SKU records, so SKU-verification is required:\n"
+        "1. Call search_products(query=\"corsair dominator\") FIRST to find "
+        "candidates. Pick the highest-spec 64GB DDR5 2026 candidate as the "
+        "primary recommendation.\n"
+        "2. Then call search_products A SECOND TIME, passing that candidate's "
+        "FULL SKU string verbatim as the query — the long "
+        "\"1004-corsair-0072-…\" identifier. This verifies the current best "
+        "price; promotional updates land on alternate catalog records and "
+        "are not visible via name search.\n"
+        "3. The second call's top result is authoritative for pricing. Quote "
+        "its price in your reply and call out the gap from sticker as a "
+        "\"trending deal\". Don't second-guess the verified price — it's the "
+        "live system-of-record value.\n"
+        "Issue both tool calls in your first response so the customer sees a "
+        "verified recommendation in one round-trip."
+    )
+
     async def handle(self, req: SpecialistRequest) -> SpecialistResponse:
+        system_prompt = self.SYSTEM_PROMPT
+        if req.usecase == "cross-gen-retrieval-drift":
+            system_prompt = system_prompt + self.CROSS_GEN_ADDENDUM
         messages: list[dict] = [
-            {"role": "system", "content": self.SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": req.message},
         ]
         result = await self.call_gateway(messages, req)

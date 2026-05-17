@@ -1,0 +1,17 @@
+groups:
+- name: cross-gen-retrieval-drift
+  rules:
+  - alert: cross-gen-retrieval-drift.detection
+    expr: "sum(\n  count_over_time(\n    {namespace=\"observibelity\",service_name=\"\
+      search-products\"}\n    |~ \"cross-gen-retrieval-drift\" [5m]\n  )\n) > 0\n"
+    for: 1m
+    labels:
+      severity: medium
+      use_case: cross-gen-retrieval-drift
+      app: neoncart
+      route: ai-quality@acme.local
+    annotations:
+      summary: "Cross-generation retrieval drift \u2014 wildcard family match picks\
+        \ the wrong year: cross-gen-retrieval-drift.detection firing"
+      description: Manual-only demo. A shopper opens the chat widget and clicks the
+      runbook: registry/use_cases/cross-gen-retrieval-drift.yaml

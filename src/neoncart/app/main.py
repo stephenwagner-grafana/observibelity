@@ -65,6 +65,13 @@ GIFT_FINDER_URL = os.getenv("GIFT_FINDER_URL", "http://nc-gift-finder/v1/run")
 LLM_GATEWAY_URL = os.getenv("LLM_GATEWAY_URL", "http://llm-gateway:80")
 DEFAULT_USECASE = os.getenv("AI_O11Y_DEFAULT_USECASE", "mice-rca")
 
+# Use cases that may ONLY be triggered from manual website traffic. Loadgen
+# (traffic_origin=continuous) attempting any of these falls back to the
+# default, keeping demo bugs deterministic and unstaged.
+MANUAL_ONLY_USECASES = frozenset({
+    "cross-gen-retrieval-drift",
+})
+
 # Keywords that route the chat to the gift-finder specialist instead of
 # the general nc-chatbot. Single source of truth so the widget and the
 # server agree on the routing rule.
@@ -528,6 +535,15 @@ async def chat(
     flowing through to llm-gateway span attributes.
     """
     usecase = payload.usecase or DEFAULT_USECASE
+    # Manual-only use cases (e.g. cross-gen-retrieval-drift) are demoed
+    # from the website chip path — k6 must not be able to trigger them
+    # via the same /chat shape. If loadgen sends one anyway, fall back
+    # to the default so the trace doesn't get a planted-bug tag.
+    if usecase in MANUAL_ONLY_USECASES and (payload.traffic_origin or "").lower() == "continuous":
+        log.info(
+            "ignoring manual-only usecase=%s on continuous traffic", usecase
+        )
+        usecase = DEFAULT_USECASE
     _set_usecase_attr(usecase)
 
     effective_persona = persona_id or payload.persona_id or GUEST_PERSONA_ID
@@ -569,8 +585,12 @@ async def chat(
         context["traffic_origin"] = payload.traffic_origin
     if context:
         body["context"] = context
-    # Route: explicit override > gift-keyword auto-detect > nc-chatbot default.
+    # Route: explicit override > usecase pin > gift-keyword auto-detect > nc-chatbot default.
+    # Manual-only gift-finder use cases (cross-gen-retrieval-drift) always
+    # land on the gift-finder even if the prompt happens to lack gift words.
     chosen_agent = (payload.agent or "auto").lower()
+    if chosen_agent == "auto" and usecase == "cross-gen-retrieval-drift":
+        chosen_agent = "gift-finder"
     if chosen_agent == "auto":
         chosen_agent = (
             "gift-finder" if _looks_like_gift_query(payload.message) else "chatbot"

@@ -107,6 +107,7 @@ def build_app(tool: Tool) -> FastAPI:
         request: Request,
         x_caller: str | None = Header(default=None, alias="X-Caller"),
         x_persona_id: str | None = Header(default=None, alias="X-Persona-Id"),
+        x_usecase: str | None = Header(default=None, alias="X-Usecase"),
     ) -> JSONResponse:
         try:
             body = await request.json()
@@ -124,9 +125,11 @@ def build_app(tool: Tool) -> FastAPI:
                 current_span.set_attribute("ai_o11y.tool.caller", x_caller)
             if x_persona_id:
                 current_span.set_attribute("ai_o11y.persona_id", x_persona_id)
+            if x_usecase:
+                current_span.set_attribute("ai_o11y.usecase", x_usecase)
         with LATENCY.labels(tool=tool.NAME).time():
             try:
-                result = await tool.invoke(args, caller=x_caller)
+                result = await tool.invoke(args, caller=x_caller, usecase=x_usecase)
             except PermissionError as exc:
                 INVOCATIONS.labels(tool=tool.NAME, status="denied").inc()
                 raise HTTPException(status_code=403, detail=str(exc)) from exc
