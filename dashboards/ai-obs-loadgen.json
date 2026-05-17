@@ -1,58 +1,4 @@
 {
-  "uid": "ai-obs-loadgen",
-  "title": "AI o11y — Loadgen Activity (Ollama-first + spillover process)",
-  "tags": [
-    "ai-observability",
-    "loadgen",
-    "k6",
-    "operations",
-    "observibelity",
-    "spillover"
-  ],
-  "schemaVersion": 39,
-  "version": 1,
-  "refresh": "30s",
-  "time": {
-    "from": "now-1h",
-    "to": "now"
-  },
-  "timezone": "",
-  "templating": {
-    "list": [
-      {
-        "name": "datasource_prom",
-        "label": "Prometheus",
-        "type": "datasource",
-        "query": "prometheus",
-        "current": {
-          "selected": true,
-          "text": "grafanacloud-stephenwagner-prom",
-          "value": "grafanacloud-prom"
-        },
-        "hide": 0,
-        "skipUrlSync": false,
-        "includeAll": false,
-        "multi": false,
-        "options": []
-      },
-      {
-        "name": "datasource_loki",
-        "label": "Loki",
-        "type": "datasource",
-        "query": "loki",
-        "current": {
-          "selected": true,
-          "text": "grafanacloud-stephenwagner-logs",
-          "value": "grafanacloud-logs"
-        },
-        "hide": 0,
-        "skipUrlSync": false,
-        "includeAll": false,
-        "multi": false,
-        "options": []
-      }
-    ]
-  },
   "annotations": {
     "list": [
       {
@@ -63,9 +9,9 @@
         },
         "enable": true,
         "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "type": "dashboard",
-        "iconColor": "rgba(0, 211, 255, 1)"
+        "type": "dashboard"
       },
       {
         "datasource": {
@@ -73,69 +19,139 @@
           "uid": "${datasource_prom}"
         },
         "enable": true,
+        "expr": "increase(llm_gateway_spillover_total[1m]) > 0",
         "hide": false,
         "iconColor": "#A78BFA",
         "name": "Spillover events",
-        "expr": "increase(llm_gateway_spillover_total[1m]) > 0",
         "step": "1m",
         "titleFormat": "Ollama→Claude spillover",
         "useValueForTime": false
+      },
+      {
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "#F39C12",
+        "name": "Interactive lane elevated",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [
+            "interactive_lane_elevated"
+          ],
+          "type": "tags"
+        },
+        "type": "tags"
+      },
+      {
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "#E74C3C",
+        "name": "Interactive lane runaway",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [
+            "interactive_lane_runaway"
+          ],
+          "type": "tags"
+        },
+        "type": "tags"
+      },
+      {
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "#F1C40F",
+        "name": "Default lane tier 2 reached",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [
+            "default_lane_tier_2_reached"
+          ],
+          "type": "tags"
+        },
+        "type": "tags"
+      },
+      {
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "#E74C3C",
+        "name": "Default lane runaway",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [
+            "default_lane_runaway"
+          ],
+          "type": "tags"
+        },
+        "type": "tags"
       }
     ]
   },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 963830699421696,
+  "liveNow": false,
   "panels": [
     {
-      "id": 10,
-      "type": "text",
-      "title": "",
       "gridPos": {
-        "h": 3,
+        "h": 6,
         "w": 24,
         "x": 0,
         "y": 0
       },
+      "id": 10,
       "options": {
-        "mode": "markdown",
-        "content": "## How loadgen routes traffic\n**1.** k6 sends every request to **Ollama** (no static ratio, no probability roll). **2.** Gateway tracks `ollama.in_flight`; once it hits **OLLAMA_SATURATION_THRESHOLD** (8 = NUM_PARALLEL on .240), **3.** New `target=ollama` requests get rerouted to **Claude** — IF today's running cost is below **`$20`**. **4.** When Claude's daily budget is gone, requests stay on Ollama and accept queue latency.\n_Process, not a ratio. Spillover events + budget burn appear below._"
-      }
+        "content": "**Tiered Claude sampling.** Each default-lane request rolls a die. Probability of trying Claude depends on how much we've spent today: **10% up to $40, then 1% up to $60, 0.1% up to $80** — each $20 of spend cuts the sample rate by 10×. Ollama handles the rest. No hard cap, no wall — Claude usage just becomes exponentially rare as spend climbs. Self-converges around $41/day even without a cutoff. Interactive web sessions bypass the dice entirely and always get Claude.\n\n**Ollama model pool.** 2–4 concurrent models run on the 5090 (.240). Each handles up to **100 requests** then drains gracefully — no new conversations, finishes its existing ones — and goes back of the queue. New conversations stick to a random loaded model for their entire lifetime. The scheduler watches VRAM, GPU util, and TTFT every 10s; it grows the pool only when there's comfortable headroom (50%+ VRAM free, ≤60% GPU util) so other workloads on .240 stay healthy. Fast models naturally cycle more often.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "",
+      "targets": [],
+      "title": "",
+      "type": "text"
     },
     {
-      "id": 20,
-      "type": "row",
-      "title": "🟢 Right now — what the loadgen + gateway are doing",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 6
       },
-      "panels": [],
-      "datasource": null,
-      "targets": []
+      "id": 309,
+      "title": "🟢 Right now — utilization across both providers",
+      "type": "row"
     },
     {
-      "id": 21,
-      "type": "stat",
-      "title": "Requests / sec — Ollama",
-      "description": "5m rolling rate of /v1/complete calls that landed on Ollama.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 4
-      },
+      "description": "2m rolling rate of requests the gateway admitted to Ollama (in-flight < NUM_PARALLEL).",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 2,
-          "unit": "reqps",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -144,59 +160,54 @@
                 "value": null
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "reqps"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "id": 21,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"ollama\"}[5m]))",
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"ollama\"}[2m]))",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Ollama admits/sec",
+      "type": "stat"
     },
     {
-      "id": 22,
-      "type": "stat",
-      "title": "Requests / sec — Claude (spillover)",
-      "description": "5m rate of calls that ended up on Anthropic. With claudeFraction=0, every Claude call came from saturation spillover.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 4
-      },
+      "description": "2m rolling rate of requests the gateway admitted to Claude on the default lane (spend < $20 AND under linear pace).",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 2,
-          "unit": "reqps",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -205,63 +216,58 @@
                 "value": null
               },
               {
-                "color": "#F472B6",
+                "color": "#F59E0B",
                 "value": 0.01
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "reqps"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "id": 22,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"anthropic\"}[5m]))",
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"anthropic\"}[2m]))",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Claude admits/sec",
+      "type": "stat"
     },
     {
-      "id": 23,
-      "type": "stat",
-      "title": "Ollama in-flight (live)",
-      "description": "Concurrent Ollama requests on this gateway pod. Hits the OLLAMA_SATURATION_THRESHOLD (8 by default) → spillover fires.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 4
-      },
+      "description": "Concurrent Ollama requests on this gateway pod. Hits the OLLAMA_SATURATION_THRESHOLD (8 by default) → spillover fires.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 1,
-          "unit": "short",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -278,59 +284,54 @@
                 "value": 8
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "short"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "id": 23,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg(llm_gateway_ollama_in_flight)",
+          "expr": "llm_gateway_ollama_in_flight",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Ollama in-flight (live)",
+      "type": "stat"
     },
     {
-      "id": 24,
-      "type": "stat",
-      "title": "Spillover events / hour",
-      "description": "Times the gateway swapped target=ollama → anthropic because Ollama hit the threshold AND the daily budget had room.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 4
-      },
+      "description": "Admission denials projected to per-hour rate. With probabilistic Claude sampling, denials come from Ollama saturation (reason=ollama_saturated). claude_sanity_sentinel is the $200 paranoia ceiling and should never fire.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 0,
-          "unit": "short",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -343,59 +344,66 @@
                 "value": 1
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "short"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "id": 24,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(llm_gateway_spillover_total[1h]))",
+          "expr": "sum(rate(llm_gateway_admission_denied_total[5m])) * 3600",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Ollama-saturation backoffs / hour",
+      "type": "stat"
     },
     {
-      "id": 31,
-      "type": "stat",
-      "title": "💰 Claude spent today",
-      "description": "Cumulative Anthropic spend (USD) for the current UTC day. The dispatcher denies further spillover once this reaches the budget ceiling.",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 310,
+      "title": "💸 Self-throttling pulse — Claude spend + caller waits",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 0,
-        "y": 8
-      },
+      "description": "Combined Claude spend today: default-lane (subject to $20 cap) + interactive lane (uncapped).",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 2,
-          "unit": "currencyUSD",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -412,59 +420,54 @@
                 "value": 20
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "currencyUSD"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 12
+      },
+      "id": 31,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "max(llm_gateway_claude_daily_spend_usd)",
+          "expr": "(llm_gateway_claude_default_spend_usd or vector(0)) + (llm_gateway_claude_interactive_spend_usd or vector(0))",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Claude spent today (default + interactive)",
+      "type": "stat"
     },
     {
-      "id": 32,
-      "type": "stat",
-      "title": "🪙 Budget remaining",
-      "description": "$20/day - spent. When this hits 0, spillover stops and saturation-overflow stays on Ollama (with queue latency).",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 8,
-        "y": 8
-      },
+      "description": "Probability the next default-lane request will try Claude. Decays 10× at each $20 above $40.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 2,
-          "unit": "currencyUSD",
+          "decimals": 3,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -473,140 +476,136 @@
                 "value": null
               },
               {
+                "color": "#FB923C",
+                "value": 0.0005
+              },
+              {
                 "color": "#F59E0B",
-                "value": 5
+                "value": 0.005
               },
               {
                 "color": "#10B981",
-                "value": 10
+                "value": 0.05
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "percentunit"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 12
+      },
+      "id": 32,
       "options": {
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "max(llm_gateway_claude_daily_budget_usd) - max(llm_gateway_claude_daily_spend_usd)",
+          "expr": "llm_gateway_claude_sample_rate",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Current Claude sample rate",
+      "type": "stat"
     },
     {
-      "id": 33,
-      "type": "stat",
-      "title": "🧰 Tool-strip retries / 5m",
-      "description": "When the active Ollama model lacks tool-call support (e.g. tinyllama), the gateway catches the 400 and retries without tools. This counts those silent fallbacks.",
       "datasource": {
-        "type": "loki",
-        "uid": "${datasource_loki}"
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 8
-      },
+      "description": "Caller backoffs (429 Retry-After) per 5-minute window. The system's pulse — both heroes (Ollama in-flight + Callers waiting) read 'is the system self-throttling correctly?'",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 0,
-          "unit": "short",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "#9CA3AF",
+                "color": "#10B981",
                 "value": null
               },
               {
-                "color": "#FB923C",
+                "color": "#F472B6",
                 "value": 1
+              },
+              {
+                "color": "#EC4899",
+                "value": 10
               }
             ]
-          }
-        },
-        "overrides": []
+          },
+          "unit": "short"
+        }
       },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 33,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": false
+          ]
+        }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum(count_over_time({service_namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"no-tools.*retrying without tools\" [5m]))",
+          "expr": "sum(rate(llm_gateway_caller_wait_seconds_count[5m])) * 300",
           "instant": true,
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Callers waiting / 5m",
+      "type": "stat"
     },
     {
-      "id": 40,
-      "type": "row",
-      "title": "🌊 The calm beach wave — request rate by provider",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 16
       },
-      "panels": [],
-      "datasource": null,
-      "targets": []
+      "id": 311,
+      "title": "🌊 Calm beach wave — admitted req/s by provider",
+      "type": "row"
     },
     {
-      "id": 41,
-      "type": "timeseries",
-      "title": "Rate by provider (req/s)",
-      "description": "Ollama gets everything by default. Claude only shows up when Ollama saturates AND the budget has room. The two lines together prove the spillover process is what determines provider choice — not a ratio.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
+      "description": "Admitted request rate by provider. Both lines should ride together as the dual-lane router balances load.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -625,30 +624,69 @@
           "decimals": 2,
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#10B981",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F59E0B",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 41,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"ollama\"}[5m]))",
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"ollama\"}[2m]))",
           "legendFormat": "ollama",
           "refId": "A"
         },
@@ -657,42 +695,32 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{gen_ai_system=\"anthropic\"}[5m]))",
-          "legendFormat": "anthropic (spillover)",
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"anthropic\"}[2m]))",
+          "legendFormat": "anthropic",
           "refId": "B"
         }
-      ]
+      ],
+      "title": "Calm beach wave — admitted req/s by provider",
+      "type": "timeseries"
     },
     {
-      "id": 50,
-      "type": "row",
-      "title": "🚦 Saturation drives spillover",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 25
       },
-      "panels": [],
-      "datasource": null,
-      "targets": []
+      "id": 312,
+      "title": "🚦 Capacity ceilings in action",
+      "type": "row"
     },
     {
-      "id": 51,
-      "type": "timeseries",
-      "title": "Ollama in-flight vs threshold",
-      "description": "Live in-flight count averaged across gateway pods. When it crosses 8 (the OLLAMA_SATURATION_THRESHOLD), the dispatcher starts spilling.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 22
-      },
+      "description": "Live in-flight count averaged across gateway pods. When it crosses 8 (the OLLAMA_SATURATION_THRESHOLD), the dispatcher starts spilling.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -731,29 +759,37 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#EF4444"
+                  "fixedColor": "#EF4444",
+                  "mode": "fixed"
                 }
               }
             ]
           }
         ]
       },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 51,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
@@ -773,23 +809,16 @@
           "legendFormat": "saturation threshold",
           "refId": "B"
         }
-      ]
+      ],
+      "title": "Ollama in-flight vs threshold",
+      "type": "timeseries"
     },
     {
-      "id": 52,
-      "type": "timeseries",
-      "title": "Spillover events / minute",
-      "description": "Bar = number of times in the last minute the dispatcher swapped target=ollama → anthropic. Should rise during Ollama saturation, drop when the budget exhausts.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 22
-      },
+      "description": "Per-minute rate of admission denials by reason. Stacked bars: cyan=ollama_saturated, orange=claude_overpace, red=claude_daily_cap_reached, magenta=both.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -797,61 +826,174 @@
           },
           "custom": {
             "drawStyle": "bars",
-            "fillOpacity": 40,
+            "fillOpacity": 80,
             "gradientMode": "none",
-            "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 0,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
           },
           "decimals": 1,
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama_saturated"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#22D3EE",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude_overpace"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#9CA3AF",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude_daily_cap_reached"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#9CA3AF",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude_sanity_sentinel"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#EF4444",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude_not_sampled"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FB923C",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "both"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F472B6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 52,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(llm_gateway_spillover_total[5m])) * 60",
-          "legendFormat": "spillover/min",
+          "expr": "sum by (reason) (rate(llm_gateway_admission_denied_total[1m])) * 60",
+          "legendFormat": "{{reason}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Admission denials by reason",
+      "type": "timeseries"
     },
     {
-      "id": 61,
-      "type": "timeseries",
-      "title": "💰 Claude daily spend vs $20 budget",
-      "description": "Cumulative $ spent on Anthropic today. Resets at UTC midnight. The dashed line at $20 is the hard ceiling — once spent crosses it, the gateway stops spilling for the rest of the UTC day.",
+      "collapsed": false,
+      "id": 313,
+      "title": "💰 Claude capacity pacing — default lane vs interactive lane vs ceiling",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 314,
+      "title": "🔥 Interactive lane alerts",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 30
-      },
+      "description": "Default-lane spend (green, filled) and interactive-lane spend (cyan→orange→red as it crosses $5/$20). Horizontal lines mark the sampling-tier boundaries at $40 / $60 / $80 / $100. Background tint shades each tier.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -874,53 +1016,241 @@
           {
             "matcher": {
               "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#10B981",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 30
+              },
+              {
+                "id": "custom.thresholdsStyle",
+                "value": {
+                  "mode": "area"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "rgba(16,185,129,0.08)"
+                    },
+                    {
+                      "color": "rgba(245,158,11,0.10)",
+                      "value": 40
+                    },
+                    {
+                      "color": "rgba(251,146,60,0.12)",
+                      "value": 60
+                    },
+                    {
+                      "color": "rgba(239,68,68,0.14)",
+                      "value": 80
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
               "options": "B"
             },
             "properties": [
               {
-                "id": "custom.lineStyle",
+                "id": "color",
                 "value": {
-                  "dash": [
-                    6,
-                    6
-                  ],
-                  "fill": "dash"
+                  "mode": "thresholds"
                 }
               },
               {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#22D3EE"
+                    },
+                    {
+                      "color": "#F39C12",
+                      "value": 5
+                    },
+                    {
+                      "color": "#E74C3C",
+                      "value": 20
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 25
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "E"
+            },
+            "properties": [
+              {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F59E0B"
+                  "fixedColor": "rgba(245,158,11,0.45)",
+                  "mode": "fixed"
                 }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "solid"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "F"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "rgba(251,146,60,0.45)",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "solid"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "G"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "rgba(239,68,68,0.45)",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "solid"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "H"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "rgba(220,38,38,0.55)",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "solid"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
               }
             ]
           }
         ]
       },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 61,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "max(llm_gateway_claude_daily_spend_usd)",
-          "legendFormat": "spent today",
+          "expr": "llm_gateway_claude_default_spend_usd",
+          "legendFormat": "Default-lane spend",
           "refId": "A"
         },
         {
@@ -928,42 +1258,242 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "max(llm_gateway_claude_daily_budget_usd)",
-          "legendFormat": "$20 budget",
+          "expr": "llm_gateway_claude_interactive_spend_usd",
+          "legendFormat": "Interactive-lane spend (uncapped)",
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "vector(40)",
+          "legendFormat": "Tier 1 — $40 (10% → 1%)",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "vector(60)",
+          "legendFormat": "Tier 2 — $60 (1% → 0.1%)",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "vector(80)",
+          "legendFormat": "Tier 3 — $80 (0.1% → 0.01%)",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "vector(100)",
+          "legendFormat": "Tier 4 — $100 (0.01% → 0.001%)",
+          "refId": "H"
         }
-      ]
+      ],
+      "title": "Claude spend by lane — tier boundaries shown",
+      "type": "timeseries"
     },
     {
-      "id": 70,
-      "type": "row",
-      "title": "🔄 Ollama rotation — one model per 5-min window",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Full-width status banner driven by the interactive-lane spend. Green = normal. Orange = elevated ($5+). Red = runaway ($20+).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "#10B981",
+                  "index": 0,
+                  "text": "✓ Interactive lane normal"
+                },
+                "to": 4.999999
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 5,
+                "result": {
+                  "color": "#F39C12",
+                  "index": 1,
+                  "text": "⚠ Interactive lane elevated — $$$ spending detected"
+                },
+                "to": 19.999999
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 20,
+                "result": {
+                  "color": "#E74C3C",
+                  "index": 2,
+                  "text": "🚨 Interactive lane runaway — burning faster than the entire default budget"
+                },
+                "to": 999999
+              },
+              "type": "range"
+            }
+          ],
+          "noValue": "no interactive sessions",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F39C12",
+                "value": 5
+              },
+              {
+                "color": "#E74C3C",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 201,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_claude_interactive_spend_usd or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Interactive lane status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Interactive-lane spend today (uncapped). Background turns yellow at $5, red at $20.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "noValue": "no interactive sessions",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F39C12",
+                "value": 5
+              },
+              {
+                "color": "#E74C3C",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 5
+      },
+      "id": 202,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_claude_interactive_spend_usd or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Interactive lane spend today",
+      "type": "stat"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 9
       },
-      "panels": [],
-      "datasource": null,
-      "targets": []
+      "id": 315,
+      "title": "🔄 Ollama rotation — one model per 5-min window",
+      "type": "row"
     },
     {
-      "id": 71,
-      "type": "timeseries",
-      "title": "Active model — rate by gen_ai.request.model (Ollama only)",
-      "description": "Per-model request rate. With prewarm + OLLAMA_MAX_LOADED_MODELS=2, each window's model takes over hot — no cold-load notch at the 5-min boundary.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 39
-      },
+      "description": "Per-model request rate. With prewarm + OLLAMA_MAX_LOADED_MODELS=2, each window's model takes over hot.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -979,30 +1509,37 @@
             "showPoints": "never",
             "spanNulls": true,
             "stacking": {
-              "mode": "normal",
-              "group": "A"
+              "group": "A",
+              "mode": "normal"
             }
           },
           "decimals": 2,
           "unit": "reqps"
-        },
-        "overrides": []
+        }
       },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 71,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
@@ -1013,38 +1550,28 @@
           "legendFormat": "{{gen_ai_request_model}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Active model — rate by gen_ai.request.model (Ollama only)",
+      "type": "timeseries"
     },
     {
-      "id": 80,
-      "type": "row",
-      "title": "🤖 Who's calling — load by specialist",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 17
       },
-      "panels": [],
-      "datasource": null,
-      "targets": []
+      "id": 316,
+      "title": "🤖 Who's calling — load by specialist",
+      "type": "row"
     },
     {
-      "id": 81,
-      "type": "timeseries",
-      "title": "Request rate by ai_o11y.specialist",
-      "description": "nc-chatbot, sb-router, nc-gift-finder, etc. — the specialists doing the actual chatting. baseline.js's scenario table drives the mix.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 47
-      },
+      "description": "nc-chatbot, sb-router, nc-gift-finder, etc. — the specialists doing the actual chatting.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1062,24 +1589,31 @@
           },
           "decimals": 2,
           "unit": "reqps"
-        },
-        "overrides": []
+        }
       },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 81,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "",
       "targets": [
         {
           "datasource": {
@@ -1090,100 +1624,28 @@
           "legendFormat": "{{ai_o11y_specialist}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Request rate by ai_o11y.specialist",
+      "type": "timeseries"
     },
     {
-      "id": 90,
-      "type": "row",
-      "title": "❌ Errors + tail latency",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 25
       },
-      "panels": [],
-      "datasource": null,
-      "targets": []
+      "id": 317,
+      "title": "❌ Errors + tail latency",
+      "type": "row"
     },
     {
-      "id": 91,
-      "type": "timeseries",
-      "title": "Gateway error rate (4xx + 5xx)",
-      "description": "From the gateway access log. Spikes here = real upstream failures. Tool-strip 400s should NOT show — the gateway catches and retries.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 55
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 0,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "decimals": 2,
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "calcs": [
-            "mean",
-            "last"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum(rate({service_namespace=\"observibelity\",container=\"llm-gateway\"} |~ \"POST /v1/complete.* [45]\\\\d\\\\d\" [5m]))",
-          "legendFormat": "errors/sec",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 92,
-      "type": "timeseries",
-      "title": "Provider p95 latency",
-      "description": "histogram_quantile p95 over the gen_ai_client_operation_duration_seconds histogram. Wave dips ≠ latency spikes anymore now that prewarm keeps the next model hot.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 55
-      },
+      "description": "histogram_quantile p95 over the gen_ai_client_operation_duration_seconds histogram.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1201,18 +1663,1142 @@
           },
           "decimals": 2,
           "unit": "s"
-        },
-        "overrides": []
+        }
       },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 92,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
           "calcs": [
             "mean",
             "last"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_system) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{gen_ai_system}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Provider p95 latency",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 318,
+      "title": "🦙 Ollama model pool",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Target min 2, max 4. Adapts to VRAM availability.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "max": 4,
+          "noValue": "—",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#EF4444",
+                "value": null
+              },
+              {
+                "color": "#FB923C",
+                "value": 1
+              },
+              {
+                "color": "#F59E0B",
+                "value": 2
+              },
+              {
+                "color": "#F472B6",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "${__value.numeric} / 4"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 34
+      },
+      "id": 301,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_pool_size",
+          "refId": "A"
+        }
+      ],
+      "title": "Pool size (live)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "What the scheduler decided this cycle: add capacity, hold steady, or drain a model.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "#10B981",
+                  "index": 0,
+                  "text": "✓ Add capacity"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "1": {
+                  "color": "#F1C40F",
+                  "index": 1,
+                  "text": "⌛ Hold"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "2": {
+                  "color": "#E74C3C",
+                  "index": 2,
+                  "text": "↓ Drain"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "—",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#9CA3AF",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 34
+      },
+      "id": 302,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_scheduler_verdict",
+          "refId": "A"
+        }
+      ],
+      "title": "Scheduler verdict",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Percent of 5090 VRAM in use. Drain trigger fires above 70%.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "max": 100,
+          "min": 0,
+          "noValue": "—",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F1C40F",
+                "value": 50
+              },
+              {
+                "color": "#EF4444",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 34
+      },
+      "id": 303,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_gpu_vram_pct",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU VRAM",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Live GPU compute utilization on .240. Same thresholds as VRAM.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "max": 100,
+          "min": 0,
+          "noValue": "—",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10B981",
+                "value": null
+              },
+              {
+                "color": "#F1C40F",
+                "value": 50
+              },
+              {
+                "color": "#EF4444",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 34
+      },
+      "id": 304,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_gpu_util_pct",
+          "refId": "A"
+        }
+      ],
+      "title": "GPU util (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Each model's request count climbing toward 100, then resetting to 0 on drain. One line per model. Lines that flatten near 100 are about to be drained.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 0,
+          "max": 100,
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "rgba(239,68,68,0.55)",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    6,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 305,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_model_requests_served",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "vector(100)",
+          "legendFormat": "drain threshold",
+          "refId": "B"
+        }
+      ],
+      "title": "Per-model lifecycle progress — requests served toward 100",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Each row is one model. Cell color: cyan=loading, green=active, orange=draining.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "transparent",
+                  "index": 0,
+                  "text": " "
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "1": {
+                  "color": "#22D3EE",
+                  "index": 1,
+                  "text": "●"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "#22D3EE",
+                "value": 0.5
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*loading.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#22D3EE",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*active.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#10B981",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*draining.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FB923C",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 46
+      },
+      "id": 306,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_model_state * 1",
+          "legendFormat": "{{model}} ({{state}})",
+          "refId": "A"
+        }
+      ],
+      "title": "Model state timeline",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Active conversations pinned to each loaded model. Sessions stay on one model for their entire lifetime.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0,
+          "min": 0,
+          "noValue": "—",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#9CA3AF",
+                "value": null
+              },
+              {
+                "color": "#F472B6",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 46
+      },
+      "id": 307,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_model_assigned_sessions",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sticky session count per model",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "How many models are queued waiting for VRAM headroom. High queue = pool is operating below its potential due to GPU constraints.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 0,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#22D3EE",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#22D3EE",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 308,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "llm_gateway_ollama_queue_depth",
+          "legendFormat": "queued",
+          "refId": "A"
+        }
+      ],
+      "title": "Queue depth (models waiting their turn)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 70
+      },
+      "id": 500,
+      "panels": [],
+      "title": "🚀 Loadgen signals — specialists → gateway throughput",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "All requests specialists fire at the LLM gateway (admitted + denied).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 71
+      },
+      "id": 501,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(llm_gateway_admission_total[5m])) * 60",
+          "refId": "A"
+        }
+      ],
+      "title": "Submissions / min",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Share of submissions the gateway lets through to a provider.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 71
+      },
+      "id": 502,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "100 * sum(rate(llm_gateway_admission_total{decision=\"admit\"}[5m])) / sum(rate(llm_gateway_admission_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Admitted %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Share that the gateway rejects (saturation, sampling, budget).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 71
+      },
+      "id": 503,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "100 * sum(rate(llm_gateway_admission_total{decision=\"deny\"}[5m])) / sum(rate(llm_gateway_admission_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Denied %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Distinct specialists with at least one gateway call in the last 5 minutes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 71
+      },
+      "id": 504,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "count(sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist!=\"\"}[5m])) > 0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Active specialists / 5m",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "What happens to every request: admit-ollama (green) + admit-anthropic (blue) ride above the line; deny-ollama (red) is the rejection band.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "admit · ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "admit · anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "deny · ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "deny · anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 75
+      },
+      "id": 505,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -1225,12 +2811,429 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_system) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))",
-          "legendFormat": "{{gen_ai_system}}",
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"ollama\"}[1m])) * 60",
+          "legendFormat": "admit · ollama",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"anthropic\"}[1m])) * 60",
+          "legendFormat": "admit · anthropic",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"deny\",provider=\"ollama\"}[1m])) * 60",
+          "legendFormat": "deny · ollama",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(llm_gateway_admission_total{decision=\"deny\",provider=\"anthropic\"}[1m])) * 60",
+          "legendFormat": "deny · anthropic",
+          "refId": "D"
+        }
+      ],
+      "title": "Submissions / min — stacked by decision × provider",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "How long callers sit in the gateway's queue before they get a verdict. Climbing tail = saturation building up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 83
+      },
+      "id": 506,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(llm_gateway_caller_wait_seconds_bucket[5m])))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(llm_gateway_caller_wait_seconds_bucket[5m])))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(llm_gateway_caller_wait_seconds_bucket[5m])))",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "title": "Caller wait — p50 / p95 / p99",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Why the gateway said no, broken out by reason label.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 83
+      },
+      "id": 507,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (reason) (rate(llm_gateway_admission_denied_total[1m])) * 60",
+          "legendFormat": "{{reason}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Denial reasons / min — stacked",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Every specialist that fires requests, plotted over time. Sourced from gen_ai_client_operation_duration_seconds_count (recorded by the specialist when it talks to the gateway).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 91
+      },
+      "id": 508,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist!=\"\"}[5m])) * 60",
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Per-specialist gateway calls / min — time series",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Sortable table of every active specialist's call rate. NOTE: gateway admit/deny is not labeled per-specialist, so this is the attempted call rate from each caller (not the admitted rate).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "displayMode": "auto"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls/min"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 99
+      },
+      "id": 509,
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "calls/min"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist!=\"\"}[5m])) * 60",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Per-specialist gateway calls — leaderboard",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "calls/min",
+              "ai_o11y_specialist": "specialist"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
-  "folderUid": "obs-foundations"
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "ai-observability",
+    "loadgen",
+    "k6",
+    "operations",
+    "observibelity",
+    "spillover"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "title": "AI o11y — Loadgen Activity (provider capacity router)",
+  "uid": "ai-obs-loadgen",
+  "version": 23
 }
