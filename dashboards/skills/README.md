@@ -11,14 +11,26 @@ before any per-dashboard work.
 The pipeline:
 
 ```
+                              ┌─── ai-o11y-humanize-metric (advisor) ───┐
+                              │                                          │
+                              ▼                                          ▼
 spoken narrative  →  story-architect  →  layout-composer  →  grafana-builder  →  aesthetic-pass  →  dashboard-critic
-      ↑                                                                                  ↑                   │
+      ↑                                                                                  ▲                   │
 demo-narrator  ←─── route narration changes back ──────────────────────────────────────  │                   │
       ↑                                                                                                       │
        └──────────────────────── route fixes back ──────────────────────────────────────────────────────────┘
 ```
 
-## The six skills
+`humanize-metric` is the only side-skill — it sits above the line and is
+**consulted by** story-architect (when picking a hero), grafana-builder
+(when emitting `unit` / `customUnit` / `decimals`), and dashboard-critic
+(as objective ground truth for the "Human-scaled numbers" axis).
+
+## The seven skills
+
+Six in the linear pipeline, plus one advisor (`humanize-metric`) that
+hangs off the side and gets consulted by story-architect, grafana-builder,
+and dashboard-critic when a panel's value fails the glance test.
 
 Skills live at `.claude/skills/<name>/SKILL.md`. They're invocable via
 Claude Code's skill router (description-matched) or directly by name in
@@ -32,6 +44,7 @@ a chat (e.g. "use the ai-o11y-grafana-builder skill to…").
 | [`ai-o11y-grafana-builder`](../../.claude/skills/ai-o11y-grafana-builder/SKILL.md) | After a layout table, or when "regenerate this dashboard" | `dashboards/<uid>.json` + `dashboards/_rebuild_<uid>.py` |
 | [`ai-o11y-aesthetic-pass`](../../.claude/skills/ai-o11y-aesthetic-pass/SKILL.md) | After every build or on-demand "make this pop" | Modified `dashboards/<uid>.json` with ribbon, soft palette, per-model pins |
 | [`ai-o11y-dashboard-critic`](../../.claude/skills/ai-o11y-dashboard-critic/SKILL.md) | After every build, or "rate this dashboard" | Review report with scores + prioritized fixes routed back to the right skill |
+| [`ai-o11y-humanize-metric`](../../.claude/skills/ai-o11y-humanize-metric/SKILL.md) | When a panel value fails the glance test — sci-notation, sub-1 rates, opaque per-token costs. Consulted by architect / builder / critic | Recommendation: unit, decimals, customUnit, axis_label, description, rebased PromQL, optional analogy. **Advisory — never writes JSON.** |
 
 ## Shared source-of-truth files
 
@@ -47,6 +60,9 @@ any change goes through PR review.
 | [`../_apply_ai_obs_aesthetic.py`](../_apply_ai_obs_aesthetic.py) | The aesthetic pass implementation |
 | [`../dashboard_lint.py`](../dashboard_lint.py) | The automated linter (used by the critic skill) |
 | [`../RATING.md`](../RATING.md) | Current dashboards scored 1-5 against the system |
+| [`HUMANIZE_METRIC.md`](HUMANIZE_METRIC.md) | Canonical spec for the humanize-metric advisor: three modes (scale / rebase / analogy), audience denominators, analogy library, worked examples |
+| [`HUMANIZE_METRIC.grafana.md`](HUMANIZE_METRIC.grafana.md) | Paste-body for the Grafana Cloud Assistant skill — self-contained re-flow of the spec. Re-paste into Assistant when the spec changes. |
+| [`../humanize.py`](../humanize.py) + [`../_humanize_table.py`](../_humanize_table.py) | Executable logic + data for `ai-o11y-humanize-metric` |
 | [`CONTINUATION.md`](CONTINUATION.md) | Handoff note for the next chat — open work + key context |
 
 ## The full lifecycle (what "use the skills" looks like in practice)

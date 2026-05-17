@@ -219,7 +219,9 @@ def check_unit_rules(dash, issues):
             continue
         defaults = (p.get("fieldConfig") or {}).get("defaults", {})
         unit = defaults.get("unit") or ""
+        custom_unit = defaults.get("custom", {}).get("customUnit", "") if isinstance(defaults.get("custom"), dict) else ""
         title = p.get("title") or ""
+        decimals = defaults.get("decimals")
         # unit.per-token
         if "/token" in unit and "/1M" not in unit:
             issues.append(Issue(
@@ -237,6 +239,24 @@ def check_unit_rules(dash, issues):
             issues.append(Issue(
                 "WARN", "unit.exponential", p.get("id"),
                 f"stat looks like money ('{title}') but unit is '{unit or 'unset'}'; use currencyUSD",
+            ))
+        # unit.humanize-suggested — narrow heuristic. Only fires when
+        # there's a real signal that the panel may render unreadably:
+        # high decimals (sci-notation territory), or rate-shaped title
+        # with an unscaled `short`/empty unit. Already-humanized panels
+        # (currencyUSD, percent, customUnit set) are left alone.
+        decimals_high = isinstance(decimals, int) and decimals >= 4
+        title_l = title.lower()
+        rate_shaped = bool(re.search(r"per (sec|second)\b|/sec\b|/s\b", title_l))
+        raw_unit = unit in {"short", "", "none"} and not custom_unit
+        if decimals_high or (rate_shaped and raw_unit):
+            issues.append(Issue(
+                "INFO", "unit.humanize-suggested", p.get("id"),
+                (
+                    f"stat '{title}' may fail the glance test "
+                    f"(decimals={decimals}, unit='{unit}', customUnit='{custom_unit}'). "
+                    f"Consider ai-o11y-humanize-metric for a rebased denominator."
+                ),
             ))
 
 

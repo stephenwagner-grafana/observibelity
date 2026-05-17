@@ -26,6 +26,7 @@ no story plan exists yet for the dashboard at hand.
 - Does not pick panel positions (that's `ai-o11y-layout-composer`)
 - Does not apply colors (that's `ai-o11y-aesthetic-pass`)
 - Does not score (that's `ai-o11y-dashboard-critic`)
+- Does not pick units / humanize values (that's `ai-o11y-humanize-metric`)
 
 ## Procedure
 
@@ -58,6 +59,10 @@ no story plan exists yet for the dashboard at hand.
      `$/1M tokens` — see §2.5 of the design system).
    - Pair each with a **plain-English subtitle** the description tooltip
      will display.
+   - **If the metric's typical value lands outside 1–999, or reads as
+     sci-notation, or has leading zeros**, invoke
+     `ai-o11y-humanize-metric` to pick the right unit/denominator/analogy
+     before committing the line. Don't ship `0.000003 $/token` as a hero.
 
 6. **Define emotional beats** — for a demo, note where the audience should
    feel something:

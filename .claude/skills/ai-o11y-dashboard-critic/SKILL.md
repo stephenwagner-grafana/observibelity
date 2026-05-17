@@ -101,8 +101,19 @@ python3 dashboards/dashboard_lint.py dashboards/<uid>.json
 6. **Route fixes** to the right skill:
    - Story-arc ERRORs / row-order issues → `ai-o11y-story-architect`
    - Hero-size / position issues → `ai-o11y-layout-composer`
-   - Wrong unit / wrong query / missing var → `ai-o11y-grafana-builder`
+   - Fails the glance test / wrong unit / wrong denominator / missing
+     analogy → `ai-o11y-humanize-metric` (which then routes to
+     `ai-o11y-grafana-builder` for the JSON patch)
+   - Wrong query / missing var → `ai-o11y-grafana-builder`
    - Off-palette / no ribbon / classic colors → `ai-o11y-aesthetic-pass`
+
+7. **Objective ground truth for the "Numbers" axis**: for every stat /
+   hero / KPI panel, call `ai-o11y-humanize-metric` with the panel's
+   metric + typical value + dashboard audience. Compare the recommended
+   `unit` / `custom_unit` / `decimals` / `prom_fragment` to what's
+   actually in the JSON. Each divergence drops the "Human-scaled numbers"
+   score by one level. (`unit.humanize-diverges` in the linter is the
+   automated form of this check.)
 
 ## Anti-patterns to refuse
 

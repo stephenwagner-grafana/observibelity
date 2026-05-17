@@ -23,6 +23,9 @@ When the user says ANY of:
 - Does not apply the aesthetic pass directly — it CALLS it as the last
   build step.
 - Does not score the result (`ai-o11y-dashboard-critic`).
+- Does not pick units/decimals/customUnit mechanically — it CALLS
+  `ai-o11y-humanize-metric` for any panel whose typical value isn't
+  already glanceable.
 
 ## Procedure
 
@@ -38,7 +41,22 @@ When the user says ANY of:
    - `status_steps()`
    - `DS`, `STANDARD_VARS`, `ROW_TITLE`
 
-4. **Create a new rebuild script** at
+4. **Humanize every non-glanceable panel.** Before emitting the JSON, walk
+   the layout table and for each panel whose typical value reads as
+   sci-notation, sub-1 rate, leading-zero currency, or exotic unit,
+   invoke `ai-o11y-humanize-metric`:
+
+   ```bash
+   cd dashboards && python3 humanize.py <metric> <typical_value> \
+       --audience <CFO|SRE|AI|Mixed> [--rate] [--unit-family <family>] \
+       [--domain <domain>] [--series <s1> <s2> ...]
+   ```
+
+   Apply the returned `unit`, `custom_unit`, `decimals`, `axis_label`,
+   `description`, and `prom_fragment` verbatim in the panel JSON. The
+   recommendation is canonical — don't second-guess the rebase.
+
+5. **Create a new rebuild script** at
    `dashboards/_rebuild_<dashboard-uid>.py`. It MUST:
    - Have a docstring describing the story arc + archetype.
    - Define helpers `stat_panel(...)`, `text_panel(...)`, `row(...)` —
@@ -119,6 +137,8 @@ TOKEN=$(gh auth token) && \
 - Skipping the aesthetic pass — it's MANDATORY as the last step.
 - Inventing template variables on the fly — declare them at the top of
   the rebuild script and document defaults inline.
+- Picking `unit:` mechanically for any non-glanceable panel — always
+  route through `ai-o11y-humanize-metric` for rates and exotic values.
 
 ## Hand-off
 
