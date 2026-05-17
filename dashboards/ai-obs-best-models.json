@@ -73,7 +73,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -2875,7 +2875,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1) * 1e6)",
+          "expr": "topk(10, sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1) * 1e6)",
           "format": "table",
           "instant": true,
           "legendFormat": "{{gen_ai_request_model}}",
@@ -3629,7 +3629,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_system=\"ollama\"}[1m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_system=\"ollama\"}[1m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}}",

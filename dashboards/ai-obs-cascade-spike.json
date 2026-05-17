@@ -385,7 +385,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))",
+          "expr": "sum(increase(gen_ai_client_token_usage_sum{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "tokens",

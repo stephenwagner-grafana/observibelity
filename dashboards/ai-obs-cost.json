@@ -74,7 +74,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -298,7 +298,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])) > 100000)",
+          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])) > 100000)",
           "legendFormat": "count",
           "refId": "A",
           "instant": false,
@@ -816,7 +816,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -1212,7 +1212,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[$__range])) > 100000",
+          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[$__range])) > 100000",
           "format": "time_series",
           "instant": false,
           "range": true,
@@ -1658,7 +1658,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(\n  sum(increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[24h])) * 0.000001\n  + sum(increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[24h])) * 0.000005\n)",
+          "expr": "(\n  sum(increase(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[24h])) * 0.000001\n  + sum(increase(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[24h])) * 0.000005\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "savings USD",

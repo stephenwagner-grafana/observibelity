@@ -269,7 +269,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(\n  sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[5m])) * 0.000001\n  + sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[5m])) * 0.000005\n) * 86400",
+          "expr": "(\n  sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[5m])) * 0.000001\n  + sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[5m])) * 0.000005\n) * 86400",
           "instant": true
         }
       ],

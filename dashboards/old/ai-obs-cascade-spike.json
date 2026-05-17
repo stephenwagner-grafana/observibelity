@@ -12,10 +12,27 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "red",
+        "name": "Email cascade runs",
+        "tagKeys": "conv_id,employee",
+        "target": {
+          "expr": "{container=\"llm-gateway\"} |~ \"\\\\[email-cascade\\\\] llm/summarize idx=1/2000\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "cascade started — {{ conv_id }}"
       }
     ]
   },
-  "description": "🎮 GPU pressure on the bare-metal Ollama host (.240, RTX 5090). Read top→bottom: how busy is the card → how saturated is VRAM → how hot is it → how is request latency tracking GPU pressure. Empty until you set up nvidia-gpu-exporter or Alloy's nvidia integration on .240 — see the panel descriptions for the metric names expected.",
+  "description": "Email cascade detection: $2.80 per run, ~450k tokens, 2000 tool + 2000 LLM calls. Runaway tool-call spend.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -29,12 +46,32 @@
       "tags": [
         "observibelity"
       ],
-      "title": "ObserVIBElity dashboards",
+      "title": "AI Observability dashboards",
       "type": "dashboards"
     }
   ],
   "liveNow": false,
   "panels": [
+    {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y — Email Cascade\n\n**Story:** A single misbehaving session can drive a runaway loop — the escalator specialist sends thousands of emails in minutes. The cost stat (top-left) is your immediate damage gauge.\n\n**Look for:** any session in the **🚨 Top 20 runaway sessions** table over **50 emails/10m**, and the live tail at the bottom — you'll see the tool-call loop in real time."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
     {
       "datasource": {
         "type": "prometheus",
@@ -49,7 +86,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -57,7 +94,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -136,11 +173,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 8
       },
       "id": 1,
       "panels": [],
-      "title": "🎮 GPU pressure right now (RTX 5090 on .240)",
+      "title": "🚨 Is an email cascade running right now?",
       "type": "row"
     },
     {
@@ -148,15 +185,12 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Current GPU compute utilization (%). >80% sustained = the 5090 is the bottleneck and queue depth in Ollama will grow. Source: nvidia_gpu_exporter metric nvidia_smi_utilization_gpu_ratio (×100).",
+      "description": "USD spent in the last hour on the support bot's escalator and ticket-helper agents — the two specialists that drive the email-cascade runaway. Each full cascade run costs roughly $2.80.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "min": 0,
-          "max": 100,
-          "unit": "percent",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -166,32 +200,29 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 60
-              },
-              {
-                "color": "#FB923C",
-                "value": 80
+                "value": 1
               },
               {
                 "color": "#F472B6",
-                "value": 95
+                "value": 5
               }
             ]
-          }
-        }
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
+        "h": 5,
+        "w": 6,
         "x": 0,
-        "y": 4
+        "y": 9
       },
       "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -199,7 +230,6 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": false,
         "percentChangeColorMode": "inverted"
@@ -211,33 +241,29 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "editorMode": "code",
-          "expr": "avg(nvidia_gpu_utilization_gpu_ratio) * 100",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))",
+          "format": "time_series",
           "instant": false,
-          "legendFormat": "GPU util",
-          "refId": "A",
+          "legendFormat": "USD",
           "range": true,
-          "format": "time_series"
+          "refId": "A"
         }
       ],
-      "title": "GPU compute utilization (%)",
+      "title": "💰 How much have cascades cost us in the last hour?",
       "type": "stat",
       "transparent": false
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "VRAM used / total. >90% = some models are being evicted between requests and the rotation will see cold-start hits. The 5090 has 32 GB; the 8-model rotation pool fits comfortably (~22 GB total).",
+      "description": "Count of cascade-related log lines in the last hour from the llm-gateway. Each run produces thousands of lines, so this is a coarse 'are we burning' signal — not a literal run count.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "min": 0,
-          "max": 100,
-          "unit": "percent",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -247,32 +273,29 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 70
-              },
-              {
-                "color": "#FB923C",
-                "value": 85
+                "value": 1
               },
               {
                 "color": "#F472B6",
-                "value": 95
+                "value": 5
               }
             ]
-          }
-        }
+          },
+          "unit": "short"
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 4
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 9
       },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -280,7 +303,6 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": false,
         "percentChangeColorMode": "inverted"
@@ -289,19 +311,16 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "editorMode": "code",
-          "expr": "(sum(nvidia_gpu_memory_used_bytes) / sum(nvidia_gpu_memory_total_bytes)) * 100",
-          "instant": false,
-          "legendFormat": "VRAM",
-          "refId": "A",
-          "range": true,
-          "format": "time_series"
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator|sb-ticket-helper)\\\"\" [1h]))",
+          "legendFormat": "runs",
+          "queryType": "range",
+          "refId": "A"
         }
       ],
-      "title": "VRAM in use (% of 32 GB)",
+      "title": "📨 Cascade activity in the last hour (log events)",
       "type": "stat",
       "transparent": false
     },
@@ -310,15 +329,12 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "GPU die temperature in °C. The 5090's thermal limit is around 88°C; sustained >80°C means the fans should be ramping. Useful for spotting thermal throttling that could explain latency hiccups.",
+      "description": "Tokens burned by the cascade-driving specialists in the last hour. A single runaway run chews through ~450k tokens — that's where the $2.80/run comes from.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "min": 0,
-          "max": 95,
-          "unit": "celsius",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -328,32 +344,29 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 70
-              },
-              {
-                "color": "#FB923C",
-                "value": 80
+                "value": 100000
               },
               {
                 "color": "#F472B6",
-                "value": 88
+                "value": 500000
               }
             ]
-          }
-        }
+          },
+          "unit": "short"
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 4
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 9
       },
       "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -361,7 +374,6 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": false,
         "percentChangeColorMode": "inverted"
@@ -373,17 +385,61 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "editorMode": "code",
-          "expr": "max(nvidia_gpu_temperature_gpu_celsius)",
+          "expr": "sum(increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))",
+          "format": "time_series",
           "instant": false,
-          "legendFormat": "GPU temp",
-          "refId": "A",
+          "legendFormat": "tokens",
           "range": true,
-          "format": "time_series"
+          "refId": "A"
         }
       ],
-      "title": "GPU temperature (°C)",
+      "title": "🔢 Tokens burned by cascade specialists (1h)",
       "type": "stat",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "grafana",
+        "uid": "-- Grafana --"
+      },
+      "description": "Live state of the conv_runaway alert rule. If this isn't 'normal', a cascade is firing and the dashboards below are where to dig in.",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 9
+      },
+      "id": 5,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "conv_runaway",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 10,
+        "sortOrder": 3,
+        "stateFilter": {
+          "error": true,
+          "firing": true,
+          "noData": false,
+          "normal": true,
+          "pending": true
+        },
+        "viewMode": "list"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "queryType": "alerts",
+          "refId": "A"
+        }
+      ],
+      "title": "🚨 Is the conv_runaway alert firing?",
+      "type": "alertlist",
       "transparent": false
     },
     {
@@ -391,16 +447,12 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Current GPU power draw × $0.12/kWh. The RTX 5090 typically draws 100-400W under load (~$0.012-$0.048/hour). DCGM_FI_DEV_POWER_USAGE is in Watts; nvidia_smi_power_draw_watts is also in Watts.",
+      "description": "How much each email-cascade run cost. Divides the last hour of escalator+ticket-helper USD spend by the number of cascade-start markers in Loki ('[email-cascade] llm/summarize idx=1/2000'). Target: <$3.00. If >$5, investigate runaway.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "min": 0,
-          "max": 0.1,
-          "unit": "currencyUSD",
-          "decimals": 3,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -410,18 +462,16 @@
               },
               {
                 "color": "#A78BFA",
-                "value": 0.024
-              },
-              {
-                "color": "#FB923C",
-                "value": 0.048
+                "value": 3
               },
               {
                 "color": "#F472B6",
-                "value": 0.072
+                "value": 5
               }
             ]
-          }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -429,14 +479,13 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 14
       },
-      "id": 101,
+      "id": 102,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -444,7 +493,6 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": false,
         "percentChangeColorMode": "inverted"
@@ -456,16 +504,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "editorMode": "code",
-          "expr": "sum(nvidia_gpu_power_draw_watts) / 1000 * 0.12",
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-escalator|sb-ticket-helper\",gen_ai_system!=\"\"}[1h]))\n/\nclamp_min(\n  sum(count_over_time({service_namespace=\"observibelity\",container=\"acme-bot-api\"} |~ \"email-cascade.*idx=1/2000\" [1h])), 1\n)",
+          "format": "time_series",
           "instant": false,
-          "legendFormat": "USD/hour",
-          "refId": "A",
+          "legendFormat": "USD / run",
           "range": true,
-          "format": "time_series"
+          "refId": "A"
         }
       ],
-      "title": "⚡ GPU energy cost (USD/hour)",
+      "title": "💸 $ per cascade run (last 1h)",
       "type": "stat",
       "transparent": false
     },
@@ -475,885 +522,523 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 19
       },
-      "id": 5,
+      "id": 6,
       "panels": [],
-      "title": "📈 Pressure over time",
+      "title": "🔍 Which session is going off the rails?",
       "type": "row"
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "GPU utilization, VRAM, and temperature on one chart. Spikes here should line up with rotation flips into bigger models (mistral:7b, qwen2.5:7b). If util hits 100% and stays there, raise OLLAMA_NUM_PARALLEL above 1.",
+      "description": "Top 10 sessions by sb-escalator log activity, 5m windows. A cascade looks like one session line shooting straight up while everything else flatlines — that vertical wall is the runaway.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 10,
-            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "gradientMode": "opacity"
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [5m])))",
+          "legendFormat": "{{user_id}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "📈 Escalator activity per session over time (top 10)",
+      "type": "timeseries",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Heatmap of how many sessions have how much escalator activity. Healthy traffic clusters near zero; a hot stripe far to the right means one or more sessions are running away.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
             }
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#86EFAC",
-                "value": null
-              }
-            ]
-          },
-          "min": 0,
-          "max": 100,
-          "unit": "percent"
+          "unit": "short"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "GPU temp °C"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "max",
-                "value": 100
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "GPU util %"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "VRAM %"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 18
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 20
       },
-      "id": 6,
+      "id": 8,
       "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Oranges",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
         "legend": {
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
         },
         "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false
         }
       },
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "editorMode": "code",
-          "expr": "avg(nvidia_gpu_utilization_gpu_ratio) * 100",
-          "legendFormat": "GPU util %",
+          "expr": "sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [5m]))",
+          "legendFormat": "{{user_id}}",
+          "queryType": "range",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "(sum(nvidia_gpu_memory_used_bytes) / sum(nvidia_gpu_memory_total_bytes)) * 100",
-          "legendFormat": "VRAM %",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "max(nvidia_gpu_temperature_gpu_celsius)",
-          "legendFormat": "GPU temp °C",
-          "refId": "C"
         }
       ],
-      "title": "GPU util / VRAM / temp",
-      "type": "timeseries",
+      "title": "🔥 Emails-per-session distribution — look for the right-tail outliers",
+      "type": "heatmap",
       "transparent": false
     },
     {
       "collapsed": false,
       "gridPos": {
         "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 28
-      },
-      "id": 7,
-      "panels": [],
-      "title": "⏱ Ollama latency on .240 (correlates with GPU pressure above)",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "P95 / P50 / Avg request latency for Ollama calls broken down by model. Compare with the GPU util panel above — bigger models (mistral:7b, qwen2.5:7b) spike util AND p95 latency at the same time.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            },
-            "spanNulls": true,
-            "gradientMode": "opacity"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#86EFAC",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
         "w": 24,
         "x": 0,
         "y": 29
       },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_system=\"ollama\"}[5m])))",
-          "legendFormat": "p95 — {{gen_ai_request_model}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Ollama p95 latency per model",
-      "type": "timeseries",
-      "transparent": false
+      "id": 9,
+      "panels": [],
+      "title": "🔥 Which sessions are the worst offenders right now?",
+      "type": "row"
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "Ollama request rate per model. The rotation cycles models every 60s, so each model gets bursts. Steady-state ~31 calls/min total with 60 k6 VUs.",
+      "description": "Sessions by escalator events in the last 10 minutes. Anything above ~50 is almost certainly a runaway cascade; click the row to open the conversation in Loki and see what looped.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-GrYlRd"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 40,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            },
-            "spanNulls": true,
-            "gradientMode": "opacity"
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "#86EFAC",
+                "color": "#8AB8FF",
                 "value": null
+              },
+              {
+                "color": "#F472B6",
+                "value": 50
               }
             ]
           },
-          "unit": "cpm"
+          "unit": "short"
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conv_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Conversation"
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Emails in 10m"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -1645,39 +1330,65 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 30
       },
-      "id": 9,
+      "id": 10,
       "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
           ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
+          "show": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Emails in 10m"
+          }
+        ]
       },
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
+            "type": "loki",
+            "uid": "${datasource_loki}"
           },
-          "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", gen_ai_system=\"ollama\"}[5m])) * 60",
-          "legendFormat": "{{gen_ai_request_model}}",
+          "expr": "topk(20, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [10m])))",
+          "legendFormat": "{{user_id}}",
+          "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Ollama request rate per model — stacked",
-      "type": "timeseries",
-      "transparent": false
+      "title": "🚨 Top 20 runaway sessions — who's blowing past 50 emails in 10m?",
+      "type": "table",
+      "transparent": false,
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "service_name": true,
+              "service_namespace": true,
+              "deployment_environment": true,
+              "container": true,
+              "pod": true,
+              "namespace": true,
+              "cluster": true,
+              "service_instance_id": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
     },
     {
       "collapsed": false,
@@ -1685,38 +1396,87 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 40
       },
-      "id": 10,
+      "id": 11,
       "panels": [],
-      "title": "📖 No data yet? — set up the GPU exporter on .240",
+      "title": "📜 Forensics — what is the cascade actually doing right now?",
       "type": "row"
     },
     {
       "datasource": {
-        "type": "grafana",
-        "uid": "-- Grafana --"
+        "type": "loki",
+        "uid": "${datasource_loki}"
       },
-      "description": "",
+      "description": "Live tail of sb-escalator events from the llm-gateway. Read this top-down to watch a cascade actually unfold — tool calls, retries, ticket creates.",
       "gridPos": {
-        "h": 10,
-        "w": 24,
+        "h": 11,
+        "w": 14,
         "x": 0,
-        "y": 50
+        "y": 41
       },
-      "id": 11,
+      "id": 12,
       "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "### Quickest path — `nvidia_gpu_exporter` + Grafana Alloy\n\nOn `.240`:\n\n```bash\n# 1. Install the exporter (one binary, runs as systemd)\ncurl -sSL https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/latest/download/nvidia_gpu_exporter_$(uname -m | sed s/x86_64/amd64/)_linux.tar.gz \\\n  | sudo tar -C /usr/local/bin -xzf - nvidia_gpu_exporter\n\nsudo tee /etc/systemd/system/nvidia_gpu_exporter.service <<'EOF'\n[Unit]\nDescription=NVIDIA GPU Prometheus Exporter\nAfter=network.target\n[Service]\nExecStart=/usr/local/bin/nvidia_gpu_exporter --web.listen-address=:9835\nRestart=always\n[Install]\nWantedBy=multi-user.target\nEOF\nsudo systemctl enable --now nvidia_gpu_exporter\n\n# Verify\ncurl -s localhost:9835/metrics | head -20\n```\n\n### Ship metrics to Grafana Cloud\n\nUse Alloy (if you already have it for other stuff on .240, just add this; if not, install via `https://github.com/grafana/alloy`):\n\n```alloy\nprometheus.scrape \"nvidia_gpu\" {\n  targets    = [{__address__ = \"localhost:9835\", instance = \"wags-ai-240\"}]\n  forward_to = [prometheus.remote_write.grafana_cloud.receiver]\n  job_name   = \"nvidia_gpu\"\n}\n```\n\nWithin 1 min the panels above will populate. If you'd rather use **DCGM Exporter** (NVIDIA's official, fancier), this dashboard supports both — the queries fall back from `nvidia_smi_*` to `DCGM_FI_DEV_*` automatically.\n",
-        "mode": "markdown"
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
       },
-      "pluginVersion": "11.0.0",
-      "title": "Recipe — installing the exporter on .240",
-      "type": "text",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-escalator)\\\"\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "📨 Live tail — escalator tool/probe events",
+      "type": "logs",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Live tail of the sb-ticket-helper summarizer. A single cascade emits ~2000 'llm/summarize idx=N/2000' lines — when you see that counter ticking up, you're watching the runaway.",
+      "gridPos": {
+        "h": 11,
+        "w": 10,
+        "x": 14,
+        "y": 41
+      },
+      "id": 13,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "{container=\"llm-gateway\"} |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-ticket-helper)\\\"\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "📜 Summarizer burst — 2000-call loop in action",
+      "type": "logs",
       "transparent": false
     }
   ],
@@ -1724,8 +1484,10 @@
   "schemaVersion": 39,
   "tags": [
     "ai-observability",
-    "observibelity",
-    "gpu"
+    "phase-2",
+    "cost",
+    "cascade",
+    "observibelity"
   ],
   "templating": {
     "list": [
@@ -1746,6 +1508,64 @@
         "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "email-cascade",
+          "value": "email-cascade"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Use case",
+        "multi": false,
+        "name": "use_case",
+        "options": [
+          {
+            "selected": true,
+            "text": "email-cascade",
+            "value": "email-cascade"
+          }
+        ],
+        "query": "email-cascade",
+        "skipUrlSync": false,
+        "type": "custom"
       }
     ]
   },
@@ -1753,11 +1573,19 @@
     "from": "now-1h",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ]
+  },
   "timezone": "",
-  "title": "AI Obs — GPU Pressure (.240 / RTX 5090)",
-  "uid": "ai-obs-gpu",
-  "version": 1,
+  "title": "AI o11y — Email Cascade",
+  "uid": "ai-obs-cascade-spike",
   "weekStart": "",
   "folderUid": "obs-foundations"
 }

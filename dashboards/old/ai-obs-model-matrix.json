@@ -106,7 +106,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[5m])) * 60",
+          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[5m])) * 60",
           "legendFormat": "{{ai_o11y_specialist}} · {{gen_ai_response_model}}"
         }
       ],
@@ -232,7 +232,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h])), 1)",
+          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h])), 1)",
           "instant": true,
           "format": "table"
         }

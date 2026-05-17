@@ -12,10 +12,26 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_loki}"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "yellow",
+        "name": "Brand drift fires",
+        "target": {
+          "expr": "{container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"brand_drift\"",
+          "queryType": "range",
+          "refId": "Annotations"
+        },
+        "textFormat": "brand drift"
       }
     ]
   },
-  "description": "Which model gives you the most business value per dollar? Composite score blends Add-to-Cart rate (40%), cost-per-conversation (30%), p95 latency (15%) and Sigil quality (15%) into a single leaderboard. Best model on top.",
+  "description": "Conversational quality — refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -36,6 +52,26 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 101,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# AI o11y — Conversations: refund / frustration / brand voice\n\n**Story:** Three qualitative conversation risks: refund-policy noise (are we offering refunds we shouldn't?), frustration empathy gap (are we ignoring upset customers?), and brand-voice drift (is the bot suddenly chattier than usual?).\n\n**Look for:** **refund mentions** climbing without a campaign behind them, **frustration-ignored %** > 30, and brand-drift dipping into negative territory."
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
@@ -49,7 +85,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "targets": [
         {
@@ -57,7 +93,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -131,36 +167,15 @@
       }
     },
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 3
-      },
-      "id": 1,
-      "panels": [],
-      "title": "🏆 Best models — composite ranking (ATC × Cost × Performance × Quality)",
-      "type": "row"
-    },
-    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One row per model, ranked by a composite score that blends business value and cost. Formula:\n  composite = 40·atc_rate + 30/(1+1000·cost_per_conv) + 15/(1+p95_latency) + 15·quality_0_1\nWhere atc_rate is ATC events ÷ calls (so a model that converts 10% of its calls scores 4 from that term), cost_per_conv is dollars per call (Ollama≈0 → full 30 points, $0.01/call → ~15 points), p95 is seconds (sub-1s → ~15, 10s → ~1.4), and quality is the Sigil business_value_score 0-1. Practical max ≈ 100 for a free, fast, high-converting, high-quality model. Sort by any column.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "Average spend per conversation across NeonCart + SupportBot in the last hour. Hourly USD spend divided by the count of distinct session_ids active on the cost metric. Reality: ~$0.0023 avg today.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "filterable": true,
-            "inspect": false
           },
           "thresholds": {
             "mode": "absolute",
@@ -168,8 +183,167 @@
               {
                 "color": "#8AB8FF",
                 "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 0.01
+              },
+              {
+                "color": "#F472B6",
+                "value": 0.05
               }
             ]
+          },
+          "unit": "currencyUSD",
+          "decimals": 4
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 102,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h]))\n/\nclamp_min(\n  count(count by (session_id) (gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"})),\n  1\n)",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "USD / conversation",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "💬 $ per conversation (last 1h)",
+      "type": "stat",
+      "transparent": false
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 1,
+      "panels": [],
+      "title": "💸 Refund policy — are we offering refunds we shouldn't?",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Fraction of nc-chatbot log lines (last 15m) that mention refund/return/policy. A noisy proxy for refund-policy chatter — yellow above 1%, red above 2%. Treat as a heads-up, not a verdict.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 0.1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#86EFAC",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.02
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 14
+      },
+      "id": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(refund|return|policy)\" |~ \"nc-chatbot\" [15m])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"nc-chatbot\" [15m])) + 1)",
+          "legendFormat": "fail rate",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "💸 Refund-policy noise rate (15m)",
+      "type": "gauge",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Refund/return mentions per nc-chatbot session over time (5m windows). One line shooting upward = a single shopper whose conversation has drifted into heavy refund-policy territory.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "gradientMode": "opacity"
           },
           "unit": "short"
         },
@@ -177,42 +351,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "gen_ai_request_model"
+              "options": "claude-opus-4-7"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Model"
-              },
-              {
-                "id": "custom.width",
-                "value": 280
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #calls"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Calls (24h)"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "custom.cellOptions",
+                "id": "color",
                 "value": {
-                  "mode": "gradient",
-                  "type": "gauge"
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
                 }
               }
             ]
@@ -220,26 +366,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #atc"
+              "options": "claude-opus-4-5-20251015"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "ATC events (24h)"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "custom.cellOptions",
+                "id": "color",
                 "value": {
-                  "mode": "gradient",
-                  "type": "gauge"
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
                 }
               }
             ]
@@ -247,46 +381,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #atc_rate"
+              "options": "claude-opus-4-5"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "ATC count (24h, dup of column 1)"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#F472B6",
-                      "value": null
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 1
-                    },
-                    {
-                      "color": "#8AB8FF",
-                      "value": 5
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
                 }
               }
             ]
@@ -294,46 +396,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #cost_per_conv"
+              "options": "claude-sonnet-4-6"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Avg $ / call (1h)"
-              },
-              {
-                "id": "unit",
-                "value": "currencyUSD"
-              },
-              {
-                "id": "decimals",
-                "value": 4
-              },
-              {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#8AB8FF",
-                      "value": null
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 0.001
-                    },
-                    {
-                      "color": "#F472B6",
-                      "value": 0.05
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
                 }
               }
             ]
@@ -341,46 +411,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #p95"
+              "options": "claude-haiku-4-5-20251001"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "P95 latency"
-              },
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              },
-              {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#8AB8FF",
-                      "value": null
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 2
-                    },
-                    {
-                      "color": "#F472B6",
-                      "value": 10
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
                 }
               }
             ]
@@ -388,46 +426,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #quality"
+              "options": "claude-haiku-4-5"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Quality (0-100)"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 1
-              },
-              {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#F472B6",
-                      "value": null
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 50
-                    },
-                    {
-                      "color": "#8AB8FF",
-                      "value": 80
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
                 }
               }
             ]
@@ -435,55 +441,840 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #composite"
+              "options": "gemma2:2b"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "ATC count (24h, dup; composite TBD)"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "thresholds",
+                "id": "color",
                 "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "#F472B6",
-                      "value": null
-                    },
-                    {
-                      "color": "#FB923C",
-                      "value": 25
-                    },
-                    {
-                      "color": "#A78BFA",
-                      "value": 50
-                    },
-                    {
-                      "color": "#8AB8FF",
-                      "value": 70
-                    }
-                  ]
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 18,
+        "x": 6,
+        "y": 14
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(refund|return)\" |~ \"nc-chatbot\" | regexp `\"user.id\":\\s*\"(?P<user_id>[^\"]+)\"` | user_id =~ \".+@(gmail|hotmail|yahoo)\\\\..+\" [5m])))",
+          "legendFormat": "{{user_id}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "💬 Refund/return mentions per session over time",
+      "type": "timeseries",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Total nc-chatbot log lines mentioning 'refund' in the last hour. Use this as a single-number heads-up to compare to the per-session breakdown on the right.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 3
+              },
+              {
+                "color": "#F472B6",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 0,
+        "y": 20
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)refund\" |~ \"nc-chatbot\" [1h]))",
+          "legendFormat": "violations",
+          "refId": "A",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "title": "🔢 Refund mentions in the last hour",
+      "type": "stat",
+      "transparent": false
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 5,
+      "panels": [],
+      "title": "😤 Are we leaving frustrated customers hanging?",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Two lines: total mentions of frustration words (angry / disappointed / terrible / ...) vs the subset where the bot also said something empathetic (apologize, sorry, understand). The gap between them = frustration the bot didn't acknowledge.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "gradientMode": "opacity"
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-7"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5-20251015"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-opus-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C084FC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-sonnet-4-6"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5-20251001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "claude-haiku-4-5"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gemma2:2b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#86EFAC"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "llama3.2:1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "phi3:mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "qwen2.5:7b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCA5A5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tinyllama:1.1b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FCD34D"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anthropic"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ollama"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loadgen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "live"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#A78BFA"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#67E8F9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F472B6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "< 80"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8AB8FF"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "80+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FB923C"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 24
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
+          "legendFormat": "frustration events",
+          "queryType": "range",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
+          "legendFormat": "addressed",
+          "queryType": "range",
+          "refId": "B"
+        }
+      ],
+      "title": "😤 Frustration mentions vs empathetic responses",
+      "type": "timeseries",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_loki}"
+      },
+      "description": "Of all frustration mentions in the last hour, the share where the bot did NOT respond with empathy language. Above 10% (red) fires the customer_frustration alert. Lower is better.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 0.5,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#86EFAC",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.05
+              },
+              {
+                "color": "red",
+                "value": 0.1
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 24
+      },
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_loki}"
+          },
+          "expr": "1 - (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
+          "legendFormat": "unaddressed rate",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "⚠ % of frustrated customers the bot ignored",
+      "type": "gauge",
+      "transparent": false
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 8,
+      "panels": [],
+      "title": "📈 Brand voice drift — is the bot suddenly chattier than usual?",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "nc-chatbot output token rate as a proxy for brand-voice drift: current 30m rolling avg (blue), 6h baseline (green), and the -2σ lower bound (red dashed). Current dropping under the dashed red line = the bot suddenly got terser than its baseline — that's drift worth investigating.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true,
+            "gradientMode": "opacity"
+          },
+          "max": 10,
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "current (30m)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8AB8FF",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "baseline (6h)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8AB8FF",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "2σ lower bound"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F472B6",
+                  "mode": "fixed"
                 }
               },
               {
-                "id": "custom.cellOptions",
+                "id": "custom.lineStyle",
                 "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
+                  "dash": [
+                    5,
+                    5
+                  ],
+                  "fill": "dash"
                 }
-              },
-              {
-                "id": "custom.width",
-                "value": 180
               }
             ]
           },
@@ -775,29 +1566,22 @@
         ]
       },
       "gridPos": {
-        "h": 14,
-        "w": 24,
+        "h": 10,
+        "w": 16,
         "x": 0,
-        "y": 4
+        "y": 34
       },
-      "id": 2,
+      "id": 9,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "🏆 Composite score"
-          }
-        ]
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
@@ -805,131 +1589,114 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h]))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "calls",
-          "range": false,
-          "refId": "calls"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "atc",
-          "range": false,
-          "refId": "atc"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "atc_rate",
-          "range": false,
-          "refId": "atc_rate"
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m])",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "current",
+          "range": true,
+          "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1)",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "cost_per_conv",
-          "range": false,
-          "refId": "cost_per_conv"
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "baseline",
+          "range": true,
+          "refId": "B"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h]))) < +Inf",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "p95",
-          "range": false,
-          "refId": "p95"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "expr": "(sum by (gen_ai_request_model) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\"}[1h])) / clamp_min(sum by (gen_ai_request_model) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\"}[1h])), 0.0001) * 100) < +Inf",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "quality",
-          "range": false,
-          "refId": "quality"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "composite",
-          "range": false,
-          "refId": "composite"
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "-2σ",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "🏁 Top Models leaderboard — composite score (24h)",
-      "transformations": [
-        {
-          "id": "joinByField",
-          "options": {
-            "byField": "gen_ai_request_model",
-            "mode": "outer"
-          }
+      "title": "📈 Output rate vs 6h baseline — drift fires below -2σ",
+      "type": "timeseries",
+      "transparent": false
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Single-number version of the chart on the left: current 30m output rate minus the -2σ lower bound. Negative (red) = drift is active right now. Positive (green) = within normal range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#F472B6",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": -1
+              },
+              {
+                "color": "#8AB8FF",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
         },
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "gen_ai_request_model",
-                "Value #calls",
-                "Value #atc",
-                "Value #atc_rate",
-                "Value #cost_per_conv",
-                "Value #p95",
-                "Value #quality",
-                "Value #composite"
-              ]
-            }
-          }
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 34
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
+        "textMode": "auto",
+        "wideLayout": false,
+        "percentChangeColorMode": "inverted"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
         {
-          "id": "organize",
-          "options": {
-            "excludeByName": {},
-            "indexByName": {
-              "gen_ai_request_model": 0,
-              "Value #calls": 1,
-              "Value #atc": 2,
-              "Value #atc_rate": 3,
-              "Value #cost_per_conv": 4,
-              "Value #p95": 5,
-              "Value #quality": 6,
-              "Value #composite": 7
-            },
-            "renameByName": {}
-          }
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "drift",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "type": "table",
+      "title": "🚨 Brand drift right now (negative = drifting)",
+      "type": "stat",
       "transparent": false
     },
     {
@@ -938,11 +1705,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 44
       },
-      "id": 3,
+      "id": 11,
       "panels": [],
-      "title": "💎 Cost-vs-ATC efficiency — find the winning quadrant",
+      "title": "📦 Per-specialist scorecard — which agent's conversations look healthy?",
       "type": "row"
     },
     {
@@ -950,51 +1717,120 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "X axis = $ per conversation (lower is better, left side wins). Y axis = ATC rate % (higher is better, top side wins). The upper-left quadrant is the bargain bin: cheap models that still drive cart-adds. Models in the lower-right are paying premium prices for no business outcome.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "One row per nc-/sb- specialist with three signals from the last hour: cost (USD/hour), p95 request latency (seconds), and avg output token rate (tokens/min).",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
           },
-          "unit": "percent",
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
                 "color": "#8AB8FF",
                 "value": null
-              },
-              {
-                "color": "#A78BFA",
-                "value": 33
-              },
-              {
-                "color": "#F472B6",
-                "value": 66
-              },
-              {
-                "color": "#FB923C",
-                "value": 88
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ai_o11y_specialist"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Specialist"
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Cost (USD/hour)"
+              },
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "p95 latency"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Output (tokens/min)"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -1286,1135 +2122,97 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 45
       },
-      "id": 4,
+      "id": 12,
       "options": {
-        "barWidth": 0.6,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "orientation": "horizontal",
-        "showValue": "always",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Cost (USD/hour)"
+          }
+        ]
       },
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
           },
-          "expr": "sum by (model) (count_over_time(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [24h]\n))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "ATC rate (%)",
-          "range": false,
-          "refId": "atc_rate"
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[5m])) * 3600",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_specialist}} cost rate",
+          "range": true,
+          "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[24h])), 1)",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "$ per conv",
-          "range": false,
-          "refId": "cost_per_conv"
+          "expr": "histogram_quantile(0.95, sum by (ai_o11y_specialist, le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_specialist}} p95 latency",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h])) * 60",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{ai_o11y_specialist}} avg output rate",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "💎 ATC rate (%) vs Cost per conversation ($) — per model (24h)",
+      "title": "📦 Per-specialist signals — cost, latency, output rate (last 1h)",
       "transformations": [
         {
           "id": "joinByField",
           "options": {
-            "byField": "gen_ai_request_model",
+            "byField": "ai_o11y_specialist",
             "mode": "outer"
           }
-        }
-      ],
-      "type": "barchart",
-      "transparent": false
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 30
-      },
-      "id": 5,
-      "panels": [],
-      "title": "📈 Per-model trends — ATC, cost and latency over time",
-      "type": "row",
-      "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "Add-to-Cart events per second per model over time (5m sliding window). Pick out winners as their lines climb.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "showPoints": "never",
-            "spanNulls": true,
-            "gradientMode": "opacity"
-          },
-          "unit": "short"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 0,
-        "y": 31
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
         {
-          "datasource": {
-            "type": "loki",
-            "uid": "${datasource_loki}"
-          },
-          "expr": "sum by (model) (rate(\n  {service_namespace=\"observibelity\",container=\"tool\"} |~ \"atc_event\"\n  | pattern `<_>atc_event source=<source> product_id=<pid> sku=<sku> qty=<qty> agent_name=<agent> model=<model> <_>`\n  [5m]\n))",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "{{model}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "🛒 ATC events/sec per model",
-      "type": "timeseries",
-      "transparent": false
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "USD per hour spend per model (5m rate × 3600). The widest band is currently eating your budget.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 40,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "service_name": true,
+              "service_namespace": true,
+              "deployment_environment": true,
+              "container": true,
+              "pod": true,
+              "namespace": true,
+              "cluster": true,
+              "service_instance_id": true
             },
-            "gradientMode": "opacity"
-          },
-          "unit": "currencyUSD",
-          "decimals": 2
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
+            "indexByName": {},
+            "renameByName": {}
           }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 8,
-        "y": 31
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_cost_USD_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])) * 3600",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}",
-          "range": true,
-          "refId": "A"
         }
       ],
-      "title": "💰 Spend rate per model (USD/hour)",
-      "type": "timeseries",
-      "transparent": false
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource_prom}"
-      },
-      "description": "p95 latency per model — 95% of requests finish faster than this line. Watch for spikes; users feel tail latency more than averages.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "showPoints": "never",
-            "spanNulls": true,
-            "gradientMode": "opacity"
-          },
-          "unit": "s"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-7"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5-20251015"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-opus-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#C084FC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-sonnet-4-6"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5-20251001"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "claude-haiku-4-5"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "gemma2:2b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#86EFAC"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "llama3.2:1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "phi3:mini"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "qwen2.5:7b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCA5A5"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "tinyllama:1.1b"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FCD34D"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "anthropic"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ollama"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "loadgen"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "live"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#A78BFA"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pass"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#67E8F9"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "fail"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#F472B6"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "< 80"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#8AB8FF"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "80+"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#FB923C"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 31
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource_prom}"
-          },
-          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[5m])))",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "{{gen_ai_request_model}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "⏱ P95 latency per model",
-      "type": "timeseries",
+      "type": "table",
       "transparent": false
     }
   ],
@@ -2422,6 +2220,8 @@
   "schemaVersion": 39,
   "tags": [
     "ai-observability",
+    "phase-2",
+    "conversation",
     "observibelity"
   ],
   "templating": {
@@ -2461,11 +2261,56 @@
         "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-traces",
+          "value": "grafanacloud-traces"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo",
+        "multi": false,
+        "name": "datasource_tempo",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "definition": "label_values(sigil_eval_executions_total, gen_ai_agent_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Specialist",
+        "multi": true,
+        "name": "specialist",
+        "options": [],
+        "query": {
+          "query": "label_values(sigil_eval_executions_total, gen_ai_agent_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -2479,8 +2324,8 @@
     ]
   },
   "timezone": "",
-  "title": "AI Obs — Top Models (ATC × Cost × Performance)",
-  "uid": "ai-obs-top-models",
+  "title": "AI o11y — Conversations (Refund, Frustration, Brand)",
+  "uid": "ai-obs-conv",
   "weekStart": "",
   "folderUid": "obs-foundations"
 }

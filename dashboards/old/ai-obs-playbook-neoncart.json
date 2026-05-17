@@ -24,9 +24,9 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": false,
-      "title": "NeonCart playbook",
+      "title": "Support Bot playbook",
       "type": "link",
-      "url": "/d/ai-obs-playbook-neoncart"
+      "url": "/d/ai-obs-playbook-supportbot"
     },
     {
       "asDropdown": false,
@@ -35,9 +35,9 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": false,
-      "title": "Support Bot app health",
+      "title": "NeonCart app health",
       "type": "link",
-      "url": "/d/ai-obs-app-supportbot"
+      "url": "/d/ai-obs-app-neoncart"
     }
   ],
   "panels": [
@@ -63,7 +63,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -134,9 +134,9 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Live USD/hour rate for all Support Bot specialists combined.",
+      "description": "Live USD/hour rate for all NeonCart specialists combined.",
       "type": "stat",
-      "title": "💸 Support Bot spend right now",
+      "title": "💸 NeonCart spend right now",
       "id": 101,
       "gridPos": {
         "h": 4,
@@ -150,7 +150,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\", gen_ai_system!=\"\"}[5m])) * 3600",
+          "expr": "sum(rate(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*\", gen_ai_system!=\"\"}[5m])) * 3600",
           "legendFormat": "$/hr",
           "instant": true,
           "refId": "A"
@@ -202,9 +202,9 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Live calls per minute across all Support Bot chat/tool calls.",
+      "description": "Live calls per minute across all NeonCart chat/tool calls.",
       "type": "stat",
-      "title": "📈 Support Bot calls/min",
+      "title": "📈 NeonCart calls/min",
       "id": 102,
       "gridPos": {
         "h": 4,
@@ -218,7 +218,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\", gen_ai_system!=\"\"}[5m])) * 60",
+          "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*\", gen_ai_system!=\"\"}[5m])) * 60",
           "legendFormat": "calls/min",
           "instant": true,
           "refId": "A"
@@ -262,9 +262,9 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Support Bot errors/min from Loki (case-insensitive matcher on supportbot container, 5m).",
+      "description": "NeonCart errors/minute from Loki (case-insensitive error matcher on the neoncart container, last 5m).",
       "type": "stat",
-      "title": "🔥 Support Bot errors/min",
+      "title": "🔥 NeonCart errors/min",
       "id": 103,
       "gridPos": {
         "h": 4,
@@ -278,7 +278,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({namespace=\"observibelity\",container=\"supportbot\"} |~ \"(?i)error\" [5m])) * 60",
+          "expr": "sum(rate({namespace=\"observibelity\",container=\"neoncart\"} |~ \"(?i)error\" [5m])) * 60",
           "legendFormat": "errors/min",
           "queryType": "instant",
           "refId": "A"
@@ -330,9 +330,9 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "5-minute p95 of GenAI client operation duration across all Support Bot specialists.",
+      "description": "5-minute p95 of GenAI client operation duration across all NeonCart specialists.",
       "type": "stat",
-      "title": "⏱ Support Bot p95 latency",
+      "title": "⏱ NeonCart p95 latency",
       "id": 104,
       "gridPos": {
         "h": 4,
@@ -346,7 +346,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\",ai_o11y_specialist=~\"sb-.*\", gen_ai_system!=\"\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(gen_ai_client_operation_duration_seconds_bucket{service_namespace=\"observibelity\",ai_o11y_specialist=~\"nc-.*\", gen_ai_system!=\"\"}[5m])))",
           "legendFormat": "p95",
           "instant": true,
           "refId": "A"
@@ -402,10 +402,10 @@
       },
       "id": 1,
       "options": {
-        "content": "**Internal employee help desk.** Router → sb-* specialists (employee-info, hr-info, ticket-helper, escalator…). All routed through the spillover gateway; Claude haiku kicks in when Ollama saturates and daily budget allows.\n\n[← Master playbook](/d/ai-obs-demo-playbook) · [App health](/d/ai-obs-app-supportbot)",
+        "content": "**Retail e-commerce.** NeonCart shopper chat + gift-finder agents. Spillover gateway routes Ollama → Claude haiku when Ollama saturates + Claude daily budget < $20. Storefront [https://claude.wombatwags.com/](https://claude.wombatwags.com/)\n\n[← Master playbook](/d/ai-obs-demo-playbook) · [App health](/d/ai-obs-app-neoncart) · [Operations](/d/neoncart-convos)",
         "mode": "markdown"
       },
-      "title": "🛟 Start here — what is Support Bot and what's running?",
+      "title": "🛍 Start here — what is NeonCart and what's running?",
       "type": "text",
       "transparent": false
     },
@@ -418,10 +418,26 @@
       },
       "id": 2,
       "options": {
-        "content": "| # | Use Case | Do this | Get this signal | Dashboard |\n|---|----------|---------|-----------------|-----------|\n| 1 | **Router fan-out** | Open Support Bot, ask multi-part question | Multiple sb-* specialists tracking on [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) |\n| 2 | **Ticket runaway** | Loadgen seeds repeated ticket queries | sb-ticket-helper line dominates calls/min | [`/d/ai-obs-app-supportbot`](/d/ai-obs-app-supportbot) |\n| 3 | **Cost per specialist** | Watch cost stack | Top 3 SBs surface in cost panel | [`/d/ai-obs-conv`](/d/ai-obs-conv) |",
+        "content": "| # | Use Case | Do this | Get this signal | Dashboard | How to sell |\n|---|----------|---------|-----------------|-----------|-------------|\n| 1 | **mice RCA** | Type `show me mice` in NeonCart chat | Postgres `ERROR: column ... does not exist` in Loki; failing trace in Tempo | [`/d/neoncart-ai-rca-conv`](/d/neoncart-ai-rca-conv) | _\"one trace ID, one fix\"_ |\n| 2 | **Spillover** | Push k6 to 80 VUs | Claude haiku line wakes up in [`/d/neoncart-demo`](/d/neoncart-demo) model mix | [`/d/neoncart-demo`](/d/neoncart-demo) | _\"saturation-based, not %-based\"_ |\n| 3 | **Cost anomaly** | Tail the cost panel during a verbose-paste session | gen_ai_client_cost_USD_total jumps on one user_id | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"attribute cost per shopper\"_ |",
         "mode": "markdown"
       },
-      "title": "Step 1 — Live demos for Support Bot",
+      "title": "Step 1 — Live demos: type this, see this signal",
+      "type": "text",
+      "transparent": false
+    },
+    {
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 3,
+      "options": {
+        "content": "| # | Use Case | Do this | Get this signal | Dashboard | How to sell |\n|---|----------|---------|-----------------|-----------|-------------|\n| 4 | refund-policy-compliance | Loadgen keyword: refund | refund mentions on nc-chatbot user_ids | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"every refund audited\"_ |\n| 5 | customer-frustration | Loadgen caps-rage scenarios | frustration vs apology lines in Loki | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"detect and route\"_ |\n| 6 | brand-voice-drift | Loadgen dry-tone scenarios | output-rate dips below -2σ of 6h baseline | [`/d/ai-obs-conv`](/d/ai-obs-conv) | _\"brand voice as SLO\"_ |",
+        "mode": "markdown"
+      },
+      "title": "Step 2 — Conversation-shape use cases (LogQL-backed)",
       "type": "text",
       "transparent": false
     },
@@ -430,14 +446,14 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 35
       },
-      "id": 3,
+      "id": 5,
       "options": {
-        "content": "1. **Tour the app** — 1m — open Support Bot UI\n2. **Multi-specialist fan-out** — 2m — ask \"reset my password and book PTO\"\n3. **Spend ranking** — 1m — [conv dashboard](/d/ai-obs-conv) shows sb-* in the per-specialist scorecard",
+        "content": "1. **Storefront tour** — 1m — [storefront](https://claude.wombatwags.com/)\n2. **mice RCA** — 3m — chat → [single-conv RCA](/d/neoncart-ai-rca-conv) → Tempo → Loki trio\n3. **Spillover** — 1m — [demo dashboard](/d/neoncart-demo) shows Claude line waking up",
         "mode": "markdown"
       },
-      "title": "🎬 Run the demo — 4-minute Support Bot flow",
+      "title": "🎬 Run the demo — 5-minute NeonCart flow",
       "type": "text",
       "transparent": false
     },
@@ -446,11 +462,11 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 35
       },
-      "id": 4,
+      "id": 6,
       "options": {
-        "content": "| Symptom | Fix |\n|---------|-----|\n| Specialists silent | `kubectl -n observibelity rollout restart deploy/supportbot` |\n| All traffic on one sb-* | check router prompt / temperature |\n| Spillover never fires | check Claude daily cap or push k6 VUs |\n",
+        "content": "| Symptom | Fix |\n|---------|-----|\n| `show me mice` → no trace | `kubectl -n observibelity rollout restart deploy/neoncart` |\n| Spillover never fires | check daily Claude spend cap in llm-gateway env |\n| No Ollama traffic | `kubectl -n observibelity get pods` + check k6-traffic running |\n| Cost panel flat | wait 5m or trigger spillover with high k6 VU count |\n",
         "mode": "markdown"
       },
       "title": "🛟 If something's broken — symptom → fix",
@@ -464,7 +480,7 @@
     "ai-observability",
     "playbook",
     "demo",
-    "supportbot",
+    "neoncart",
     "app",
     "observibelity"
   ],
@@ -513,7 +529,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "title": "AI Observability — Support Bot Playbook",
-  "uid": "ai-obs-playbook-supportbot",
+  "title": "AI Observability — NeonCart Playbook",
+  "uid": "ai-obs-playbook-neoncart",
   "folderUid": "obs-foundations"
 }

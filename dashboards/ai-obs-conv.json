@@ -93,7 +93,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -1589,7 +1589,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "current",
@@ -1601,7 +1601,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "baseline",
@@ -1613,7 +1613,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "-2σ",
@@ -1687,7 +1687,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]))",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "drift",
@@ -2173,7 +2173,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h])) * 60",
+          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} avg output rate",
