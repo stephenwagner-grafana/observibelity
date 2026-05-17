@@ -150,10 +150,14 @@ llmGateway:
         gpuSensor:
           # Prometheus base URL the scheduler queries for live VRAM /
           # compute / TTFT. Leave empty to disable GPU-driven decisions.
-          # In-cluster Mimir / Grafana Cloud Prom-compat works here.
+          # **Use the Grafana datasources proxy URL** (e.g.
+          # `https://<stack>.grafana.net/api/datasources/proxy/uid/grafanacloud-prom`)
+          # with a `glsa_*` service-account Bearer token — NOT the
+          # Prom-direct URL, which requires HTTP basic auth (instance_id:key)
+          # that the sensor doesn't speak.
           prometheusUrl: ""
           # Optional bearer token; ignored when empty. Wire to a Secret
-          # if the data source enforces auth.
+          # whose `token` key holds the `glsa_*` value.
           bearerTokenSecret: ""
           # Total VRAM on the GPU host. Used to compute "next model fits
           # with 2GB cushion" decisions. 32GB matches the .240 RTX 5090.
