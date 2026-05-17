@@ -93,6 +93,10 @@ jobs:
             context: src/specialists/nc-gift-finder
             build-args: |
               SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
+          - name: nc-best-deals
+            context: src/specialists/nc-best-deals
+            build-args: |
+              SPECIALIST_BASE=ghcr.io/stephenwagner-grafana/observibelity-specialist-base:latest
           - name: nc-fraud-detector
             context: src/specialists/nc-fraud-detector
             build-args: |
@@ -177,6 +181,14 @@ jobs:
               TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
           - name: navigate
             context: src/tools/navigate
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: verify_inventory
+            context: src/tools/verify_inventory
+            build-args: |
+              TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
+          - name: query_skus_latest
+            context: src/tools/query_skus_latest
             build-args: |
               TOOL_BASE=ghcr.io/stephenwagner-grafana/observibelity-tool-base:latest
           # ---- Phase 2: Support Bot tools -----------------------------

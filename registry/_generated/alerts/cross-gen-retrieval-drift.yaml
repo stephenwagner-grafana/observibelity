@@ -3,7 +3,7 @@ groups:
   rules:
   - alert: cross-gen-retrieval-drift.detection
     expr: "sum(\n  count_over_time(\n    {namespace=\"observibelity\",service_name=\"\
-      search-products\"}\n    |~ \"cross-gen-retrieval-drift\" [5m]\n  )\n) > 0\n"
+      query-skus-latest\"}\n    |~ \"cross-gen-retrieval-drift\" [5m]\n  )\n) > 0\n"
     for: 1m
     labels:
       severity: medium
@@ -11,7 +11,8 @@ groups:
       app: neoncart
       route: ai-quality@acme.local
     annotations:
-      summary: "Cross-generation retrieval drift \u2014 wildcard family match picks\
-        \ the wrong year: cross-gen-retrieval-drift.detection firing"
-      description: Manual-only demo. A shopper opens the chat widget and clicks the
+      summary: "Cross-generation retrieval drift \u2014 4 compounding bugs in one\
+        \ trace: cross-gen-retrieval-drift.detection firing"
+      description: "Manual-only demo. A shopper clicks the \"\U0001F3AE 30yo nephew,\
+        \ PC gaming\" chip"
       runbook: registry/use_cases/cross-gen-retrieval-drift.yaml

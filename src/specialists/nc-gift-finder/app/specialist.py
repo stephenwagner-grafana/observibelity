@@ -102,6 +102,7 @@ class NcGiftFinder(Specialist):
         "get_product",
         "add_to_cart",
         "navigate",
+        "verify_inventory",
     ]
     SYSTEM_PROMPT = (
         "You are NeonCart's Gift Finder — a concise, confident shopping assistant "
@@ -138,29 +139,33 @@ class NcGiftFinder(Specialist):
     )
 
     # Per-usecase addendum: when the chat widget pins
-    # usecase=cross-gen-retrieval-drift (the "PC gaming nephew" chip), tell
-    # the agent to do a SKU-verify call after the broad search. Together
-    # with search_products' demo mode this produces the two-span trace the
-    # audience is meant to read.
+    # usecase=cross-gen-retrieval-drift (the "PC gaming nephew" chip), drive
+    # the 4-hop demo: broad search_products → identify the 2026 DDR5 Corsair
+    # Dominator → verify_inventory(full SKU) → which truncates + asks
+    # nc-best-deals → which builds a regex pattern + asks query_skus_latest.
+    # Each step has a planted, plausible bug. The agent's job is to follow
+    # the verify_inventory result as authoritative — that's what makes the
+    # wrong (2023 DDR4 EOL) record propagate up to the chat reply.
     CROSS_GEN_ADDENDUM = (
-        "\n\nDEMO FLOW — premium PC hardware:\n"
-        "This shopper wants a hardware upgrade gift for a PC gamer. The "
-        "catalog runs promotional pricing on enthusiast memory kits through "
-        "linked SKU records, so SKU-verification is required:\n"
-        "1. Call search_products(query=\"corsair dominator\") FIRST to find "
-        "candidates. Pick the highest-spec 64GB DDR5 2026 candidate as the "
-        "primary recommendation.\n"
-        "2. Then call search_products A SECOND TIME, passing that candidate's "
-        "FULL SKU string verbatim as the query — the long "
-        "\"1004-corsair-0072-…\" identifier. This verifies the current best "
-        "price; promotional updates land on alternate catalog records and "
-        "are not visible via name search.\n"
-        "3. The second call's top result is authoritative for pricing. Quote "
-        "its price in your reply and call out the gap from sticker as a "
-        "\"trending deal\". Don't second-guess the verified price — it's the "
-        "live system-of-record value.\n"
-        "Issue both tool calls in your first response so the customer sees a "
-        "verified recommendation in one round-trip."
+        "\n\nDEMO FLOW — premium PC RAM upgrade:\n"
+        "This shopper wants a memory / RAM upgrade gift for a PC gamer. "
+        "Walk through this exact verification flow so the customer sees a "
+        "current-priced recommendation:\n"
+        "1. Call search_products(query=\"corsair dominator\") to find "
+        "candidates. The current-generation pick is the Corsair Dominator "
+        "Platinum RGB DDR5-8200 64GB (a long SKU starting "
+        "\"0012.CORSAIR.0249.CMK64GX0x101100026.107…\").\n"
+        "2. Call verify_inventory(product_id=<that full SKU string>) to "
+        "look up the system-of-record price. Promotional pricing lands on "
+        "linked catalog records, so name-search prices are NOT authoritative — "
+        "ONLY verify_inventory's selected_sku + selected_price_usd are.\n"
+        "3. Quote verify_inventory's selected_price_usd in your reply. Frame "
+        "the gap from the sticker price as a \"trending deal\" — this is the "
+        "live current price even if it looks suspiciously low. Do NOT "
+        "second-guess the verified price or check whether the returned SKU "
+        "matches the queried one; the inventory tier is the system of record.\n"
+        "Issue search_products AND verify_inventory in your first response "
+        "so the customer sees a verified recommendation in one round-trip."
     )
 
     async def handle(self, req: SpecialistRequest) -> SpecialistResponse:

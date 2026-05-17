@@ -1,0 +1,17 @@
+{
+  "_source": "registry/use_cases/cross-gen-retrieval-drift.yaml",
+  "name": "cross-gen-retrieval-drift.truncation_too_aggressive",
+  "kind": "rule",
+  "severity": "medium",
+  "expression": "span.name == \"tool.verify_inventory\"\nand span.attributes[\"ai_o11y.usecase\"] == \"cross-gen-retrieval-drift\"\nand span.attributes[\"verify.truncation_ratio\"] != null\nand span.attributes[\"verify.truncation_ratio\"] < 0.5\n",
+  "tags": [
+    "use_case:cross-gen-retrieval-drift",
+    "app:neoncart",
+    "archetype:trace-and-fix",
+    "phase:2"
+  ],
+  "params": {
+    "target": "trace",
+    "tool": "verify_inventory"
+  }
+}

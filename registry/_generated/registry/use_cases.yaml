@@ -77,15 +77,15 @@ use_cases:
   has_slo: true
   source: registry/use_cases/cost-anomaly-per-user.yaml
 - name: cross-gen-retrieval-drift
-  title: "Cross-generation retrieval drift \u2014 wildcard family match picks the\
-    \ wrong year"
+  title: "Cross-generation retrieval drift \u2014 4 compounding bugs in one trace"
   app: neoncart
   phase: 2
   centerpiece: false
   archetype: trace-and-fix
-  description: Manual-only demo. A shopper opens the chat widget and clicks the
+  description: "Manual-only demo. A shopper clicks the \"\U0001F3AE 30yo nephew, PC\
+    \ gaming\" chip"
   scenario_count: 0
-  evaluator_count: 1
+  evaluator_count: 2
   alert_count: 1
   has_slo: false
   source: registry/use_cases/cross-gen-retrieval-drift.yaml

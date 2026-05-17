@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nc-best-deals"
+version = "0.2.0"
+description = "NeonCart best-deals SKU lookup specialist."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "ObserVIBElity contributors" }]
+dependencies = [
+  "observibelity-specialist-base==0.2.0",
+  # Direct imports beyond the base — kept explicit for `pip install -e .` flows.
+  "opentelemetry-api>=1.27",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "respx>=0.21",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

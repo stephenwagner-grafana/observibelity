@@ -372,7 +372,10 @@ specialists:
     tool_allowlist: [search_products, get_product, get_order_history, get_inventory, place_order, add_to_cart, navigate]
   - name: nc-gift-finder
     replicas: 1
-    tool_allowlist: [search_products, get_product, add_to_cart, navigate]
+    tool_allowlist: [search_products, get_product, add_to_cart, navigate, verify_inventory]
+  - name: nc-best-deals
+    replicas: 1
+    tool_allowlist: [query_skus_latest]
   - name: nc-fraud-detector
     replicas: 1
     tool_allowlist: [get_order_history, geo_lookup]
@@ -442,6 +445,12 @@ tools:
   - name: navigate
     replicas: 1
     backing_tables: []
+  - name: verify_inventory
+    replicas: 1
+    backing_tables: []
+  - name: query_skus_latest
+    replicas: 1
+    backing_tables: [catalog_items]
   # ---- Phase 2: Support Bot ---------------------------------------------
   - name: kb_search
     replicas: 2

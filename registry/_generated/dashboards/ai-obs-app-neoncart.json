@@ -2,39 +2,35 @@
   "apiVersion": "v1",
   "kind": "Dashboard",
   "metadata": {
-    "name": "{{ name }}-leaderboard",
-    "archetype": "leaderboard"
+    "name": "{{ name }}-trace-and-fix",
+    "archetype": "trace-and-fix"
   },
   "panels": [
     {
       "id": 1,
-      "title": "Top 10 by {{ rank_by }} grouped by {{ group_by }}",
-      "type": "bargauge",
+      "title": "Traces for {{ name }}",
+      "type": "table",
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "tempo",
+        "uid": "tempo"
       },
       "targets": [
         {
-          "expr": "topk(10, sum by ({{ group_by }}) ({{ rank_by }}{usecase=\"{{ name }}\"}))",
-          "legendFormat": "{{ '{{' }} {{ group_by }} {{ '}}' }}",
-          "refId": "A"
+          "queryType": "traceqlSearch",
+          "query": "{ resource.ai_o11y.usecase = \"{{ name }}\" && status = error }",
+          "limit": 25
         }
       ],
-      "options": {
-        "orientation": "horizontal",
-        "displayMode": "gradient"
-      },
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 12,
-        "h": 10
+        "w": 24,
+        "h": 8
       }
     },
     {
       "id": 2,
-      "title": "{{ rank_by }} trend over 24h",
+      "title": "Error rate for {{ name }} (per 5m)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -42,69 +38,47 @@
       },
       "targets": [
         {
-          "expr": "sum by ({{ group_by }}) (rate({{ rank_by }}{usecase=\"{{ name }}\"}[30m]))",
-          "legendFormat": "{{ '{{' }} {{ group_by }} {{ '}}' }}",
+          "expr": "sum(rate(ai_o11y_usecase_errors_total{usecase=\"{{ name }}\"}[5m]))",
+          "legendFormat": "errors/sec",
           "refId": "A"
         }
       ],
       "gridPos": {
-        "x": 12,
-        "y": 0,
+        "x": 0,
+        "y": 8,
         "w": 12,
-        "h": 10
+        "h": 8
       }
     },
     {
       "id": 3,
-      "title": "Regression detector (current vs {{ baseline_window }} baseline)",
-      "type": "stat",
+      "title": "Top error patterns for {{ name }}",
+      "type": "table",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "targets": [
         {
-          "expr": "(sum by ({{ group_by }}) (rate({{ rank_by }}{usecase=\"{{ name }}\"}[15m])) / sum by ({{ group_by }}) (avg_over_time({{ rank_by }}{usecase=\"{{ name }}\"}[{{ baseline_window }}]))) - 1",
-          "legendFormat": "{{ '{{' }} {{ group_by }} {{ '}}' }}",
+          "expr": "topk(10, sum by (error_pattern) (rate(ai_o11y_usecase_errors_total{usecase=\"{{ name }}\"}[15m])))",
+          "format": "table",
           "refId": "A"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": -0.15
-              },
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          }
-        }
-      },
       "gridPos": {
-        "x": 0,
-        "y": 10,
-        "w": 24,
-        "h": 6
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
       }
     }
   ],
   "uid": "ai-obs-app-neoncart",
-  "title": "NeonCart \u2014 App Overview (quality trend row)",
+  "title": "NeonCart \u2014 App Overview",
   "tags": [
     "ai-observability",
     "app:neoncart",
-    "archetype:leaderboard",
-    "use_case:quality-trend"
+    "archetype:trace-and-fix",
+    "use_case:cross-gen-retrieval-drift"
   ]
 }

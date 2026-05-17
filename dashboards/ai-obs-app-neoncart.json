@@ -4226,6 +4226,382 @@
       "title": "🚨 DB errors — the smoking gun (Loki tail)",
       "type": "logs",
       "transparent": false
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 97
+      },
+      "id": 29,
+      "panels": [],
+      "title": "🛒 Retrieval drift — cross-gen story",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "grafanacloud-traces"
+      },
+      "description": "Each row is one `tool.query_skus_latest` span. The four candidate SKUs look near-identical at a glance — eye-scan to the tail of each row to spot the year drift (e.g. `…DDR4.08.2023` vs `…DDR5.01.2026`). Candidate 1 (red, bold) is the one we wrongly picked; the Year mismatch? column is the smoking gun. Click the Trace ID to walk the full span tree.",
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 98
+      },
+      "id": 30,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Start time"
+          }
+        ]
+      },
+      "pluginVersion": "13.1.0-25042293542",
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "grafanacloud-traces"
+          },
+          "filters": [],
+          "instant": false,
+          "limit": 50,
+          "query": "{ name = \"tool.query_skus_latest\" } | select(span.retrieval.queried_product_id, span.retrieval.candidate.1, span.retrieval.candidate.2, span.retrieval.candidate.3, span.retrieval.candidate.4, span.retrieval.selected_sku, span.retrieval.selected_price_usd, span.retrieval.year_mismatch)",
+          "queryType": "traceql",
+          "range": true,
+          "refId": "A",
+          "tableType": "spans"
+        }
+      ],
+      "title": "Retrieval drift — 4 near-identical SKUs, eye-scan to the year",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Duration": true,
+              "Trace Name": true,
+              "Trace Service": true,
+              "Trace name": true,
+              "Trace service": true,
+              "traceIdHidden": true,
+              "spanID": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Start time": 0,
+              "traceID": 1,
+              "Trace ID": 1,
+              "retrieval.queried_product_id": 2,
+              "retrieval.candidate.1": 3,
+              "retrieval.candidate.2": 4,
+              "retrieval.candidate.3": 5,
+              "retrieval.candidate.4": 6,
+              "retrieval.selected_sku": 7,
+              "retrieval.selected_price_usd": 8,
+              "retrieval.year_mismatch": 9
+            },
+            "renameByName": {
+              "retrieval.queried_product_id": "Queried product.id",
+              "retrieval.candidate.1": "Candidate 1 (picked ✗)",
+              "retrieval.candidate.2": "Candidate 2",
+              "retrieval.candidate.3": "Candidate 3",
+              "retrieval.candidate.4": "Candidate 4",
+              "retrieval.selected_sku": "Selected SKU",
+              "retrieval.selected_price_usd": "Price (USD)",
+              "retrieval.year_mismatch": "Year mismatch?",
+              "traceID": "Trace ID",
+              "Start time": "Start"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false,
+            "minWidth": 120
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Trace ID"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Start"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Queried product.id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Candidate 1 (picked ✗)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 340
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#EF4444",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#EF4444",
+                      "value": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellHoverOptions",
+                "value": {
+                  "type": "default"
+                }
+              },
+              {
+                "id": "custom.cellTextStyle",
+                "value": {
+                  "bold": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Candidate 2"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Candidate 3"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Candidate 4"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Selected SKU"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Price (USD)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F59E0B",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#F59E0B",
+                      "value": null
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Year mismatch?"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "false": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "FALSE"
+                      },
+                      "true": {
+                        "color": "red",
+                        "index": 1,
+                        "text": "TRUE"
+                      }
+                    },
+                    "type": "value"
+                  },
+                  {
+                    "options": {
+                      "0": {
+                        "color": "green",
+                        "index": 2,
+                        "text": "FALSE"
+                      },
+                      "1": {
+                        "color": "red",
+                        "index": 3,
+                        "text": "TRUE"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "type": "table",
+      "transparent": false
     }
   ],
   "refresh": "30s",

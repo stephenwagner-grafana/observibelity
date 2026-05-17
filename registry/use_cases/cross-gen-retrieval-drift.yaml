@@ -1,31 +1,45 @@
 name: cross-gen-retrieval-drift
-title: "Cross-generation retrieval drift — wildcard family match picks the wrong year"
+title: "Cross-generation retrieval drift — 4 compounding bugs in one trace"
 app: neoncart
 phase: 2
 centerpiece: false
 archetype: trace-and-fix
 description: |
-  Manual-only demo. A shopper opens the chat widget and clicks the
-  "30 yo nephew, big into PC gaming" suggestion chip. The gift-finder
-  agent retrieves a 2026 DDR5 Corsair Dominator, then makes a second
-  search_products call passing the full 2026 SKU as the query to "verify
-  pricing" (a believable token-economy / family-matching pattern). The
-  tool truncates the SKU at the family delimiter, runs a wildcard SQL
-  (`sku LIKE '%64GB.DDR%'`), ranks by historical_popularity, and returns
-  a 2023 DDR4 record at the top. The agent then writes a recommendation
-  card rationalising the DDR4-2023 price as a "trending deal" — sounds
-  plausible, but the AI silently inherited the wrong generation's
-  context. The audience can read the whole story in one trace:
-    Span 1: search_products(query="ram") → 4 normal hits incl. the 2026 DDR5
-    Span 2: search_products(query="1004-corsair-0072-64GB.DDR5-2026-…")
-            → normalized_query="%64GB.DDR%" → 4 candidates → DDR4-2023 wins
-    Span 3: LLM rationalises DDR4-2023 pricing as a discount on DDR5
-  The fix is real-world too: tighten retrieval normalisation, never
-  rank by historical_popularity across generations, or anchor on the
-  literal SKU when the caller passed one.
+  Manual-only demo. A shopper clicks the "🎮 30yo nephew, PC gaming" chip
+  in the chat widget. The gift-finder agent identifies the current
+  Corsair Dominator Platinum RGB DDR5-8200 64GB (product.id
+  "0012.CORSAIR.0249.CMK64GX0x101100026.107.BS38_TT28_69HB_33BU.82200.DDR5.01.2026")
+  as the gift candidate, then runs through a four-hop verification chain
+  where three independent, plausible bugs compound to surface a 2023
+  end-of-life DDR4 record at $199.99 as the "trending deal":
 
-# Manual only. The bug is gated server-side: /chat ignores this usecase
-# when traffic_origin=continuous (loadgen), so k6 cannot trigger it.
+    1. tool.search_products       — name search; finds the right 2026 row.
+    2. tool.verify_inventory      — LLM-using SKU-forwarding shim. The
+       system prompt asks the model to TRUNCATE the SKU to 32 chars +
+       "..." to fit a downstream bit budget. That truncation is bug #1.
+    3. specialist.nc-best-deals   — receives the truncated SKU. Its
+       system prompt tells the LLM to treat every `.` in the SKU as a
+       POSIX digit class `[0-9]` when building the SQL pattern. That
+       reinterpretation is bug #2.
+    4. tool.query_skus_latest     — runs the regex query against
+       `catalog_items` filtered by `is_latest_SKU_for_product = TRUE`.
+       Four near-identical SKUs come back instead of one because the
+       2023 EOL row's flag was never unflagged when the 2026 dropped.
+       That stale flag is bug #3. nc-best-deals picks index 0 — also a
+       bug, but secondary.
+
+  Final trace surface: same span tree the audience reads top to bottom.
+  Each span carries the audience-readable attribute that names its bug:
+  `verify.original_sku` / `verify.truncated_sku` for hop 2,
+  `nc.truncated_sku` + the dot-as-digit-class system prompt for hop 3,
+  `retrieval.candidate.1..4` / `retrieval.selected_year` /
+  `retrieval.queried_year` / `retrieval.year_mismatch` /
+  `retrieval.is_latest_SKU_for_product` for hop 4. The LLM-written reply
+  cites $199.99 confidently because every hop nodded the wrong record
+  through.
+
+# Manual only — k6 cannot trigger this. /chat falls back to the default
+# usecase when traffic_origin=continuous.
 scenarios: []
 
 evaluators:
@@ -33,14 +47,23 @@ evaluators:
     kind: rule
     severity: high
     spec: |
-      span.attributes["ai_o11y.usecase"] == "cross-gen-retrieval-drift"
-      and span.attributes["retrieval.query_year"] != null
-      and span.attributes["retrieval.selected_year"] != null
-      and span.attributes["retrieval.query_year"]
-          != span.attributes["retrieval.selected_year"]
+      span.name == "tool.query_skus_latest"
+      and span.attributes["ai_o11y.usecase"] == "cross-gen-retrieval-drift"
+      and span.attributes["retrieval.year_mismatch"] == true
     params:
       target: trace
-      tool: search_products
+      tool: query_skus_latest
+  - name: cross-gen-retrieval-drift.truncation_too_aggressive
+    kind: rule
+    severity: medium
+    spec: |
+      span.name == "tool.verify_inventory"
+      and span.attributes["ai_o11y.usecase"] == "cross-gen-retrieval-drift"
+      and span.attributes["verify.truncation_ratio"] != null
+      and span.attributes["verify.truncation_ratio"] < 0.5
+    params:
+      target: trace
+      tool: verify_inventory
 
 dashboard:
   uid: ai-obs-app-neoncart
@@ -54,7 +77,7 @@ alerts:
     condition: |
       sum(
         count_over_time(
-          {namespace="observibelity",service_name="search-products"}
+          {namespace="observibelity",service_name="query-skus-latest"}
           |~ "cross-gen-retrieval-drift" [5m]
         )
       ) > 0
@@ -65,22 +88,24 @@ alerts:
 demo:
   do: |
     Open neoncart.wombatwags.com → click "Chat with NeonCart" →
-    click the "🎮 30 yo nephew, big into PC gaming" suggestion chip.
-    The card the bot returns will be a Corsair Dominator at an oddly
-    low price — that's the trigger.
+    click the "🎮 30yo nephew, PC gaming" chip. The agent's reply will
+    quote a Corsair Dominator at $199.99 as a "trending deal".
   signal: |
-    Tempo trace has TWO search_products spans tagged
-    ai_o11y.usecase=cross-gen-retrieval-drift. Second span carries
-    retrieval.query_year=2026, retrieval.selected_year=2023,
-    retrieval.normalized_query="%64GB.DDR%",
-    retrieval.candidates (4 SKUs), retrieval.selection_strategy=
-    "historical_popularity". The
-    cross-gen-retrieval-drift.year_mismatch evaluator fails on that
-    span; the matching alert fires within ~1 min.
+    Tempo trace has FOUR spans tagged
+    ai_o11y.usecase=cross-gen-retrieval-drift: search_products (broad,
+    finds 2026 DDR5), verify_inventory (carries verify.original_sku +
+    verify.truncated_sku — the 32-char + "..." cut), nc-best-deals
+    (carries the dot-as-digit-class system prompt), query_skus_latest
+    (carries retrieval.candidate.1..4 + retrieval.selected_year=2023 +
+    retrieval.queried_year=2026 + retrieval.year_mismatch=true). The
+    dashboard panel "Retrieval drift — 4 near-identical SKUs" on
+    ai-obs-app-neoncart renders the four candidates with the picked
+    (2023 DDR4) row in red and the $199.99 price highlighted gold.
   sell: |
-    Retrieval ambiguity is the bug AI buyers fear most — fuzzy SKU
-    matching + popularity ranking quietly crossed product generations
-    and the agent's recommendation inherited the wrong price context.
-    One trace shows the truncation, the wildcard SQL, the ranking
-    choice, and the LLM's plausible-sounding rationalisation — the
-    kind of failure metrics alone never catch.
+    Three independent, plausible bugs — a token-budget prompt
+    truncation, an LLM treating "." as a regex digit class when
+    building SQL, and a stale `is_latest_SKU_for_product` flag on EOL
+    stock — compound to surface a 2023 product as the "current price"
+    for a 2026 query. One trace shows every step. The kind of failure
+    metrics alone never catch, and the kind of failure AI buyers fear
+    most.

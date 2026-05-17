@@ -3,7 +3,7 @@
   "name": "cross-gen-retrieval-drift.year_mismatch",
   "kind": "rule",
   "severity": "high",
-  "expression": "span.attributes[\"ai_o11y.usecase\"] == \"cross-gen-retrieval-drift\"\nand span.attributes[\"retrieval.query_year\"] != null\nand span.attributes[\"retrieval.selected_year\"] != null\nand span.attributes[\"retrieval.query_year\"]\n    != span.attributes[\"retrieval.selected_year\"]\n",
+  "expression": "span.name == \"tool.query_skus_latest\"\nand span.attributes[\"ai_o11y.usecase\"] == \"cross-gen-retrieval-drift\"\nand span.attributes[\"retrieval.year_mismatch\"] == true\n",
   "tags": [
     "use_case:cross-gen-retrieval-drift",
     "app:neoncart",
@@ -12,6 +12,6 @@
   ],
   "params": {
     "target": "trace",
-    "tool": "search_products"
+    "tool": "query_skus_latest"
   }
 }
