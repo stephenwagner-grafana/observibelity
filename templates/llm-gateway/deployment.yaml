@@ -51,6 +51,13 @@ spec:
               value: {{ .Values.llmGateway.providers.anthropic.enabled | quote }}
             - name: ANTHROPIC_DEFAULT_MODEL
               value: {{ .Values.llmGateway.providers.anthropic.model | default "claude-haiku-4-5-20251001" | quote }}
+            # Default-lane Claude sampling — see admission.py.
+            - name: CLAUDE_SAMPLE_BASE_RATE
+              value: {{ (default (dict) .Values.llmGateway.admission).claudeSampleBaseRate | default 0.10 | quote }}
+            - name: CLAUDE_SAMPLE_TIER_BASE
+              value: {{ (default (dict) .Values.llmGateway.admission).claudeSampleTierBase | default 40 | quote }}
+            - name: CLAUDE_SAMPLE_TIER_WIDTH
+              value: {{ (default (dict) .Values.llmGateway.admission).claudeSampleTierWidth | default 20 | quote }}
             - name: OLLAMA_ENABLED
               value: {{ .Values.llmGateway.providers.ollama.enabled | quote }}
             - name: OLLAMA_BASE_URL

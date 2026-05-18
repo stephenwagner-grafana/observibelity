@@ -202,6 +202,14 @@ llmGateway:
           - granite3.1-dense:8b                       # 8B IBM Granite dense
           - mistral-nemo:12b                          # 12B Mistral Nemo
           - qwen2.5:14b                               # 14B Qwen2.5
+  # Default-lane admission control (see src/llm-gateway/app/admission.py).
+  # P(target=Claude) = claudeSampleBaseRate while default-lane spend is
+  # below claudeSampleTierBase; then divided by 10 per claudeSampleTierWidth
+  # of additional spend. Halved 2026-05-18 from 0.10 → 0.05 to cut bill.
+  admission:
+    claudeSampleBaseRate: 0.05
+    claudeSampleTierBase: 40
+    claudeSampleTierWidth: 20
   # Sigil — Grafana Cloud's AI Observability plugin ingest (Conversations,
   # Analytics, Tools, Evaluation views). The plugin reads from a regional
   # Sigil ingest endpoint that is DIFFERENT from the user's general OTLP
