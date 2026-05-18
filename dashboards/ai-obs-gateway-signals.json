@@ -1,0 +1,546 @@
+{
+  "uid": "ai-obs-gateway-signals",
+  "title": "AI o11y — Gateway Signals",
+  "tags": ["ai-observability"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {"from": "now-3h", "to": "now"},
+  "timezone": "",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource_prom",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {"selected": true, "text": "grafanacloud-stephenwagner-prom", "value": "grafanacloud-prom"},
+        "hide": 0,
+        "skipUrlSync": false,
+        "includeAll": false,
+        "multi": false,
+        "options": []
+      },
+      {
+        "name": "datasource_logs",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
+        "current": {"selected": true, "text": "grafanacloud-stephenwagner-logs", "value": "grafanacloud-logs"},
+        "hide": 0,
+        "skipUrlSync": false,
+        "includeAll": false,
+        "multi": false,
+        "options": []
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard",
+        "iconColor": "rgba(0, 211, 255, 1)"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 10,
+      "type": "row",
+      "title": "🚀 Top-line — gateway throughput right now",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Submissions / min",
+      "description": "Every request the gateway saw in the last 5m, normalized to per-minute. Includes both admits and denies.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(llm_gateway_admission_total[5m])) * 60",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Admit %",
+      "description": "Share of submissions the gateway accepted (vs. denied for saturation/sampling/budget).",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 1,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "orange", "value": 50},
+              {"color": "green", "value": 80}
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "100 * sum(rate(llm_gateway_admission_total{decision=\"admit\"}[5m])) / sum(rate(llm_gateway_admission_total[5m]))",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Deny %",
+      "description": "Inverse of Admit %. Currently ~60% — most submissions are shed at the door.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 1,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 20},
+              {"color": "red", "value": 50}
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "100 * sum(rate(llm_gateway_admission_total{decision=\"deny\"}[5m])) / sum(rate(llm_gateway_admission_total[5m]))",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Tokens / min (in+out)",
+      "description": "Total token throughput across all providers and directions. Uses gen_ai_client_token_usage_total — the counter that's currently emitted (backend migration to histogram is pending; demo-safe path is to keep querying the counter).",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "decimals": 1,
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum(rate(gen_ai_client_token_usage_total[5m])) * 60",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "🌊 Flow over time — submissions by decision × provider",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "panels": []
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Submissions / sec (stacked) — decision × provider",
+      "description": "How the gateway is partitioning load. Admits are good; denies are the gateway protecting downstream.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {"mode": "normal", "group": "A"}
+          },
+          "decimals": 2,
+          "unit": "reqps"
+        },
+        "overrides": [
+          {"matcher": {"id": "byFrameRefID", "options": "A"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#10B981"}}]},
+          {"matcher": {"id": "byFrameRefID", "options": "B"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#3B82F6"}}]},
+          {"matcher": {"id": "byFrameRefID", "options": "C"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#EF4444"}}]},
+          {"matcher": {"id": "byFrameRefID", "options": "D"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#7F1D1D"}}]}
+        ]
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"ollama\"}[5m]))", "legendFormat": "admit · ollama", "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "sum(rate(llm_gateway_admission_total{decision=\"admit\",provider=\"anthropic\"}[5m]))", "legendFormat": "admit · anthropic", "refId": "B"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "sum(rate(llm_gateway_admission_total{decision=\"deny\",provider=\"ollama\"}[5m]))", "legendFormat": "deny · ollama", "refId": "C"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "sum(rate(llm_gateway_admission_total{decision=\"deny\",provider=\"anthropic\"}[5m]))", "legendFormat": "deny · anthropic", "refId": "D"}
+      ]
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "⏱️ Latency + waits",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14},
+      "panels": []
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "Caller wait — p50 / p95 / p99",
+      "description": "Time the caller spent blocked in the gateway (queue + admission). Histogram quantiles over llm_gateway_caller_wait_seconds.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 15},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "histogram_quantile(0.50, sum by (le) (rate(llm_gateway_caller_wait_seconds_bucket[5m])))", "legendFormat": "p50", "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "histogram_quantile(0.95, sum by (le) (rate(llm_gateway_caller_wait_seconds_bucket[5m])))", "legendFormat": "p95", "refId": "B"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "histogram_quantile(0.99, sum by (le) (rate(llm_gateway_caller_wait_seconds_bucket[5m])))", "legendFormat": "p99", "refId": "C"}
+      ]
+    },
+    {
+      "id": 32,
+      "type": "timeseries",
+      "title": "Operation duration — p50 / p95 / p99 by gen_ai.system",
+      "description": "End-to-end provider call latency from the gen_ai client histogram. Split by gen_ai_system so Ollama vs. Anthropic show separately.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 15},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 2,
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "histogram_quantile(0.50, sum by (le, gen_ai_system) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))", "legendFormat": "p50 · {{gen_ai_system}}", "refId": "A"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "histogram_quantile(0.95, sum by (le, gen_ai_system) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))", "legendFormat": "p95 · {{gen_ai_system}}", "refId": "B"},
+        {"datasource": {"type": "prometheus", "uid": "${datasource_prom}"}, "expr": "histogram_quantile(0.99, sum by (le, gen_ai_system) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))", "legendFormat": "p99 · {{gen_ai_system}}", "refId": "C"}
+      ]
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "🤖 Per-specialist activity",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 23},
+      "panels": []
+    },
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "Calls / min by specialist",
+      "description": "Per-specialist call rate from the operation-duration histogram count. nc-chatbot, sb-router, nc-gift-finder, etc.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 1,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist!=\"\"}[5m])) * 60",
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "type": "table",
+      "title": "Specialist leaderboard — calls/min (instant)",
+      "description": "Sortable leaderboard. Click the column header to rank by call rate.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto"},
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 30},
+              {"color": "red", "value": 60}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Value"},
+            "properties": [
+              {"id": "displayName", "value": "calls/min"},
+              {"id": "unit", "value": "short"},
+              {"id": "decimals", "value": 1},
+              {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "gradient"}},
+              {"id": "custom.align", "value": "left"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "ai_o11y_specialist"},
+            "properties": [{"id": "displayName", "value": "specialist"}]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{"displayName": "calls/min", "desc": true}]
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (ai_o11y_specialist) (rate(gen_ai_client_operation_duration_seconds_count{ai_o11y_specialist!=\"\"}[5m])) * 60",
+          "instant": true,
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "service_name": true,
+              "service_namespace": true,
+              "deployment_environment": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "row",
+      "title": "💰 Token economics — per-specialist throughput",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 40},
+      "panels": []
+    },
+    {
+      "id": 51,
+      "type": "timeseries",
+      "title": "Tokens / min by specialist × direction (stacked)",
+      "description": "Stacked tokens-per-minute, split by input/output and specialist. Uses gen_ai_client_token_usage_total — the counter currently emitted by the gateway. Backend migration counter → histogram is deferred until Tuesday; querying _total keeps the demo green.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 41},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {"mode": "normal", "group": "A"}
+          },
+          "decimals": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (ai_o11y_specialist, gen_ai_token_type) (rate(gen_ai_client_token_usage_total{ai_o11y_specialist!=\"\"}[5m])) * 60",
+          "legendFormat": "{{ai_o11y_specialist}} · {{gen_ai_token_type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "type": "row",
+      "title": "❌ Denial reasons",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 49},
+      "panels": []
+    },
+    {
+      "id": 61,
+      "type": "timeseries",
+      "title": "Denials / min by reason (stacked)",
+      "description": "What's getting shed at the door — saturation, sampling, budget exhausted, etc. From llm_gateway_admission_denied_total.",
+      "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 50},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {"mode": "normal", "group": "A"}
+          },
+          "decimals": 1,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "${datasource_prom}"},
+          "expr": "sum by (reason) (rate(llm_gateway_admission_denied_total[1m])) * 60",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

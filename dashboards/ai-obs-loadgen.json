@@ -1659,7 +1659,7 @@
             "lineWidth": 2,
             "pointSize": 0,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": false
           },
           "decimals": 2,
           "unit": "s"
