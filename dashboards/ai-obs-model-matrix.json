@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-model-matrix",
-  "title": "AI o11y — Model Matrix (which LLM fits which specialist)",
+  "title": "AI o11y \u2014 Model Matrix (which LLM fits which specialist)",
   "tags": [
     "ai-o11y",
     "models"
@@ -68,13 +68,13 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# 🎯 Model Matrix — which LLM is best for each specialist\n\nPairs every specialist (nc-chatbot, sb-router, nc-gift-finder, ...) against every model in the rotation to surface the **right model per job** by throughput, cost, and quality."
+        "content": "# \ud83c\udfaf Model Matrix \u2014 which LLM is best for each specialist\n\nPairs every specialist (nc-chatbot, sb-router, nc-gift-finder, ...) against every model in the rotation to surface the **right model per job** by throughput, cost, and quality."
       }
     },
     {
       "id": 100,
       "type": "row",
-      "title": "📊 Throughput — output tokens/min per (specialist × model)",
+      "title": "\ud83d\udcca Throughput \u2014 output tokens/min per (specialist \u00d7 model)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -87,7 +87,7 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "Output tokens/min — by specialist × model",
+      "title": "Output tokens/min \u2014 by specialist \u00d7 model",
       "description": "Output token generation rate, per minute. Higher = more throughput on this specialist+model pair.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
@@ -106,8 +106,8 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[5m])) * 60",
-          "legendFormat": "{{ai_o11y_specialist}} · {{gen_ai_response_model}}"
+          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[5m])) * 60",
+          "legendFormat": "{{ai_o11y_specialist}} \u00b7 {{gen_ai_response_model}}"
         }
       ],
       "fieldConfig": {
@@ -143,7 +143,7 @@
     {
       "id": 101,
       "type": "row",
-      "title": "💰 Cost per 1k calls by pair",
+      "title": "\ud83d\udcb0 Cost per 1k calls by pair",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -156,8 +156,8 @@
     {
       "id": 3,
       "type": "table",
-      "title": "Cost per 1k calls (USD) — by specialist × model",
-      "description": "USD spent per 1000 calls, by (specialist × model), last 1h. Lower is better. Excludes pairs with no traffic.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "title": "Cost per 1k calls (USD) \u2014 by specialist \u00d7 model",
+      "description": "USD spent per 1000 calls, by (specialist \u00d7 model), last 1h. Lower is better. Excludes pairs with no traffic.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
         "y": 15,
@@ -213,7 +213,7 @@
     {
       "id": 4,
       "type": "table",
-      "title": "Avg output tokens per call — by specialist × model",
+      "title": "Avg output tokens per call \u2014 by specialist \u00d7 model",
       "description": "How verbose each model is per specialist (output tokens divided by call count, last 1h). Useful to spot models that ramble or are too terse.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 12,
@@ -232,7 +232,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h])), 1)",
+          "expr": "sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\",gen_ai_token_type=\"output\"}[1h])) / clamp_min(sum by (ai_o11y_specialist, gen_ai_response_model) (increase(gen_ai_client_operation_duration_seconds_count{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[1h])), 1)",
           "instant": true,
           "format": "table"
         }
@@ -270,7 +270,7 @@
     {
       "id": 102,
       "type": "row",
-      "title": "✅ Evaluator pass-rate by (specialist × model)",
+      "title": "\u2705 Evaluator pass-rate by (specialist \u00d7 model)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -283,7 +283,7 @@
     {
       "id": 5,
       "type": "table",
-      "title": "Eval pass rate (%) — by specialist × model (1h)",
+      "title": "Eval pass rate (%) \u2014 by specialist \u00d7 model (1h)",
       "description": "Fraction of Sigil eval executions that passed for each pair, last 1h. Combine with throughput + cost to pick a model.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
@@ -302,7 +302,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{service_namespace=\"observibelity\",status=\"success\"}[1h])) / clamp_min(sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{service_namespace=\"observibelity\"}[1h])), 0.001)",
+          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{status=\"success\"}[1h])) / clamp_min(sum by (gen_ai_agent_name, gen_ai_request_model) (rate(sigil_eval_executions_total{}[1h])), 0.001)",
           "instant": true,
           "format": "table"
         }
@@ -359,7 +359,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model, evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\"}[1h]))",
+          "expr": "sum by (gen_ai_agent_name, gen_ai_request_model, evaluator) (increase(sigil_eval_executions_total{}[1h]))",
           "instant": true,
           "format": "table"
         }

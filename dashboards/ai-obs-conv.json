@@ -31,7 +31,7 @@
       }
     ]
   },
-  "description": "Conversational quality — refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
+  "description": "Conversational quality \u2014 refund-policy compliance, customer frustration, brand-voice drift. Three NeonCart conversation-shape signals.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -64,7 +64,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y — Conversations: refund / frustration / brand voice\n\n**Story:** Three qualitative conversation risks: refund-policy noise (are we offering refunds we shouldn't?), frustration empathy gap (are we ignoring upset customers?), and brand-voice drift (is the bot suddenly chattier than usual?).\n\n**Look for:** **refund mentions** climbing without a campaign behind them, **frustration-ignored %** > 30, and brand-drift dipping into negative territory."
+        "content": "# AI o11y \u2014 Conversations: refund / frustration / brand voice\n\n**Story:** Three qualitative conversation risks: refund-policy noise (are we offering refunds we shouldn't?), frustration empathy gap (are we ignoring upset customers?), and brand-voice drift (is the bot suddenly chattier than usual?).\n\n**Look for:** **refund mentions** climbing without a campaign behind them, **frustration-ignored %** > 30, and brand-drift dipping into negative territory."
       },
       "fieldConfig": {
         "defaults": {},
@@ -93,7 +93,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -236,7 +236,7 @@
           "refId": "A"
         }
       ],
-      "title": "💬 $ per conversation (last 1h)",
+      "title": "\ud83d\udcac $ per conversation (last 1h)",
       "type": "stat",
       "transparent": false
     },
@@ -250,7 +250,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "💸 Refund policy — are we offering refunds we shouldn't?",
+      "title": "\ud83d\udcb8 Refund policy \u2014 are we offering refunds we shouldn't?",
       "type": "row"
     },
     {
@@ -258,7 +258,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Fraction of nc-chatbot log lines (last 15m) that mention refund/return/policy. A noisy proxy for refund-policy chatter — yellow above 1%, red above 2%. Treat as a heads-up, not a verdict.",
+      "description": "Fraction of nc-chatbot log lines (last 15m) that mention refund/return/policy. A noisy proxy for refund-policy chatter \u2014 yellow above 1%, red above 2%. Treat as a heads-up, not a verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -315,13 +315,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(refund|return|policy)\" |~ \"nc-chatbot\" [15m])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"nc-chatbot\" [15m])) + 1)",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"sigil generation:\" |~ \"(?i)(refund|return|policy)\" |~ \"nc-chatbot\" [15m])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"nc-chatbot\" [15m])) + 1)",
           "legendFormat": "fail rate",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "💸 Refund-policy noise rate (15m)",
+      "title": "\ud83d\udcb8 Refund-policy noise rate (15m)",
       "type": "gauge",
       "transparent": false
     },
@@ -662,13 +662,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(refund|return)\" |~ \"nc-chatbot\" | regexp `\"user.id\":\\s*\"(?P<user_id>[^\"]+)\"` | user_id =~ \".+@(gmail|hotmail|yahoo)\\\\..+\" [5m])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"sigil generation:\" |~ \"(?i)(refund|return)\" |~ \"nc-chatbot\" | regexp `\"user.id\":\\s*\"(?P<user_id>[^\"]+)\"` | user_id =~ \".+@(gmail|hotmail|yahoo)\\\\..+\" [5m])))",
           "legendFormat": "{{user_id}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "💬 Refund/return mentions per session over time",
+      "title": "\ud83d\udcac Refund/return mentions per session over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -734,7 +734,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)refund\" |~ \"nc-chatbot\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"sigil generation:\" |~ \"(?i)refund\" |~ \"nc-chatbot\" [1h]))",
           "legendFormat": "violations",
           "refId": "A",
           "instant": false,
@@ -742,7 +742,7 @@
           "format": "time_series"
         }
       ],
-      "title": "🔢 Refund mentions in the last hour",
+      "title": "\ud83d\udd22 Refund mentions in the last hour",
       "type": "stat",
       "transparent": false
     },
@@ -756,7 +756,7 @@
       },
       "id": 5,
       "panels": [],
-      "title": "😤 Are we leaving frustrated customers hanging?",
+      "title": "\ud83d\ude24 Are we leaving frustrated customers hanging?",
       "type": "row"
     },
     {
@@ -1093,7 +1093,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"sigil generation:\" |~ \"(?i)(frustrat|angry|disappointed|annoyed|terrible|awful|worst|hate)\" [1h]))",
           "legendFormat": "frustration events",
           "queryType": "range",
           "refId": "A"
@@ -1103,13 +1103,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"sigil generation:\" |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help|let me)\" [1h]))",
           "legendFormat": "addressed",
           "queryType": "range",
           "refId": "B"
         }
       ],
-      "title": "😤 Frustration mentions vs empathetic responses",
+      "title": "\ud83d\ude24 Frustration mentions vs empathetic responses",
       "type": "timeseries",
       "transparent": false
     },
@@ -1175,13 +1175,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "1 - (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
+          "expr": "1 - (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"sigil generation:\" |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" |~ \"(?i)(apologize|sorry|understand|happy to help)\" [1h])) / (sum(count_over_time({container=\"llm-gateway\", namespace=\"observibelity\"} |~ \"(?i)(frustrat|angry|disappoin|annoyed|terrible|awful)\" [1h])) + 1))",
           "legendFormat": "unaddressed rate",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "⚠ % of frustrated customers the bot ignored",
+      "title": "\u26a0 % of frustrated customers the bot ignored",
       "type": "gauge",
       "transparent": false
     },
@@ -1195,7 +1195,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "📈 Brand voice drift — is the bot suddenly chattier than usual?",
+      "title": "\ud83d\udcc8 Brand voice drift \u2014 is the bot suddenly chattier than usual?",
       "type": "row"
     },
     {
@@ -1203,7 +1203,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "nc-chatbot output token rate as a proxy for brand-voice drift: current 30m rolling avg (blue), 6h baseline (green), and the -2σ lower bound (red dashed). Current dropping under the dashed red line = the bot suddenly got terser than its baseline — that's drift worth investigating.",
+      "description": "nc-chatbot output token rate as a proxy for brand-voice drift: current 30m rolling avg (blue), 6h baseline (green), and the -2\u03c3 lower bound (red dashed). Current dropping under the dashed red line = the bot suddenly got terser than its baseline \u2014 that's drift worth investigating.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1256,7 +1256,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "2σ lower bound"
+              "options": "2\u03c3 lower bound"
             },
             "properties": [
               {
@@ -1589,7 +1589,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "current",
@@ -1601,7 +1601,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
           "legendFormat": "baseline",
@@ -1613,15 +1613,15 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m])",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "-2σ",
+          "legendFormat": "-2\u03c3",
           "range": true,
           "refId": "C"
         }
       ],
-      "title": "📈 Output rate vs 6h baseline — drift fires below -2σ",
+      "title": "\ud83d\udcc8 Output rate vs 6h baseline \u2014 drift fires below -2\u03c3",
       "type": "timeseries",
       "transparent": false
     },
@@ -1630,7 +1630,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Single-number version of the chart on the left: current 30m output rate minus the -2σ lower bound. Negative (red) = drift is active right now. Positive (green) = within normal range.",
+      "description": "Single-number version of the chart on the left: current 30m output rate minus the -2\u03c3 lower bound. Negative (red) = drift is active right now. Positive (green) = within normal range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1687,7 +1687,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]))",
+          "expr": "avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[30m:1m]) - (avg_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]) - 2 * stddev_over_time((sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",ai_o11y_specialist=\"nc-chatbot\", gen_ai_system!=\"\"}[1m])))[6h:1m]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "drift",
@@ -1695,7 +1695,7 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Brand drift right now (negative = drifting)",
+      "title": "\ud83d\udea8 Brand drift right now (negative = drifting)",
       "type": "stat",
       "transparent": false
     },
@@ -1709,7 +1709,7 @@
       },
       "id": 11,
       "panels": [],
-      "title": "📦 Per-specialist scorecard — which agent's conversations look healthy?",
+      "title": "\ud83d\udce6 Per-specialist scorecard \u2014 which agent's conversations look healthy?",
       "type": "row"
     },
     {
@@ -2173,7 +2173,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h])) * 60",
+          "expr": "avg by (ai_o11y_specialist) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*|sb-.*\", gen_ai_system!=\"\"}[1h])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{ai_o11y_specialist}} avg output rate",
@@ -2181,7 +2181,7 @@
           "refId": "C"
         }
       ],
-      "title": "📦 Per-specialist signals — cost, latency, output rate (last 1h)",
+      "title": "\ud83d\udce6 Per-specialist signals \u2014 cost, latency, output rate (last 1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -2324,7 +2324,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Conversations (Refund, Frustration, Brand)",
+  "title": "AI o11y \u2014 Conversations (Refund, Frustration, Brand)",
   "uid": "ai-obs-conv",
   "weekStart": "",
   "folderUid": "obs-foundations"

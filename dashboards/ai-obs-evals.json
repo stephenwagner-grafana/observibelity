@@ -32,7 +32,7 @@
       }
     ]
   },
-  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the ℹ icon on any panel for what the numbers mean.",
+  "description": "How are the LLM evaluators doing? Toxicity is surfaced at the top because ANY fail is a P0; everything else is rolled into the all-evaluators status table and the firing-alerts list. Hover the \u2139 icon on any panel for what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -157,7 +157,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "🎯 Toxicity — any fail is a P0",
+      "title": "\ud83c\udfaf Toxicity \u2014 any fail is a P0",
       "type": "row"
     },
     {
@@ -165,7 +165,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Count of Sigil toxicity/hate evaluator runs that came back `status=\"failed\"` in the last hour. Any non-zero value opens a ticket — the threshold is one.",
+      "description": "Count of Sigil toxicity/hate evaluator runs that came back `status=\"failed\"` in the last hour. Any non-zero value opens a ticket \u2014 the threshold is one.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -218,7 +218,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",passed=\"false\"}[1h]))",
+          "expr": "sum(increase(sigil_eval_scores_total{evaluator=~\".*toxicity.*|.*hate.*\",passed=\"false\"}[1h]))",
           "legendFormat": "toxicity / hate failures",
           "refId": "A",
           "instant": false,
@@ -235,7 +235,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Top 10 Sigil evaluators ranked by `status=\"failed\"` runs in the last 24h. The longest bars are the evaluators tripping most often — investigate those first.",
+      "description": "Top 10 Sigil evaluators ranked by `status=\"failed\"` runs in the last 24h. The longest bars are the evaluators tripping most often \u2014 investigate those first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -599,7 +599,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (evaluator) (increase(sigil_eval_scores_total{service_namespace=\"observibelity\",passed=\"false\"}[24h])))",
+          "expr": "topk(10, sum by (evaluator) (increase(sigil_eval_scores_total{passed=\"false\"}[24h])))",
           "legendFormat": "{{evaluator}}",
           "instant": true,
           "range": false,
@@ -615,7 +615,7 @@
         "type": "grafana",
         "uid": "-- Grafana --"
       },
-      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes — there is no quiet threshold for this one.",
+      "description": "Current state of the toxicity alert rule. Fires on ANY single toxicity match within 5 minutes \u2014 there is no quiet threshold for this one.",
       "gridPos": {
         "h": 9,
         "w": 6,
@@ -651,7 +651,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Toxicity alert — is it firing?",
+      "title": "\u26a0 Toxicity alert \u2014 is it firing?",
       "type": "alertlist",
       "transparent": false
     },
@@ -660,7 +660,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-agent pass rate over the last hour — `status=\"success\"` toxicity runs divided by all toxicity runs, grouped by routed specialist (`gen_ai_agent_name`). Green band starts at 99.9%; anything below ~99% means that agent is fielding abusive traffic.",
+      "description": "Per-agent pass rate over the last hour \u2014 `status=\"success\"` toxicity runs divided by all toxicity runs, grouped by routed specialist (`gen_ai_agent_name`). Green band starts at 99.9%; anything below ~99% means that agent is fielding abusive traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -719,7 +719,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_agent_name) (\n  rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\",passed=\"true\"}[1h])\n)\n/\nclamp_min(\n  sum by (gen_ai_agent_name) (\n    rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*\"}[1h])\n  ), 0.0001\n)",
+          "expr": "sum by (gen_ai_agent_name) (\n  rate(sigil_eval_scores_total{evaluator=~\".*toxicity.*\",passed=\"true\"}[1h])\n)\n/\nclamp_min(\n  sum by (gen_ai_agent_name) (\n    rate(sigil_eval_scores_total{evaluator=~\".*toxicity.*\"}[1h])\n  ), 0.0001\n)",
           "legendFormat": "{{gen_ai_agent_name}}",
           "range": true,
           "refId": "A"
@@ -739,7 +739,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "📊 All evaluators — which one is firing most?",
+      "title": "\ud83d\udcca All evaluators \u2014 which one is firing most?",
       "type": "row"
     },
     {
@@ -747,7 +747,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Four lines, one per evaluator family — toxicity, hallucination, PII, prompt injection — Sigil failure rate per 5m. Stacked spikes show when multiple categories light up at once (often the same conversation).",
+      "description": "Four lines, one per evaluator family \u2014 toxicity, hallucination, PII, prompt injection \u2014 Sigil failure rate per 5m. Stacked spikes show when multiple categories light up at once (often the same conversation).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1077,7 +1077,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*toxicity.*|.*hate.*\",passed=\"false\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{evaluator=~\".*toxicity.*|.*hate.*\",passed=\"false\"}[5m]))",
           "legendFormat": "toxicity",
           "range": true,
           "refId": "A"
@@ -1087,7 +1087,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*hallucinat.*|.*ground.*|.*factual.*\",passed=\"false\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{evaluator=~\".*hallucinat.*|.*ground.*|.*factual.*\",passed=\"false\"}[5m]))",
           "legendFormat": "hallucination",
           "range": true,
           "refId": "B"
@@ -1097,7 +1097,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*pii.*|.*secret.*|.*leak.*\",passed=\"false\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{evaluator=~\".*pii.*|.*secret.*|.*leak.*\",passed=\"false\"}[5m]))",
           "legendFormat": "pii",
           "range": true,
           "refId": "C"
@@ -1107,7 +1107,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_scores_total{service_namespace=\"observibelity\",evaluator=~\".*injection.*|.*jailbreak.*|.*prompt.*\",passed=\"false\"}[5m]))",
+          "expr": "sum(rate(sigil_eval_scores_total{evaluator=~\".*injection.*|.*jailbreak.*|.*prompt.*\",passed=\"false\"}[5m]))",
           "legendFormat": "prompt injection",
           "range": true,
           "refId": "D"
@@ -1127,7 +1127,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "📋 Evaluator status table — runs, failures, failure rate (1h)",
+      "title": "\ud83d\udccb Evaluator status table \u2014 runs, failures, failure rate (1h)",
       "type": "row"
     },
     {
@@ -1135,7 +1135,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "One-glance evaluator scoreboard from `sigil_eval_executions_total`: total runs in the last hour, failures in the last hour, and failure rate per evaluator. Sorted by failures descending — top rows are the evaluators tripping most often.",
+      "description": "One-glance evaluator scoreboard from `sigil_eval_executions_total`: total runs in the last hour, failures in the last hour, and failure rate per evaluator. Sorted by failures descending \u2014 top rows are the evaluators tripping most often.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1647,7 +1647,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_executions_total{service_namespace=\"observibelity\"}[1h])))",
+          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_executions_total{}[1h])))",
           "legendFormat": "{{evaluator}}",
           "instant": true,
           "range": false,
@@ -1659,7 +1659,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_scores_total{service_namespace=\"observibelity\",passed=\"false\"}[1h])))",
+          "expr": "topk(20, sum by (evaluator) (increase(sigil_eval_scores_total{passed=\"false\"}[1h])))",
           "legendFormat": "{{evaluator}}",
           "instant": true,
           "range": false,
@@ -1667,7 +1667,7 @@
           "refId": "B"
         }
       ],
-      "title": "Evaluator scoreboard — total runs · failures · failure rate (1h)",
+      "title": "Evaluator scoreboard \u2014 total runs \u00b7 failures \u00b7 failure rate (1h)",
       "transformations": [
         {
           "id": "joinByField",
@@ -1723,7 +1723,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "🚨 Critical events — alerts firing + raw log stream",
+      "title": "\ud83d\udea8 Critical events \u2014 alerts firing + raw log stream",
       "type": "row"
     },
     {
@@ -1769,7 +1769,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠ Firing evaluator alerts (grouped by severity)",
+      "title": "\u26a0 Firing evaluator alerts (grouped by severity)",
       "type": "alertlist",
       "transparent": false
     },
@@ -1807,7 +1807,7 @@
           "refId": "A"
         }
       ],
-      "title": "Recent evaluator failures — raw event stream (Loki)",
+      "title": "Recent evaluator failures \u2014 raw event stream (Loki)",
       "type": "logs",
       "transparent": false
     }
@@ -1948,7 +1948,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Evaluators (Toxicity + Overview)",
+  "title": "AI o11y \u2014 Evaluators (Toxicity + Overview)",
   "uid": "ai-obs-evals",
   "weekStart": "",
   "folderUid": "obs-foundations"

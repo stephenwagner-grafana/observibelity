@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "{{ event }} — {{ employee }}"
+        "textFormat": "{{ event }} \u2014 {{ employee }}"
       }
     ]
   },
-  "description": "Is sensitive data leaking? Four families on one screen: PII pasted by users, redaction effectiveness, prompt-injection attempts, and confidential disclosures (Jordan from Finance usually parks top-1). Hover the ℹ icon on any panel for what the numbers mean.",
+  "description": "Is sensitive data leaking? Four families on one screen: PII pasted by users, redaction effectiveness, prompt-injection attempts, and confidential disclosures (Jordan from Finance usually parks top-1). Hover the \u2139 icon on any panel for what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -65,7 +65,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# AI o11y — PII, Injection, Disclosure\n\n**Story:** Three threats on one page — PII pastes, prompt injection, and confidential-info echo. Detection (left) is paired with mitigation (mask rate gauge) — the gap between them is your risk window.\n\n**Look for:** mask rate **<1.0** (PII slipped through), prompt-injection stat **>0**, and any user appearing in multiple leaderboards (concentrated risk)."
+        "content": "# AI o11y \u2014 PII, Injection, Disclosure\n\n**Story:** Three threats on one page \u2014 PII pastes, prompt injection, and confidential-info echo. Detection (left) is paired with mitigation (mask rate gauge) \u2014 the gap between them is your risk window.\n\n**Look for:** mask rate **<1.0** (PII slipped through), prompt-injection stat **>0**, and any user appearing in multiple leaderboards (concentrated risk)."
       },
       "fieldConfig": {
         "defaults": {},
@@ -177,7 +177,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "🔒 PII detection — what's being pasted and is it masked?",
+      "title": "\ud83d\udd12 PII detection \u2014 what's being pasted and is it masked?",
       "type": "row"
     },
     {
@@ -185,7 +185,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Stacked PII matches in 5m windows, split by kind: SSN, credit card, secret (passwords / API keys / bearer tokens). The total height is how much sensitive material the gateway saw — the bands tell you what kind.",
+      "description": "Stacked PII matches in 5m windows, split by kind: SSN, credit card, secret (passwords / API keys / bearer tokens). The total height is how much sensitive material the gateway saw \u2014 the bands tell you what kind.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -521,7 +521,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security)\" [5m]))",
           "legendFormat": "ssn",
           "queryType": "range",
           "refId": "A"
@@ -531,7 +531,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number|payment card)\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(credit card|cc[-_ ]?number|payment card)\" [5m]))",
           "legendFormat": "credit-card",
           "queryType": "range",
           "refId": "B"
@@ -541,13 +541,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key|bearer )\" [5m]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(password|api[ -]?key|bearer )\" [5m]))",
           "legendFormat": "secret",
           "queryType": "range",
           "refId": "C"
         }
       ],
-      "title": "📈 PII detected by kind over time",
+      "title": "\ud83d\udcc8 PII detected by kind over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -613,13 +613,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(redacted|XXXX|masked)\" [5m])) / (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m])) + 1)",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(redacted|XXXX|masked)\" [5m])) / (sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m])) + 1)",
           "legendFormat": "mask rate",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "📈 Is PII actually being redacted? (mask rate)",
+      "title": "\ud83d\udcc8 Is PII actually being redacted? (mask rate)",
       "type": "gauge",
       "transparent": false
     },
@@ -633,7 +633,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "🔥 Who's pasting PII? — per-employee leaderboards",
+      "title": "\ud83d\udd25 Who's pasting PII? \u2014 per-employee leaderboards",
       "type": "row"
     },
     {
@@ -1005,13 +1005,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "🔥 Top 10 employees pasting PII (1h)",
+      "title": "\ud83d\udd25 Top 10 employees pasting PII (1h)",
       "type": "barchart",
       "transparent": false
     },
@@ -1077,7 +1077,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(1, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
+          "expr": "topk(1, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}}",
           "refId": "A",
           "instant": false,
@@ -1085,7 +1085,7 @@
           "format": "time_series"
         }
       ],
-      "title": "👤 Who's leaking confidential info today? (top-1, 1h)",
+      "title": "\ud83d\udc64 Who's leaking confidential info today? (top-1, 1h)",
       "type": "stat",
       "transparent": false
     },
@@ -1094,7 +1094,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Top 10 employees ranked by confidential-disclosure matches in the last hour. Use this when the top-1 alone is not enough context — look for the long tail of who else is sharing internal-only material.",
+      "description": "Top 10 employees ranked by confidential-disclosure matches in the last hour. Use this when the top-1 alone is not enough context \u2014 look for the long tail of who else is sharing internal-only material.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1146,13 +1146,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
+          "expr": "topk(10, sum by (user_id) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(confidential|internal only|proprietary|trade secret)\" |~ \"\\\"ai_o11y.specialist\\\": \\\"(sb-.*)\\\"\" |~ \"\\\"user.id\\\": \\\".*@\" [1h])))",
           "legendFormat": "{{user_id}}",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "🔥 Top confidential-disclosers — leaderboard (1h)",
+      "title": "\ud83d\udd25 Top confidential-disclosers \u2014 leaderboard (1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -1166,7 +1166,7 @@
       },
       "id": 8,
       "panels": [],
-      "title": "🚨 Prompt injection + PII echo — single-event P0 territory",
+      "title": "\ud83d\udea8 Prompt injection + PII echo \u2014 single-event P0 territory",
       "type": "row"
     },
     {
@@ -1174,7 +1174,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of prompt-injection attempts in the last hour — \"ignore previous instructions\", \"disregard your system prompt\", etc. Yellow ≥5, red ≥20.",
+      "description": "Count of prompt-injection attempts in the last hour \u2014 \"ignore previous instructions\", \"disregard your system prompt\", etc. Yellow \u22655, red \u226520.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1231,7 +1231,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" [1h]))",
           "legendFormat": "injection events",
           "refId": "A",
           "instant": false,
@@ -1239,7 +1239,7 @@
           "format": "time_series"
         }
       ],
-      "title": "🚨 Prompt-injection attempts (1h)",
+      "title": "\ud83d\udea8 Prompt-injection attempts (1h)",
       "type": "stat",
       "transparent": false
     },
@@ -1248,7 +1248,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Count of gateway lines in the last hour where PII (SSN, credit card, password, API key) appeared in the model output. ANY non-zero value is a P0 — the bot just echoed sensitive material.",
+      "description": "Count of gateway lines in the last hour where PII (SSN, credit card, password, API key) appeared in the model output. ANY non-zero value is a P0 \u2014 the bot just echoed sensitive material.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1301,7 +1301,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [1h]))",
           "legendFormat": "pii echo events",
           "refId": "A",
           "instant": false,
@@ -1309,7 +1309,7 @@
           "format": "time_series"
         }
       ],
-      "title": "🚨 PII echoed back by the bot (1h) — P0 if > 0",
+      "title": "\ud83d\udea8 PII echoed back by the bot (1h) \u2014 P0 if > 0",
       "type": "stat",
       "transparent": false
     },
@@ -1650,7 +1650,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (rate({container=\"llm-gateway\"} |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" | json | ai_o11y_specialist!=\"\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (rate({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ignore previous|disregard.*instructions|forget your prior|override.*system|new system prompt)\" | json | ai_o11y_specialist!=\"\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}} injection",
           "queryType": "range",
           "refId": "A"
@@ -1660,13 +1660,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m]))",
+          "expr": "sum(rate({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\" [5m]))",
           "legendFormat": "pii echo",
           "queryType": "range",
           "refId": "B"
         }
       ],
-      "title": "📈 Prompt injection + PII echo over time",
+      "title": "\ud83d\udcc8 Prompt injection + PII echo over time",
       "type": "timeseries",
       "transparent": false
     },
@@ -1675,7 +1675,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Breakdown of PII-echo events in the last hour by kind (SSN, credit card, secret). Tells you which category the bot is leaking — credit cards trigger PCI escalation, secrets trigger ops paging.",
+      "description": "Breakdown of PII-echo events in the last hour by kind (SSN, credit card, secret). Tells you which category the bot is leaking \u2014 credit cards trigger PCI escalation, secrets trigger ops paging.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1723,7 +1723,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(ssn|social security)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security)\" [1h]))",
           "legendFormat": "ssn",
           "queryType": "range",
           "refId": "A"
@@ -1733,7 +1733,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(credit card|cc[-_ ]?number)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(credit card|cc[-_ ]?number)\" [1h]))",
           "legendFormat": "credit-card",
           "queryType": "range",
           "refId": "B"
@@ -1743,13 +1743,13 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"(?i)(password|api[ -]?key)\" [1h]))",
+          "expr": "sum(count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(password|api[ -]?key)\" [1h]))",
           "legendFormat": "secret",
           "queryType": "range",
           "refId": "C"
         }
       ],
-      "title": "🔒 PII echo — which kind is leaking? (1h)",
+      "title": "\ud83d\udd12 PII echo \u2014 which kind is leaking? (1h)",
       "type": "bargauge",
       "transparent": false
     },
@@ -1763,7 +1763,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "📜 Show me the actual log lines",
+      "title": "\ud83d\udcdc Show me the actual log lines",
       "type": "row"
     },
     {
@@ -1771,7 +1771,7 @@
         "type": "loki",
         "uid": "${datasource_loki}"
       },
-      "description": "Live Loki tail of every gateway line matching PII patterns. Values are last-4 redacted — but the surrounding context tells you who pasted what.",
+      "description": "Live Loki tail of every gateway line matching PII patterns. Values are last-4 redacted \u2014 but the surrounding context tells you who pasted what.",
       "gridPos": {
         "h": 11,
         "w": 14,
@@ -1795,12 +1795,12 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|token=|bearer )\"",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "📜 PII detection log stream (Loki)",
+      "title": "\ud83d\udcdc PII detection log stream (Loki)",
       "type": "logs",
       "transparent": false
     },
@@ -1833,12 +1833,12 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|bearer |confidential|internal only|ignore previous|disregard.*instructions)\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"sigil generation:\" |~ \"(?i)(ssn|social security|credit card|password|api[ -]?key|bearer |confidential|internal only|ignore previous|disregard.*instructions)\"",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "📜 Critical events log stream (Loki)",
+      "title": "\ud83d\udcdc Critical events log stream (Loki)",
       "type": "logs",
       "transparent": false
     }
@@ -1952,7 +1952,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — PII, Injection, Disclosure",
+  "title": "AI o11y \u2014 PII, Injection, Disclosure",
   "uid": "ai-obs-pii",
   "weekStart": "",
   "folderUid": "obs-foundations"

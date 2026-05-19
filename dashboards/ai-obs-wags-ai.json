@@ -589,7 +589,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(avg(nvidia_gpu_power_draw_watts{host=\"wags-ai\", name=\"NVIDIA_GeForce_RTX_5090\"}) / 1000 * $kwh_price * $pue + $gpu_amort_hourly) / (sum(rate(gen_ai_client_token_usage_sum{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[5m])) * 3600) * 1e6",
+          "expr": "(avg(nvidia_gpu_power_draw_watts{host=\"wags-ai\", name=\"NVIDIA_GeForce_RTX_5090\"}) / 1000 * $kwh_price * $pue + $gpu_amort_hourly) / (sum(rate(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[5m])) * 3600) * 1e6",
           "instant": true
         }
       ],
@@ -725,7 +725,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[5m]))",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[5m]))",
           "instant": true
         }
       ],
@@ -828,7 +828,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(increase(gen_ai_client_token_usage_sum{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"input\"}[$__range])) / 1e6 * $claude_in_per_mtok + sum(increase(gen_ai_client_token_usage_sum{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[$__range])) / 1e6 * $claude_out_per_mtok"
+          "expr": "sum(increase(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"input\"}[$__range])) / 1e6 * $claude_in_per_mtok + sum(increase(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[$__range])) / 1e6 * $claude_out_per_mtok"
         }
       ],
       "transparent": true
@@ -934,7 +934,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(avg(nvidia_gpu_power_draw_watts{host=\"wags-ai\", name=\"NVIDIA_GeForce_RTX_5090\"}) / 1000 * $kwh_price * $pue + $gpu_amort_hourly) / (sum(rate(gen_ai_client_token_usage_sum{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[5m])) * 3600) * 1e6",
+          "expr": "(avg(nvidia_gpu_power_draw_watts{host=\"wags-ai\", name=\"NVIDIA_GeForce_RTX_5090\"}) / 1000 * $kwh_price * $pue + $gpu_amort_hourly) / (sum(rate(gen_ai_client_token_usage_total{gen_ai_system=\"ollama\", service_namespace=\"observibelity\", gen_ai_token_type=\"output\"}[5m])) * 3600) * 1e6",
           "legendFormat": "wags-ai (all-in)"
         },
         {

@@ -28,11 +28,11 @@
           "queryType": "range",
           "refId": "Annotations"
         },
-        "textFormat": "cost anomaly — {{ employee }}"
+        "textFormat": "cost anomaly \u2014 {{ employee }}"
       }
     ]
   },
-  "description": "Where the LLM money is going. Read top-to-bottom: total spend → who's spending → which model → which specialist. Each panel description (hover the ℹ icon) explains exactly what the numbers mean.",
+  "description": "Where the LLM money is going. Read top-to-bottom: total spend \u2192 who's spending \u2192 which model \u2192 which specialist. Each panel description (hover the \u2139 icon) explains exactly what the numbers mean.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -74,7 +74,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -157,7 +157,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "💰 Headline — what are we spending overall?",
+      "title": "\ud83d\udcb0 Headline \u2014 what are we spending overall?",
       "type": "row"
     },
     {
@@ -165,7 +165,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Sum of gateway-attributed gen_ai costs (Ollama; Claude via the gateway) over the last 24 hours. **Anthropic spend goes via Sigil**, not the gateway, so this number undercounts the real bill by ~80%. For the canonical total see `AI o11y — FinOps + 450× local win`.",
+      "description": "Sum of gateway-attributed gen_ai costs (Ollama; Claude via the gateway) over the last 24 hours. **Anthropic spend goes via Sigil**, not the gateway, so this number undercounts the real bill by ~80%. For the canonical total see `AI o11y \u2014 FinOps + 450\u00d7 local win`.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -231,7 +231,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Gateway-attributed LLM spend (last 24h)",
+      "title": "\ud83d\udcb0 Gateway-attributed LLM spend (last 24h)",
       "type": "stat",
       "transparent": false
     },
@@ -298,7 +298,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])) > 100000)",
+          "expr": "count(sum by (user_id) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])) > 100000)",
           "legendFormat": "count",
           "refId": "A",
           "instant": false,
@@ -306,7 +306,7 @@
           "format": "time_series"
         }
       ],
-      "title": "⚠ Heavy users right now (>100k tokens in last hour)",
+      "title": "\u26a0 Heavy users right now (>100k tokens in last hour)",
       "type": "stat",
       "transparent": false
     },
@@ -315,7 +315,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by specialist (5m rate × 3600), stacked. Use to spot which specific agent (sb-router, nc-chatbot, etc.) caused a cost spike. Total stack height = current burn rate × 1h.",
+      "description": "**USD per hour** by specialist (5m rate \u00d7 3600), stacked. Use to spot which specific agent (sb-router, nc-chatbot, etc.) caused a cost spike. Total stack height = current burn rate \u00d7 1h.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -663,7 +663,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Spend rate per specialist — USD per hour",
+      "title": "\ud83d\udcb0 Spend rate per specialist \u2014 USD per hour",
       "type": "timeseries",
       "transparent": false
     },
@@ -672,7 +672,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Naive extrapolation: current cost-per-second × 86400. NOT a forecast — just 'if nothing changes, this is what tomorrow looks like.' Gateway-attributed only (excludes Anthropic via Sigil) — sanity-check against the 24h gateway total above.",
+      "description": "Naive extrapolation: current cost-per-second \u00d7 86400. NOT a forecast \u2014 just 'if nothing changes, this is what tomorrow looks like.' Gateway-attributed only (excludes Anthropic via Sigil) \u2014 sanity-check against the 24h gateway total above.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -738,7 +738,7 @@
           "refId": "A"
         }
       ],
-      "title": "🔮 Tomorrow's bill at today's burn rate",
+      "title": "\ud83d\udd2e Tomorrow's bill at today's burn rate",
       "type": "stat",
       "transparent": false
     },
@@ -752,7 +752,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "👤 Per-user — who is doing the spending?",
+      "title": "\ud83d\udc64 Per-user \u2014 who is doing the spending?",
       "type": "row"
     },
     {
@@ -816,7 +816,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])))",
+          "expr": "topk(10, sum by (user_id) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[1h])))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -851,7 +851,7 @@
           }
         }
       ],
-      "title": "🔥 Top spenders right now (tokens per hour)",
+      "title": "\ud83d\udd25 Top spenders right now (tokens per hour)",
       "type": "bargauge",
       "transparent": false
     },
@@ -1212,7 +1212,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_sum{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[$__range])) > 100000",
+          "expr": "sum by (user_id) (rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[5m])) * 3600\n  and on (user_id)\nsum by (user_id) (increase(gen_ai_client_token_usage_total{gen_ai_system!=\"\",service_namespace=\"observibelity\", user_id=~\".*@.*\"}[$__range])) > 100000",
           "format": "time_series",
           "instant": false,
           "range": true,
@@ -1220,7 +1220,7 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Heavy users over time — when did each one spike?",
+      "title": "\ud83d\udea8 Heavy users over time \u2014 when did each one spike?",
       "type": "timeseries",
       "transparent": false
     },
@@ -1234,7 +1234,7 @@
       },
       "id": 9,
       "panels": [],
-      "title": "🤖 Per-model — which model is the bill coming from?",
+      "title": "\ud83e\udd16 Per-model \u2014 which model is the bill coming from?",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -1243,7 +1243,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by provider (5m rate × 3600). Most traffic goes to Ollama (~$0/token); a small fraction to Claude. The visible gap is the entire demo's point: routing the right traffic to local models saves money. Red band is Anthropic spend; green is the rounding-error Ollama line.",
+      "description": "**USD per hour** by provider (5m rate \u00d7 3600). Most traffic goes to Ollama (~$0/token); a small fraction to Claude. The visible gap is the entire demo's point: routing the right traffic to local models saves money. Red band is Anthropic spend; green is the rounding-error Ollama line.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1591,7 +1591,7 @@
           "refId": "A"
         }
       ],
-      "title": "💸 Claude (paid) vs Ollama (free) — USD per hour",
+      "title": "\ud83d\udcb8 Claude (paid) vs Ollama (free) \u2014 USD per hour",
       "type": "timeseries",
       "transparent": false
     },
@@ -1658,7 +1658,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(\n  sum(increase(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[24h])) * 0.000001\n  + sum(increase(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[24h])) * 0.000005\n)",
+          "expr": "(\n  sum(increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[24h])) * 0.000001\n  + sum(increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[24h])) * 0.000005\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "savings USD",
@@ -1666,7 +1666,7 @@
           "refId": "A"
         }
       ],
-      "title": "💸 Money saved by routing Ollama instead of Haiku (last 24h)",
+      "title": "\ud83d\udcb8 Money saved by routing Ollama instead of Haiku (last 24h)",
       "type": "stat",
       "transparent": false
     },
@@ -1675,7 +1675,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Per-model cost over 24h. Claude Opus is usually #1 even though it serves <1% of traffic. Compare to the call counts in 'AI o11y — Best Models' — expensive ≠ most-used.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "Per-model cost over 24h. Claude Opus is usually #1 even though it serves <1% of traffic. Compare to the call counts in 'AI o11y \u2014 Best Models' \u2014 expensive \u2260 most-used.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2078,7 +2078,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "Same breakdown as the 24h table, but as a time series projected to **USD per hour** (5m rate × 3600). Shows when each model fired and how its hourly burn rate moved.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "Same breakdown as the 24h table, but as a time series projected to **USD per hour** (5m rate \u00d7 3600). Shows when each model fired and how its hourly burn rate moved.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2426,7 +2426,7 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Spend rate per model — USD per hour",
+      "title": "\ud83d\udcb0 Spend rate per model \u2014 USD per hour",
       "type": "timeseries",
       "transparent": false
     },
@@ -2788,7 +2788,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cost share — which model took what share of the bill? (24h)",
+      "title": "Cost share \u2014 which model took what share of the bill? (24h)",
       "type": "piechart",
       "transparent": false
     },
@@ -2802,7 +2802,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "📦 Per-specialist — which agent's traffic is most expensive?",
+      "title": "\ud83d\udce6 Per-specialist \u2014 which agent's traffic is most expensive?",
       "type": "row",
       "description": "Post-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical."
     },
@@ -2811,7 +2811,7 @@
         "type": "prometheus",
         "uid": "${datasource_prom}"
       },
-      "description": "**USD per hour** by the top-8 <use case, specialist> combinations (5m rate × 3600), stacked. Finer-grained than the headline panel — use to spot which use case driving which specialist is the most expensive. Colors group by specialist hue.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "description": "**USD per hour** by the top-8 <use case, specialist> combinations (5m rate \u00d7 3600), stacked. Finer-grained than the headline panel \u2014 use to spot which use case driving which specialist is the most expensive. Colors group by specialist hue.\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3235,14 +3235,14 @@
           "refId": "A"
         }
       ],
-      "title": "💰 Top 8 <use case, specialist> by spend rate — USD per hour",
+      "title": "\ud83d\udcb0 Top 8 <use case, specialist> by spend rate \u2014 USD per hour",
       "type": "timeseries",
       "transparent": false
     },
     {
       "id": 101,
       "type": "timeseries",
-      "title": "🤖 Bedrock eval-judge spend rate (USD/hour)",
+      "title": "\ud83e\udd16 Bedrock eval-judge spend rate (USD/hour)",
       "description": "Sigil's LLM-as-judge evaluators bypass the gateway and call Bedrock directly. This panel adds them to the total LLM bill.",
       "gridPos": {
         "x": 0,
@@ -3261,7 +3261,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"input\", provider=\"bedrock\"}[5m])) * 3600 / 1e6 * 1.0",
+          "expr": "sum(rate(sigil_eval_judge_tokens_total{ direction=\"input\", provider=\"bedrock\"}[5m])) * 3600 / 1e6 * 1.0",
           "legendFormat": "input ($1/M)"
         },
         {
@@ -3270,7 +3270,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"output\", provider=\"bedrock\"}[5m])) * 3600 / 1e6 * 5.0",
+          "expr": "sum(rate(sigil_eval_judge_tokens_total{ direction=\"output\", provider=\"bedrock\"}[5m])) * 3600 / 1e6 * 5.0",
           "legendFormat": "output ($5/M)"
         },
         {
@@ -3279,7 +3279,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
+          "expr": "(sum(rate(sigil_eval_judge_tokens_total{ direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{ direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
           "legendFormat": "total Bedrock $/hr"
         }
       ],
@@ -3308,7 +3308,7 @@
     {
       "id": 102,
       "type": "stat",
-      "title": "💰 Bedrock eval cost (month-to-date)",
+      "title": "\ud83d\udcb0 Bedrock eval cost (month-to-date)",
       "description": "30-day input+output cost from sigil_eval_judge_tokens_total at $1/M input, $5/M output. Uses **increase() over 30d** so pod restarts don't reset the headline (preferred over raw counter sum). Add to Anthropic-API spend for the total Claude bill.",
       "gridPos": {
         "x": 12,
@@ -3327,7 +3327,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(increase(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\",direction=\"input\",provider=\"bedrock\"}[30d])) * 1.0 + sum(increase(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\",direction=\"output\",provider=\"bedrock\"}[30d])) * 5.0) / 1e6"
+          "expr": "(sum(increase(sigil_eval_judge_tokens_total{direction=\"input\",provider=\"bedrock\"}[30d])) * 1.0 + sum(increase(sigil_eval_judge_tokens_total{direction=\"output\",provider=\"bedrock\"}[30d])) * 5.0) / 1e6"
         }
       ],
       "fieldConfig": {
@@ -3477,7 +3477,7 @@
     ]
   },
   "timezone": "",
-  "title": "AI o11y — Cost (per-user attribution)",
+  "title": "AI o11y \u2014 Cost (per-user attribution)",
   "uid": "ai-obs-cost",
   "weekStart": "",
   "folderUid": "obs-foundations"

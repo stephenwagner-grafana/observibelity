@@ -261,7 +261,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{gen_ai_system!=\"\", gen_ai_agent_name=~\"$agent\", gen_ai_token_type=\"output\"}[5m])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{gen_ai_system!=\"\", gen_ai_agent_name=~\"$agent\", gen_ai_token_type=\"output\"}[5m])) * 60",
           "refId": "A"
         }
       ],

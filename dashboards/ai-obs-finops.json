@@ -1,6 +1,6 @@
 {
   "uid": "ai-obs-finops",
-  "title": "AI o11y — FinOps + 450× local win",
+  "title": "AI o11y \u2014 FinOps + 450\u00d7 local win",
   "tags": [
     "ai-o11y",
     "cost",
@@ -69,14 +69,14 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# 💵 AI FinOps — total spend & the 450× local advantage\n\nThree spend channels: **Anthropic API** (real, Sigil-computed), **Bedrock eval judges** (Sigil), and **Ollama on the 5090** (GPU-amortized estimate + electricity). The headline panel surfaces what you'd be paying if every call rode Claude."
+        "content": "# \ud83d\udcb5 AI FinOps \u2014 total spend & the 450\u00d7 local advantage\n\nThree spend channels: **Anthropic API** (real, Sigil-computed), **Bedrock eval judges** (Sigil), and **Ollama on the 5090** (GPU-amortized estimate + electricity). The headline panel surfaces what you'd be paying if every call rode Claude."
       }
     },
     {
       "id": 2,
       "type": "stat",
-      "title": "💸 Projected $/day — Anthropic API",
-      "description": "Projected $/day at the current Anthropic spend rate (5-min window × 86400).\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
+      "title": "\ud83d\udcb8 Projected $/day \u2014 Anthropic API",
+      "description": "Projected $/day at the current Anthropic spend rate (5-min window \u00d7 86400).\n\nPost-2026-05-16 retune: Anthropic is Haiku-only; Sonnet/Opus rows in this panel are historical.",
       "gridPos": {
         "x": 0,
         "y": 3,
@@ -139,8 +139,8 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "🤖 Projected $/day — Bedrock evals",
-      "description": "Projected $/day for Sigil's Bedrock LLM-judge calls (5-min window × 86400).",
+      "title": "\ud83e\udd16 Projected $/day \u2014 Bedrock evals",
+      "description": "Projected $/day for Sigil's Bedrock LLM-judge calls (5-min window \u00d7 86400).",
       "gridPos": {
         "x": 6,
         "y": 3,
@@ -158,7 +158,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 86400 / 1e6",
+          "expr": "(sum(rate(sigil_eval_judge_tokens_total{ direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{ direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 86400 / 1e6",
           "instant": true
         }
       ],
@@ -203,8 +203,8 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "⚡ $/day — Ollama electricity (5090)",
-      "description": "Whole desktop @ ~0.3 kW avg × 24h × $0.15/kWh = ~$1.08/day. Static estimate.",
+      "title": "\u26a1 $/day \u2014 Ollama electricity (5090)",
+      "description": "Whole desktop @ ~0.3 kW avg \u00d7 24h \u00d7 $0.15/kWh = ~$1.08/day. Static estimate.",
       "gridPos": {
         "x": 12,
         "y": 3,
@@ -250,7 +250,7 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "🏆 Projected $/day if we ran Ollama traffic on Haiku",
+      "title": "\ud83c\udfc6 Projected $/day if we ran Ollama traffic on Haiku",
       "description": "Counterfactual: every Ollama token priced at Haiku 4.5 ($1/M input + $5/M output), projected to $/day. The gap vs the Ollama electricity panel = what local routing saves.",
       "gridPos": {
         "x": 18,
@@ -269,7 +269,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(\n  sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[5m])) * 0.000001\n  + sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[5m])) * 0.000005\n) * 86400",
+          "expr": "(\n  sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"input\",gen_ai_system=\"ollama\"}[5m])) * 0.000001\n  + sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\",gen_ai_token_type=\"output\",gen_ai_system=\"ollama\"}[5m])) * 0.000005\n) * 86400",
           "instant": true
         }
       ],
@@ -314,7 +314,7 @@
     {
       "id": 100,
       "type": "row",
-      "title": "📈 Spend trend (last 6h)",
+      "title": "\ud83d\udcc8 Spend trend (last 6h)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -355,7 +355,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "(sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{service_namespace=\"observibelity\", direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
+          "expr": "(sum(rate(sigil_eval_judge_tokens_total{ direction=\"input\", provider=\"bedrock\"}[5m])) * 1.0 + sum(rate(sigil_eval_judge_tokens_total{ direction=\"output\", provider=\"bedrock\"}[5m])) * 5.0) * 3600 / 1e6",
           "legendFormat": "Bedrock evals"
         },
         {
@@ -412,7 +412,7 @@
     {
       "id": 101,
       "type": "row",
-      "title": "🎯 Top spenders right now",
+      "title": "\ud83c\udfaf Top spenders right now",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -569,7 +569,7 @@
     {
       "id": 102,
       "type": "row",
-      "title": "🌱 The 450× local-vs-cloud comparison",
+      "title": "\ud83c\udf31 The 450\u00d7 local-vs-cloud comparison",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -591,7 +591,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "## Why running local on a 5090 is ~450× cheaper than Claude Haiku\n\nAt current load (~7.6 ollama gens/sec, ~657k calls/day):\n\n| Backend | $/day at this volume | Per-call cost |\n|---|---|---|\n| **Ollama on RTX 5090** | **~$1.08** (whole desktop @ avg US kWh) | $0.0000016 |\n| Claude Haiku 4.5 | ~$480 | $0.00073 |\n| Claude Sonnet 4.6 | ~$2,400 | $0.00365 |\n| Claude Opus 4.7 | ~$36,000 | $0.0547 |\n\nThe shift-left story lands here: **run dev/test/explore on local; reserve Claude for production paths where quality + freshness justify the cost.**\n\n5090 @ 575W TDP, currently ~295W during inference. 1 kWh of inference produces ~92,500 Haiku-equivalent generations."
+        "content": "## Why running local on a 5090 is ~450\u00d7 cheaper than Claude Haiku\n\nAt current load (~7.6 ollama gens/sec, ~657k calls/day):\n\n| Backend | $/day at this volume | Per-call cost |\n|---|---|---|\n| **Ollama on RTX 5090** | **~$1.08** (whole desktop @ avg US kWh) | $0.0000016 |\n| Claude Haiku 4.5 | ~$480 | $0.00073 |\n| Claude Sonnet 4.6 | ~$2,400 | $0.00365 |\n| Claude Opus 4.7 | ~$36,000 | $0.0547 |\n\nThe shift-left story lands here: **run dev/test/explore on local; reserve Claude for production paths where quality + freshness justify the cost.**\n\n5090 @ 575W TDP, currently ~295W during inference. 1 kWh of inference produces ~92,500 Haiku-equivalent generations."
       }
     }
   ],

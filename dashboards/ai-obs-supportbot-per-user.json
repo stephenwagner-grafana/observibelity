@@ -1,0 +1,1508 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Combined per-user view for SupportBot only (ai_o11y_specialist=~\"sb-.*\", email-shaped user IDs). Problem leaderboard (calls/tokens/cost/projected 30d/waste/quality/score), per-user specialist mix, cost/hour + calls/min trends, Sigil AI-quality preview. Replaces 'AI Obs \u2014 SupportBot Top Users' + 'AI Obs \u2014 Per-User Problem Leaderboard (SupportBot)'.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 1492902946758656,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "observibelity"
+      ],
+      "title": "ObserVIBElity dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "hidden",
+            "barAlignment": 0,
+            "barWidthFactor": 0.92,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 30
+              },
+              {
+                "color": "#F472B6",
+                "value": 65
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "expr": "sum(rate(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"sb-.*\"}[$__rate_interval])) * 60",
+          "legendFormat": "tokens/min",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 200,
+      "options": {
+        "content": "<div style=\"padding:18px 22px;\">\n  <h1 style=\"margin:0 0 8px 0; font-size:22px; font-weight:600; color:#e5e7eb; letter-spacing:-0.01em;\">Who's using SupportBot \u2014 and who's a problem?</h1>\n  <p style=\"margin:0 0 12px 0; color:#a3a3a3; font-size:14px; max-width:980px; line-height:1.55;\">\n    ACME's internal SupportBot routes every employee chat through <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-router</code> (intent classifier) to one of nine specialists (<code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-hr-info</code>, <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-it-troubleshoot</code>, <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#fbbf24;\">sb-policy-finder</code>, \u2026). AI is usage-priced, so a handful of heavy users or abusers can swing the monthly bill 10\u00d7 while the average employee is a rounding error. <b style=\"color:#e5e7eb;\">This view ranks internal SupportBot users by combined offender score</b> (cost percentile \u00d7 50 + waste % \u00d7 0.5) and shows which agents they're hitting.\n  </p>\n  <div style=\"display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; font-size:13px; color:#d4d4d4; line-height:1.5;\">\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2460 Leaderboard</span> \u2014 calls, tokens, 24h cost, projected 30d, waste %, quality, problem score. Sorted by problem score.</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2461 Per-user agent mix</span> \u2014 stacked tokens by sb-* specialist. Outliers in one agent often indicate misuse.</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2462 Time trends</span> \u2014 cost/hour and calls/min. Spikes outside business hours = paste-bombs, injection probes, or exfil attempts.</div>\n    <div><span style=\"color:#8b5cf6; font-weight:700;\">\u2463 Quality (preview)</span> \u2014 fleet and bottom-10 LLM-judge scores. Populates once the Sigil quality.business_value_score evaluator is firing.</div>\n  </div>\n  <div style=\"margin-top:12px; font-size:12px; color:#737373;\">Tip: pick a single user from the <b>User</b> dropdown to scope the whole dashboard. Scope is hard-pinned to <code style=\"background:#1f1f1f; padding:1px 5px; border-radius:3px; color:#a3a3a3;\">ai_o11y_specialist=~\"sb-.*\"</code> so only SupportBot traffic counts.</div>\n</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": false,
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 1,
+      "panels": [],
+      "title": "\u26a0 Problem SupportBot users (24h) \u2014 sorted by combined offender score",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Problem score per user, sorted descending. Each metric cell shows the current value plus a sparkline of how it evolved across the dashboard time range. Calls / Tokens keep LCD bars (volume vs. peer); Cost / Waste % / Quality / Problem score show trend sparklines; Projected 30d stays as colored text (= Cost \u00d7 30). Quality populates once the Sigil quality.business_value_score evaluator emits per-user. Email-only.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "user_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              },
+              {
+                "id": "displayName",
+                "value": "User"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls (24h)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "lcd",
+                  "type": "gauge",
+                  "valueDisplayMode": "color"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8AB8FF",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tokens (24h)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "lcd",
+                  "type": "gauge",
+                  "valueDisplayMode": "color"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#A78BFA",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cost (24h, USD)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "drawStyle": "line",
+                  "fillOpacity": 30,
+                  "gradientMode": "opacity",
+                  "hideValue": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 1,
+                  "type": "sparkline"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#8AB8FF",
+                      "value": null
+                    },
+                    {
+                      "color": "#A78BFA",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "#F472B6",
+                      "value": 2
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Projected 30d (USD)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": null
+                    },
+                    {
+                      "color": "#A78BFA",
+                      "value": 50
+                    },
+                    {
+                      "color": "#F472B6",
+                      "value": 200
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Waste %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "drawStyle": "line",
+                  "fillOpacity": 30,
+                  "gradientMode": "opacity",
+                  "hideValue": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 1,
+                  "type": "sparkline"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#8AB8FF",
+                      "value": null
+                    },
+                    {
+                      "color": "#FB923C",
+                      "value": 5
+                    },
+                    {
+                      "color": "#F472B6",
+                      "value": 25
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Quality score"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "drawStyle": "line",
+                  "fillOpacity": 30,
+                  "gradientMode": "opacity",
+                  "hideValue": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 1,
+                  "type": "sparkline"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#F472B6",
+                      "value": null
+                    },
+                    {
+                      "color": "#FB923C",
+                      "value": 30
+                    },
+                    {
+                      "color": "#A78BFA",
+                      "value": 50
+                    },
+                    {
+                      "color": "#8AB8FF",
+                      "value": 70
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Problem score"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "drawStyle": "line",
+                  "fillOpacity": 30,
+                  "gradientMode": "opacity",
+                  "hideValue": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 1,
+                  "type": "sparkline"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#8AB8FF",
+                      "value": null
+                    },
+                    {
+                      "color": "#A78BFA",
+                      "value": 25
+                    },
+                    {
+                      "color": "#FB923C",
+                      "value": 50
+                    },
+                    {
+                      "color": "#F472B6",
+                      "value": 75
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 2,
+      "maxDataPoints": 50,
+      "options": {
+        "cellHeight": "lg",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Problem score"
+          }
+        ]
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "Calls"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id) (increase(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "Tokens"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))",
+          "format": "time_series",
+          "instant": false,
+          "range": true,
+          "refId": "Cost"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "30 * sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h]))",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "Projected30d"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) * 100 ) or ( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) * 0 )",
+          "format": "time_series",
+          "instant": false,
+          "range": true,
+          "refId": "Waste"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "label_replace( sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", gen_ai_agent_name=~\"sb-.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", gen_ai_agent_name=~\"sb-.*\"}[1h])) * 100, \"user_id\", \"$1\", \"user_id\", \"(.*)\")",
+          "format": "time_series",
+          "instant": false,
+          "range": true,
+          "refId": "Quality"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "( (sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / scalar(max(sum by (user_id) (increase(gen_ai_client_cost_USD_total{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])))) ) * 50 ) + ( ( ( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_usecase=\"high-waste\", ai_o11y_specialist=~\"sb-.*\"}[24h])) / sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) ) or ( sum by (user_id) (increase(gen_ai_client_operation_duration_seconds_count{service_namespace=\"observibelity\", user_id=~\".*@.*\", ai_o11y_specialist=~\"sb-.*\"}[24h])) * 0 ) ) * 0.5 )",
+          "format": "time_series",
+          "instant": false,
+          "range": true,
+          "refId": "ProblemScore"
+        }
+      ],
+      "title": "Top problem users \u2014 with trend sparklines per cell",
+      "transformations": [
+        {
+          "id": "timeSeriesTable",
+          "options": {
+            "Cost": {
+              "stat": "last"
+            },
+            "ProblemScore": {
+              "stat": "last"
+            },
+            "Quality": {
+              "stat": "last"
+            },
+            "Waste": {
+              "stat": "last"
+            }
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "user_id",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true,
+              "Time 7": true
+            },
+            "indexByName": {
+              "Trend #Cost": 3,
+              "Trend #ProblemScore": 7,
+              "Trend #Quality": 6,
+              "Trend #Waste": 5,
+              "Value #Calls": 1,
+              "Value #Projected30d": 4,
+              "Value #Tokens": 2,
+              "user_id": 0
+            },
+            "renameByName": {
+              "Trend #Cost": "Cost (24h, USD)",
+              "Trend #ProblemScore": "Problem score",
+              "Trend #Quality": "Quality score",
+              "Trend #Waste": "Waste %",
+              "Value #Calls": "Calls (24h)",
+              "Value #Projected30d": "Projected 30d (USD)",
+              "Value #Tokens": "Tokens (24h)"
+            }
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "Calls (24h)"
+              }
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "Problem score"
+              }
+            ]
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 3,
+      "panels": [],
+      "title": "\ud83e\udde9 Per-user agent mix \u2014 which specialists are they hitting?",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "For each of the top-10 SupportBot spenders, the proportion of their 24h tokens spent on each specialist. Long blocks = heavy use of that agent. Read horizontally to see one user's mix; vertically to compare users on the same agent. Hover for exact counts.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#8AB8FF",
+                "value": null
+              },
+              {
+                "color": "#A78BFA",
+                "value": 33
+              },
+              {
+                "color": "#F472B6",
+                "value": 66
+              },
+              {
+                "color": "#FB923C",
+                "value": 88
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-router"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8AB8FF",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-hr-info"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#A78BFA",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-it-troubleshoot"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#C084FC",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-policy-finder"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F472B6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-benefits"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FB923C",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-finance"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#67E8F9",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-security"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#86EFAC",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-facilities"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FCD34D",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-onboarding"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FCA5A5",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 4,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.85,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "horizontal",
+        "showValue": "never",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (user_id, ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[24h])) and on (user_id) topk(10, sum by (user_id) (increase(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[24h])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{ai_o11y_specialist}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens by user \u00d7 specialist (top 10 users, stacked)",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "ai_o11y_specialist",
+            "rowField": "user_id",
+            "valueField": "Value"
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 5,
+      "panels": [],
+      "title": "\ud83d\udcc8 Time trends \u2014 spend rate and chat rate per user",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Cost rate per user, projected to **USD per hour** (5m rate \u00d7 3600). One line per top-10 SupportBot spender. A sustained line at $0.10/hr \u2248 $72/month per user; sudden spikes correlate with paste-bombs, repeated injection probes, or exfil attempts. Use the time picker to zoom \u2014 short windows expose bursty abuse; 24h shows business-hours patterns.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "USD / hour",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#86EFAC",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_cost_USD_total{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[5m]))) * 3600",
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udcb8 Cost per hour by user \u2014 top 10 SupportBot spenders",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Call rate per user, projected to **calls per minute** (5m rate \u00d7 60). One line per top-10 SupportBot user. Multi-step routing means each chat counts as 2+ calls \u2014 sb-router classifies first, then a downstream specialist responds \u2014 so a real conversation produces 2\u20135 cpm. Sustained >10 cpm by one user is unusual.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "calls / minute",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#86EFAC",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 41
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "topk(10, sum by (user_id) (rate(gen_ai_client_operation_duration_seconds_count{user_id!=\"\", ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}[5m]))) * 60",
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "\ud83d\udcac Calls per minute by user \u2014 top 10 SupportBot users",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 51
+      },
+      "id": 8,
+      "panels": [],
+      "title": "\ud83c\udfaf SupportBot AI quality (populates after Sigil evaluator is wired)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Fleet-wide average AI quality score (0-100) from the quality.business_value_score LLM judge. Empty until you create the evaluator in Sigil UI and add it to a rule.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#F472B6",
+                "value": null
+              },
+              {
+                "color": "#FB923C",
+                "value": 30
+              },
+              {
+                "color": "#A78BFA",
+                "value": 50
+              },
+              {
+                "color": "#8AB8FF",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 52
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "(sum(rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", gen_ai_agent_name=~\"sb-.*\"}[1h])) / sum(rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", gen_ai_agent_name=~\"sb-.*\"}[1h]))) * 100",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "Fleet avg",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Fleet AI quality score (1h avg, 0-100)",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_prom}"
+      },
+      "description": "Lowest-scoring users on the quality LLM judge. Lower = worse use of corporate AI. Empty until the Sigil evaluator is firing per-user.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#F472B6",
+                "value": null
+              },
+              {
+                "color": "#FB923C",
+                "value": 30
+              },
+              {
+                "color": "#A78BFA",
+                "value": 50
+              },
+              {
+                "color": "#8AB8FF",
+                "value": 70
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 52
+      },
+      "id": 10,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_prom}"
+          },
+          "editorMode": "code",
+          "expr": "(bottomk(10, sum by (user_id) (rate(sigil_eval_scores_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", gen_ai_agent_name=~\"sb-.*\"}[1h])) / sum by (user_id) (rate(sigil_eval_executions_total{evaluator=\"quality.business_value_score\", user_id=~\".*@.*\", gen_ai_agent_name=~\"sb-.*\"}[1h])))) * 100",
+          "instant": true,
+          "legendFormat": "{{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Worst quality scores (bottom 10 users, 1h avg)",
+      "transparent": false,
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "ai-observability",
+    "per-user",
+    "supportbot",
+    "observibelity"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-prom",
+          "value": "grafanacloud-prom"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "datasource_prom",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "grafanacloud-stephenwagner-logs",
+          "value": "grafanacloud-logs"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "datasource_loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_prom}"
+        },
+        "definition": "label_values(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}, user_id)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "User",
+        "multi": true,
+        "name": "user_id",
+        "options": [],
+        "query": {
+          "query": "label_values(gen_ai_client_cost_USD_total{ai_o11y_specialist=~\"sb-.*\", user_id=~\".*@.*\"}, user_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "AI Obs \u2014 SupportBot Per-User",
+  "uid": "ai-obs-supportbot-per-user",
+  "version": 4,
+  "weekStart": ""
+}

@@ -1749,7 +1749,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", ai_o11y_usecase!=\"\", gen_ai_system!=\"\"}[1m])) * 60",
+          "expr": "sum by (ai_o11y_usecase) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", ai_o11y_usecase!=\"\", gen_ai_system!=\"\"}[1m])) * 60",
           "legendFormat": "{{ai_o11y_usecase}}",
           "refId": "A",
           "datasource": {
@@ -2084,7 +2084,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\", span_kind=\"SPAN_KIND_SERVER\"}[1m]))",
+          "expr": "sum by (service) (rate(traces_spanmetrics_calls_total{service=~\"$tool\", span_kind=\"SPAN_KIND_SERVER\"}[5m]))",
           "legendFormat": "{{service}}",
           "refId": "A",
           "datasource": {
@@ -2421,7 +2421,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (span_name) (increase(traces_spanmetrics_calls_total{service=~\"$tool\", status_code=\"STATUS_CODE_ERROR\"}[1m]))",
+          "expr": "sum by (span_name) (increase(traces_spanmetrics_calls_total{service=~\"$tool\", status_code=\"STATUS_CODE_ERROR\"}[5m]))",
           "legendFormat": "{{span_name}}",
           "refId": "A",
           "datasource": {
@@ -3192,10 +3192,10 @@
         "label": "Use case",
         "multi": false,
         "name": "usecase",
-        "query": "label_values(gen_ai_client_token_usage_sum{ai_o11y_usecase!=\"\"}, ai_o11y_usecase)",
+        "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_usecase!=\"\"}, ai_o11y_usecase)",
         "refresh": 1,
         "type": "query",
-        "definition": "label_values(gen_ai_client_token_usage_sum{ai_o11y_usecase!=\"\"}, ai_o11y_usecase)"
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_usecase!=\"\"}, ai_o11y_usecase)"
       },
       {
         "current": {

@@ -121,7 +121,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_token_type=\"output\", gen_ai_response_model=~\"claude.*\", gen_ai_system!=\"\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_token_type=\"output\", gen_ai_response_model=~\"claude.*\", gen_ai_system!=\"\"}[5m])) * 60",
           "legendFormat": "{{gen_ai_response_model}}"
         }
       ],
@@ -206,7 +206,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_token_type=\"output\", gen_ai_system=\"ollama\", gen_ai_request_model=~\"qwen2.5:0.5b|tinyllama:1.1b|qwen2.5:1.5b|qwen2.5:3b|granite3-moe:3b|nemotron-mini:4b|mistral:7b-instruct|qwen2.5:7b|llama3.1:8b|granite3.1-dense:8b|mistral-nemo:12b|qwen2.5:14b\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_token_type=\"output\", gen_ai_system=\"ollama\", gen_ai_request_model=~\"qwen2.5:0.5b|tinyllama:1.1b|qwen2.5:1.5b|qwen2.5:3b|granite3-moe:3b|nemotron-mini:4b|mistral:7b-instruct|qwen2.5:7b|llama3.1:8b|granite3.1-dense:8b|mistral-nemo:12b|qwen2.5:14b\"}[5m])) * 60",
           "legendFormat": "{{gen_ai_response_model}}"
         }
       ],

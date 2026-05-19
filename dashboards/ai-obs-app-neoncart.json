@@ -90,7 +90,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum(rate(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
+          "expr": "sum(rate(gen_ai_client_token_usage_total{service_namespace=\"observibelity\", gen_ai_system!=\"\"}[$__rate_interval])) * 60",
           "legendFormat": "tokens/min",
           "range": true,
           "refId": "A"
@@ -1663,7 +1663,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_sum{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
+          "expr": "topk(10, sum by (ai_o11y_specialist) (increase(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", ai_o11y_usecase=~\"$use_case\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[1h])))",
           "format": "table",
           "instant": true,
           "legendFormat": "{{ai_o11y_specialist}}",
@@ -2468,7 +2468,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_sum{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"input\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}} input",
@@ -2480,7 +2480,7 @@
             "type": "prometheus",
             "uid": "${datasource_prom}"
           },
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_sum{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_total{gen_ai_token_type=\"output\", ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\", gen_ai_system!=\"\"}[5m])) * 60",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{gen_ai_request_model}} output",
@@ -3394,7 +3394,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\" [5m]))",
+          "expr": "sum by (ai_o11y_specialist) (count_over_time({container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\" [5m]))",
           "legendFormat": "{{ai_o11y_specialist}}",
           "queryType": "range",
           "refId": "A"
@@ -3470,7 +3470,7 @@
             "type": "loki",
             "uid": "${datasource_loki}"
           },
-          "expr": "{container=\"llm-gateway\"} | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\"",
+          "expr": "{container=\"llm-gateway\"} |~ \"sigil generation:\" | pattern `<_>sigil generation: <jsonline>` | line_format \"{{.jsonline}}\" | json | ai_o11y_specialist=~\"nc-.*\" | ai_o11y_usecase=~\"$use_case\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -4679,7 +4679,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\"}, ai_o11y_usecase)",
+        "definition": "label_values(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}, ai_o11y_usecase)",
         "hide": 0,
         "includeAll": true,
         "label": "Use case",
@@ -4687,7 +4687,7 @@
         "name": "use_case",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_sum{service_namespace=\"observibelity\"}, ai_o11y_usecase)",
+          "query": "label_values(gen_ai_client_token_usage_total{service_namespace=\"observibelity\"}, ai_o11y_usecase)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -4706,7 +4706,7 @@
           "type": "prometheus",
           "uid": "${datasource_prom}"
         },
-        "definition": "label_values(gen_ai_client_token_usage_sum{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
+        "definition": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
         "hide": 0,
         "includeAll": true,
         "label": "Specialist",
@@ -4714,7 +4714,7 @@
         "name": "specialist",
         "options": [],
         "query": {
-          "query": "label_values(gen_ai_client_token_usage_sum{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
+          "query": "label_values(gen_ai_client_token_usage_total{ai_o11y_specialist=~\"nc-.*\", service_namespace=\"observibelity\"}, ai_o11y_specialist)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
